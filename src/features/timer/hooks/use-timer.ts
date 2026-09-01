@@ -125,6 +125,7 @@ export function useTimer(onComplete: (attempt: CompletedAttempt) => void): Timer
       }
       if (event.code !== 'Space') return;
       event.preventDefault();
+      releaseFocusedButton();
       dispatch({ type: 'press', at: monotonicNow() });
     };
 
@@ -160,12 +161,27 @@ export function useTimer(onComplete: (attempt: CompletedAttempt) => void): Timer
   };
 }
 
+/**
+ * Only text entry blocks the timer. Buttons deliberately do not: after tapping
+ * the nav or any control, focus stays on that button, and treating it as a
+ * typing target would silently swallow every space bar press from then on.
+ */
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return (
     target.isContentEditable ||
     target.tagName === 'INPUT' ||
     target.tagName === 'TEXTAREA' ||
-    target.tagName === 'BUTTON'
+    target.tagName === 'SELECT'
   );
+}
+
+/**
+ * A focused button would otherwise be activated by the same space press that
+ * starts the solve. preventDefault stops that, and dropping focus keeps the
+ * button from reacting to later presses at all.
+ */
+function releaseFocusedButton(): void {
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && active.tagName === 'BUTTON') active.blur();
 }

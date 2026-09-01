@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
 import { TimerScreen } from './TimerScreen';
@@ -21,6 +22,21 @@ describe('TimerScreen', () => {
     expect(await screen.findByText("R U R' U' F2")).toBeInTheDocument();
     expect(screen.getByText('0.00')).toBeInTheDocument();
     expect(screen.getByText(/no solves yet/i)).toBeInTheDocument();
+  });
+
+  it('still reacts to the space bar when a button holds focus', async () => {
+    const user = userEvent.setup();
+    render(<TimerScreen />);
+    await screen.findByText("R U R' U' F2");
+
+    // Tapping the nav or any control leaves focus on a button; the timer must
+    // not go deaf because of it.
+    screen.getByTitle('Switch session').focus();
+    await user.keyboard('[Space>]');
+    await user.keyboard('[/Space]');
+
+    // Inspection is on by default, so a tap starts the countdown at 15.
+    expect(await screen.findByText('15')).toBeInTheDocument();
   });
 
   it('creates the default session on first render', async () => {
