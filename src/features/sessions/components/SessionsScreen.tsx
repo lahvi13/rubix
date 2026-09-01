@@ -64,14 +64,10 @@ export function SessionsScreen() {
                   aria-label={strings.sessions.rename}
                 />
               ) : (
-                <button
-                  type="button"
-                  className="session__name"
-                  onClick={() => void activate(session.id)}
-                >
+                <span className="session__name">
                   {session.name}
                   {session.isActive === 1 ? <span className="session__badge">active</span> : null}
-                </button>
+                </span>
               )}
               <span className="session__meta">
                 {session.solveCount} · {formatDate(session.createdAt)}
@@ -79,6 +75,15 @@ export function SessionsScreen() {
             </div>
 
             <div className="session__actions">
+              {session.isActive === 1 ? null : (
+                <button
+                  type="button"
+                  className="is-primary"
+                  onClick={() => void activate(session.id)}
+                >
+                  {strings.sessions.activate}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {

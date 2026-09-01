@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
 import { strings } from '../../../lib/strings';
+import { navigate } from '../../../app/router';
 import { useActiveSession } from '../../sessions';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../hooks/use-scramble';
@@ -62,7 +63,16 @@ export function TimerScreen() {
 
       <section className={isSolving ? 'solves-panel solves-panel--hidden' : 'solves-panel'}>
         <h2 className="solves-panel__title">
-          {session?.name ?? strings.appName} · {solves.length}
+          {/* The session name doubles as the way into session switching. */}
+          <button
+            type="button"
+            className="solves-panel__session"
+            title={strings.sessions.switchSession}
+            onClick={() => navigate('sessions')}
+          >
+            {session?.name ?? strings.appName}
+          </button>
+          · {solves.length}
         </h2>
         <SolveList
           solves={solves}

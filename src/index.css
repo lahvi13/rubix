@@ -627,3 +627,18 @@ button.is-danger {
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+.solves-panel__session {
+  background: none;
+  border: none;
+  border-bottom: 1px dotted var(--muted);
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.session__actions button.is-primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}

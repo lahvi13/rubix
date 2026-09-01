@@ -53,6 +53,8 @@ export const strings = {
   },
   sessions: {
     create: 'Create',
+    activate: 'Use',
+    switchSession: 'Switch session',
     rename: 'Rename',
     archive: 'Archive',
     restore: 'Restore',
