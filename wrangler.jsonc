@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rubix",
+  "compatibility_date": "2026-09-01",
+  // Assets-only Worker: no server code, just the built PWA.
+  "assets": {
+    "directory": "./dist",
+    // Client-side routing — unknown paths serve index.html instead of 404.
+    "not_found_handling": "single-page-application"
+  }
+}
