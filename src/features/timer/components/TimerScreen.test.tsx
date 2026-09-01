@@ -39,6 +39,36 @@ describe('TimerScreen', () => {
     expect(await screen.findByText('15')).toBeInTheDocument();
   });
 
+  it('stores a solve after a full attempt', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await screen.findByText("R U R' U' F2");
+
+    // Tap to start inspection.
+    await user.keyboard('[Space>]');
+    clock += 50;
+    await user.keyboard('[/Space]');
+
+    // Hold past the threshold, then release to start the solve.
+    clock += 8000;
+    await user.keyboard('[Space>]');
+    clock += 400;
+    await user.keyboard('[/Space]');
+
+    // Solve for 12.34s, then press to stop.
+    clock += 12_340;
+    await user.keyboard('[Space>]');
+
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+    const solve = await db.solves.toCollection().first();
+    expect(solve?.rawMs).toBe(12_340);
+  });
+
   it('creates the default session on first render', async () => {
     render(<TimerScreen />);
 

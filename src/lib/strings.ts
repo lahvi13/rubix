@@ -61,6 +61,12 @@ export const strings = {
     showArchived: 'Show archived',
     namePlaceholder: 'New session name',
   },
+  errors: {
+    saveSolve: 'Could not save the solve',
+    noSession: 'No active session',
+    database: 'Database unavailable',
+    dismiss: 'Dismiss',
+  },
   update: {
     available: 'A new version is available.',
     reload: 'Reload',

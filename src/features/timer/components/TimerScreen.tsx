@@ -3,6 +3,7 @@ import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
 import { strings } from '../../../lib/strings';
 import { navigate } from '../../../app/router';
+import { reportError } from '../../../lib/errors';
 import { useActiveSession } from '../../sessions';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../hooks/use-scramble';
@@ -21,22 +22,31 @@ export function TimerScreen() {
 
   const handleComplete = useCallback(
     (attempt: CompletedAttempt) => {
-      if (!session || scramble.scramble === null) return;
+      if (!session) {
+        // Losing a solve silently is worse than any other failure here.
+        reportError(strings.errors.saveSolve, new Error(strings.errors.noSession));
+        return;
+      }
 
       void addSolve({
         sessionId: session.id,
         puzzle: PUZZLE,
         mode: MODE,
-        scramble: scramble.scramble,
+        // A missing scramble must not cost the user the time itself.
+        scramble: scramble.scramble ?? '',
         rawMs: attempt.rawMs,
         penalty: attempt.penalty,
         // Anything set at this point came from the inspection rules, not the user.
         penaltySource: 'auto',
         inspectionMs: attempt.inspectionMs,
         startedAt: now() - Math.round(attempt.rawMs),
-      }).then(() => {
-        scramble.next();
-      });
+      })
+        .then(() => {
+          scramble.next();
+        })
+        .catch((cause: unknown) => {
+          reportError(strings.errors.saveSolve, cause);
+        });
     },
     [session, scramble],
   );

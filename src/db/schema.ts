@@ -1,4 +1,6 @@
 import Dexie, { type Table } from 'dexie';
+import { reportError } from '../lib/errors';
+import { strings } from '../lib/strings';
 import type {
   AlgCase,
   AlgSet,
@@ -51,3 +53,9 @@ export class RubixDB extends Dexie {
 }
 
 export const db = new RubixDB();
+
+// Opening eagerly turns a blocked or corrupted database into a visible error
+// instead of every read and write quietly doing nothing.
+db.open().catch((cause: unknown) => {
+  reportError(strings.errors.database, cause);
+});

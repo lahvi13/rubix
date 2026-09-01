@@ -3,6 +3,7 @@ import { SessionsScreen } from '../features/sessions';
 import { TimerScreen } from '../features/timer';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
+import { ErrorBanner } from './ErrorBanner';
 import { UpdatePrompt } from './UpdatePrompt';
 
 export function App() {
@@ -30,6 +31,7 @@ export function App() {
       {route === 'history' ? <HistoryScreen /> : null}
       {route === 'sessions' ? <SessionsScreen /> : null}
 
+      <ErrorBanner />
       <UpdatePrompt />
     </div>
   );
