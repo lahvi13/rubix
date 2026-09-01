@@ -1,7 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
 import { getOrCreateActiveSession } from './session-repository';
-import { addSolve, deleteSolve, listRecentSolves, setPenalty } from './solve-repository';
+import {
+  addSolve,
+  deleteSolve,
+  deleteSolves,
+  listRecentSolves,
+  listSolves,
+  setPenalty,
+  updateSolve,
+} from './solve-repository';
 import type { NewSolve } from './solve-repository';
 
 async function makeSolve(sessionId: string, rawMs: number): Promise<NewSolve> {
@@ -80,23 +88,91 @@ describe('solve repository', () => {
   });
 });
 
-describe('session repository', () => {
+describe('solve filtering', () => {
+  let sessionId: string;
+
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    sessionId = session.id;
   });
 
-  it('creates the default session once and reuses it afterwards', async () => {
-    const first = await getOrCreateActiveSession('333', 'freestyle');
-    const second = await getOrCreateActiveSession('333', 'freestyle');
+  it('filters by penalty', async () => {
+    const clean = await addSolve(await makeSolve(sessionId, 1000));
+    const penalised = await addSolve(await makeSolve(sessionId, 2000));
+    await updateSolve(penalised.id, { penalty: 'dnf' });
 
-    expect(second.id).toBe(first.id);
-    expect(await db.sessions.count()).toBe(1);
+    const dnfs = await listSolves(sessionId, 50, { penalty: 'dnf' });
+    expect(dnfs.map((solve) => solve.id)).toEqual([penalised.id]);
+
+    const none = await listSolves(sessionId, 50, { penalty: 'none' });
+    expect(none.map((solve) => solve.id)).toEqual([clean.id]);
   });
 
-  it('keeps drill and freestyle sessions apart', async () => {
-    await getOrCreateActiveSession('333', 'freestyle');
-    await getOrCreateActiveSession('333', 'drill');
+  it('filters by star and by tag', async () => {
+    const starred = await addSolve(await makeSolve(sessionId, 1000));
+    const tagged = await addSolve(await makeSolve(sessionId, 2000));
+    await updateSolve(starred.id, { starred: 1 });
+    await updateSolve(tagged.id, { tagIds: ['tag-a'] });
 
-    expect(await db.sessions.count()).toBe(2);
+    expect(await listSolves(sessionId, 50, { starred: true })).toHaveLength(1);
+    expect(await listSolves(sessionId, 50, { tagId: 'tag-a' })).toHaveLength(1);
+    expect(await listSolves(sessionId, 50, { tagId: 'tag-b' })).toHaveLength(0);
+  });
+
+  it('respects the limit while keeping newest first', async () => {
+    for (const ms of [1000, 2000, 3000, 4000]) {
+      await addSolve(await makeSolve(sessionId, ms));
+    }
+
+    const page = await listSolves(sessionId, 2);
+    expect(page.map((solve) => solve.rawMs)).toEqual([4000, 3000]);
+  });
+});
+
+describe('solve editing', () => {
+  let sessionId: string;
+
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    sessionId = session.id;
+  });
+
+  it('records the correction of a mistimed solve', async () => {
+    const solve = await addSolve(await makeSolve(sessionId, 12_345));
+    await updateSolve(solve.id, { rawMs: 13_000 });
+
+    const stored = await db.solves.get(solve.id);
+    expect(stored?.rawMs).toBe(13_000);
+    expect(stored?.editedAt).not.toBeNull();
+  });
+
+  it('never rewrites the scramble or the identity of a solve', async () => {
+    const solve = await addSolve(await makeSolve(sessionId, 12_345));
+    await updateSolve(solve.id, { note: 'bad F2L' });
+
+    const stored = await db.solves.get(solve.id);
+    expect(stored?.scramble).toBe(solve.scramble);
+    expect(stored?.createdAt).toBe(solve.createdAt);
+    expect(stored?.startedAt).toBe(solve.startedAt);
+  });
+
+  it('deletes many solves in one go, each with a tombstone', async () => {
+    const first = await addSolve(await makeSolve(sessionId, 1000));
+    const second = await addSolve(await makeSolve(sessionId, 2000));
+
+    await deleteSolves([first.id, second.id]);
+
+    expect(await db.solves.count()).toBe(0);
+    expect(await db.tombstones.count()).toBe(2);
+  });
+
+  it('does nothing when the delete list is empty', async () => {
+    await addSolve(await makeSolve(sessionId, 1000));
+    await deleteSolves([]);
+
+    expect(await db.solves.count()).toBe(1);
+    expect(await db.tombstones.count()).toBe(0);
   });
 });

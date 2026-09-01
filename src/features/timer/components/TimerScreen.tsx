@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
 import { strings } from '../../../lib/strings';
-import { useActiveSession } from '../hooks/use-active-session';
+import { useActiveSession } from '../../sessions';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../hooks/use-scramble';
 import { useTimer, type CompletedAttempt } from '../hooks/use-timer';

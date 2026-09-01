@@ -18,6 +18,21 @@ export interface NewSolve {
   startedAt: number;
 }
 
+/** Fields the user is allowed to change after the fact. */
+export interface SolvePatch {
+  penalty?: Penalty;
+  rawMs?: number;
+  note?: string | null;
+  starred?: 0 | 1;
+  tagIds?: string[];
+}
+
+export interface SolveFilters {
+  penalty?: Penalty;
+  starred?: boolean;
+  tagId?: string;
+}
+
 export async function addSolve(input: NewSolve): Promise<Solve> {
   const timestamp = now();
   const solve: Solve = {
@@ -45,30 +60,92 @@ export async function addSolve(input: NewSolve): Promise<Solve> {
   return solve;
 }
 
+export async function getSolve(id: string): Promise<Solve | undefined> {
+  return db.solves.get(id);
+}
+
 export async function listRecentSolves(sessionId: string, limit: number): Promise<Solve[]> {
-  return db.solves
+  return listSolves(sessionId, limit);
+}
+
+/**
+ * Newest first. Filtering happens over the session's index cursor rather than
+ * over the whole table, so an archived session with thousands of solves does
+ * not get read just to show ten rows.
+ */
+export async function listSolves(
+  sessionId: string,
+  limit: number,
+  filters: SolveFilters = {},
+): Promise<Solve[]> {
+  let collection = db.solves
     .where('[sessionId+createdAt]')
     .between([sessionId, Dexie.minKey], [sessionId, Dexie.maxKey])
-    .reverse()
-    .limit(limit)
-    .toArray();
+    .reverse();
+
+  if (filters.penalty !== undefined) {
+    const penalty = filters.penalty;
+    collection = collection.filter((solve) => solve.penalty === penalty);
+  }
+  if (filters.starred) {
+    collection = collection.filter((solve) => solve.starred === 1);
+  }
+  if (filters.tagId !== undefined) {
+    const tagId = filters.tagId;
+    collection = collection.filter((solve) => solve.tagIds.includes(tagId));
+  }
+
+  return collection.limit(limit).toArray();
+}
+
+export async function countSolves(sessionId: string): Promise<number> {
+  return db.solves.where('sessionId').equals(sessionId).count();
 }
 
 /** Manual penalty change from the UI. Always marks the solve as edited. */
 export async function setPenalty(id: string, penalty: Penalty): Promise<void> {
+  await updateSolve(id, { penalty });
+}
+
+/**
+ * Any user edit goes through here so editedAt is impossible to forget. The
+ * patch is a whitelist: scramble, timestamps and ids are never rewritten.
+ */
+export async function updateSolve(id: string, patch: SolvePatch): Promise<void> {
   const timestamp = now();
-  await db.solves.update(id, {
-    penalty,
-    penaltySource: 'manual',
-    editedAt: timestamp,
-    updatedAt: timestamp,
-  });
+  const changes: Partial<Solve> = { editedAt: timestamp, updatedAt: timestamp };
+
+  if (patch.penalty !== undefined) {
+    changes.penalty = patch.penalty;
+    changes.penaltySource = 'manual';
+  }
+  if (patch.rawMs !== undefined) changes.rawMs = Math.round(patch.rawMs);
+  if (patch.note !== undefined) changes.note = patch.note;
+  if (patch.starred !== undefined) changes.starred = patch.starred;
+  if (patch.tagIds !== undefined) changes.tagIds = patch.tagIds;
+
+  await db.solves.update(id, changes);
 }
 
 /** Deleting always leaves a tombstone, otherwise a later import resurrects the row. */
 export async function deleteSolve(id: string): Promise<void> {
+  await deleteSolves([id]);
+}
+
+export async function deleteSolves(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const deletedAt = now();
+
   await db.transaction('rw', db.solves, db.tombstones, async () => {
-    await db.solves.delete(id);
-    await db.tombstones.put({ id, table: 'solves', deletedAt: now() });
+    await db.solves.bulkDelete(ids);
+    await db.tombstones.bulkPut(
+      ids.map((id) => ({ id, table: 'solves', deletedAt })),
+    );
   });
+}
+
+/** Used when a whole session goes away; solves must not outlive their session. */
+export async function deleteSolvesOfSession(sessionId: string): Promise<void> {
+  const ids = await db.solves.where('sessionId').equals(sessionId).primaryKeys();
+  await deleteSolves(ids);
 }
