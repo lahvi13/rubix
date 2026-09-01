@@ -6,6 +6,8 @@
   // Keeping the origin stable matters: IndexedDB is scoped to it.
   "workers_dev": false,
   // Per-branch preview URLs — used to test PWA behaviour on a phone before merging.
+  // Must stay explicit: preview URLs default to whatever workers_dev is, so
+  // dropping this line would disable them. Verified working with workers_dev off.
   "preview_urls": true,
   // Assets-only Worker: no server code, just the built PWA.
   "assets": {

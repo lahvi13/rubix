@@ -35,10 +35,11 @@ src/
       index.ts      # veřejné API feature (jediný povolený import zvenčí)
   components/     # sdílené hloupé UI (Button, Modal, Sheet, EmptyState)
   hooks/          # sdílené hooky (use-media-query, use-keyboard)
-  lib/            # obaly nad cizím světem: cubing.ts, audio/, format.ts, uuid.ts, clock.ts
+  lib/            # obaly nad cizím světem: scramble-client.ts, beep.ts, format.ts, uuid.ts, clock.ts
   workers/        # scramble.worker.ts, audio onset processor
-  styles/
-tests/            # e2e / integrační; unit testy leží vedle zdroje
+  types/          # deklarace pro cizí custom elementy (twisty-player)
+  test/           # setup.ts pro vitest
+scripts/          # jednorázové generátory (ikony), spouštěné ručně přes npm run
 ```
 
 **Feature nesmí importovat z jiné feature napříč** — jen přes její `index.ts`,
