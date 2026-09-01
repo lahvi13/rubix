@@ -2,8 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "rubix",
   "compatibility_date": "2026-09-01",
-  // Public URL: https://rubix.<account>.workers.dev
-  "workers_dev": true,
+  // Production is served from the custom domain https://rubix.aix.cz only.
+  // Keeping the origin stable matters: IndexedDB is scoped to it.
+  "workers_dev": false,
   // Per-branch preview URLs — used to test PWA behaviour on a phone before merging.
   "preview_urls": true,
   // Assets-only Worker: no server code, just the built PWA.
