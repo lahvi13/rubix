@@ -37,6 +37,11 @@ export default defineConfig({
       },
     }),
   ],
+  // The scramble worker is constructed with { type: 'module' }, so it has to
+  // be emitted as ESM; Vite defaults workers to IIFE.
+  worker: {
+    format: 'es',
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
