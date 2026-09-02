@@ -55,7 +55,16 @@ export class RubixDB extends Dexie {
 export const db = new RubixDB();
 
 // Opening eagerly turns a blocked or corrupted database into a visible error
-// instead of every read and write quietly doing nothing.
-db.open().catch((cause: unknown) => {
-  reportError(strings.errors.database, cause);
+// instead of every read and write quietly doing nothing. One delayed retry,
+// because Chrome has been seen refusing the first open right after a renderer
+// crash — a failure Dexie would otherwise latch for the whole session, making
+// intact data look deleted.
+db.open().catch(async (cause: unknown) => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  db.close();
+  try {
+    await db.open();
+  } catch {
+    reportError(strings.errors.database, cause);
+  }
 });
