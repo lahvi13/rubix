@@ -146,16 +146,16 @@ function Arrow({ arrow, skin }: { arrow: PieceArrow; skin: CubeSkin }) {
   const unitX = (toX - fromX) / length;
   const unitY = (toY - fromY) / length;
 
-  const inset = CELL * 0.32;
+  const inset = CELL * 0.3;
   const startX = fromX + unitX * inset;
   const startY = fromY + unitY * inset;
   const endX = toX - unitX * inset;
   const endY = toY - unitY * inset;
 
   const head = (x: number, y: number, towardsX: number, towardsY: number): string => {
-    const size = 3.4;
-    const wingX = -towardsY * size * 0.7;
-    const wingY = towardsX * size * 0.7;
+    const size = 5.6;
+    const wingX = -towardsY * size * 0.62;
+    const wingY = towardsX * size * 0.62;
     return [
       `${x},${y}`,
       `${x - towardsX * size + wingX},${y - towardsY * size + wingY}`,
@@ -163,13 +163,47 @@ function Arrow({ arrow, skin }: { arrow: PieceArrow; skin: CubeSkin }) {
     ].join(' ');
   };
 
-  return (
-    <g className="diagram-arrow" stroke={skin.arrow} fill={skin.arrow}>
-      <line x1={startX} y1={startY} x2={endX} y2={endY} strokeWidth={1.6} strokeLinecap="round" />
-      <polygon points={head(endX, endY, unitX, unitY)} stroke="none" />
+  const shaft = (width: number, colour: string) => (
+    <line
+      x1={startX}
+      y1={startY}
+      x2={endX}
+      y2={endY}
+      stroke={colour}
+      strokeWidth={width}
+      strokeLinecap="round"
+    />
+  );
+
+  const heads = (colour: string, outline: number) => (
+    <>
+      <polygon
+        points={head(endX, endY, unitX, unitY)}
+        fill={colour}
+        stroke={colour}
+        strokeWidth={outline}
+        strokeLinejoin="round"
+      />
       {arrow.isSwap ? (
-        <polygon points={head(startX, startY, -unitX, -unitY)} stroke="none" />
+        <polygon
+          points={head(startX, startY, -unitX, -unitY)}
+          fill={colour}
+          stroke={colour}
+          strokeWidth={outline}
+          strokeLinejoin="round"
+        />
       ) : null}
+    </>
+  );
+
+  // Drawn twice: a dark outline underneath, so the arrow stays visible over a
+  // yellow sticker as well as over a grey one.
+  return (
+    <g className="diagram-arrow">
+      {shaft(4.6, skin.outline)}
+      {heads(skin.outline, 2.4)}
+      {shaft(2.4, skin.arrow)}
+      {heads(skin.arrow, 0)}
     </g>
   );
 }

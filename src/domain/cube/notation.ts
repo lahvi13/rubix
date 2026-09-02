@@ -122,37 +122,6 @@ export function isOneHanded(moves: readonly Move[]): boolean {
   );
 }
 
-const UPSIDE_DOWN_FAMILY: Partial<Record<MoveFamily, MoveFamily>> = {
-  U: 'D',
-  D: 'U',
-  F: 'B',
-  B: 'F',
-  Uw: 'Dw',
-  Dw: 'Uw',
-  Fw: 'Bw',
-  Bw: 'Fw',
-};
-
-/** Slices and rotations that reverse when the cube is turned over. */
-const UPSIDE_DOWN_REVERSED: readonly MoveFamily[] = ['E', 'S', 'y', 'z'];
-
-/**
- * The same algorithm performed on a cube turned upside down (an x2 away).
- *
- * Needed because the app draws the last layer yellow side up, the way CFOP is
- * taught, while cubing.js paints white on top. Turning the cube over and
- * renaming the moves shows the same solve in the orientation the diagrams use.
- */
-export function flipAlg(moves: readonly Move[]): Move[] {
-  return moves.map((move) => {
-    const family = UPSIDE_DOWN_FAMILY[move.family] ?? move.family;
-    const amount = UPSIDE_DOWN_REVERSED.includes(move.family)
-      ? normaliseAmount(-move.amount)
-      : move.amount;
-    return { family, amount, text: formatMove({ family, amount, text: '' }) };
-  });
-}
-
 const MIRRORED_FAMILY: Partial<Record<MoveFamily, MoveFamily>> = {
   R: 'L',
   L: 'R',

@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
-import {
-  flipAlg,
-  formatAlg,
-  isOneHanded,
-  mirrorAlg,
-  parseAlg,
-} from '../../../domain/cube/notation';
+import { formatAlg, isOneHanded, mirrorAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
@@ -79,11 +73,12 @@ export function CaseDetail({
       <div className="case-detail__stage">
         {isPlaying && canPlay ? (
           <CasePlayer
-            // The player paints white on top; the diagrams draw the last layer
-            // yellow up, the way CFOP is taught. Turning the cube over and
-            // renaming the moves shows the same solve in the same orientation.
-            setupAlg={`x2 ${formatAlg(flipAlg(isMirrored ? mirrorAlg(setup) : setup))}`}
-            alg={formatAlg(flipAlg(shownMoves))}
+            // Performed exactly as written. The player paints white on top and
+            // the diagrams draw the last layer yellow up, so the colours do not
+            // match — but a cube that turns B where the algorithm says F is
+            // worse than a cube of the wrong colour.
+            setupAlg={formatAlg(isMirrored ? mirrorAlg(setup) : setup)}
+            alg={formatAlg(shownMoves)}
             stickering={playerStickering}
             replayToken={replayToken}
           />

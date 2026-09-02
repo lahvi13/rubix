@@ -129,9 +129,9 @@ kromě PB, které je globální per `puzzle`.
   nepřinesl levorukou variantu, jen jinou nešikovnost
 - **animace jen v režimu 3D** (nastavení `ui.twistyMode`); přehrávač dostane
   `experimental-stickering` podle sady, takže i při přehrávání je kostka
-  ztmavená kromě políček, o která jde. Přehrává se **otočená žlutou nahoru**
-  (`x2` + `flipAlg`) — twisty maluje bílou nahoru, diagramy mají žlutou, a dvě
-  různé orientace v jednom detailu jsou matoucí
+  ztmavená kromě políček, o která jde. Přehrává se **přesně to, co je napsané** — twisty
+  maluje bílou nahoru, zatímco diagramy mají žlutou, ale kostka, která na `F`
+  otočí `B`, je horší než kostka špatné barvy (zkoušeno, vráceno)
 - triggery mají vlastní barvu zvýraznění (pole `Trigger.colour`)
 - výchozí volba mezi 2-Look a Full je nastavení `trainer.twoLookDefault`;
   `trainer.showAlgs` vypíše algoritmus i na kartu v seznamu případů
