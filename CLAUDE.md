@@ -36,7 +36,7 @@ src/
   components/     # sdílené hloupé UI (Button, Modal, Sheet, EmptyState)
   hooks/          # sdílené hooky (use-media-query, use-keyboard)
   lib/            # obaly nad cizím světem: scramble-client.ts, beep.ts, format.ts, uuid.ts, clock.ts
-  workers/        # scramble.worker.ts, audio onset processor
+  workers/        # audio onset processor (scrambles run in cubing.js's own worker)
   types/          # deklarace pro cizí custom elementy (twisty-player)
   test/           # setup.ts pro vitest
 scripts/          # jednorázové generátory (ikony), spouštěné ručně přes npm run

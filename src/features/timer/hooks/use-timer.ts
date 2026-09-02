@@ -13,7 +13,7 @@ import {
 import { penaltyForInspection } from '../../../domain/solve/penalty';
 import type { Penalty } from '../../../db/types';
 import { monotonicNow } from '../../../lib/clock';
-import { beep } from '../../../lib/beep';
+import { beep, primeBeep } from '../../../lib/beep';
 import { SETTING_DEFAULTS, getSetting, setSetting } from '../../../db/repositories/settings-repository';
 
 export interface CompletedAttempt {
@@ -144,6 +144,10 @@ export function useTimer(onComplete: (attempt: CompletedAttempt) => void): Timer
       if (event.code !== 'Space') return;
       event.preventDefault();
       releaseFocusedControl();
+      // A key press is a user gesture — the right moment to wake Web Audio,
+      // so the 8s/12s cues only schedule a tone instead of creating a context
+      // mid animation frame.
+      primeBeep();
       dispatch({ type: 'press', at: monotonicNow() });
     };
 
@@ -174,6 +178,7 @@ export function useTimer(onComplete: (attempt: CompletedAttempt) => void): Timer
     touchHandlers: {
       onPointerDown: (event: ReactPointerEvent) => {
         event.preventDefault();
+        primeBeep();
         dispatch({ type: 'press', at: monotonicNow() });
       },
       onPointerUp: (event: ReactPointerEvent) => {
