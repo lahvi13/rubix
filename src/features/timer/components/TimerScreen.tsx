@@ -2,7 +2,9 @@ import { useCallback } from 'react';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
 import { strings } from '../../../lib/strings';
-import { useActiveSession } from '../hooks/use-active-session';
+import { navigate } from '../../../app/router';
+import { reportError } from '../../../lib/errors';
+import { useActiveSession } from '../../sessions';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../hooks/use-scramble';
 import { useTimer, type CompletedAttempt } from '../hooks/use-timer';
@@ -20,22 +22,31 @@ export function TimerScreen() {
 
   const handleComplete = useCallback(
     (attempt: CompletedAttempt) => {
-      if (!session || scramble.scramble === null) return;
+      if (!session) {
+        // Losing a solve silently is worse than any other failure here.
+        reportError(strings.errors.saveSolve, new Error(strings.errors.noSession));
+        return;
+      }
 
       void addSolve({
         sessionId: session.id,
         puzzle: PUZZLE,
         mode: MODE,
-        scramble: scramble.scramble,
+        // A missing scramble must not cost the user the time itself.
+        scramble: scramble.scramble ?? '',
         rawMs: attempt.rawMs,
         penalty: attempt.penalty,
         // Anything set at this point came from the inspection rules, not the user.
         penaltySource: 'auto',
         inspectionMs: attempt.inspectionMs,
         startedAt: now() - Math.round(attempt.rawMs),
-      }).then(() => {
-        scramble.next();
-      });
+      })
+        .then(() => {
+          scramble.next();
+        })
+        .catch((cause: unknown) => {
+          reportError(strings.errors.saveSolve, cause);
+        });
     },
     [session, scramble],
   );
@@ -62,7 +73,16 @@ export function TimerScreen() {
 
       <section className={isSolving ? 'solves-panel solves-panel--hidden' : 'solves-panel'}>
         <h2 className="solves-panel__title">
-          {session?.name ?? strings.appName} · {solves.length}
+          {/* The session name doubles as the way into session switching. */}
+          <button
+            type="button"
+            className="solves-panel__session"
+            title={strings.sessions.switchSession}
+            onClick={() => navigate('sessions')}
+          >
+            {session?.name ?? strings.appName}
+          </button>
+          · {solves.length}
         </h2>
         <SolveList
           solves={solves}

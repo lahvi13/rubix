@@ -1,0 +1,171 @@
+import { useState } from 'react';
+import type { Solve, Tag } from '../../../db/types';
+import type { SolvePatch } from '../../../db/repositories/solve-repository';
+import { finalMs } from '../../../domain/solve/final-time';
+import { parseTimeInput } from '../../../domain/solve/parse-time';
+import { togglePenalty } from '../../../domain/solve/penalty';
+import { formatDateTime, formatMs, formatTime } from '../../../lib/format';
+import { strings } from '../../../lib/strings';
+
+interface SolveDetailProps {
+  solve: Solve;
+  tags: Tag[];
+  onEdit: (id: string, patch: SolvePatch) => void;
+  onCreateTag: (name: string) => Promise<Tag>;
+  onDelete: (id: string) => void;
+  onClose: () => void;
+}
+
+export function SolveDetail({
+  solve,
+  tags,
+  onEdit,
+  onCreateTag,
+  onDelete,
+  onClose,
+}: SolveDetailProps) {
+  const [timeInput, setTimeInput] = useState(() => formatMs(solve.rawMs));
+  const [timeError, setTimeError] = useState(false);
+  const [note, setNote] = useState(solve.note ?? '');
+  const [newTag, setNewTag] = useState('');
+
+  const commitTime = () => {
+    const parsed = parseTimeInput(timeInput);
+    if (parsed === null) {
+      setTimeError(true);
+      return;
+    }
+    setTimeError(false);
+    if (parsed !== solve.rawMs) onEdit(solve.id, { rawMs: parsed });
+  };
+
+  const toggleTag = (tagId: string) => {
+    const next = solve.tagIds.includes(tagId)
+      ? solve.tagIds.filter((id) => id !== tagId)
+      : [...solve.tagIds, tagId];
+    onEdit(solve.id, { tagIds: next });
+  };
+
+  const addTag = async () => {
+    const name = newTag.trim();
+    if (name === '') return;
+    const existing = tags.find((tag) => tag.name.toLowerCase() === name.toLowerCase());
+    const tag = existing ?? (await onCreateTag(name));
+    setNewTag('');
+    if (!solve.tagIds.includes(tag.id)) onEdit(solve.id, { tagIds: [...solve.tagIds, tag.id] });
+  };
+
+  return (
+    <aside className="detail" role="dialog" aria-label={strings.history.detailTitle}>
+      <header className="detail__header">
+        <span className="detail__result">{formatTime(finalMs(solve))}</span>
+        <button type="button" onClick={onClose} aria-label={strings.history.close}>
+          ✕
+        </button>
+      </header>
+
+      <p className="detail__scramble">{solve.scramble}</p>
+
+      <div className="detail__row">
+        <label htmlFor="detail-time">{strings.history.rawTime}</label>
+        <input
+          id="detail-time"
+          value={timeInput}
+          onChange={(event) => setTimeInput(event.target.value)}
+          onBlur={commitTime}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') commitTime();
+          }}
+          className={timeError ? 'is-invalid' : ''}
+          inputMode="decimal"
+        />
+        {timeError ? <span className="detail__error">{strings.history.invalidTime}</span> : null}
+      </div>
+
+      <div className="detail__row detail__row--buttons">
+        <button
+          type="button"
+          aria-label={`${strings.history.penaltyLabel} ${strings.solve.plusTwo}`}
+          className={solve.penalty === 'plus2' ? 'is-active' : ''}
+          onClick={() => onEdit(solve.id, { penalty: togglePenalty(solve.penalty, 'plus2') })}
+        >
+          {strings.solve.plusTwo}
+        </button>
+        <button
+          type="button"
+          aria-label={`${strings.history.penaltyLabel} ${strings.solve.dnf}`}
+          className={solve.penalty === 'dnf' ? 'is-active' : ''}
+          onClick={() => onEdit(solve.id, { penalty: togglePenalty(solve.penalty, 'dnf') })}
+        >
+          {strings.solve.dnf}
+        </button>
+        <button
+          type="button"
+          aria-label={strings.history.starSolve}
+          className={solve.starred === 1 ? 'is-active' : ''}
+          onClick={() => onEdit(solve.id, { starred: solve.starred === 1 ? 0 : 1 })}
+        >
+          {strings.history.star}
+        </button>
+      </div>
+
+      <div className="detail__row">
+        <span>{strings.history.tags}</span>
+        <div className="detail__tags">
+          {tags.map((tag) => (
+            <button
+              key={tag.id}
+              type="button"
+              className={solve.tagIds.includes(tag.id) ? 'tag tag--on' : 'tag'}
+              style={{ borderColor: tag.color }}
+              onClick={() => toggleTag(tag.id)}
+            >
+              {tag.name}
+            </button>
+          ))}
+        </div>
+        <div className="detail__tag-add">
+          <input
+            value={newTag}
+            onChange={(event) => setNewTag(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                void addTag();
+              }
+            }}
+            placeholder={strings.history.newTag}
+            aria-label={strings.history.newTag}
+          />
+          <button type="button" onClick={() => void addTag()}>
+            +
+          </button>
+        </div>
+      </div>
+
+      <div className="detail__row">
+        <label htmlFor="detail-note">{strings.history.note}</label>
+        <textarea
+          id="detail-note"
+          value={note}
+          rows={3}
+          onChange={(event) => setNote(event.target.value)}
+          onBlur={() => onEdit(solve.id, { note: note.trim() === '' ? null : note })}
+        />
+      </div>
+
+      <footer className="detail__footer">
+        <span className="detail__meta">
+          {formatDateTime(solve.createdAt)}
+          {solve.inspectionMs === null
+            ? ''
+            : ` · ${strings.history.inspection} ${formatMs(solve.inspectionMs)}`}
+          {solve.editedAt === null ? '' : ` · ${strings.history.edited}`}
+        </span>
+        <button type="button" className="is-danger" onClick={() => onDelete(solve.id)}>
+          {strings.solve.delete}
+        </button>
+      </footer>
+    </aside>
+  );
+}

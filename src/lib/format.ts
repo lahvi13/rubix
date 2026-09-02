@@ -33,4 +33,12 @@ export function formatClock(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+export function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleDateString();
+}
+
+export function formatDateTime(timestamp: number): string {
+  return `${formatDate(timestamp)} ${formatClock(timestamp)}`;
+}
+
 export { MS_PER_MINUTE, MS_PER_SECOND };
