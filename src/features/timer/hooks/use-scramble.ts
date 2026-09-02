@@ -18,7 +18,12 @@ export function useScramble(eventId = '333'): ScrambleState {
 
   const consume = useCallback(() => {
     const upcoming = prefetched.current ?? requestScramble(eventId);
-    prefetched.current = requestScramble(eventId);
+    const next = requestScramble(eventId);
+    // Nobody awaits the prefetch until the next consume, so without this
+    // handler its failure would trip the global unhandled-rejection banner.
+    // Consuming it later still receives the rejection and shows the retry.
+    next.catch(() => {});
+    prefetched.current = next;
 
     upcoming
       .then((value) => {
