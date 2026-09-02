@@ -5,6 +5,7 @@ import { strings } from '../../../lib/strings';
 import { navigate } from '../../../app/router';
 import { reportError } from '../../../lib/errors';
 import { useActiveSession } from '../../sessions';
+import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../hooks/use-scramble';
 import { useTimer, type CompletedAttempt } from '../hooks/use-timer';
@@ -84,6 +85,7 @@ export function TimerScreen() {
           </button>
           · {solves.length}
         </h2>
+        <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
         <SolveList
           solves={solves}
           onChangePenalty={(id, penalty) => void changePenalty(id, penalty)}

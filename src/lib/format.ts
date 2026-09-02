@@ -23,6 +23,21 @@ export function formatTime(ms: number | null): string {
   return ms === null ? 'DNF' : formatMs(ms);
 }
 
+/**
+ * Averages have one more state than plain times: null means the window never
+ * filled, which is an em dash, not a DNF.
+ */
+export function formatAverage(value: number | 'dnf' | null): string {
+  if (value === null) return '—';
+  if (value === 'dnf') return 'DNF';
+  return formatMs(value);
+}
+
+/** Rates are fractions 0..1; null (no solves) renders as an em dash. */
+export function formatRate(rate: number | null): string {
+  return rate === null ? '—' : `${Math.round(rate * 100)}%`;
+}
+
 /** Inspection counts down and is shown in whole seconds. */
 export function formatInspection(elapsedMs: number, limitMs: number): string {
   const remaining = Math.ceil((limitMs - elapsedMs) / MS_PER_SECOND);

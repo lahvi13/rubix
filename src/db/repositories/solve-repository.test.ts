@@ -5,8 +5,10 @@ import {
   addSolve,
   deleteSolve,
   deleteSolves,
+  getGlobalPbSingle,
   listRecentSolves,
   listSolves,
+  listSolvesChronological,
   setPenalty,
   updateSolve,
 } from './solve-repository';
@@ -127,6 +129,54 @@ describe('solve filtering', () => {
 
     const page = await listSolves(sessionId, 2);
     expect(page.map((solve) => solve.rawMs)).toEqual([4000, 3000]);
+  });
+});
+
+describe('stats queries', () => {
+  let sessionId: string;
+
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    sessionId = session.id;
+  });
+
+  it('lists the session chronologically, oldest first', async () => {
+    await addSolve(await makeSolve(sessionId, 3000));
+    await addSolve(await makeSolve(sessionId, 1000));
+    await addSolve(await makeSolve(sessionId, 2000));
+
+    const solves = await listSolvesChronological(sessionId);
+    expect(solves.map((solve) => solve.rawMs)).toEqual([3000, 1000, 2000]);
+  });
+
+  it('finds the global PB across sessions and applies the +2', async () => {
+    await addSolve(await makeSolve(sessionId, 10_000));
+    const other = await addSolve(await makeSolve('other-session', 9000));
+    await updateSolve(other.id, { penalty: 'plus2' });
+
+    // 9000 raw would win, but with the +2 it is 11000 — the clean 10s stays.
+    expect(await getGlobalPbSingle('333')).toBe(10_000);
+
+    await addSolve(await makeSolve('other-session', 7000));
+    expect(await getGlobalPbSingle('333')).toBe(7000);
+  });
+
+  it('ignores DNFs, drills and other puzzles for the global PB', async () => {
+    const dnf = await addSolve(await makeSolve(sessionId, 1000));
+    await updateSolve(dnf.id, { penalty: 'dnf' });
+    await addSolve({ ...(await makeSolve(sessionId, 2000)), mode: 'drill' });
+    await addSolve({ ...(await makeSolve(sessionId, 3000)), puzzle: '222' });
+    await addSolve(await makeSolve(sessionId, 8000));
+
+    expect(await getGlobalPbSingle('333')).toBe(8000);
+  });
+
+  it('has no global PB when nothing counts', async () => {
+    const dnf = await addSolve(await makeSolve(sessionId, 1000));
+    await updateSolve(dnf.id, { penalty: 'dnf' });
+
+    expect(await getGlobalPbSingle('333')).toBeNull();
   });
 });
 

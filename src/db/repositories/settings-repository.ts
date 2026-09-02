@@ -11,6 +11,7 @@ export const SETTING_DEFAULTS = {
   'timer.inspectionEnabled': true,
   'timer.inspectionCues': [8000, 12000],
   'ui.twistyMode': '2D',
+  'stats.chartWindow': 100,
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;
