@@ -21,7 +21,13 @@ describe('alg repository', () => {
 
   it('lists the sets and their cases in pack order', async () => {
     const sets = await listSets();
-    expect(sets.map((set) => set.id).sort()).toEqual(['f2l', 'oll', 'pll']);
+    expect(sets.map((set) => set.id).sort()).toEqual([
+      '2look-oll',
+      '2look-pll',
+      'f2l',
+      'oll',
+      'pll',
+    ]);
 
     const cases = await listCases('pll');
     expect(cases).toHaveLength(21);

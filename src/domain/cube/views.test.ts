@@ -11,6 +11,9 @@ function alg(text: string): Move[] {
 
 const after = (text: string) => applyAlg(solvedState(), alg(text));
 
+/** Reads a picture written as a string, where a dot is a grey sticker. */
+const dotToNull = (cell: string) => (cell === '.' ? null : cell);
+
 describe('lastLayerView', () => {
   it('shows a solved cube as one colour on top and matching sides', () => {
     const view = lastLayerView(solvedState());
@@ -87,6 +90,46 @@ describe('pair stickering', () => {
     const view = isometricView(after("R U R'"), 'pair');
 
     expect(view.top.some((cell) => cell !== null)).toBe(true);
+  });
+});
+
+describe('two-look stickerings', () => {
+  it('shows only the edges of the cross while the corners are still to come', () => {
+    // Two edges of the cross in place, two not. Corners belong to the second
+    // look and the sides of the cube say nothing here, so both stay grey.
+    const view = lastLayerView(after("F R U R' U' F'"), 'edgeOrientation');
+
+    expect(view.top).toEqual(['.', 'U', '.', 'U', 'U', '.', '.', '.', '.'].map(dotToNull));
+    expect(view.front.every((cell) => cell === null)).toBe(true);
+    expect(view.right.every((cell) => cell === null)).toBe(true);
+  });
+
+  it('shows corner colours alone, so headlights can be read', () => {
+    const view = lastLayerView(after("R U R' U' R' F R2 U' R' U' R U R' F'"), 'corners');
+
+    // Corners sit at the four corners of the top face; edges and centre go grey.
+    expect([view.top[1], view.top[3], view.top[4], view.top[5], view.top[7]]).toEqual([
+      null,
+      null,
+      null,
+      null,
+      null,
+    ]);
+    expect([view.top[0], view.top[2], view.top[6], view.top[8]]).toEqual(['U', 'U', 'U', 'U']);
+    // The side strips carry the colours a corner swap is recognised by.
+    expect(view.front).toEqual(['F', null, 'R']);
+  });
+
+  it('shows edge colours alone for the second look at permutation', () => {
+    const view = lastLayerView(after('M2 U M2 U2 M2 U M2'), 'edges');
+
+    expect([view.top[0], view.top[2], view.top[6], view.top[8]]).toEqual([
+      null,
+      null,
+      null,
+      null,
+    ]);
+    expect(view.front).toEqual([null, 'B', null]);
   });
 });
 

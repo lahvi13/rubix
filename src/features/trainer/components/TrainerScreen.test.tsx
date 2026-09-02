@@ -64,6 +64,31 @@ describe('TrainerScreen', () => {
     expect(await db.algorithms.where('caseId').equals('pll-t').count()).toBe(1);
   });
 
+  it('offers the short route through OLL and PLL, and only those', async () => {
+    const user = userEvent.setup();
+    render(<TrainerScreen />);
+
+    // F2L is one look; there is nothing to switch between.
+    expect(await screen.findByRole('button', { name: 'F2L' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /2-Look/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'OLL' }));
+    await user.click(await screen.findByRole('button', { name: /2-Look/ }));
+
+    // Three edge shapes and seven corner cases instead of fifty-seven.
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /^(I|L|Dot|Sune|Anti-Sune|H|Pi|T|U|Bowtie)$/ })).toHaveLength(10);
+    });
+    expect(screen.getByRole('heading', { name: '1 / Edges' })).toBeInTheDocument();
+  });
+
+  it('keeps the two-look sets out of the list of sets', async () => {
+    render(<TrainerScreen />);
+
+    const sets = await screen.findAllByRole('button', { name: /^(F2L|OLL|PLL|2-Look OLL|2-Look PLL)$/ });
+    expect(sets.map((button) => button.textContent)).toEqual(['F2L', 'OLL', 'PLL']);
+  });
+
   it('explains the notation with a picture per move', async () => {
     const user = userEvent.setup();
     render(<TrainerScreen />);

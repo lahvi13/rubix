@@ -47,6 +47,23 @@ function wrongOutside(state: CubeStateOf, allowed: (index: number) => boolean): 
 const isOriented = (state: CubeStateOf): boolean =>
   FACELETS.every((sticker, index) => sticker.face !== 'U' || state[index] === 'U');
 
+/** Stickers of a corner piece: a corner is the cubie with three of them. */
+const CORNER_STICKERS = new Set(
+  FACELETS.flatMap((sticker, index) => {
+    const [x, y, z] = sticker.position;
+    return x !== 0 && y !== 0 && z !== 0 ? [index] : [];
+  }),
+);
+
+const isCornerSticker = (index: number): boolean => CORNER_STICKERS.has(index);
+
+/** The cross on top: every top-layer edge showing its U colour upwards. */
+const edgesOriented = (state: CubeStateOf): boolean =>
+  FACELETS.every((sticker, index) => {
+    if (sticker.face !== 'U' || isCornerSticker(index)) return true;
+    return state[index] === 'U';
+  });
+
 /** The same case with a different U turn is the same case. */
 function aufKey(state: CubeStateOf, project: (state: CubeStateOf) => string): string {
   const quarter = movesOf('U');
@@ -146,6 +163,83 @@ describe('OLL', () => {
 
     expect(new Set(keys).size).toBe(57);
   });
+});
+
+describe('two-look OLL', () => {
+  const pack = packById('2look-oll');
+  const edges = pack.cases.filter((entry) => entry.group?.includes('Edges'));
+  const corners = pack.cases.filter((entry) => entry.group?.includes('Corners'));
+
+  it('is the ten cases of the short route', () => {
+    expect(pack.cases).toHaveLength(10);
+    expect(edges).toHaveLength(3);
+    expect(corners).toHaveLength(7);
+  });
+
+  it.each(edges.map((entry) => [entry.name, entry] as const))(
+    '%s is an edge shape and nothing below the top layer',
+    (_name, entry) => {
+      const state = caseState(entry);
+
+      expect(wrongOutside(state, isTopLayer)).toBe(0);
+      expect(edgesOriented(state)).toBe(false);
+    },
+  );
+
+  it.each(corners.map((entry) => [entry.name, entry] as const))(
+    '%s has the cross already made, so only corners are left',
+    (_name, entry) => {
+      const state = caseState(entry);
+
+      expect(wrongOutside(state, isTopLayer)).toBe(0);
+      expect(edgesOriented(state)).toBe(true);
+      expect(isOriented(state)).toBe(false);
+    },
+  );
+
+  it('holds ten different cases', () => {
+    const keys = pack.cases.map((entry) => aufKey(caseState(entry), orientationKey));
+
+    expect(new Set(keys).size).toBe(10);
+  });
+});
+
+describe('two-look PLL', () => {
+  const pack = packById('2look-pll');
+  const cornerStep = pack.cases.filter((entry) => entry.group?.includes('Corners'));
+  const edgeStep = pack.cases.filter((entry) => entry.group?.includes('Edges'));
+
+  it('is the six cases of the short route', () => {
+    expect(pack.cases).toHaveLength(6);
+    expect(cornerStep).toHaveLength(2);
+    expect(edgeStep).toHaveLength(4);
+  });
+
+  it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
+    '%s only permutes the last layer',
+    (_name, entry) => {
+      const state = caseState(entry);
+
+      expect(wrongOutside(state, isTopLayer)).toBe(0);
+      expect(isOriented(state)).toBe(true);
+    },
+  );
+
+  it.each(edgeStep.map((entry) => [entry.name, entry] as const))(
+    '%s leaves the corners where they belong — they were the first look',
+    (_name, entry) => {
+      const state = caseState(entry);
+
+      expect(wrongOutside(state, (index) => !isCornerSticker(index))).toBe(0);
+    },
+  );
+
+  it.each(cornerStep.map((entry) => [entry.name, entry] as const))(
+    '%s has corners out of place, which is what the first look fixes',
+    (_name, entry) => {
+      expect(wrongOutside(caseState(entry), (index) => !isCornerSticker(index))).toBeGreaterThan(0);
+    },
+  );
 });
 
 describe('F2L', () => {

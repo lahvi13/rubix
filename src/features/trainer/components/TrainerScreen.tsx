@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
 import type { Stickering } from '../../../domain/cube/views';
 import { strings } from '../../../lib/strings';
-import { useAlgSets, useSetCases, type TrainerCase } from '../hooks/use-alg-cases';
+import { FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
+import { useAlgSets, useSetCases, type CaseGroup, type TrainerCase } from '../hooks/use-alg-cases';
 import { useCubeSkin } from '../hooks/use-cube-skin';
 import { useTriggers } from '../hooks/use-triggers';
 import { CaseDetail } from './CaseDetail';
@@ -11,8 +12,23 @@ import { TriggerPanel } from './TriggerPanel';
 
 type Panel = 'none' | 'notation' | 'triggers';
 
-/** How each set is best looked at. */
-function diagramFor(setId: string): { view: DiagramView; stickering: Stickering } {
+interface Diagram {
+  view: DiagramView;
+  stickering: Stickering;
+}
+
+/**
+ * How each set is best looked at. Two-look sets differ per step: the first
+ * look at OLL is about edges only, and the first look at PLL is about where
+ * the corners go — showing everything would hide the one thing being read.
+ */
+function diagramFor(setId: string, group: string): Diagram {
+  if (setId === '2look-oll') {
+    return { view: 'lastLayer', stickering: group.includes('Edges') ? 'edgeOrientation' : 'orientation' };
+  }
+  if (setId === '2look-pll') {
+    return { view: 'lastLayer', stickering: group.includes('Corners') ? 'corners' : 'edges' };
+  }
   if (setId === 'oll') return { view: 'lastLayer', stickering: 'orientation' };
   if (setId === 'f2l') return { view: 'isometric', stickering: 'pair' };
   return { view: 'lastLayer', stickering: 'full' };
@@ -20,28 +36,38 @@ function diagramFor(setId: string): { view: DiagramView; stickering: Stickering 
 
 export function TrainerScreen() {
   const sets = useAlgSets();
+  // Two-look sets hang off their full set rather than standing beside it.
+  const fullSets = sets.filter((set) => !Object.hasOwn(FULL_SETS, set.id));
   const [chosenSetId, setChosenSetId] = useState<string | null>(null);
-  const setId = chosenSetId ?? sets[0]?.id ?? null;
+  const [isTwoLook, setTwoLook] = useState(false);
 
-  const groups = useSetCases(setId);
+  const baseSetId = chosenSetId ?? fullSets[0]?.id ?? null;
+  const twoLookId = baseSetId === null ? undefined : TWO_LOOK_SETS[baseSetId];
+  const setId = isTwoLook && twoLookId !== undefined ? twoLookId : baseSetId;
+
+  const fullGroups = useSetCases(baseSetId);
+  const twoLookGroups = useSetCases(twoLookId ?? null);
+  const groups = isTwoLook && twoLookId !== undefined ? twoLookGroups : fullGroups;
   const skin = useCubeSkin();
   const { definitions } = useTriggers();
-  const [openCaseId, setOpenCaseId] = useState<string | null>(null);
+  const [openCase, setOpenCase] = useState<{ id: string; group: string } | null>(null);
   const [panel, setPanel] = useState<Panel>('none');
 
-  const { view, stickering } = diagramFor(setId ?? '');
+  const countOf = (list: CaseGroup[]): number =>
+    list.reduce((count, group) => count + group.cases.length, 0);
 
   return (
     <main className="screen screen--scroll">
       <div className="trainer__sets">
-        {sets.map((set) => (
+        {fullSets.map((set) => (
           <button
             key={set.id}
             type="button"
-            className={set.id === setId ? 'is-active' : ''}
+            className={set.id === baseSetId ? 'is-active' : ''}
             onClick={() => {
               setChosenSetId(set.id);
-              setOpenCaseId(null);
+              setTwoLook(false);
+              setOpenCase(null);
             }}
           >
             {set.name}
@@ -64,6 +90,31 @@ export function TrainerScreen() {
         </button>
       </div>
 
+      {twoLookId !== undefined ? (
+        <div className="trainer__looks">
+          <button
+            type="button"
+            className={isTwoLook ? 'is-active' : ''}
+            onClick={() => {
+              setTwoLook(true);
+              setOpenCase(null);
+            }}
+          >
+            {strings.trainer.twoLook} <span>{countOf(twoLookGroups)}</span>
+          </button>
+          <button
+            type="button"
+            className={isTwoLook ? '' : 'is-active'}
+            onClick={() => {
+              setTwoLook(false);
+              setOpenCase(null);
+            }}
+          >
+            {strings.trainer.fullSet} <span>{countOf(fullGroups)}</span>
+          </button>
+        </div>
+      ) : null}
+
       {panel === 'notation' ? <NotationReference skin={skin} /> : null}
       {panel === 'triggers' ? <TriggerPanel /> : null}
 
@@ -77,31 +128,29 @@ export function TrainerScreen() {
               <CaseCard
                 key={entry.algCase.id}
                 entry={entry}
-                view={view}
-                stickering={stickering}
+                diagram={diagramFor(setId ?? '', group.name)}
                 skin={skin}
-                onOpen={() => setOpenCaseId(entry.algCase.id)}
+                onOpen={() => setOpenCase({ id: entry.algCase.id, group: group.name })}
               />
             ))}
           </div>
         </section>
       ))}
 
-      {openCaseId !== null ? (
+      {openCase !== null ? (
         <>
           <button
             type="button"
             className="app__scrim"
             aria-label={strings.history.close}
-            onClick={() => setOpenCaseId(null)}
+            onClick={() => setOpenCase(null)}
           />
           <CaseDetail
-            caseId={openCaseId}
-            view={view}
-            stickering={stickering}
+            caseId={openCase.id}
+            {...diagramFor(setId ?? '', openCase.group)}
             skin={skin}
             triggers={definitions}
-            onClose={() => setOpenCaseId(null)}
+            onClose={() => setOpenCase(null)}
           />
         </>
       ) : null}
@@ -111,20 +160,19 @@ export function TrainerScreen() {
 
 interface CaseCardProps {
   entry: TrainerCase;
-  view: DiagramView;
-  stickering: Stickering;
+  diagram: Diagram;
   skin: ReturnType<typeof useCubeSkin>;
   onOpen: () => void;
 }
 
-function CaseCard({ entry, view, stickering, skin, onOpen }: CaseCardProps) {
+function CaseCard({ entry, diagram, skin, onOpen }: CaseCardProps) {
   return (
     <button type="button" className="case-card" onClick={onOpen}>
       <CubeDiagram
         className="case-card__diagram"
         state={entry.state}
-        view={view}
-        stickering={stickering}
+        view={diagram.view}
+        stickering={diagram.stickering}
         skin={skin}
         label={null}
       />

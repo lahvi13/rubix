@@ -94,6 +94,8 @@ export const strings = {
   },
   trainer: {
     empty: 'No algorithm sets yet.',
+    twoLook: '2-Look',
+    fullSet: 'Full',
     play: 'Play',
     stop: 'Stop',
     loadingPlayer: 'Loading the cube…',

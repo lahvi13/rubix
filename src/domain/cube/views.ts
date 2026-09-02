@@ -15,6 +15,12 @@ export type Stickering =
   | 'full'
   /** Only whether a sticker faces up: the last layer, orientation only. */
   | 'orientation'
+  /** Orientation, edges only — the first look of two-look OLL. */
+  | 'edgeOrientation'
+  /** Colours of the corners only, to read the corner permutation. */
+  | 'corners'
+  /** Colours of the edges only, to read the edge permutation. */
+  | 'edges'
   /** Only the pieces of the front-right pair. */
   | 'pair';
 
@@ -62,23 +68,47 @@ function colourAt(state: CubeState, index: number): Face {
   return colour;
 }
 
-function isPairSticker(state: CubeState, index: number): boolean {
+function siblingsOf(index: number): number[] {
   const sticker = FACELETS[index];
-  if (!sticker) return false;
+  if (!sticker) return [];
+  return STICKERS_BY_CUBIE.get(sticker.position.join(',')) ?? [];
+}
 
-  const siblings = STICKERS_BY_CUBIE.get(sticker.position.join(',')) ?? [];
-  const colours = siblings
+function isPairSticker(state: CubeState, index: number): boolean {
+  const colours = siblingsOf(index)
     .map((sibling) => colourAt(state, sibling))
     .sort()
     .join('');
   return PAIR_PIECES.includes(colours);
 }
 
+/** A piece is told apart by how many stickers it has: 3, 2 or 1. */
+function pieceSize(index: number): number {
+  return siblingsOf(index).length;
+}
+
 function cell(state: CubeState, index: number, stickering: Stickering): Cell {
   const colour = colourAt(state, index);
-  if (stickering === 'full') return colour;
-  if (stickering === 'orientation') return colour === 'U' ? 'U' : null;
-  return isPairSticker(state, index) ? colour : null;
+
+  switch (stickering) {
+    case 'full':
+      return colour;
+    case 'orientation':
+      return colour === 'U' ? 'U' : null;
+    case 'edgeOrientation': {
+      // The first look builds the cross, so only the top face of the edges
+      // counts. Corners belong to the second look, and a yellow sticker
+      // pointing sideways is noise here.
+      const isTop = FACELETS[index]?.face === 'U';
+      return isTop && pieceSize(index) !== 3 && colour === 'U' ? 'U' : null;
+    }
+    case 'corners':
+      return pieceSize(index) === 3 ? colour : null;
+    case 'edges':
+      return pieceSize(index) === 2 ? colour : null;
+    case 'pair':
+      return isPairSticker(state, index) ? colour : null;
+  }
 }
 
 function faceGrid(state: CubeState, face: Face, stickering: Stickering): Cell[] {

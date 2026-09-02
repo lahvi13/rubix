@@ -100,6 +100,11 @@ kromě PB, které je globální per `puzzle`.
 ### 3.5 Trenažér algoritmů
 
 - sady: **PLL** (21), **OLL** (57), **F2L** (41 základních případů); rozšiřitelné
+- **2-Look OLL** (10) a **2-Look PLL** (6) jsou samostatné sady navěšené na plnou
+  sadu (přepínač 2-Look / Full). Ne filtr nad plnou sadou: první look OLL má tři
+  hranové tvary, které mezi 57 případy vůbec nejsou, a druhý look chce případy
+  pod jmény, pod kterými se učí (Sune, Bowtie, …). Každý krok se kreslí jinak —
+  u OLL nejdřív jen hrany, u PLL nejdřív jen rohy
 - **statický náhled případu kreslí aplikace sama** (`components/CubeDiagram.tsx`)
   z vlastního modelu kostky (`domain/cube/`), ne `<twisty-player>`: na jedné
   obrazovce je až 57 náhledů a tolik custom elementů telefon nedá. Twisty se
