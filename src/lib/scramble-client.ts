@@ -75,10 +75,34 @@ function fromWorker(eventId: string): Promise<string> {
   });
 }
 
+/**
+ * cubing.js spawns an internal worker of its own even on the "main thread"
+ * path, and when that one hangs as well (a stale service worker feeding the
+ * page mismatched chunks does exactly this), awaiting it would keep the UI on
+ * "Generating scramble…" forever. The timeout turns that into a visible
+ * failure with a retry instead.
+ */
+const MAIN_THREAD_TIMEOUT_MS = 20_000;
+
 async function fromMainThread(eventId: string): Promise<string> {
-  const { randomScrambleForEvent } = await import('cubing/scramble');
-  const alg = await randomScrambleForEvent(eventId);
-  return alg.toString();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`scramble generation did not finish in ${MAIN_THREAD_TIMEOUT_MS}ms`));
+    }, MAIN_THREAD_TIMEOUT_MS);
+  });
+
+  const generate = async (): Promise<string> => {
+    const { randomScrambleForEvent } = await import('cubing/scramble');
+    const alg = await randomScrambleForEvent(eventId);
+    return alg.toString();
+  };
+
+  try {
+    return await Promise.race([timeout, generate()]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function requestScramble(eventId = '333'): Promise<string> {
