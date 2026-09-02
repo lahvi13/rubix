@@ -42,6 +42,30 @@ export default defineConfig({
   worker: {
     format: 'es',
   },
+  build: {
+    // The preload helper Vite wires into dynamic imports touches `document`,
+    // and cubing runs its dynamically-importing chunks inside workers, where
+    // that is fatal. Preloading buys nothing here anyway: the service worker
+    // precaches every chunk.
+    modulePreload: false,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            // cubing modules shared between lazy chunks must never be hoisted
+            // into the app entry chunk: cubing spawns workers from its own
+            // emitted chunks, and a worker whose import chain reaches the
+            // React entry dies on `document` before it can answer anything.
+            {
+              name: 'cubing-shared',
+              test: /node_modules[\\/]cubing[\\/]/,
+              minShareCount: 2,
+            },
+          ],
+        },
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

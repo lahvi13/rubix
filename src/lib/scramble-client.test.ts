@@ -9,6 +9,10 @@ vi.mock('cubing/scramble', () => ({
   randomScrambleForEvent: () => mainThreadImpl(),
 }));
 
+vi.mock('cubing/search', () => ({
+  setSearchDebug: () => {},
+}));
+
 /** A worker that loads but never answers, which is the failure we hit in production. */
 class SilentWorker {
   addEventListener(): void {}
@@ -44,9 +48,28 @@ describe('scramble client', () => {
     vi.useFakeTimers();
 
     const scramble = requestScramble('333');
-    await vi.advanceTimersByTimeAsync(8000);
+    await vi.advanceTimersByTimeAsync(15_000);
 
     await expect(scramble).resolves.toBe(MAIN_THREAD_SCRAMBLE);
+  });
+
+  it('terminates a wedged worker instead of leaving its wasm running', async () => {
+    const terminate = vi.fn();
+    vi.stubGlobal(
+      'Worker',
+      class {
+        addEventListener(): void {}
+        postMessage(): void {}
+        terminate = terminate;
+      },
+    );
+    vi.useFakeTimers();
+
+    const scramble = requestScramble('333');
+    await vi.advanceTimersByTimeAsync(15_000);
+    await scramble;
+
+    expect(terminate).toHaveBeenCalledTimes(1);
   });
 
   it('fails visibly when even the main thread fallback hangs', async () => {
@@ -58,7 +81,7 @@ describe('scramble client', () => {
     // Something must consume the rejection before the timers fire, otherwise
     // the test run dies on an unhandled rejection instead of the assertion.
     const outcome = expect(scramble).rejects.toThrow(/did not finish/);
-    await vi.advanceTimersByTimeAsync(8000 + 20_000);
+    await vi.advanceTimersByTimeAsync(15_000 + 20_000);
 
     await outcome;
   });

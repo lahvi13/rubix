@@ -11,7 +11,10 @@ import type { ScrambleResponse } from '../workers/scramble.worker';
  * short pause on the first call, not a frozen timer.
  */
 
-const WORKER_TIMEOUT_MS = 8000;
+// Generous on purpose: a phone cold-starting the wasm solver can legitimately
+// need over ten seconds, and a premature fallback is expensive — it means
+// loading a second copy of cubing on the main thread.
+const WORKER_TIMEOUT_MS = 15_000;
 
 interface Pending {
   resolve: (scramble: string) => void;
@@ -107,7 +110,13 @@ async function generateOnMainThread(eventId: string): Promise<string> {
   });
 
   const generate = async (): Promise<string> => {
-    const { randomScrambleForEvent } = await import('cubing/scramble');
+    const [{ randomScrambleForEvent }, { setSearchDebug }] = await Promise.all([
+      import('cubing/scramble'),
+      import('cubing/search'),
+    ]);
+    // Same reasoning as in the worker: skip instantiation strategies that
+    // request unbundled URLs which do not exist in a Vite build.
+    setSearchDebug({ prioritizeEsbuildWorkaroundForWorkerInstantiation: true });
     const alg = await randomScrambleForEvent(eventId);
     return alg.toString();
   };
@@ -124,6 +133,10 @@ export function requestScramble(eventId = '333'): Promise<string> {
 
   return fromWorker(eventId).catch((cause: unknown) => {
     workerUsable = false;
+    // Terminate, don't just drop: a wedged worker keeps its whole copy of the
+    // wasm solver alive, and on a phone that plus the main thread fallback is
+    // enough memory pressure to get the entire page killed.
+    worker?.terminate();
     worker = null;
     console.warn('Scramble worker unavailable, falling back to the main thread.', cause);
     return fromMainThread(eventId);
@@ -133,6 +146,7 @@ export function requestScramble(eventId = '333'): Promise<string> {
 /** Test seam: forget the latched fallback between cases. */
 export function resetScrambleClient(): void {
   failAllPending('reset');
+  worker?.terminate();
   worker = null;
   workerUsable = true;
   mainThreadQueue = Promise.resolve();

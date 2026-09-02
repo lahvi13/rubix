@@ -1,5 +1,12 @@
 /// <reference lib="webworker" />
 import { randomScrambleForEvent } from 'cubing/scramble';
+import { setSearchDebug } from 'cubing/search';
+
+// cubing's default worker-instantiation order starts with unbundled URLs that
+// do not exist in a Vite build; each failed attempt costs a doomed network
+// round trip. The esbuild workaround is the strategy Vite rewrites correctly,
+// so it goes first.
+setSearchDebug({ prioritizeEsbuildWorkaroundForWorkerInstantiation: true });
 
 /**
  * Random-state scrambles are expensive enough to drop frames on the first
