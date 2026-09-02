@@ -104,6 +104,43 @@ body {
 
 /* Timer */
 
+.scramble-slot {
+  position: relative;
+}
+
+.result-bar {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-bar__next {
+  background: none;
+  border: 1px solid var(--accent);
+  border-radius: 0.6rem;
+  color: var(--accent);
+  padding: 0.6rem 1.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Invisible full-screen surface: while the clock runs, any tap stops it. */
+.timer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  touch-action: none;
+}
+
+.solves-panel__toggle {
+  float: right;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
 .timer {
   display: flex;
   flex-direction: column;

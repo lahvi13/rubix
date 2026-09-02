@@ -9,6 +9,7 @@ interface TimerDisplayProps {
   displayMs: number | null;
   inspectionMs: number | null;
   armed: boolean;
+  inspectionEnabled: boolean;
   touchHandlers: {
     onPointerDown: (event: ReactPointerEvent) => void;
     onPointerUp: (event: ReactPointerEvent) => void;
@@ -20,6 +21,7 @@ export function TimerDisplay({
   displayMs,
   inspectionMs,
   armed,
+  inspectionEnabled,
   touchHandlers,
 }: TimerDisplayProps) {
   const isInspecting = inspectionMs !== null;
@@ -38,14 +40,19 @@ export function TimerDisplay({
           ? formatInspection(inspectionMs, INSPECTION_LIMIT_MS)
           : formatMs(displayMs ?? 0)}
       </div>
-      <p className="timer__hint">{hintFor(state, armed)}</p>
+      <p className="timer__hint">{hintFor(state, armed, inspectionEnabled)}</p>
     </div>
   );
 }
 
-function hintFor(state: TimerState, armed: boolean): string {
+/** The hint must describe what the CURRENT gesture will do, stage by stage. */
+function hintFor(state: TimerState, armed: boolean, inspectionEnabled: boolean): string {
   if (armed) return strings.timer.releaseToStart;
-  if (state.status === 'inspecting') return strings.timer.holdToStartInspection;
   if (state.status === 'running') return '';
-  return strings.timer.holdToStart;
+  if (state.status === 'inspecting') return strings.timer.holdToStartInspection;
+  if (state.status === 'holding') {
+    if (state.inspectionStartedAt !== null) return strings.timer.holdToStartInspection;
+    return inspectionEnabled ? strings.timer.releaseToInspect : strings.timer.holdToStart;
+  }
+  return inspectionEnabled ? strings.timer.inspectionHint : strings.timer.holdToStart;
 }

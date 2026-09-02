@@ -69,6 +69,63 @@ describe('TimerScreen', () => {
     expect(solve?.rawMs).toBe(12_340);
   });
 
+  it('stops a running solve on any key, not just space', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await screen.findByText("R U R' U' F2");
+
+    await user.keyboard('[Space>]');
+    clock += 50;
+    await user.keyboard('[/Space]');
+    clock += 3000;
+    await user.keyboard('[Space>]');
+    clock += 400;
+    await user.keyboard('[/Space]');
+
+    clock += 9990;
+    await user.keyboard('[KeyK>]');
+    await user.keyboard('[/KeyK]');
+
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+    expect((await db.solves.toCollection().first())?.rawMs).toBe(9990);
+  });
+
+  it('shows the result and reveals the next scramble only after confirmation', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await screen.findByText("R U R' U' F2");
+
+    await user.keyboard('[Space>]');
+    clock += 50;
+    await user.keyboard('[/Space]');
+    clock += 3000;
+    await user.keyboard('[Space>]');
+    clock += 400;
+    await user.keyboard('[/Space]');
+    clock += 12_340;
+    await user.keyboard('[Space>]');
+    await user.keyboard('[/Space]');
+
+    const next = await screen.findByRole('button', { name: 'Next scramble' });
+    expect(screen.getByText("R U R' U' F2").closest('.scramble')).toHaveClass(
+      'scramble--hidden',
+    );
+
+    await user.click(next);
+    expect(screen.getByText("R U R' U' F2").closest('.scramble')).not.toHaveClass(
+      'scramble--hidden',
+    );
+    expect(screen.queryByRole('button', { name: 'Next scramble' })).not.toBeInTheDocument();
+  });
+
   it('creates the default session on first render', async () => {
     render(<TimerScreen />);
 

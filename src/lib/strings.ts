@@ -16,7 +16,10 @@ export const strings = {
     holdToStart: 'Hold to start',
     holdToStartInspection: 'Hold, then release to start',
     releaseToStart: 'Release to start',
-    inspectionHint: 'Press to inspect',
+    releaseToInspect: 'Release to inspect',
+    inspectionHint: 'Tap to inspect',
+    inspectionToggle: 'Inspection',
+    nextScramble: 'Next scramble',
     cancelled: 'Attempt discarded',
   },
   solve: {

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import type { Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
@@ -21,9 +21,14 @@ export function TimerScreen() {
   const session = useActiveSession(PUZZLE, MODE);
   const scramble = useScramble(PUZZLE);
   const { solves, changePenalty, remove } = useRecentSolves(session?.id ?? null);
+  // After a solve the screen shows the result, not the next scramble; the
+  // user moves on explicitly (or just starts the next attempt).
+  const [showResult, setShowResult] = useState(false);
 
   const handleComplete = useCallback(
     (attempt: CompletedAttempt) => {
+      setShowResult(true);
+
       if (!session) {
         // Losing a solve silently is worse than any other failure here.
         reportError(strings.errors.saveSolve, new Error(strings.errors.noSession));
@@ -54,7 +59,15 @@ export function TimerScreen() {
   );
 
   const timer = useTimer(handleComplete);
-  const isSolving = timer.state.status === 'running';
+  const status = timer.state.status;
+  const isSolving = status === 'running';
+
+  // Derived, not synchronized: the result stays up only while the machine is
+  // at rest with a finished time. Starting the next attempt (or cancelling,
+  // which wipes lastRawMs) hides it without any bookkeeping.
+  const resultVisible =
+    showResult &&
+    (status === 'stopped' || (timer.state.status === 'idle' && timer.state.lastRawMs !== null));
 
   // Stable references, or the memo on SolveList would be defeated by the
   // per-frame re-renders while the timer is live.
@@ -66,20 +79,40 @@ export function TimerScreen() {
 
   return (
     <main className="screen">
-      <ScramblePanel
-        scramble={scramble.scramble}
-        error={scramble.error}
-        onRetry={scramble.next}
-        hidden={isSolving}
-      />
+      <div className="scramble-slot">
+        <ScramblePanel
+          scramble={scramble.scramble}
+          error={scramble.error}
+          onRetry={scramble.next}
+          hidden={isSolving || resultVisible}
+        />
+        {resultVisible ? (
+          <div className="result-bar">
+            <button
+              type="button"
+              className="result-bar__next"
+              onClick={() => setShowResult(false)}
+            >
+              {strings.timer.nextScramble}
+            </button>
+          </div>
+        ) : null}
+      </div>
 
       <TimerDisplay
         state={timer.state}
         displayMs={timer.displayMs}
         inspectionMs={timer.inspectionMs}
         armed={timer.armed}
+        inspectionEnabled={timer.inspectionEnabled}
         touchHandlers={timer.touchHandlers}
       />
+
+      {/* Mid-solve nobody aims for the numbers: any tap must stop the clock,
+          and the release after it is swallowed here too. */}
+      {status === 'running' || status === 'stopped' ? (
+        <div className="timer-overlay" aria-hidden="true" {...timer.touchHandlers} />
+      ) : null}
 
       <section className={isSolving ? 'solves-panel solves-panel--hidden' : 'solves-panel'}>
         <h2 className="solves-panel__title">
@@ -93,6 +126,14 @@ export function TimerScreen() {
             {session?.name ?? strings.appName}
           </button>
           · {solves.length}
+          <label className="toggle solves-panel__toggle">
+            <input
+              type="checkbox"
+              checked={timer.inspectionEnabled}
+              onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
+            />
+            {strings.timer.inspectionToggle}
+          </label>
         </h2>
         <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
         <SolveList solves={solves} onChangePenalty={handleChangePenalty} onDelete={handleDelete} />
