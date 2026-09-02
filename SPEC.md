@@ -122,11 +122,11 @@ kromě PB, které je globální per `puzzle`.
 - **triggery**: pojmenované sekvence (sexy move, sledgehammer, …) se v algoritmu
   zvýrazňují; matchuje se nejdelší shoda zleva. Zabudované jdou vypnout, přepsat
   (tím přechází na uživatele) i smazat; vlastní se přidávají. Tabulka `triggers`
-- **legenda notace**: každý tah jako obrázek kostky po jeho provedení
-- **zrcadlení** = překlopení obrázku, ne kostky (zrcadlením stavu by se F2L pár
-  přestěhoval do levého slotu, který ten pohled neukazuje). Nabízí se jen u F2L
-  a jen tam, kde algoritmus pracuje jednou stranou + U — jinde by mirror
-  nepřinesl levorukou variantu, jen jinou nešikovnost
+- **legenda notace**: každý tah jako obrázek kostky po jeho provedení, včetně
+  širokých tahů v obou zápisech (`Rw` i `r`) — packy používají oba
+- **zrcadlení případu se nedělá** (zkoušeno a zahozeno): zrcadlený F2L pár patří
+  do druhého slotu, a překlopený obrázek ukazuje jiné stěny, než na jaké se
+  algoritmus odkazuje. Levoruké varianty by chtěly vlastní sadu pro druhý slot
 - **animace jen v režimu 3D** (nastavení `ui.twistyMode`); přehrávač dostane
   `experimental-stickering` podle sady, takže i při přehrávání je kostka
   ztmavená kromě políček, o která jde. Přehrává se **přesně to, co je napsané** — twisty

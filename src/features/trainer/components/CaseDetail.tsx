@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
-import { formatAlg, isOneHanded, mirrorAlg, parseAlg } from '../../../domain/cube/notation';
+import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
@@ -16,8 +16,6 @@ interface CaseDetailProps {
   view: DiagramView;
   stickering: Stickering;
   playerStickering: string;
-  /** Whether a mirror image of this set says anything useful. */
-  allowMirror: boolean;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
   onClose: () => void;
@@ -28,14 +26,12 @@ export function CaseDetail({
   view,
   stickering,
   playerStickering,
-  allowMirror,
   skin,
   triggers,
   onClose,
 }: CaseDetailProps) {
   const { algCase, algorithms, active, moves, choose, addVariant, removeVariant } =
     useCaseDetail(caseId);
-  const [isMirrored, setMirrored] = useState(false);
   const [replayToken, setReplayToken] = useState(0);
   const [isPlaying, setPlaying] = useState(false);
   const [draft, setDraft] = useState('');
@@ -43,16 +39,10 @@ export function CaseDetail({
 
   if (!algCase) return null;
 
-  const shownMoves = isMirrored ? mirrorAlg(moves) : moves;
   const setupMoves = parseAlg(algCase.setupAlg);
   const setup = setupMoves.ok ? setupMoves.moves : [];
-  // The case itself is never mirrored — only the picture of it is. Mirroring
-  // the cube would move an F2L pair into the slot this view cannot show.
   const state = applyAlg(solvedState(), setup);
   const canPlay = previewMode === '3D';
-  // A left-handed version only exists for an algorithm that works one side of
-  // the cube; mirroring the rest swaps awkward for awkward.
-  const canMirror = allowMirror && isOneHanded(moves);
 
   const play = (): void => {
     setPlaying(true);
@@ -77,8 +67,8 @@ export function CaseDetail({
             // the diagrams draw the last layer yellow up, so the colours do not
             // match — but a cube that turns B where the algorithm says F is
             // worse than a cube of the wrong colour.
-            setupAlg={formatAlg(isMirrored ? mirrorAlg(setup) : setup)}
-            alg={formatAlg(shownMoves)}
+            setupAlg={formatAlg(setup)}
+            alg={formatAlg(moves)}
             stickering={playerStickering}
             replayToken={replayToken}
           />
@@ -89,7 +79,6 @@ export function CaseDetail({
             view={view}
             stickering={stickering}
             skin={skin}
-            mirrored={isMirrored}
             label={algCase.name}
           />
         )}
@@ -105,20 +94,10 @@ export function CaseDetail({
             {isPlaying ? strings.trainer.stop : strings.trainer.play}
           </button>
         ) : null}
-        {canMirror ? (
-          <button
-            type="button"
-            className={isMirrored ? 'is-active' : ''}
-            onClick={() => setMirrored((mirrored) => !mirrored)}
-            title={strings.trainer.mirrorHint}
-          >
-            {strings.trainer.mirror}
-          </button>
-        ) : null}
       </div>
 
       <AlgText
-        moves={shownMoves}
+        moves={moves}
         triggers={triggers}
         onPlay={canPlay ? play : undefined}
         playLabel={strings.trainer.play}
@@ -135,9 +114,7 @@ export function CaseDetail({
                 checked={algorithm.id === active?.id}
                 onChange={() => void choose(algorithm.id)}
               />
-              <span className="variants__moves">
-                {isMirrored ? mirrorAlgText(algorithm.moves) : algorithm.moves}
-              </span>
+              <span className="variants__moves">{algorithm.moves}</span>
             </label>
             <span className="variants__source">
               {algorithm.source === 'pack' ? strings.trainer.packAlg : strings.trainer.ownAlg}
@@ -174,9 +151,4 @@ export function CaseDetail({
       {draftError ? <p className="detail__error">{strings.trainer.invalidAlg}</p> : null}
     </div>
   );
-}
-
-function mirrorAlgText(moves: string): string {
-  const parsed = parseAlg(moves);
-  return parsed.ok ? formatAlg(mirrorAlg(parsed.moves)) : moves;
 }

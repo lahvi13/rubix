@@ -100,8 +100,6 @@ export const strings = {
     play: 'Play',
     stop: 'Stop',
     loadingPlayer: 'Loading the cube…',
-    mirror: '⇄ Mirror',
-    mirrorHint: 'The same case left-handed',
     variants: 'Algorithms',
     packAlg: 'built in',
     ownAlg: 'yours',

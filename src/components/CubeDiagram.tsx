@@ -24,13 +24,6 @@ interface CubeDiagramProps {
    * not want its name read twice.
    */
   label: string | null;
-  /**
-   * Flip the picture left to right. That is all a mirrored case is, and doing
-   * it here rather than by mirroring the cube keeps the drawing honest: the
-   * mirror of a front-right F2L pair lives in the front-left slot, which this
-   * view does not show at all.
-   */
-  mirrored?: boolean;
   className?: string;
 }
 
@@ -48,10 +41,9 @@ export const CubeDiagram = memo(function CubeDiagram({
   stickering = 'full',
   skin = DEFAULT_CUBE_SKIN,
   label,
-  mirrored = false,
   className,
 }: CubeDiagramProps) {
-  const props = { state, stickering, skin, label, mirrored, className };
+  const props = { state, stickering, skin, label, className };
 
   if (view === 'lastLayer') return <LastLayerDiagram {...props} />;
   if (view === 'net') return <NetDiagram {...props} />;
@@ -63,7 +55,6 @@ interface DiagramProps {
   stickering: Stickering;
   skin: CubeSkin;
   label: string | null;
-  mirrored: boolean;
   className?: string;
 }
 
@@ -75,7 +66,7 @@ const OFFSET = STRIP + 2;
 const SIZE = OFFSET * 2 + CELL * 3;
 const INSET = 1;
 
-function LastLayerDiagram({ state, stickering, skin, label, mirrored, className }: DiagramProps) {
+function LastLayerDiagram({ state, stickering, skin, label, className }: DiagramProps) {
   const view = lastLayerView(state, stickering);
 
   return (
@@ -85,7 +76,6 @@ function LastLayerDiagram({ state, stickering, skin, label, mirrored, className 
       {...labelProps(label)}
       focusable="false"
     >
-      <g transform={flip(mirrored, SIZE)}>
       {view.top.map((cell, index) => (
         <rect
           key={`top-${index}`}
@@ -122,7 +112,6 @@ function LastLayerDiagram({ state, stickering, skin, label, mirrored, className 
       {permutationArrows(state, stickering).map((arrow) => (
         <Arrow key={`${arrow.from}-${arrow.to}`} arrow={arrow} skin={skin} />
       ))}
-      </g>
     </svg>
   );
 }
@@ -146,7 +135,7 @@ function Arrow({ arrow, skin }: { arrow: PieceArrow; skin: CubeSkin }) {
   const unitX = (toX - fromX) / length;
   const unitY = (toY - fromY) / length;
 
-  const inset = CELL * 0.3;
+  const inset = CELL * 0.17;
   const startX = fromX + unitX * inset;
   const startY = fromY + unitY * inset;
   const endX = toX - unitX * inset;
@@ -241,7 +230,7 @@ const NET_CELL = 12;
 const NET_FACE = NET_CELL * 3;
 const NET_GAP = 2;
 
-function NetDiagram({ state, stickering, skin, label, mirrored, className }: DiagramProps) {
+function NetDiagram({ state, stickering, skin, label, className }: DiagramProps) {
   const view = netView(state, stickering);
   const width = NET_FACE * 4 + NET_GAP * 3;
   const height = NET_FACE * 3 + NET_GAP * 2;
@@ -262,7 +251,6 @@ function NetDiagram({ state, stickering, skin, label, mirrored, className }: Dia
       {...labelProps(label)}
       focusable="false"
     >
-      <g transform={flip(mirrored, width)}>
       {faces.map((face, faceIndex) =>
         face.cells.map((cell, index) => (
           <rect
@@ -278,7 +266,6 @@ function NetDiagram({ state, stickering, skin, label, mirrored, className }: Dia
           />
         )),
       )}
-      </g>
     </svg>
   );
 }
@@ -301,7 +288,7 @@ function point(u: number, v: number, w: number): string {
   return `${x.toFixed(2)},${y.toFixed(2)}`;
 }
 
-function IsometricDiagram({ state, stickering, skin, label, mirrored, className }: DiagramProps) {
+function IsometricDiagram({ state, stickering, skin, label, className }: DiagramProps) {
   const view = isometricView(state, stickering);
   const gap = 0.06;
 
@@ -357,7 +344,6 @@ function IsometricDiagram({ state, stickering, skin, label, mirrored, className 
       {...labelProps(label)}
       focusable="false"
     >
-      <g transform={flip(mirrored, 100)}>
       {view.top.map((cell, index) => (
         <polygon
           key={`top-${index}`}
@@ -385,14 +371,8 @@ function IsometricDiagram({ state, stickering, skin, label, mirrored, className 
           strokeWidth={0.8}
         />
       ))}
-      </g>
     </svg>
   );
-}
-
-/** A mirrored case is the same picture, seen the other way round. */
-function flip(mirrored: boolean, width: number): string | undefined {
-  return mirrored ? `translate(${width} 0) scale(-1 1)` : undefined;
 }
 
 /** A named picture, or one the screen reader should walk straight past. */

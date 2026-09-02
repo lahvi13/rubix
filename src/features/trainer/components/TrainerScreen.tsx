@@ -18,11 +18,6 @@ interface Diagram {
   stickering: Stickering;
   /** What the animated player should dim, in cubing.js's own terms. */
   playerStickering: string;
-  /**
-   * A last-layer case has no left-handed twin — its mirror is a different case
-   * with its own entry. An F2L pair does: the same insert, other hand.
-   */
-  allowMirror: boolean;
 }
 
 /**
@@ -36,7 +31,6 @@ function diagramFor(setId: string, group: string): Diagram {
       view: 'lastLayer',
       stickering: group.includes('Edges') ? 'edgeOrientation' : 'orientation',
       playerStickering: 'OLL',
-      allowMirror: false,
     };
   }
   if (setId === '2look-pll') {
@@ -44,7 +38,6 @@ function diagramFor(setId: string, group: string): Diagram {
       view: 'lastLayer',
       stickering: group.includes('Corners') ? 'corners' : 'edges',
       playerStickering: 'PLL',
-      allowMirror: false,
     };
   }
   if (setId === 'oll') {
@@ -52,18 +45,12 @@ function diagramFor(setId: string, group: string): Diagram {
       view: 'lastLayer',
       stickering: 'orientation',
       playerStickering: 'OLL',
-      allowMirror: false,
     };
   }
   if (setId === 'f2l') {
-    return { view: 'isometric', stickering: 'pair', playerStickering: 'F2L', allowMirror: true };
+    return { view: 'isometric', stickering: 'pair', playerStickering: 'F2L' };
   }
-  return {
-    view: 'lastLayer',
-    stickering: 'full',
-    playerStickering: 'PLL',
-    allowMirror: false,
-  };
+  return { view: 'lastLayer', stickering: 'full', playerStickering: 'PLL' };
 }
 
 export function TrainerScreen() {

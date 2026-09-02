@@ -36,6 +36,8 @@ export function TriggerPanel() {
               value={trigger.name}
               onChange={(event) => void rename(trigger.id, event.target.value)}
               aria-label={strings.trainer.triggerName}
+              // Shown in its own colour, so the palette below needs no legend.
+              style={{ color: trigger.colour ?? TRIGGER_COLOURS[0] }}
             />
             <input
               className={parseAlg(trigger.moves).ok ? 'triggers__moves' : 'triggers__moves is-invalid'}
