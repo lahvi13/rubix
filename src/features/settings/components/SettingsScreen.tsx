@@ -3,7 +3,7 @@ import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
-import { useSetting } from '../hooks/use-settings';
+import { useSetting } from '../../../hooks/use-setting';
 
 /** A case with some colour in it, so a skin can be judged before it is chosen. */
 const PREVIEW_SETUP = "R U R' U' R' F R2 U' R' U' R U R' F'";
@@ -55,11 +55,12 @@ export function SettingsScreen() {
                 className={twistyMode === mode ? 'is-active' : ''}
                 onClick={() => setTwistyMode(mode)}
               >
-                {mode}
+                {mode === '2D' ? strings.settings.previewFlat : strings.settings.preview3d}
               </button>
             ))}
           </div>
         </div>
+        <p className="data-section__hint">{strings.settings.twistyModeHint}</p>
       </section>
 
       <section className="data-section">

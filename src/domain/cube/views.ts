@@ -153,3 +153,28 @@ export function isometricView(state: CubeState, stickering: Stickering = 'full')
     right: faceGrid(state, 'R', stickering),
   };
 }
+
+export interface NetView {
+  up: Cell[];
+  left: Cell[];
+  front: Cell[];
+  right: Cell[];
+  back: Cell[];
+  down: Cell[];
+}
+
+/**
+ * The unfolded cube, all six faces at once. What a scramble preview needs: a
+ * corner view hides half the cube, and the half it hides is exactly where the
+ * piece you are hunting for tends to be.
+ */
+export function netView(state: CubeState, stickering: Stickering = 'full'): NetView {
+  return {
+    up: faceGrid(state, 'U', stickering),
+    left: faceGrid(state, 'L', stickering),
+    front: faceGrid(state, 'F', stickering),
+    right: faceGrid(state, 'R', stickering),
+    back: faceGrid(state, 'B', stickering),
+    down: faceGrid(state, 'D', stickering),
+  };
+}

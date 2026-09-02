@@ -3,12 +3,13 @@ import type { CubeState } from '../domain/cube/state';
 import {
   isometricView,
   lastLayerView,
+  netView,
   type Cell,
   type Stickering,
 } from '../domain/cube/views';
 import { DEFAULT_CUBE_SKIN, type CubeSkin } from '../lib/cube-skins';
 
-export type DiagramView = 'lastLayer' | 'isometric';
+export type DiagramView = 'lastLayer' | 'isometric' | 'net';
 
 interface CubeDiagramProps {
   state: CubeState;
@@ -40,23 +41,11 @@ export const CubeDiagram = memo(function CubeDiagram({
   label,
   className,
 }: CubeDiagramProps) {
-  return view === 'lastLayer' ? (
-    <LastLayerDiagram
-      state={state}
-      stickering={stickering}
-      skin={skin}
-      label={label}
-      className={className}
-    />
-  ) : (
-    <IsometricDiagram
-      state={state}
-      stickering={stickering}
-      skin={skin}
-      label={label}
-      className={className}
-    />
-  );
+  const props = { state, stickering, skin, label, className };
+
+  if (view === 'lastLayer') return <LastLayerDiagram {...props} />;
+  if (view === 'net') return <NetDiagram {...props} />;
+  return <IsometricDiagram {...props} />;
 });
 
 interface DiagramProps {
@@ -149,12 +138,63 @@ function Strip({ cell, skin, index, at, horizontal = false }: StripProps) {
   );
 }
 
+/* Net: the cube unfolded, for looking a scramble over. */
+
+const NET_CELL = 12;
+const NET_FACE = NET_CELL * 3;
+const NET_GAP = 2;
+
+function NetDiagram({ state, stickering, skin, label, className }: DiagramProps) {
+  const view = netView(state, stickering);
+  const width = NET_FACE * 4 + NET_GAP * 3;
+  const height = NET_FACE * 3 + NET_GAP * 2;
+
+  const faces: readonly { cells: Cell[]; column: number; row: number }[] = [
+    { cells: view.up, column: 1, row: 0 },
+    { cells: view.left, column: 0, row: 1 },
+    { cells: view.front, column: 1, row: 1 },
+    { cells: view.right, column: 2, row: 1 },
+    { cells: view.back, column: 3, row: 1 },
+    { cells: view.down, column: 1, row: 2 },
+  ];
+
+  return (
+    <svg
+      className={className}
+      viewBox={`0 0 ${width} ${height}`}
+      {...labelProps(label)}
+      focusable="false"
+    >
+      {faces.map((face, faceIndex) =>
+        face.cells.map((cell, index) => (
+          <rect
+            key={`${faceIndex}-${index}`}
+            x={face.column * (NET_FACE + NET_GAP) + (index % 3) * NET_CELL + 0.6}
+            y={face.row * (NET_FACE + NET_GAP) + Math.floor(index / 3) * NET_CELL + 0.6}
+            width={NET_CELL - 1.2}
+            height={NET_CELL - 1.2}
+            rx={1.5}
+            fill={colourOf(cell, skin)}
+            stroke={skin.outline}
+            strokeWidth={0.7}
+          />
+        )),
+      )}
+    </svg>
+  );
+}
+
 /* Isometric: the three faces you look at while solving. */
 
-const ISO_UNIT = 26;
+/**
+ * Sized so the whole cube lands inside the 100x100 box: the drawing is three
+ * cubies tall on the front plus one and a half of the tilted top, six units in
+ * all, and 3 * √3 ≈ 5.2 units wide.
+ */
+const ISO_UNIT = 16;
 const ISO_X: readonly [number, number] = [0.866, 0.5];
 const ISO_Z: readonly [number, number] = [-0.866, 0.5];
-const ISO_ORIGIN: readonly [number, number] = [50, 8];
+const ISO_ORIGIN: readonly [number, number] = [50, 1.5 * ISO_UNIT + 2];
 
 function point(u: number, v: number, w: number): string {
   const x = ISO_ORIGIN[0] + (ISO_X[0] * u + ISO_Z[0] * v) * ISO_UNIT;

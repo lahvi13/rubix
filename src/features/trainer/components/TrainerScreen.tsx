@@ -4,7 +4,7 @@ import type { Stickering } from '../../../domain/cube/views';
 import { strings } from '../../../lib/strings';
 import { FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { useAlgSets, useSetCases, type CaseGroup, type TrainerCase } from '../hooks/use-alg-cases';
-import { useCubeSkin } from '../hooks/use-cube-skin';
+import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useTriggers } from '../hooks/use-triggers';
 import { CaseDetail } from './CaseDetail';
 import { NotationReference } from './NotationReference';

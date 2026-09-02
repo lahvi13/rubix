@@ -62,7 +62,9 @@ dostávají hotová data z domény.
   drží sám — aplikace kolem něj **nestaví vlastní worker vrstvu** (viz CLAUDE.md)
 - prefetch: další scramble se generuje hned po zobrazení aktuálního; požadavky se řadí
   za sebe, dva běžící solvery naráz položí i slušný telefon
-- náhled zamotaného stavu (`<twisty-player>`, 2D nebo 3D podle nastavení)
+- náhled zamotaného stavu: **plochý rozvin kreslí aplikace sama** (stejný model
+  i skin jako trenažér, žádný chunk navíc), 3D volitelně přes `<twisty-player>`
+  — přepíná to nastavení `ui.twistyMode`
 - scramble se ukládá ke každému solvu jako string; při reimportu se nikdy neregeneruje
 - ruční vložení scramblu (paste) pro trénink konkrétní situace
 

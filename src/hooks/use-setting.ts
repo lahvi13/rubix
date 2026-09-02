@@ -5,7 +5,7 @@ import {
   setSetting,
   type SettingKey,
   type SettingValues,
-} from '../../../db/repositories/settings-repository';
+} from '../db/repositories/settings-repository';
 
 /**
  * One setting, live. Every screen that shows a setting also has to see it

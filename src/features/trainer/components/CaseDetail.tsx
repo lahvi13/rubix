@@ -6,6 +6,7 @@ import type { Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
+import { useSetting } from '../../../hooks/use-setting';
 import { useCaseDetail } from '../hooks/use-case-detail';
 import { AlgText } from './AlgText';
 import { CasePlayer } from './CasePlayer';
@@ -33,6 +34,7 @@ export function CaseDetail({
   const [replayToken, setReplayToken] = useState(0);
   const [isPlaying, setPlaying] = useState(false);
   const [draft, setDraft] = useState('');
+  const [previewMode] = useSetting('ui.twistyMode');
 
   if (!algCase) return null;
 
@@ -66,7 +68,7 @@ export function CaseDetail({
           <CasePlayer
             setupAlg={formatAlg(setup)}
             alg={formatAlg(shownMoves)}
-            visualization="3D"
+            visualization={previewMode}
             replayToken={replayToken}
           />
         ) : (

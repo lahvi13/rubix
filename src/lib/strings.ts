@@ -121,6 +121,10 @@ export const strings = {
     appearance: 'Appearance',
     skinHint: 'Colours for every case diagram in the app.',
     twistyMode: 'Cube preview',
+    previewFlat: 'Flat',
+    preview3d: '3D',
+    twistyModeHint:
+      'Flat draws the cube here, in your colours. 3D loads the animated cube from cubing.js, which paints its own.',
     timer: 'Timer',
     holdThreshold: 'Hold to start',
     holdOff: 'Off',

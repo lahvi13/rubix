@@ -106,7 +106,13 @@ body {
   cursor: pointer;
 }
 
+/* The flat preview is an unfolded cube: four faces across, three down. */
 .scramble__preview {
+  width: min(260px, 70vw);
+  height: auto;
+}
+
+.scramble__preview--3d {
   width: min(220px, 60vw);
   height: min(220px, 60vw);
 }
@@ -958,7 +964,9 @@ button.is-danger {
 
 /* Case detail */
 
+/* Above the backdrop, or the backdrop swallows every click in here. */
 .case-detail {
+  z-index: 9;
   gap: 0.75rem;
 }
 
