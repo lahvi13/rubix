@@ -1,5 +1,6 @@
 import { HistoryScreen } from '../features/history';
 import { SessionsScreen } from '../features/sessions';
+import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
@@ -29,6 +30,7 @@ export function App() {
 
       {route === 'timer' ? <TimerScreen /> : null}
       {route === 'history' ? <HistoryScreen /> : null}
+      {route === 'stats' ? <StatsScreen /> : null}
       {route === 'sessions' ? <SessionsScreen /> : null}
 
       <ErrorBanner />

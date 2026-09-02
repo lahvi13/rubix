@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import { db } from '../schema';
-import { SPLITS_SCHEMA_VERSION, type Penalty, type Solve } from '../types';
+import { SPLITS_SCHEMA_VERSION, type Penalty, type Puzzle, type Solve } from '../types';
+import { finalMs } from '../../domain/solve/final-time';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 
@@ -96,6 +97,34 @@ export async function listSolves(
   }
 
   return collection.limit(limit).toArray();
+}
+
+/** Oldest first — the order every rolling statistic is defined over. */
+export async function listSolvesChronological(sessionId: string): Promise<Solve[]> {
+  return db.solves
+    .where('[sessionId+createdAt]')
+    .between([sessionId, Dexie.minKey], [sessionId, Dexie.maxKey])
+    .toArray();
+}
+
+/**
+ * Global PB single for a puzzle, across all freestyle sessions. The compound
+ * index skips DNFs and drills entirely, and the fold avoids materialising
+ * every solve just to keep one number.
+ */
+export async function getGlobalPbSingle(puzzle: Puzzle): Promise<number | null> {
+  let best: number | null = null;
+  await db.solves
+    .where('[puzzle+mode+penalty]')
+    .anyOf([
+      [puzzle, 'freestyle', 'none'],
+      [puzzle, 'freestyle', 'plus2'],
+    ])
+    .each((solve) => {
+      const ms = finalMs(solve);
+      if (ms !== null && (best === null || ms < best)) best = ms;
+    });
+  return best;
 }
 
 export async function countSolves(sessionId: string): Promise<number> {
