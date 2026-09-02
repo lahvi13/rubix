@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Puzzle } from '../../../db/types';
 import { formatAverage } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -8,8 +9,11 @@ interface MiniStatsProps {
   puzzle: Puzzle;
 }
 
-/** The timer screen's one-line summary: current ao5, ao12 and session mean. */
-export function MiniStats({ sessionId, puzzle }: MiniStatsProps) {
+/**
+ * The timer screen's one-line summary: current ao5, ao12 and session mean.
+ * Memoised because the host screen repaints on animation frames while timing.
+ */
+export const MiniStats = memo(function MiniStats({ sessionId, puzzle }: MiniStatsProps) {
   const stats = useSessionStats(sessionId, puzzle);
   if (stats === null || stats.solveCount === 0) return null;
 
@@ -32,4 +36,4 @@ export function MiniStats({ sessionId, puzzle }: MiniStatsProps) {
       </div>
     </dl>
   );
-}
+});

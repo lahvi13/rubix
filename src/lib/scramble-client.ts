@@ -84,7 +84,21 @@ function fromWorker(eventId: string): Promise<string> {
  */
 const MAIN_THREAD_TIMEOUT_MS = 20_000;
 
-async function fromMainThread(eventId: string): Promise<string> {
+/**
+ * The fallback path shares the UI thread with the running timer, and the hook
+ * prefetches — so without this queue two wasm searches could grind away at
+ * once, which is enough to get the page killed on a low-end phone. One at a
+ * time, in order.
+ */
+let mainThreadQueue: Promise<unknown> = Promise.resolve();
+
+function fromMainThread(eventId: string): Promise<string> {
+  const result = mainThreadQueue.then(() => generateOnMainThread(eventId));
+  mainThreadQueue = result.catch(() => {});
+  return result;
+}
+
+async function generateOnMainThread(eventId: string): Promise<string> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => {
@@ -121,4 +135,5 @@ export function resetScrambleClient(): void {
   failAllPending('reset');
   worker = null;
   workerUsable = true;
+  mainThreadQueue = Promise.resolve();
 }

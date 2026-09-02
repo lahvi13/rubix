@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
 import { togglePenalty } from '../../../domain/solve/penalty';
@@ -13,8 +14,14 @@ interface SolveListProps {
 /**
  * Flat list of the session's solves. Penalties and deletion are offered on the
  * most recent solve only — full editing lands with the history screen.
+ * Memoised: the timer above repaints every animation frame, and fifty rows
+ * must not be re-rendered sixty times a second on a phone.
  */
-export function SolveList({ solves, onChangePenalty, onDelete }: SolveListProps) {
+export const SolveList = memo(function SolveList({
+  solves,
+  onChangePenalty,
+  onDelete,
+}: SolveListProps) {
   if (solves.length === 0) {
     return <p className="solves__empty">{strings.solve.empty}</p>;
   }
@@ -55,4 +62,4 @@ export function SolveList({ solves, onChangePenalty, onDelete }: SolveListProps)
       ))}
     </ol>
   );
-}
+});

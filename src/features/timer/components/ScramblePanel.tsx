@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { strings } from '../../../lib/strings';
 
 interface ScramblePanelProps {
@@ -9,7 +9,18 @@ interface ScramblePanelProps {
   hidden: boolean;
 }
 
-export function ScramblePanel({ scramble, error, onRetry, hidden }: ScramblePanelProps) {
+/**
+ * Memoised, and hiding is done with CSS rather than by unmounting: tearing
+ * the twisty-player down would recreate the whole custom element on every
+ * single solve, and the timer above repaints on animation frames — the panel
+ * must not be dragged through those re-renders.
+ */
+export const ScramblePanel = memo(function ScramblePanel({
+  scramble,
+  error,
+  onRetry,
+  hidden,
+}: ScramblePanelProps) {
   const [previewReady, setPreviewReady] = useState(false);
 
   // cubing/twisty is a heavy chunk; load it after the first paint so the
@@ -24,32 +35,28 @@ export function ScramblePanel({ scramble, error, onRetry, hidden }: ScramblePane
     };
   }, []);
 
-  if (hidden) return <div className="scramble scramble--hidden" aria-hidden="true" />;
-
-  if (error) {
-    return (
-      <div className="scramble">
+  return (
+    <div className={hidden ? 'scramble scramble--hidden' : 'scramble'} aria-hidden={hidden}>
+      {error ? (
         <button type="button" className="scramble__error" onClick={onRetry}>
           {strings.scramble.failed}
         </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="scramble">
-      <p className="scramble__text">{scramble ?? strings.scramble.loading}</p>
-      {previewReady && scramble ? (
-        <twisty-player
-          className="scramble__preview"
-          puzzle="3x3x3"
-          alg={scramble}
-          visualization="2D"
-          background="none"
-          control-panel="none"
-          hint-facelets="none"
-        />
-      ) : null}
+      ) : (
+        <>
+          <p className="scramble__text">{scramble ?? strings.scramble.loading}</p>
+          {previewReady && scramble ? (
+            <twisty-player
+              className="scramble__preview"
+              puzzle="3x3x3"
+              alg={scramble}
+              visualization="2D"
+              background="none"
+              control-panel="none"
+              hint-facelets="none"
+            />
+          ) : null}
+        </>
+      )}
     </div>
   );
-}
+});

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import type { Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
 import { strings } from '../../../lib/strings';
@@ -55,6 +56,14 @@ export function TimerScreen() {
   const timer = useTimer(handleComplete);
   const isSolving = timer.state.status === 'running';
 
+  // Stable references, or the memo on SolveList would be defeated by the
+  // per-frame re-renders while the timer is live.
+  const handleChangePenalty = useCallback(
+    (id: string, penalty: Penalty) => void changePenalty(id, penalty),
+    [changePenalty],
+  );
+  const handleDelete = useCallback((id: string) => void remove(id), [remove]);
+
   return (
     <main className="screen">
       <ScramblePanel
@@ -86,11 +95,7 @@ export function TimerScreen() {
           · {solves.length}
         </h2>
         <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
-        <SolveList
-          solves={solves}
-          onChangePenalty={(id, penalty) => void changePenalty(id, penalty)}
-          onDelete={(id) => void remove(id)}
-        />
+        <SolveList solves={solves} onChangePenalty={handleChangePenalty} onDelete={handleDelete} />
       </section>
     </main>
   );
