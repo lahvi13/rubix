@@ -5,7 +5,7 @@ Offline PWA trenažér na Rubikovu kostku pro speedcubing.
 ## 1. Cíle a hranice
 
 **Cíl:** osobní trenažér — timer, historie, statistiky, drill algoritmů, fázové splity.
-Používá autor a pár známých, distribuce přes URL na Cloudflare Pages.
+Používá autor a pár známých, distribuce přes URL na Cloudflare.
 
 **Non-goals (platí pro celý projekt):**
 
@@ -29,7 +29,7 @@ assety), se precachuje.
 | PWA | vite-plugin-pwa (Workbox, `registerType: 'prompt'`) |
 | Scramble + vizualizace | cubing.js (`randomScrambleForEvent`, `<twisty-player>`) |
 | Grafy | **Recharts** |
-| Deploy | Cloudflare Pages (statický build, žádné Functions) |
+| Deploy | Cloudflare Worker se statickými assety (žádný server kód) |
 
 **Proč Recharts:** deklarativní React API, sedí na histogram i na trendový line chart,
 žádný imperativní canvas kód, tree-shakeable. Očekávaný objem dat (jednotky tisíc solvů,
@@ -44,19 +44,24 @@ dostávají hotová data z domény.
 
 - hold-to-start: podržet mezerník / dotyk na ploše po dobu `holdThresholdMs` (default 300),
   vizuální stav *armed*, uvolnění spouští čas
-- WCA inspekce 15 s, volitelně vypnutelná; zvukové cue na 8 s a 12 s
-  (jen lokální beep, žádný TTS)
+- WCA inspekce 15 s, vypnutelná přepínačem přímo na obrazovce timeru; zvukové cue
+  na 8 s a 12 s (jen lokální beep, žádný TTS)
 - automatická penalizace z inspekce: 15–17 s → `plus2`, > 17 s → `dnf`,
   vždy s `penaltySource: 'auto'`
 - ruční penalizace `+2` / `DNF` bezprostředně po solvu i kdykoliv později z historie
 - měření a zobrazení na setiny; interně vždy celé milisekundy (integer)
-- zastavení jakoukoliv klávesou / dotykem; ESC během běhu = zahodit pokus bez uložení
+- zastavení jakoukoliv klávesou nebo dotykem **kdekoliv na obrazovce** (během běhu leží
+  přes celou plochu neviditelná vrstva); ESC během běhu = zahodit pokus bez uložení
 - během běhu je scramble i statistiky skryté (režim „pouze čas“)
+- po zastavení zůstane na obrazovce výsledek (čas, mini-statistiky, rychlá penalta);
+  další scramble se odkryje až potvrzením nebo začátkem dalšího pokusu
 
 ### 3.2 Scramble
 
-- WCA random-state scramble přes cubing.js, generovaný ve workeru (nesmí blokovat UI)
-- prefetch: další scramble se generuje hned po zobrazení aktuálního
+- WCA random-state scramble přes cubing.js; počítá se ve workeru, který si cubing.js
+  drží sám — aplikace kolem něj **nestaví vlastní worker vrstvu** (viz CLAUDE.md)
+- prefetch: další scramble se generuje hned po zobrazení aktuálního; požadavky se řadí
+  za sebe, dva běžící solvery naráz položí i slušný telefon
 - náhled zamotaného stavu (`<twisty-player>`, 2D nebo 3D podle nastavení)
 - scramble se ukládá ke každému solvu jako string; při reimportu se nikdy neregeneruje
 - ruční vložení scramblu (paste) pro trénink konkrétní situace
@@ -148,6 +153,8 @@ Nejdůležitější část specifikace. Platí:
 - **IndexedDB neumí indexovat `boolean`** → všechny indexované příznaky jsou `0 | 1`
 - časy jsou celé milisekundy, nikdy float, nikdy sekundy
 - odvozené hodnoty (finální čas, průměry, per-case statistiky) se **neukládají**
+- dokud neexistuje export, žijí data jen v jedné IndexedDB → aplikace si při startu
+  vyžádá `navigator.storage.persist()` a neúspěšné otevření DB jednou zopakuje
 
 ### 4.1 TypeScript typy
 

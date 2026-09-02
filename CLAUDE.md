@@ -9,7 +9,7 @@ UI stringy jsou anglicky a žijí pohromadě v `src/lib/strings.ts` (i18n zatím
 ## Stack — nerozporovat
 
 Vite + React + TypeScript (strict) · Dexie.js · vite-plugin-pwa · cubing.js · Recharts ·
-Cloudflare Pages. Nová runtime závislost jen když ji nelze rozumně nahradit ~50 řádky
+Cloudflare Workers (statické assety). Nová runtime závislost jen když ji nelze rozumně nahradit ~50 řádky
 vlastního kódu; UI knihovnu ani state management framework nepřidáváme
 (stav = React state + `dexie-react-hooks`).
 
@@ -125,9 +125,11 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
    v komponentě ani v hooku.
 7. **Nepřepisovat uživatelská data seedem.** Řádky se `source: 'user'` nebo `isCustom: 1`
    jsou pro seed nedotknutelné.
-8. **Neblokovat main thread.** Generování scramblu patří do workeru, audio do
-   `AudioWorklet`. Během běžícího timeru se nesmí dělat nic, co může způsobit jank —
-   zápis do DB až po zastavení.
+8. **Neblokovat main thread.** Scramble počítá cubing.js ve **vlastním** workeru —
+   nikdy ho nebalit do dalšího workeru (znamená to druhou kopii celé knihovny v paměti);
+   audio patří do `AudioWorklet`. Během běžícího timeru se nesmí dělat nic, co může
+   způsobit jank: timer překresluje každý frame, takže komponenty pod ním jsou
+   memoizované a zápis do DB jde až po zastavení.
 9. **Nepoužívat `Date.now()` / `Math.random()` v `domain/`** a pro měření času nikdy
    `Date.now()`, vždy `performance.now()`.
 10. **Žádné floaty pro čas.** Vše celé milisekundy; zaokrouhlení až při formátování.
@@ -139,6 +141,19 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
 ## Poznámky k vývoji
 
 - `npm run dev` běží bez service workeru; PWA chování se testuje přes `npm run build && npm run preview`
-- Cloudflare Pages: build `npm run build`, output `dist`, SPA fallback na `index.html`
+- Cloudflare Worker se statickými assety (`wrangler.jsonc`): build `npm run build`,
+  output `dist`, SPA fallback na `index.html`, žádný server kód. Push do `main` se sám
+  zbuilduje a nasadí (Workers Builds), `npm run deploy` se ručně nespouští — ale deploy
+  krok umí spadnout (viděno: 503 z CF API po úspěšném buildu), takže po pushi ověřit,
+  co produkce doopravdy servíruje. Jakou verzi zařízení běží, je vidět v hlavičce
+  aplikace (`__APP_VERSION__` z `package.json`) — service worker jinak update schová.
 - cubing.js se importuje **dynamicky** (`await import('cubing/scramble')`), aby se
   nedostal do hlavního chunku
+- **cubing.js spouští vlastní workery ze svých chunků**, proto musí build držet tři věci
+  pohromadě (všechny v `vite.config.ts`): sdílené moduly cubingu ve vlastní `cubing-shared`
+  skupině (jinak je bundler přilepí k app entry a worker umře na `document`),
+  `modulePreload: false` (preload helper sahá na `document`) a
+  `setSearchDebug({ prioritizeEsbuildWorkaroundForWorkerInstantiation: true })`.
+- změnu, kterou uvidí prohlížeč, ověřit **v prohlížeči**, ne jen testy: `npm run build &&
+  npm run preview` a projít reálný scénář (dobře posloužil headless Chrome přes CDP).
+  Chyby v hranicích worker / chunking / service worker jednotkové testy z principu nechytí.
