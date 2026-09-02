@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
 import { createSession } from '../../../db/repositories/session-repository';
 import { addSolve } from '../../../db/repositories/solve-repository';
@@ -64,7 +64,26 @@ describe('DataScreen', () => {
     expect(screen.queryByRole('button', { name: 'Import' })).not.toBeInTheDocument();
   });
 
-  it('asks twice before deleting everything', async () => {
+  it('says where the backup went', async () => {
+    // jsdom has no blob URLs and no downloads; the anchor click is the seam.
+    const createObjectURL = vi.fn(() => 'blob:test');
+    vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL: vi.fn() });
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
+    const user = userEvent.setup();
+
+    render(<DataScreen />);
+    await user.click(screen.getByRole('button', { name: 'Export data' }));
+
+    expect(await screen.findByText(/^rubix-\d{4}-\d{2}-\d{2}\.json$/)).toBeInTheDocument();
+    expect(click).toHaveBeenCalled();
+
+    click.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it('holds the wipe behind a countdown and then says it happened', async () => {
     const session = await createSession('Evening', '333', 'freestyle');
     await addSolve({
       sessionId: session.id,
@@ -81,12 +100,22 @@ describe('DataScreen', () => {
 
     render(<DataScreen />);
     await user.click(screen.getByRole('button', { name: 'Delete all data' }));
+
+    // Armed, but the button cannot be part of the same double tap.
+    expect(screen.getByRole('button', { name: /Delete everything \(\d\)/ })).toBeDisabled();
     expect(await db.solves.count()).toBe(1);
 
-    await user.click(screen.getByRole('button', { name: 'Delete everything' }));
+    // Real seconds: the delay is the whole point of the guard.
+    const confirm = await screen.findByRole(
+      'button',
+      { name: 'Delete everything' },
+      { timeout: 8000 },
+    );
+    await user.click(confirm);
 
     await waitFor(async () => {
       expect(await db.solves.count()).toBe(0);
     });
-  });
+    expect(screen.getByText('All data deleted.')).toBeInTheDocument();
+  }, 15_000);
 });

@@ -23,11 +23,18 @@ export type TransferState =
   | { status: 'idle' }
   | { status: 'preview'; file: ExportFile; snapshot: ExportData; plan: ImportPlan }
   | { status: 'importing' }
-  | { status: 'imported'; mode: ImportMode; counts: ImportCounts }
   | { status: 'failed'; problem: ImportProblem };
+
+/** What just happened, so the screen can say so. */
+export type TransferNotice =
+  | { kind: 'exported'; filename: string }
+  | { kind: 'imported'; counts: ImportCounts }
+  | { kind: 'deleted' };
 
 export interface DataTransferView {
   state: TransferState;
+  notice: TransferNotice | null;
+  dismissNotice: () => void;
   mode: ImportMode;
   setMode: (mode: ImportMode) => void;
   exportToFile: () => Promise<void>;
@@ -44,20 +51,26 @@ export interface DataTransferView {
  */
 export function useDataTransfer(appVersion: string): DataTransferView {
   const [state, setState] = useState<TransferState>({ status: 'idle' });
+  const [notice, setNotice] = useState<TransferNotice | null>(null);
   const [mode, setMode] = useState<ImportMode>('merge');
 
   const exportToFile = async (): Promise<void> => {
+    setNotice(null);
     try {
       const file = await buildExportFile(appVersion);
+      const filename = `rubix-${formatIsoDate(file.exportedAt)}.json`;
       // Compact: this is a backup, not a document, and an indented file is
       // roughly twice the size for the same content.
-      downloadText(`rubix-${formatIsoDate(file.exportedAt)}.json`, JSON.stringify(file));
+      downloadText(filename, JSON.stringify(file));
+      setNotice({ kind: 'exported', filename });
     } catch (cause) {
       reportError(strings.data.exportFailed, cause);
     }
   };
 
   const loadFile = async (input: File): Promise<void> => {
+    setNotice(null);
+
     let raw: unknown;
     try {
       raw = JSON.parse(await input.text());
@@ -100,7 +113,8 @@ export function useDataTransfer(appVersion: string): DataTransferView {
       // when the file was chosen, and solves may have been added since.
       const plan = planImport(mode, await readSnapshot(), file.data);
       await applyImportPlan(plan);
-      setState({ status: 'imported', mode, counts: plan.counts });
+      setState({ status: 'idle' });
+      setNotice({ kind: 'imported', counts: plan.counts });
     } catch (cause) {
       reportError(strings.data.importFailed, cause);
       setState({ status: 'idle' });
@@ -108,9 +122,11 @@ export function useDataTransfer(appVersion: string): DataTransferView {
   };
 
   const deleteEverything = async (): Promise<void> => {
+    setNotice(null);
     try {
       await clearAllData();
       setState({ status: 'idle' });
+      setNotice({ kind: 'deleted' });
     } catch (cause) {
       reportError(strings.data.deleteFailed, cause);
     }
@@ -118,6 +134,8 @@ export function useDataTransfer(appVersion: string): DataTransferView {
 
   return {
     state,
+    notice,
+    dismissNotice: () => setNotice(null),
     mode,
     setMode: changeMode,
     exportToFile,

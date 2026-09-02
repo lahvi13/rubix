@@ -4,6 +4,9 @@
  */
 export const strings = {
   appName: 'Rubix',
+  common: {
+    dismiss: 'Dismiss',
+  },
   scramble: {
     label: 'Scramble',
     loading: 'Generating scramble…',
@@ -35,6 +38,8 @@ export const strings = {
     stats: 'Stats',
     sessions: 'Sessions',
     data: 'Data',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
   stats: {
     empty: 'No solves in this session yet.',
@@ -91,6 +96,7 @@ export const strings = {
       'Writes every session, solve, tag and setting into one file. Settings that belong to this device, like microphone calibration, stay here.',
     exportAction: 'Export data',
     exportFailed: 'Could not export the data',
+    exported: 'Backup saved as',
     importTitle: 'Restore',
     importHint: 'Pick an exported file. Nothing is written before you confirm the preview.',
     chooseFile: 'Choose a file',
@@ -134,6 +140,9 @@ export const strings = {
       'Removes every solve, session and setting from this device. There is no undo — export first.',
     deleteAll: 'Delete all data',
     deleteConfirm: 'Delete everything',
+    deleteArmed:
+      'No undo. The button unlocks in a few seconds — export a backup while you wait.',
+    deletedAll: 'All data deleted.',
     deleteFailed: 'Could not delete the data',
   },
   errors: {

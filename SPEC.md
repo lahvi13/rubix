@@ -415,8 +415,13 @@ formátů žije v `src/db/migrations/import/`.
 | 9 | **Nastavení** | timer, vzhled, kalibrace mikrofonu s live meterem |
 | 10 | **Data** | export, import (preview + merge/replace), smazání všech dat |
 
-Navigace: dolní tab bar na mobilu (Timer / Historie / Statistiky / Trenažér),
-sidebar na desktopu. Timer je výchozí route.
+Navigace: **hamburger menu** v hlavičce se všemi routami; hlavička ukazuje název
+aktuální obrazovky. Timer je výchozí route. (Původně tu byl dolní tab bar na
+mobilu — obrazovek je ale víc, než se do něj vejde, a s trenažérem a nastavením
+jich bude ještě víc.) Dokud je menu otevřené, klávesy patří jemu, ne timeru.
+
+Každá akce, po které obrazovka vypadá stejně jako předtím (export, import,
+smazání dat), musí říct, že se stala — `components/Notice.tsx`.
 
 ## 6. Fáze
 

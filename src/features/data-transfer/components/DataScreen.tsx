@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Notice } from '../../../components/Notice';
 import {
   hasChanges,
   totalCounts,
@@ -9,17 +9,37 @@ import { TRANSFER_TABLES } from '../../../domain/transfer/types';
 import type { ImportProblem } from '../../../domain/transfer/validate';
 import { formatDateTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import { useDataTransfer } from '../hooks/use-data-transfer';
+import { useConfirmDelay } from '../hooks/use-confirm-delay';
+import { useDataTransfer, type TransferNotice } from '../hooks/use-data-transfer';
 
 const IMPORT_MODES: readonly ImportMode[] = ['merge', 'replace'];
 
+/** Long enough that the button cannot be part of the same reflex as the first. */
+const DELETE_CONFIRM_SECONDS = 5;
+
 export function DataScreen() {
-  const { state, mode, setMode, exportToFile, loadFile, confirmImport, cancel, deleteEverything } =
-    useDataTransfer(__APP_VERSION__);
-  const [isConfirmingDelete, setConfirmingDelete] = useState(false);
+  const {
+    state,
+    notice,
+    dismissNotice,
+    mode,
+    setMode,
+    exportToFile,
+    loadFile,
+    confirmImport,
+    cancel,
+    deleteEverything,
+  } = useDataTransfer(__APP_VERSION__);
+  const deleteConfirm = useConfirmDelay(DELETE_CONFIRM_SECONDS);
 
   return (
     <main className="screen screen--scroll">
+      {notice ? (
+        <Notice onDismiss={dismissNotice}>
+          <NoticeBody notice={notice} />
+        </Notice>
+      ) : null}
+
       <section className="data-section">
         <h2 className="data-section__title">{strings.data.exportTitle}</h2>
         <p className="data-section__hint">{strings.data.exportHint}</p>
@@ -50,13 +70,6 @@ export function DataScreen() {
 
         {state.status === 'importing' ? (
           <p className="data-section__hint">{strings.data.importing}</p>
-        ) : null}
-
-        {state.status === 'imported' ? (
-          <div className="import-result">
-            <p>{strings.data.imported}</p>
-            <CountsSummary counts={state.counts} />
-          </div>
         ) : null}
 
         {state.status === 'preview' ? (
@@ -113,29 +126,53 @@ export function DataScreen() {
       <section className="data-section data-section--danger">
         <h2 className="data-section__title">{strings.data.dangerTitle}</h2>
         <p className="data-section__hint">{strings.data.dangerHint}</p>
-        {isConfirmingDelete ? (
-          <div className="data-section__row">
-            <button
-              type="button"
-              className="is-danger"
-              onClick={() => {
-                setConfirmingDelete(false);
-                void deleteEverything();
-              }}
-            >
-              {strings.data.deleteConfirm}
-            </button>
-            <button type="button" onClick={() => setConfirmingDelete(false)}>
-              {strings.data.cancel}
-            </button>
-          </div>
+        {deleteConfirm.isArmed ? (
+          <>
+            <p className="data-section__warning">{strings.data.deleteArmed}</p>
+            <div className="data-section__row">
+              <button
+                type="button"
+                className="is-danger"
+                disabled={!deleteConfirm.isReady}
+                onClick={() => {
+                  deleteConfirm.reset();
+                  void deleteEverything();
+                }}
+              >
+                {deleteConfirm.isReady
+                  ? strings.data.deleteConfirm
+                  : `${strings.data.deleteConfirm} (${deleteConfirm.remaining})`}
+              </button>
+              <button type="button" onClick={deleteConfirm.reset}>
+                {strings.data.cancel}
+              </button>
+            </div>
+          </>
         ) : (
-          <button type="button" onClick={() => setConfirmingDelete(true)}>
+          <button type="button" onClick={deleteConfirm.arm}>
             {strings.data.deleteAll}
           </button>
         )}
       </section>
     </main>
+  );
+}
+
+function NoticeBody({ notice }: { notice: TransferNotice }) {
+  if (notice.kind === 'exported') {
+    return (
+      <span>
+        {strings.data.exported} <code>{notice.filename}</code>
+      </span>
+    );
+  }
+  if (notice.kind === 'deleted') return <span>{strings.data.deletedAll}</span>;
+
+  return (
+    <>
+      <span>{strings.data.imported}</span>
+      <CountsSummary counts={notice.counts} />
+    </>
   );
 }
 
