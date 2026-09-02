@@ -24,7 +24,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Algorithm packs are JSON data files */
+    "resolveJsonModule": true
   },
   "include": ["src"]
 }

@@ -11,6 +11,7 @@ import type {
   Solve,
   Tag,
   Tombstone,
+  Trigger,
 } from './types';
 
 /**
@@ -31,6 +32,7 @@ export class RubixDB extends Dexie {
   algSets!: Table<AlgSet, string>;
   algCases!: Table<AlgCase, string>;
   algorithms!: Table<Algorithm, string>;
+  triggers!: Table<Trigger, string>;
   settings!: Table<Setting, string>;
   tombstones!: Table<Tombstone, string>;
 
@@ -48,6 +50,13 @@ export class RubixDB extends Dexie {
       algorithms: 'id, caseId, updatedAt, [caseId+isActive]',
       settings: 'key, deviceLocal, updatedAt',
       tombstones: 'id, deletedAt, [table+deletedAt]',
+    });
+
+    // v2 adds the trainer's triggers. Only the new table is listed; Dexie
+    // carries the rest of v1 over untouched, and the old version is never
+    // edited.
+    this.version(2).stores({
+      triggers: 'id, updatedAt, isEnabled',
     });
   }
 }

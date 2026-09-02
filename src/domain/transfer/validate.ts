@@ -22,6 +22,7 @@ import type {
   SplitSource,
   Tag,
   Tombstone,
+  Trigger,
 } from '../../db/types';
 import {
   EXPORT_FORMAT,
@@ -68,6 +69,8 @@ export function parseExportFile(input: unknown): ParseResult {
   if (!algorithms.ok) {
     return fail({ code: 'invalidRow', table: 'algorithms', index: algorithms.index });
   }
+  const triggers = collect(source.triggers, isTrigger);
+  if (!triggers.ok) return fail({ code: 'invalidRow', table: 'triggers', index: triggers.index });
   const settings = collect(source.settings, isSetting);
   if (!settings.ok) return fail({ code: 'invalidRow', table: 'settings', index: settings.index });
   const tombstones = collect(source.tombstones, isTombstone);
@@ -91,6 +94,7 @@ export function parseExportFile(input: unknown): ParseResult {
         algSets: algSets.rows,
         algCases: algCases.rows,
         algorithms: algorithms.rows,
+        triggers: triggers.rows,
         settings: settings.rows,
         tombstones: tombstones.rows,
       },
@@ -171,6 +175,7 @@ const isPenalty = memberOf<Penalty>({ none: true, plus2: true, dnf: true });
 const isPenaltySource = memberOf<PenaltySource>({ auto: true, manual: true });
 const isSplitSource = memberOf<SplitSource>({ mic: true, smartcube: true, manual: true });
 const isAlgorithmSource = memberOf<Algorithm['source']>({ pack: true, user: true });
+const isTriggerSource = memberOf<Trigger['source']>({ pack: true, user: true });
 
 /* Entity guards — one per exported table. */
 
@@ -290,6 +295,19 @@ function isAlgorithm(value: unknown): value is Algorithm {
     isFlag(value.isActive) &&
     isAlgorithmSource(value.source) &&
     isNullOr(value.packVersion, isInt) &&
+    isInt(value.createdAt) &&
+    isInt(value.updatedAt)
+  );
+}
+
+function isTrigger(value: unknown): value is Trigger {
+  if (!isRow(value)) return false;
+  return (
+    isString(value.id) &&
+    isString(value.name) &&
+    isString(value.moves) &&
+    isTriggerSource(value.source) &&
+    isFlag(value.isEnabled) &&
     isInt(value.createdAt) &&
     isInt(value.updatedAt)
   );

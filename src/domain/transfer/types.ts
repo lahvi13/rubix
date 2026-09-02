@@ -14,6 +14,7 @@ import type {
   Solve,
   Tag,
   Tombstone,
+  Trigger,
 } from '../../db/types';
 
 /** A file without this marker is not ours and is never read. */
@@ -35,6 +36,7 @@ export const TRANSFER_TABLES = [
   'algSets',
   'algCases',
   'algorithms',
+  'triggers',
   'settings',
   'tombstones',
 ] as const;
@@ -49,6 +51,7 @@ export interface ExportData {
   algSets: AlgSet[];
   algCases: AlgCase[];
   algorithms: Algorithm[];
+  triggers: Trigger[];
   settings: Setting[];
   tombstones: Tombstone[];
 }
@@ -71,6 +74,7 @@ export function emptyExportData(): ExportData {
     algSets: [],
     algCases: [],
     algorithms: [],
+    triggers: [],
     settings: [],
     tombstones: [],
   };

@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { DataScreen } from '../features/data-transfer';
 import { HistoryScreen } from '../features/history';
 import { SessionsScreen } from '../features/sessions';
+import { SettingsScreen } from '../features/settings';
 import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
+import { TrainerScreen } from '../features/trainer';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
 import { ErrorBanner } from './ErrorBanner';
@@ -84,6 +86,8 @@ export function App() {
       {route === 'history' ? <HistoryScreen /> : null}
       {route === 'stats' ? <StatsScreen /> : null}
       {route === 'sessions' ? <SessionsScreen /> : null}
+      {route === 'trainer' ? <TrainerScreen /> : null}
+      {route === 'settings' ? <SettingsScreen /> : null}
       {route === 'data' ? <DataScreen /> : null}
 
       <ErrorBanner />

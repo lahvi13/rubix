@@ -1,0 +1,255 @@
+{
+  "packVersion": 1,
+  "set": {
+    "id": "f2l",
+    "name": "F2L"
+  },
+  "cases": [
+    {
+      "id": "f2l-1",
+      "name": "F2L 1",
+      "group": "Cross colour on top",
+      "alg": "F' U' F R U R'"
+    },
+    {
+      "id": "f2l-2",
+      "name": "F2L 2",
+      "group": "Cross colour on top",
+      "alg": "F' U' F2 R' F' R"
+    },
+    {
+      "id": "f2l-3",
+      "name": "F2L 3",
+      "group": "Cross colour on top",
+      "alg": "F' U2 F2 R' F' R"
+    },
+    {
+      "id": "f2l-4",
+      "name": "F2L 4",
+      "group": "Cross colour on top",
+      "alg": "R U2 R2 F R F'"
+    },
+    {
+      "id": "f2l-5",
+      "name": "F2L 5",
+      "group": "Cross colour on top",
+      "alg": "F' U2 F U F' U' F"
+    },
+    {
+      "id": "f2l-6",
+      "name": "F2L 6",
+      "group": "Cross colour on top",
+      "alg": "F2 U2 F U F' U F2"
+    },
+    {
+      "id": "f2l-7",
+      "name": "F2L 7",
+      "group": "Cross colour on top",
+      "alg": "R U2 R' U' R U R'"
+    },
+    {
+      "id": "f2l-8",
+      "name": "F2L 8",
+      "group": "Cross colour on top",
+      "alg": "F R' F' R U R U R'"
+    },
+    {
+      "id": "f2l-9",
+      "name": "F2L 9",
+      "group": "Cross colour on the side",
+      "alg": "F' U F"
+    },
+    {
+      "id": "f2l-10",
+      "name": "F2L 10",
+      "group": "Cross colour on the side",
+      "alg": "F' U' F"
+    },
+    {
+      "id": "f2l-11",
+      "name": "F2L 11",
+      "group": "Cross colour on the side",
+      "alg": "R U R'"
+    },
+    {
+      "id": "f2l-12",
+      "name": "F2L 12",
+      "group": "Cross colour on the side",
+      "alg": "R U' R'"
+    },
+    {
+      "id": "f2l-13",
+      "name": "F2L 13",
+      "group": "Cross colour on the side",
+      "alg": "F' U F U F' U' F"
+    },
+    {
+      "id": "f2l-14",
+      "name": "F2L 14",
+      "group": "Cross colour on the side",
+      "alg": "F' U F U' F' U' F"
+    },
+    {
+      "id": "f2l-15",
+      "name": "F2L 15",
+      "group": "Cross colour on the side",
+      "alg": "F' U F U' R U R'"
+    },
+    {
+      "id": "f2l-16",
+      "name": "F2L 16",
+      "group": "Cross colour on the side",
+      "alg": "F' U F U2 R U R'"
+    },
+    {
+      "id": "f2l-17",
+      "name": "F2L 17",
+      "group": "Cross colour on the side",
+      "alg": "F' U' F U F' U2 F"
+    },
+    {
+      "id": "f2l-18",
+      "name": "F2L 18",
+      "group": "Cross colour on the side",
+      "alg": "F' U2 F U F' U2 F"
+    },
+    {
+      "id": "f2l-19",
+      "name": "F2L 19",
+      "group": "Cross colour on the side",
+      "alg": "F' U2 F U' R U R'"
+    },
+    {
+      "id": "f2l-20",
+      "name": "F2L 20",
+      "group": "Cross colour on the side",
+      "alg": "R U R' U2 R U' R'"
+    },
+    {
+      "id": "f2l-21",
+      "name": "F2L 21",
+      "group": "Cross colour on the side",
+      "alg": "R U' R' U R U R'"
+    },
+    {
+      "id": "f2l-22",
+      "name": "F2L 22",
+      "group": "Cross colour on the side",
+      "alg": "R U' R' U2 F' U' F"
+    },
+    {
+      "id": "f2l-23",
+      "name": "F2L 23",
+      "group": "Cross colour on the side",
+      "alg": "R U2 R' U F' U' F"
+    },
+    {
+      "id": "f2l-24",
+      "name": "F2L 24",
+      "group": "Cross colour on the side",
+      "alg": "R U2 R' U2 R U' R'"
+    },
+    {
+      "id": "f2l-25",
+      "name": "F2L 25",
+      "group": "Corner in the slot",
+      "alg": "F' U F R U R'"
+    },
+    {
+      "id": "f2l-26",
+      "name": "F2L 26",
+      "group": "Corner in the slot",
+      "alg": "F' U F2 R' F' R"
+    },
+    {
+      "id": "f2l-27",
+      "name": "F2L 27",
+      "group": "Corner in the slot",
+      "alg": "F' U2 F R U2 R'"
+    },
+    {
+      "id": "f2l-28",
+      "name": "F2L 28",
+      "group": "Corner in the slot",
+      "alg": "R' F R F2 U' F"
+    },
+    {
+      "id": "f2l-29",
+      "name": "F2L 29",
+      "group": "Corner in the slot",
+      "alg": "F' U F U R U' R'"
+    },
+    {
+      "id": "f2l-30",
+      "name": "F2L 30",
+      "group": "Corner in the slot",
+      "alg": "R U' R' F R' F' R"
+    },
+    {
+      "id": "f2l-31",
+      "name": "F2L 31",
+      "group": "Edge in the slot",
+      "alg": "F' U F R U2 R'"
+    },
+    {
+      "id": "f2l-32",
+      "name": "F2L 32",
+      "group": "Edge in the slot",
+      "alg": "F' U' F U R U' R'"
+    },
+    {
+      "id": "f2l-33",
+      "name": "F2L 33",
+      "group": "Edge in the slot",
+      "alg": "R U R' F R' F' R"
+    },
+    {
+      "id": "f2l-34",
+      "name": "F2L 34",
+      "group": "Edge in the slot",
+      "alg": "R U R' U2 R U R'"
+    },
+    {
+      "id": "f2l-35",
+      "name": "F2L 35",
+      "group": "Edge in the slot",
+      "alg": "R U' R' U2 R U' R'"
+    },
+    {
+      "id": "f2l-36",
+      "name": "F2L 36",
+      "group": "Edge in the slot",
+      "alg": "R2 U R2 U R2 U2 R2"
+    },
+    {
+      "id": "f2l-37",
+      "name": "F2L 37",
+      "group": "Pair in the slot",
+      "alg": "R F U R U' R' F' U' R'"
+    },
+    {
+      "id": "f2l-38",
+      "name": "F2L 38",
+      "group": "Pair in the slot",
+      "alg": "R U F R U R' U' F' R'"
+    },
+    {
+      "id": "f2l-39",
+      "name": "F2L 39",
+      "group": "Pair in the slot",
+      "alg": "R2 U2 F R' F' U2 R' U2 R'"
+    },
+    {
+      "id": "f2l-40",
+      "name": "F2L 40",
+      "group": "Pair in the slot",
+      "alg": "R2 U2 F R2 F' U2 R' U R'"
+    },
+    {
+      "id": "f2l-41",
+      "name": "F2L 41",
+      "group": "Pair in the slot",
+      "alg": "R2 U2 R' U' R U' R' U2 R'"
+    }
+  ]
+}

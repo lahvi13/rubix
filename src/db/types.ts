@@ -129,6 +129,21 @@ export interface Algorithm {
   updatedAt: number;
 }
 
+/**
+ * A named sequence the trainer highlights inside an algorithm — the sexy move
+ * and friends. Built-in ones ship with the app; a user can add their own.
+ */
+export interface Trigger {
+  id: string;
+  name: string;
+  moves: string;
+  source: 'pack' | 'user';
+  /** 0 keeps a trigger without highlighting it. */
+  isEnabled: Flag;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface Setting {
   key: string;
   value: unknown;

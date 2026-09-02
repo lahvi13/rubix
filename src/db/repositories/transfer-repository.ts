@@ -17,7 +17,7 @@ import { now } from '../../lib/clock';
  * identical byte for byte, whatever order IndexedDB happened to return.
  */
 export async function readSnapshot(): Promise<ExportData> {
-  const [sessions, solves, tags, methods, algSets, algCases, algorithms, settings, tombstones] =
+  const [sessions, solves, tags, methods, algSets, algCases, algorithms, triggers, settings, tombstones] =
     await Promise.all([
       db.sessions.toArray(),
       db.solves.toArray(),
@@ -26,6 +26,7 @@ export async function readSnapshot(): Promise<ExportData> {
       db.algSets.toArray(),
       db.algCases.toArray(),
       db.algorithms.toArray(),
+      db.triggers.toArray(),
       db.settings.toArray(),
       db.tombstones.toArray(),
     ]);
@@ -38,6 +39,7 @@ export async function readSnapshot(): Promise<ExportData> {
     algSets: sortById(algSets),
     algCases: sortById(algCases),
     algorithms: sortById(algorithms),
+    triggers: sortById(triggers),
     settings: sortBy(settings, (setting) => setting.key),
     tombstones: sortById(tombstones),
   };
@@ -79,6 +81,7 @@ export async function applyImportPlan(plan: ImportPlan): Promise<void> {
     await db.algSets.bulkPut(plan.puts.algSets);
     await db.algCases.bulkPut(plan.puts.algCases);
     await db.algorithms.bulkPut(plan.puts.algorithms);
+    await db.triggers.bulkPut(plan.puts.triggers);
     await db.settings.bulkPut(plan.puts.settings);
     await db.tombstones.bulkPut(plan.puts.tombstones);
 
@@ -90,6 +93,7 @@ export async function applyImportPlan(plan: ImportPlan): Promise<void> {
       await db.algSets.bulkDelete(plan.deletes.algSets);
       await db.algCases.bulkDelete(plan.deletes.algCases);
       await db.algorithms.bulkDelete(plan.deletes.algorithms);
+      await db.triggers.bulkDelete(plan.deletes.triggers);
       await db.settings.bulkDelete(plan.deletes.settings);
     }
   });

@@ -28,6 +28,9 @@ src/
     stats/        # averages.ts, distribution.ts, pb.ts
     solve/        # penalty.ts, final-time.ts, splits.ts
     scramble/     # typy a pravidla, ne generování
+    cube/         # vlastní model kostky: notace, stav (54 nálepek), pohledy na případ
+    alg/          # triggery — rozpad algoritmu na pojmenované úseky
+    transfer/     # formát exportu, validace importu, plán merge/replace
   features/
     timer/  history/  stats/  trainer/  splits/  data-transfer/  settings/
       components/   # React komponenty téhle feature
@@ -149,6 +152,17 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   aplikace (`__APP_VERSION__` z `package.json`) — service worker jinak update schová.
 - cubing.js se importuje **dynamicky** (`await import('cubing/scramble')`), aby se
   nedostal do hlavního chunku
+- **statické obrázky kostky kreslí `components/CubeDiagram.tsx`**, ne twisty:
+  na obrazovce sady je jich až 57 a jsou to jen nálepky. Twisty se sahá jen na
+  přehrání algoritmu. Model kostky (`domain/cube/state.ts`) nemá ručně psané
+  permutační tabulky — tah je rotace vrstvy v prostoru, což jde otestovat
+  (čtyři tahy = výchozí stav, sexy move šestkrát = složeno)
+- **pack algoritmy se ověřují spuštěním**, ne přečtením: `db/seed/packs.test.ts`
+  aplikuje každý na složenou kostku a kontroluje, že případ je toho druhu, co
+  sada tvrdí, že jsou všechny navzájem různé a že kostka zůstane nastojato
+- **dlouhá Dexie transakce s desítkami awaitů je křehká** („Transaction committed
+  too early“ — viděno u seedu). Vzor: přečíst mimo transakci, spočítat změny,
+  zapsat je jedním `bulkPut`. Jednotkové testy nad fake-indexeddb tohle nechytí
 - **cubing.js spouští vlastní workery ze svých chunků**, proto musí build držet tři věci
   pohromadě (všechny v `vite.config.ts`): sdílené moduly cubingu ve vlastní `cubing-shared`
   skupině (jinak je bundler přilepí k app entry a worker umře na `document`),

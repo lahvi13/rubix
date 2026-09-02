@@ -87,6 +87,7 @@ function planMerge(local: ExportData, incoming: ExportData): ImportPlan {
   const algSets = byId('algSets', local.algSets, incoming.algSets);
   const algCases = byId('algCases', local.algCases, incoming.algCases);
   const algorithms = byId('algorithms', local.algorithms, incoming.algorithms);
+  const triggers = byId('triggers', local.triggers, incoming.triggers);
 
   const settings = mergeRows({
     table: 'settings',
@@ -120,6 +121,7 @@ function planMerge(local: ExportData, incoming: ExportData): ImportPlan {
     algSets,
     algCases,
     algorithms,
+    triggers,
     settings,
     tombstones,
   });
@@ -154,6 +156,7 @@ function planReplace(local: ExportData, incoming: ExportData): ImportPlan {
     algSets: byId(local.algSets, incoming.algSets),
     algCases: byId(local.algCases, incoming.algCases),
     algorithms: byId(local.algorithms, incoming.algorithms),
+    triggers: byId(local.triggers, incoming.triggers),
     settings: replaceRows({
       local: local.settings,
       incoming: importableSettings(incoming.settings, protectedKeys),
@@ -333,6 +336,7 @@ function assemble(mode: ImportMode, results: Results): ImportPlan {
       algSets: results.algSets.puts,
       algCases: results.algCases.puts,
       algorithms: results.algorithms.puts,
+      triggers: results.triggers.puts,
       settings: results.settings.puts,
       tombstones: results.tombstones.puts,
     },
@@ -344,6 +348,7 @@ function assemble(mode: ImportMode, results: Results): ImportPlan {
       algSets: results.algSets.deletes,
       algCases: results.algCases.deletes,
       algorithms: results.algorithms.deletes,
+      triggers: results.triggers.deletes,
       settings: results.settings.deletes,
       tombstones: results.tombstones.deletes,
     },
@@ -355,6 +360,7 @@ function assemble(mode: ImportMode, results: Results): ImportPlan {
       algSets: results.algSets.counts,
       algCases: results.algCases.counts,
       algorithms: results.algorithms.counts,
+      triggers: results.triggers.counts,
       settings: results.settings.counts,
       tombstones: results.tombstones.counts,
     },

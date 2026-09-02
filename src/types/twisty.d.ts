@@ -2,17 +2,26 @@ import type { DetailedHTMLProps, HTMLAttributes } from 'react';
 
 /**
  * <twisty-player> is a custom element from cubing.js, so JSX needs to be told
- * it exists and which attributes it accepts.
+ * it exists, which attributes it accepts, and which of its methods we call.
  */
+export interface TwistyPlayerElement extends HTMLElement {
+  play(): void;
+  pause(): void;
+  jumpToStart(options?: { flash?: boolean }): void;
+}
+
 interface TwistyPlayerAttributes
-  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
+  extends DetailedHTMLProps<HTMLAttributes<TwistyPlayerElement>, TwistyPlayerElement> {
   alg?: string;
   puzzle?: string;
   visualization?: '2D' | '3D' | 'PG3D' | 'experimental-2D-LL';
   background?: 'none' | 'checkered';
   'control-panel'?: 'none' | 'auto';
   'hint-facelets'?: 'none' | 'floating';
+  'experimental-setup-alg'?: string;
   'experimental-setup-anchor'?: 'start' | 'end';
+  'experimental-stickering'?: string;
+  'tempo-scale'?: number;
 }
 
 declare module 'react' {

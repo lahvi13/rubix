@@ -100,7 +100,23 @@ kromě PB, které je globální per `puzzle`.
 ### 3.5 Trenažér algoritmů
 
 - sady: **PLL** (21), **OLL** (57), **F2L** (41 základních případů); rozšiřitelné
-- zobrazení případu přes `<twisty-player>` s aplikovaným `setupAlg`
+- **statický náhled případu kreslí aplikace sama** (`components/CubeDiagram.tsx`)
+  z vlastního modelu kostky (`domain/cube/`), ne `<twisty-player>`: na jedné
+  obrazovce je až 57 náhledů a tolik custom elementů telefon nedá. Twisty se
+  načítá až ve chvíli, kdy si uživatel nechá algoritmus **přehrát**
+- pohled podle sady: PLL a OLL jako klasický LL diagram (OLL jen orientace,
+  žlutá/šedá), F2L isometricky s obarveným jen řešeným párem
+- **skiny**: barevná schémata nálepek (`lib/cube-skins.ts`, nastavení `ui.cubeSkin`);
+  proto vlastní vykreslování — twisty si barvy určuje sám
+- **triggery**: pojmenované sekvence (sexy move, sledgehammer, …) se v algoritmu
+  zvýrazňují; matchuje se nejdelší shoda zleva. Zabudované jdou vypnout, přepsat
+  (tím přechází na uživatele) i smazat; vlastní se přidávají. Tabulka `triggers`
+- **legenda notace**: každý tah jako obrázek kostky po jeho provedení
+- zrcadlení případu (levoruká varianta) přes `mirrorAlg`
+- pack algoritmy musí **skončit s kostkou nastojato** (rotace uvnitř se musí
+  vyrušit) — jinak by se případ kreslil z jiné strany; hlídá to test
+- F2L sada se negeneruje ručně: `scripts/generate-f2l.ts` prohledá tahy R, U, F
+  do hloubky 9 a najde ke každé z 41 poloh páru nejkratší algoritmus
 - drill mód: náhodný případ z vybrané podmnožiny, generovaný scramble
   s náhodným AUF/rotací, měření času stejným timerem jako běžný solve
 - statistiky zvlášť per case: počet pokusů, best, ao5, ao12, poslední čas, DNF rate,
@@ -271,6 +287,16 @@ interface Algorithm {
   updatedAt: number;
 }
 
+interface Trigger {
+  id: string;
+  name: string;
+  moves: string;
+  source: 'pack' | 'user';
+  isEnabled: Flag;       // 0 = ponechat, ale nezvýrazňovat
+  createdAt: number;
+  updatedAt: number;
+}
+
 interface Setting {
   key: string;            // PK
   value: unknown;         // JSON-serializovatelné
@@ -296,6 +322,7 @@ export class RubixDB extends Dexie {
   algSets!: Table<AlgSet, string>;
   algCases!: Table<AlgCase, string>;
   algorithms!: Table<Algorithm, string>;
+  triggers!: Table<Trigger, string>;
   settings!: Table<Setting, string>;
   tombstones!: Table<Tombstone, string>;
 
@@ -314,6 +341,12 @@ export class RubixDB extends Dexie {
       algorithms: 'id, caseId, updatedAt, [caseId+isActive]',
       settings:   'key, deviceLocal, updatedAt',
       tombstones: 'id, deletedAt, [table+deletedAt]',
+    });
+
+    // v2 = trenažérové triggery; stará verze se needituje, přidává se jen
+    // změněná tabulka.
+    this.version(2).stores({
+      triggers: 'id, updatedAt, isEnabled',
     });
   }
 }
@@ -366,6 +399,7 @@ phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativníc
 | `timer.inspectionCues` | 0 | `[8000, 12000]` |
 | `ui.theme` | 1 | `'system'` |
 | `ui.twistyMode` | 0 | `'2D'` |
+| `ui.cubeSkin` | 0 | `'classic'` |
 | `stats.chartWindow` | 0 | 100 |
 | `audio.inputDeviceId` | **1** | `null` |
 | `audio.thresholdDb` | **1** | -30 |
@@ -390,7 +424,7 @@ ani `isCustom: 1`.
   "dbVersion": 1,
   "data": {
     "sessions": [], "solves": [], "tags": [],
-    "methods": [], "algSets": [], "algCases": [], "algorithms": [],
+    "methods": [], "algSets": [], "algCases": [], "algorithms": [], "triggers": [],
     "settings": [],      // bez deviceLocal === 1
     "tombstones": []
   }
