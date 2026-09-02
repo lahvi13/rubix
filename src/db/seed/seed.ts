@@ -119,6 +119,14 @@ function planSeed(current: CurrentState): SeedChanges {
       const existingAlgorithm = current.algorithms.get(algorithmId);
       const algorithm = buildAlgorithm(entry, existingAlgorithm, current.userChoice.has(entry.id));
       if (hasChanged(existingAlgorithm, algorithm)) changes.algorithms.push(algorithm);
+
+      // Some cases also ship the version done with the cube turned round.
+      const altId = `${entry.id}-pack-grip`;
+      if (entry.alt === undefined || current.buried.has(altId)) continue;
+
+      const existingAlt = current.algorithms.get(altId);
+      const alt = buildAltAlgorithm(entry.id, entry.alt, existingAlt);
+      if (hasChanged(existingAlt, alt)) changes.algorithms.push(alt);
     }
   }
 
@@ -220,6 +228,24 @@ function buildAlgorithm(
     caseId: entry.id,
     moves: entry.alg,
     isActive: userChose ? 0 : 1,
+    source: 'pack',
+    packVersion: 1,
+    createdAt: existing?.createdAt ?? now(),
+    updatedAt: now(),
+  };
+}
+
+/** The rotation variant never takes over on its own; the user picks it. */
+function buildAltAlgorithm(
+  caseId: string,
+  moves: string,
+  existing: Algorithm | undefined,
+): Algorithm {
+  return {
+    id: `${caseId}-pack-grip`,
+    caseId,
+    moves,
+    isActive: existing?.isActive ?? 0,
     source: 'pack',
     packVersion: 1,
     createdAt: existing?.createdAt ?? now(),

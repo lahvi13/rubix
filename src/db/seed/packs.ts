@@ -21,6 +21,11 @@ export interface PackCase {
    * the algorithm undone, which is nearly all of them.
    */
   setup?: string;
+  /**
+   * The same case with the cube turned first, so the right hand does the work.
+   * Only where such a solution exists.
+   */
+  alt?: string;
 }
 
 export interface AlgPack {

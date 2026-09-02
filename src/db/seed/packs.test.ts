@@ -103,6 +103,20 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
     },
   );
 
+  it.each(
+    pack.cases
+      .filter((entry) => entry.alt !== undefined)
+      .map((entry) => [entry.name, entry] as const),
+  )('%s has its pair inserted by the rotation variant too', (_name, entry) => {
+    const after = canonicalise(applyAlg(caseState(entry), movesOf(entry.alt ?? '')));
+
+    // An F2L algorithm owes nothing to the last layer — the job is the pair and
+    // the two layers under it. The cube also ends up turned, hence the
+    // canonical orientation before looking.
+    expect(wrongOutside(after, isTopLayer)).toBe(0);
+    expect(entry.alt).not.toBe(entry.alg);
+  });
+
   it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
     '%s leaves the cube upright',
     (_name, entry) => {

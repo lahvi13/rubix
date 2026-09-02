@@ -9,7 +9,8 @@
       "id": "f2l-1",
       "name": "F2L 1",
       "group": "Cross colour on top",
-      "alg": "F' U2 F U F' U' F"
+      "alg": "F' U2 F U F' U' F",
+      "alt": "y' R' U2 R U R' U' R"
     },
     {
       "id": "f2l-2",
@@ -33,19 +34,22 @@
       "id": "f2l-5",
       "name": "F2L 5",
       "group": "Cross colour on top",
-      "alg": "U' F' U2 F2 R' F' R"
+      "alg": "U' F' U2 F2 R' F' R",
+      "alt": "y' U' R' U2 R U2 R' U2 R"
     },
     {
       "id": "f2l-6",
       "name": "F2L 6",
       "group": "Cross colour on top",
-      "alg": "U2 F' U' F2 R' F' R"
+      "alg": "U2 F' U' F2 R' F' R",
+      "alt": "y' R' U R U2 R' U' R"
     },
     {
       "id": "f2l-7",
       "name": "F2L 7",
       "group": "Cross colour on top",
-      "alg": "U2 F2 U2 F U F' U F2"
+      "alg": "U2 F2 U2 F U F' U F2",
+      "alt": "y' U2 R2 U2 R U R' U R2"
     },
     {
       "id": "f2l-8",
@@ -57,7 +61,8 @@
       "id": "f2l-9",
       "name": "F2L 9",
       "group": "Cross colour on the side",
-      "alg": "F' U' F"
+      "alg": "F' U' F",
+      "alt": "y' R' U' R"
     },
     {
       "id": "f2l-10",
@@ -69,7 +74,8 @@
       "id": "f2l-11",
       "name": "F2L 11",
       "group": "Cross colour on the side",
-      "alg": "F R' F' R"
+      "alg": "F R' F' R",
+      "alt": "y' U2 R' U2 R"
     },
     {
       "id": "f2l-12",
@@ -81,7 +87,8 @@
       "id": "f2l-13",
       "name": "F2L 13",
       "group": "Cross colour on the side",
-      "alg": "F U2 F2 U' F2 U' F'"
+      "alg": "F U2 F2 U' F2 U' F'",
+      "alt": "y' R U2 R2 U' R2 U' R'"
     },
     {
       "id": "f2l-14",
@@ -99,7 +106,8 @@
       "id": "f2l-16",
       "name": "F2L 16",
       "group": "Cross colour on the side",
-      "alg": "R U' R' U2 F' U' F"
+      "alg": "R U' R' U2 F' U' F",
+      "alt": "y' R' U R' U2 R2 U R2 U R2"
     },
     {
       "id": "f2l-17",
@@ -111,7 +119,8 @@
       "id": "f2l-18",
       "name": "F2L 18",
       "group": "Cross colour on the side",
-      "alg": "R2 U2 F R2 F' U2 R2"
+      "alg": "R2 U2 F R2 F' U2 R2",
+      "alt": "y' U R' U2 R U R' U2 R"
     },
     {
       "id": "f2l-19",
@@ -123,13 +132,15 @@
       "id": "f2l-20",
       "name": "F2L 20",
       "group": "Cross colour on the side",
-      "alg": "R' U' R F R' F' U R"
+      "alg": "R' U' R F R' F' U R",
+      "alt": "y' U R' U' R U R' U2 R"
     },
     {
       "id": "f2l-21",
       "name": "F2L 21",
       "group": "Cross colour on the side",
-      "alg": "U F' U' F U' F' U' F"
+      "alg": "U F' U' F U' F' U' F",
+      "alt": "y' U R' U' R U' R' U' R"
     },
     {
       "id": "f2l-22",
@@ -141,7 +152,8 @@
       "id": "f2l-23",
       "name": "F2L 23",
       "group": "Cross colour on the side",
-      "alg": "U2 F2 U' F U' F' U2 F2"
+      "alg": "U2 F2 U' F U' F' U2 F2",
+      "alt": "y' U2 R2 U' R U' R' U2 R2"
     },
     {
       "id": "f2l-24",
@@ -153,7 +165,8 @@
       "id": "f2l-25",
       "name": "F2L 25",
       "group": "Corner in the slot",
-      "alg": "F' U F2 R' F' R"
+      "alg": "F' U F2 R' F' R",
+      "alt": "y' R' U R U2 R' U2 R"
     },
     {
       "id": "f2l-26",
@@ -171,7 +184,8 @@
       "id": "f2l-28",
       "name": "F2L 28",
       "group": "Corner in the slot",
-      "alg": "R U2 R' U2 F' U' F"
+      "alg": "R U2 R' U2 F' U' F",
+      "alt": "y' R U R U R2 U' R' U' R'"
     },
     {
       "id": "f2l-29",
@@ -183,7 +197,8 @@
       "id": "f2l-30",
       "name": "F2L 30",
       "group": "Corner in the slot",
-      "alg": "U' R U' R' F' U' F"
+      "alg": "U' R U' R' F' U' F",
+      "alt": "y' U2 R' U2 R U2 R' U' R"
     },
     {
       "id": "f2l-31",
@@ -195,19 +210,22 @@
       "id": "f2l-32",
       "name": "F2L 32",
       "group": "Edge in the slot",
-      "alg": "R2 U R2 U R2 U2 R2"
+      "alg": "R2 U R2 U R2 U2 R2",
+      "alt": "y' R2 U' R2 U' R2 U2 R2"
     },
     {
       "id": "f2l-33",
       "name": "F2L 33",
       "group": "Edge in the slot",
-      "alg": "U R U R' U2 R U R'"
+      "alg": "U R U R' U2 R U R'",
+      "alt": "y' U R' U R U R' U2 R"
     },
     {
       "id": "f2l-34",
       "name": "F2L 34",
       "group": "Edge in the slot",
-      "alg": "U' R U' R' U2 R U' R'"
+      "alg": "U' R U' R' U2 R U' R'",
+      "alt": "y' U R' U2 R U' R' U' R"
     },
     {
       "id": "f2l-35",
@@ -237,7 +255,8 @@
       "id": "f2l-39",
       "name": "F2L 39",
       "group": "Pair in the slot",
-      "alg": "R2 U2 F R' F' U2 R' U2 R'"
+      "alg": "R2 U2 F R' F' U2 R' U2 R'",
+      "alt": "y' R2 U2 R U R' U R U2 R"
     },
     {
       "id": "f2l-40",
@@ -249,7 +268,8 @@
       "id": "f2l-41",
       "name": "F2L 41",
       "group": "Pair in the slot",
-      "alg": "R2 U2 R' U' R U' R' U2 R'"
+      "alg": "R2 U2 R' U' R U' R' U2 R'",
+      "alt": "y' R' U2 R' U' R U' R' U2 R2"
     }
   ]
 }

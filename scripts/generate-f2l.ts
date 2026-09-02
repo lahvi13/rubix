@@ -18,6 +18,25 @@ import { FACELETS, movePermutation, solvedState } from '../src/domain/cube/state
 const SEARCH_MOVES = ["R", "R2", "R'", "U", "U2", "U'", "F", "F2", "F'"];
 const MAX_DEPTH = 9;
 
+/**
+ * The second algorithm of each case: turn the cube, then solve with the right
+ * hand alone. Printed F2L sheets give both, because the shortest solution and
+ * the comfortable one are often not the same sequence.
+ */
+const GRIP_DEPTH = 9;
+
+/**
+ * A cube rotation moves no pieces — it changes which hand does the work.
+ * Turning the cube y' brings the front face under the right hand, so an
+ * algorithm that would need F moves can be written as `y'` and then R moves.
+ * That is the second line printed F2L sheets give for most cases.
+ */
+const GRIPS = [
+  { rotation: "y'", face: 'F' },
+  { rotation: 'y', face: 'B' },
+  { rotation: 'y2', face: 'L' },
+] as const;
+
 /** Corner and edge of the front-right slot, the slot every case is solved in. */
 const SLOT_CORNER: readonly string[] = ['D', 'F', 'R'];
 const SLOT_EDGE: readonly string[] = ['F', 'R'];
@@ -116,6 +135,59 @@ function search(): Map<string, number[]> {
   return found;
 }
 
+/**
+ * The comfortable solution of each case: one rotation, then the right hand and
+ * the top layer only. Searched in the fixed frame over the face that the
+ * rotation brings to the right, and written out renamed.
+ */
+function searchWithGrip(): Map<string, string> {
+  const found = new Map<string, string>();
+
+  for (const grip of GRIPS) {
+    const gripMoves = [grip.face, `${grip.face}2`, `${grip.face}'`, 'U', 'U2', "U'"].map(parseOne);
+    const gripPermutations = gripMoves.map((move) => Uint8Array.from(movePermutation(move)));
+    const gripFamilies = gripMoves.map((move) => move.family);
+    const path: number[] = [];
+
+    const step = (state: Uint8Array, moveIndex: number): Uint8Array => {
+      const permutation = gripPermutations[moveIndex];
+      if (!permutation) throw new Error('unknown move');
+      const next = new Uint8Array(54);
+      for (let index = 0; index < 54; index++) next[index] = state[permutation[index] ?? 0] ?? 0;
+      return next;
+    };
+
+    const visit = (state: Uint8Array, remaining: number): void => {
+      if (isF2lIntact(state)) {
+        const signature = pairSignature(state);
+        if (signature !== null && !found.has(signature) && path.length > 0) {
+          const solving = invertAlg(
+            path.map((moveIndex) => gripMoves[moveIndex] ?? gripMoves[0]).filter(isMove),
+          );
+          // Under the rotation, that face is called R.
+          const renamed = solving.map((move) =>
+            move.family === grip.face ? { ...move, family: 'R' as const } : move,
+          );
+          found.set(signature, `${grip.rotation} ${formatAlg(renamed)}`);
+        }
+      }
+      if (remaining === 0) return;
+
+      const last = path.length > 0 ? gripFamilies[path[path.length - 1] ?? 0] : null;
+      for (let moveIndex = 0; moveIndex < gripMoves.length; moveIndex++) {
+        if (gripFamilies[moveIndex] === last) continue;
+        path.push(moveIndex);
+        visit(step(state, moveIndex), remaining - 1);
+        path.pop();
+      }
+    };
+
+    for (let depth = 0; depth <= GRIP_DEPTH; depth++) visit(solved, depth);
+  }
+
+  return found;
+}
+
 /** Cases that differ only by a turn of the top layer are one case. */
 function aufClass(signature: string, found: Map<string, number[]>): string {
   const uIndex = SEARCH_MOVES.indexOf('U');
@@ -204,6 +276,9 @@ function main(): void {
   const found = search();
   process.stdout.write(`found ${found.size} placements\n`);
 
+  const withGrip = searchWithGrip();
+  process.stdout.write(`found ${withGrip.size} of them again with a rotation\n`);
+
   const classes = new Map<string, { signature: string; alg: string }>();
   for (const [signature, path] of found) {
     if (path.length === 0) continue; // the solved cube is not a case
@@ -223,12 +298,16 @@ function main(): void {
       const byLength = a.alg.split(' ').length - b.alg.split(' ').length;
       return byLength !== 0 ? byLength : a.alg.localeCompare(b.alg);
     })
-    .map((entry, index) => ({
-      id: `f2l-${index + 1}`,
-      name: `F2L ${index + 1}`,
-      group: entry.group,
-      alg: entry.alg,
-    }));
+    .map((entry, index) => {
+      const alt = withGrip.get(entry.signature);
+      return {
+        id: `f2l-${index + 1}`,
+        name: `F2L ${index + 1}`,
+        group: entry.group,
+        alg: entry.alg,
+        ...(alt === undefined || alt === entry.alg ? {} : { alt }),
+      };
+    });
 
   process.stdout.write(`writing ${cases.length} cases\n`);
   const json = { packVersion: 1, set: { id: 'f2l', name: 'F2L' }, cases };

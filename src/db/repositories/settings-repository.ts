@@ -16,6 +16,8 @@ export interface SettingValues {
   'trainer.twoLookDefault': boolean;
   /** Print the algorithm on every card, not just in the case sheet. */
   'trainer.showAlgs': boolean;
+  /** Offer the built-in variants that start by turning the cube. */
+  'trainer.showRotationAlgs': boolean;
   'stats.chartWindow': number;
 }
 
@@ -27,6 +29,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.cubeSkin': 'classic',
   'trainer.twoLookDefault': false,
   'trainer.showAlgs': false,
+  'trainer.showRotationAlgs': true,
   'stats.chartWindow': 100,
 };
 

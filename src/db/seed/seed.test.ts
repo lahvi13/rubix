@@ -7,6 +7,13 @@ import { seedPacks } from './seed';
 
 const totalCases = PACKS.reduce((count, pack) => count + pack.cases.length, 0);
 
+/** Cases with a rotation variant ship a second built-in algorithm. */
+const totalAlgorithms = PACKS.reduce(
+  (count, pack) =>
+    count + pack.cases.length + pack.cases.filter((entry) => entry.alt !== undefined).length,
+  0,
+);
+
 /** What the tables look like, ignoring when rows were written. */
 async function snapshot(): Promise<string> {
   const tables = await Promise.all(
@@ -35,7 +42,7 @@ describe('seed', () => {
 
     expect(await db.algSets.count()).toBe(PACKS.length);
     expect(await db.algCases.count()).toBe(totalCases);
-    expect(await db.algorithms.count()).toBe(totalCases);
+    expect(await db.algorithms.count()).toBe(totalAlgorithms);
     expect(await db.methods.get('cfop')).toBeDefined();
   });
 

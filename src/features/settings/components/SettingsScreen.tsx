@@ -15,6 +15,7 @@ export function SettingsScreen() {
   const [twistyMode, setTwistyMode] = useSetting('ui.twistyMode');
   const [twoLookDefault, setTwoLookDefault] = useSetting('trainer.twoLookDefault');
   const [showAlgs, setShowAlgs] = useSetting('trainer.showAlgs');
+  const [showRotationAlgs, setShowRotationAlgs] = useSetting('trainer.showRotationAlgs');
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
 
@@ -96,6 +97,16 @@ export function SettingsScreen() {
           />
           {strings.settings.showAlgs}
         </label>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={showRotationAlgs}
+            onChange={(event) => setShowRotationAlgs(event.target.checked)}
+          />
+          {strings.settings.showRotationAlgs}
+        </label>
+        <p className="data-section__hint">{strings.settings.showRotationAlgsHint}</p>
       </section>
 
       <section className="data-section">

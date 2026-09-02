@@ -36,6 +36,7 @@ export function CaseDetail({
   const [isPlaying, setPlaying] = useState(false);
   const [draft, setDraft] = useState('');
   const [previewMode] = useSetting('ui.twistyMode');
+  const [showRotationAlgs] = useSetting('trainer.showRotationAlgs');
 
   if (!algCase) return null;
 
@@ -43,6 +44,11 @@ export function CaseDetail({
   const setup = setupMoves.ok ? setupMoves.moves : [];
   const state = applyAlg(solvedState(), setup);
   const canPlay = previewMode === '3D';
+  // Hiding a variant must never hide the one being drilled.
+  const shownAlgorithms = algorithms.filter(
+    (algorithm) =>
+      showRotationAlgs || algorithm.isActive === 1 || !algorithm.id.endsWith('-pack-grip'),
+  );
 
   const play = (): void => {
     setPlaying(true);
@@ -105,7 +111,7 @@ export function CaseDetail({
 
       <h3 className="case-detail__section">{strings.trainer.variants}</h3>
       <ul className="variants">
-        {algorithms.map((algorithm) => (
+        {shownAlgorithms.map((algorithm) => (
           <li key={algorithm.id} className="variants__item">
             <label className="variants__pick">
               <input

@@ -142,6 +142,10 @@ kromě PB, které je globální per `puzzle`.
   AUF variant se vybírá ta, kde jsou **oba kusy páru vidět** (roh vpředu vpravo
   nahoře nebo ve slotu) — algoritmus si pak nese AUF sám, jak to dělají
   publikované seznamy
+- druhý průchod hledá **variantu s otočením kostky** (`y` / `y2` / `y'` a pak jen
+  R a U) — rotace nehýbe kostkami, mění jen to, která ruka pracuje. Vyšla u 20
+  ze 41 případů a seeduje se jako druhý zabudovaný algoritmus, neaktivní;
+  zobrazení se dá vypnout nastavením `trainer.showRotationAlgs`
 - drill mód: náhodný případ z vybrané podmnožiny, generovaný scramble
   s náhodným AUF/rotací, měření času stejným timerem jako běžný solve
 - statistiky zvlášť per case: počet pokusů, best, ao5, ao12, poslední čas, DNF rate,
@@ -428,6 +432,7 @@ phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativníc
 | `ui.cubeSkin` | 0 | `'classic'` |
 | `trainer.twoLookDefault` | 0 | `false` |
 | `trainer.showAlgs` | 0 | `false` |
+| `trainer.showRotationAlgs` | 0 | `true` |
 | `stats.chartWindow` | 0 | 100 |
 | `audio.inputDeviceId` | **1** | `null` |
 | `audio.thresholdDb` | **1** | -30 |

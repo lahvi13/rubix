@@ -131,6 +131,9 @@ export const strings = {
     trainer: 'Trainer',
     twoLookDefault: 'Open OLL and PLL on',
     showAlgs: 'Show algorithms on the case list',
+    showRotationAlgs: 'Offer variants that turn the cube',
+    showRotationAlgsHint:
+      'A second built-in algorithm for some cases: turn the cube first, then solve with the right hand alone.',
   },
   data: {
     exportTitle: 'Backup',
