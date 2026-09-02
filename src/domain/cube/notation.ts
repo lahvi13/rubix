@@ -103,6 +103,25 @@ export function isSameMove(a: Move, b: Move): boolean {
   return a.family === b.family && a.amount === b.amount;
 }
 
+const RIGHT_SIDE: readonly MoveFamily[] = ['R', 'Rw'];
+const LEFT_SIDE: readonly MoveFamily[] = ['L', 'Lw'];
+const TOP: readonly MoveFamily[] = ['U', 'Uw'];
+
+/**
+ * True when the algorithm turns one side of the cube and the top, and nothing
+ * else — the shape of algorithm whose mirror is a real left-handed version of
+ * itself. Mirroring anything else just swaps awkward for awkward.
+ */
+export function isOneHanded(moves: readonly Move[]): boolean {
+  const sides = moves.map((move) => move.family).filter((family) => !TOP.includes(family));
+  if (sides.length === 0) return false;
+
+  return (
+    sides.every((family) => RIGHT_SIDE.includes(family)) ||
+    sides.every((family) => LEFT_SIDE.includes(family))
+  );
+}
+
 const MIRRORED_FAMILY: Partial<Record<MoveFamily, MoveFamily>> = {
   R: 'L',
   L: 'R',

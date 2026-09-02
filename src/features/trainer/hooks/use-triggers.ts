@@ -17,6 +17,7 @@ export interface TriggersView {
   create: (name: string, moves: string) => Promise<void>;
   rename: (id: string, name: string) => Promise<void>;
   rewrite: (id: string, moves: string) => Promise<void>;
+  recolour: (id: string, colour: string) => Promise<void>;
   setEnabled: (id: string, enabled: boolean) => Promise<void>;
   remove: (id: string) => Promise<void>;
 }
@@ -32,6 +33,7 @@ export function useTriggers(): TriggersView {
     },
     rename: async (id, name) => updateTrigger(id, { name }),
     rewrite: async (id, moves) => updateTrigger(id, { moves }),
+    recolour: async (id, colour) => updateTrigger(id, { colour }),
     setEnabled: async (id, enabled) => setTriggerEnabled(id, enabled),
     remove: deleteTrigger,
   };
@@ -44,6 +46,6 @@ export function toDefinitions(triggers: readonly Trigger[]): TriggerDefinition[]
 
     const parsed = parseAlg(trigger.moves);
     if (!parsed.ok || parsed.moves.length === 0) return [];
-    return [{ id: trigger.id, name: trigger.name, moves: parsed.moves }];
+    return [{ id: trigger.id, name: trigger.name, moves: parsed.moves, colour: trigger.colour }];
   });
 }

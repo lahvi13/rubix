@@ -132,6 +132,49 @@ function aufClass(signature: string, found: Map<string, number[]>): string {
   return members.sort().join('#');
 }
 
+/** Where each piece of the pair sits, read back out of a signature. */
+function cubiesOf(signature: string): { corner: string; edge: string } {
+  const [corner = '', edge = ''] = signature.split('|');
+  return { corner: corner.split(':')[0] ?? '', edge: edge.split(':')[0] ?? '' };
+}
+
+/**
+ * A case is only worth drawing if you can see how the pieces are turned, and
+ * the diagram shows three faces: up, front and right. A corner at the back has
+ * its cross-coloured sticker hidden, which is the one thing you look for.
+ *
+ * Every turn of the top layer gives the same case, so there is a choice here;
+ * the algorithm of the chosen one carries the matching AUF, exactly as a
+ * written F2L algorithm does.
+ */
+function isReadable(signature: string): boolean {
+  const { corner, edge } = cubiesOf(signature);
+  const cornerShown = corner === '1,1,1' || corner === '1,-1,1';
+  const edgeShown = edge === '0,1,1' || edge === '1,1,0' || edge === '1,0,1';
+  return cornerShown && edgeShown;
+}
+
+/** Second best: at least the corner, which carries the cross colour. */
+function showsCorner(signature: string): boolean {
+  const { corner } = cubiesOf(signature);
+  return corner === '1,1,1' || corner === '1,-1,1';
+}
+
+interface Candidate {
+  signature: string;
+  alg: string;
+}
+
+/** Readable first, then short — a case you cannot read is not worth two moves. */
+function isBetter(candidate: Candidate, current: Candidate): boolean {
+  const rank = (entry: Candidate): number =>
+    (isReadable(entry.signature) ? 2 : 0) + (showsCorner(entry.signature) ? 1 : 0);
+
+  const difference = rank(candidate) - rank(current);
+  if (difference !== 0) return difference > 0;
+  return candidate.alg.split(' ').length < current.alg.split(' ').length;
+}
+
 function groupOf(signature: string): string {
   const [corner = '', edge = ''] = signature.split('|');
   const cornerCubie = corner.split(':')[0] ?? '';
@@ -169,7 +212,7 @@ function main(): void {
     const alg = formatAlg(algMoves);
     const key = aufClass(signature, found);
     const current = classes.get(key);
-    if (!current || alg.length < current.alg.length) classes.set(key, { signature, alg });
+    if (!current || isBetter({ signature, alg }, current)) classes.set(key, { signature, alg });
   }
 
   const cases = [...classes.values()]

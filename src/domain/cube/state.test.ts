@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { FACES, formatAlg, invertAlg, parseAlg, type Face, type Move } from './notation';
+import {
+  FACES,
+  formatAlg,
+  invertAlg,
+  isOneHanded,
+  parseAlg,
+  type Face,
+  type Move,
+} from './notation';
 import { FACELETS, applyAlg, isSolved, solvedState, stateKey, type CubeState } from './state';
 
 function alg(text: string): Move[] {
@@ -91,6 +99,17 @@ describe('cube state', () => {
     expect(stateKey(after('x'))).toBe(stateKey(after("R M' L'")));
     expect(stateKey(after('y'))).toBe(stateKey(after("U E' D'")));
     expect(stateKey(after('z'))).toBe(stateKey(after("F S B'")));
+  });
+
+  it.each<[string, boolean]>([
+    ["R U R'", true],
+    ["L' U' L U", true],
+    ["Rw U Rw'", true],
+    ["R U R' U' R' F R F'", false],
+    ["F' U' F", false],
+    ['U U2', false],
+  ])('isOneHanded(%s) is %s', (text, expected) => {
+    expect(isOneHanded(alg(text))).toBe(expected);
   });
 
   it('reads lowercase wide moves as the same turn', () => {

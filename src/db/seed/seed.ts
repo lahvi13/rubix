@@ -236,6 +236,7 @@ function buildTrigger(
     name: packTrigger.name,
     moves: packTrigger.moves,
     source: 'pack',
+    colour: existing?.colour ?? packTrigger.colour,
     isEnabled: existing?.isEnabled ?? 1,
     createdAt: existing?.createdAt ?? now(),
     updatedAt: now(),

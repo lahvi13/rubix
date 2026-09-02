@@ -8,6 +8,7 @@ export interface TwistyPlayerElement extends HTMLElement {
   play(): void;
   pause(): void;
   jumpToStart(options?: { flash?: boolean }): void;
+  jumpToEnd(options?: { flash?: boolean }): void;
 }
 
 interface TwistyPlayerAttributes

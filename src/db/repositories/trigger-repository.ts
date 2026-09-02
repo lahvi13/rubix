@@ -3,6 +3,18 @@ import type { Trigger } from '../types';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 
+/** Highlight colours a trigger can be given. Distinct at a glance, dark-friendly. */
+export const TRIGGER_COLOURS = [
+  '#4ade80',
+  '#38bdf8',
+  '#a78bfa',
+  '#fbbf24',
+  '#f472b6',
+  '#22d3ee',
+  '#f97316',
+  '#e879f9',
+] as const;
+
 /**
  * Triggers are matched longest first, so the order they come back in decides
  * what an algorithm looks like: a longer sequence must get the chance to claim
@@ -28,6 +40,7 @@ export async function createTrigger(name: string, moves: string): Promise<Trigge
     name: name.trim(),
     moves: moves.trim(),
     source: 'user',
+    colour: TRIGGER_COLOURS[0],
     isEnabled: 1,
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -43,11 +56,12 @@ export async function createTrigger(name: string, moves: string): Promise<Trigge
  */
 export async function updateTrigger(
   id: string,
-  changes: { name?: string; moves?: string },
+  changes: { name?: string; moves?: string; colour?: string },
 ): Promise<void> {
   const patch: Partial<Trigger> = { updatedAt: now(), source: 'user' };
   if (changes.name !== undefined) patch.name = changes.name.trim();
   if (changes.moves !== undefined) patch.moves = changes.moves.trim();
+  if (changes.colour !== undefined) patch.colour = changes.colour;
 
   await db.triggers.update(id, patch);
 }

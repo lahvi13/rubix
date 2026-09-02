@@ -12,6 +12,8 @@ export interface SettingValues {
   'timer.inspectionCues': readonly number[];
   'ui.twistyMode': '2D' | '3D';
   'ui.cubeSkin': string;
+  /** Which route through the last layer the trainer opens on. */
+  'trainer.twoLookDefault': boolean;
   'stats.chartWindow': number;
 }
 
@@ -21,6 +23,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'timer.inspectionCues': [8000, 12000],
   'ui.twistyMode': '2D',
   'ui.cubeSkin': 'classic',
+  'trainer.twoLookDefault': false,
   'stats.chartWindow': 100,
 };
 

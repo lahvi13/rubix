@@ -138,6 +138,8 @@ export interface Trigger {
   name: string;
   moves: string;
   source: 'pack' | 'user';
+  /** Highlight colour; absent means the app picks one. */
+  colour?: string;
   /** 0 keeps a trigger without highlighting it. */
   isEnabled: Flag;
   createdAt: number;

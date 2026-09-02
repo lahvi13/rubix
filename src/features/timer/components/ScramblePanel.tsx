@@ -1,10 +1,12 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
+import { withWhiteTop } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
+import type { TwistyPlayerElement } from '../../../types/twisty';
 
 interface ScramblePanelProps {
   scramble: string | null;
@@ -49,7 +51,9 @@ export const ScramblePanel = memo(function ScramblePanel({
               className="scramble__preview"
               state={stateAfter(scramble)}
               view="net"
-              skin={skin}
+              // A scramble is defined from white on top and green in front;
+              // the trainer's yellow-top view would be a different cube.
+              skin={withWhiteTop(skin)}
               label={strings.scramble.label}
             />
           )}
@@ -64,8 +68,14 @@ function stateAfter(scramble: string) {
   return parsed.ok ? applyAlg(solvedState(), parsed.moves) : solvedState();
 }
 
-/** cubing/twisty is a heavy chunk; it loads after the first paint. */
+/**
+ * The scramble in 3D, and a button to watch it being applied — a still picture
+ * of a scrambled cube never says which way round it started.
+ *
+ * cubing/twisty is a heavy chunk; it loads after the first paint.
+ */
 function SpatialPreview({ scramble }: { scramble: string }) {
+  const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
   useEffect(() => {
@@ -78,17 +88,37 @@ function SpatialPreview({ scramble }: { scramble: string }) {
     };
   }, []);
 
+  // The preview shows the scrambled cube; the animation is on request.
+  useEffect(() => {
+    if (!isReady) return;
+    player.current?.jumpToEnd();
+  }, [isReady, scramble]);
+
   if (!isReady) return null;
 
   return (
-    <twisty-player
-      className="scramble__preview scramble__preview--3d"
-      puzzle="3x3x3"
-      alg={scramble}
-      visualization="3D"
-      background="none"
-      control-panel="none"
-      hint-facelets="none"
-    />
+    <>
+      <twisty-player
+        ref={player}
+        className="scramble__preview scramble__preview--3d"
+        puzzle="3x3x3"
+        alg={scramble}
+        experimental-setup-anchor="start"
+        visualization="3D"
+        background="none"
+        control-panel="none"
+        hint-facelets="none"
+      />
+      <button
+        type="button"
+        className="scramble__replay"
+        onClick={() => {
+          player.current?.jumpToStart();
+          player.current?.play();
+        }}
+      >
+        {strings.scramble.replay}
+      </button>
+    </>
   );
 }

@@ -11,6 +11,8 @@ export interface TriggerDefinition {
   name: string;
   /** Already parsed, because a segment is matched move by move. */
   moves: Move[];
+  /** How it is highlighted; the caller decides what to do without one. */
+  colour?: string;
 }
 
 export interface AlgSegment {

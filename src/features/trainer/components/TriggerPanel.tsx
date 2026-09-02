@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TRIGGER_COLOURS } from '../../../db/repositories/trigger-repository';
 import { parseAlg } from '../../../domain/cube/notation';
 import { strings } from '../../../lib/strings';
 import { useTriggers } from '../hooks/use-triggers';
@@ -9,7 +10,7 @@ import { useTriggers } from '../hooks/use-triggers';
  * stops updating it.
  */
 export function TriggerPanel() {
-  const { triggers, create, rename, rewrite, setEnabled, remove } = useTriggers();
+  const { triggers, create, rename, rewrite, recolour, setEnabled, remove } = useTriggers();
   const [name, setName] = useState('');
   const [moves, setMoves] = useState('');
 
@@ -42,6 +43,23 @@ export function TriggerPanel() {
               onChange={(event) => void rewrite(trigger.id, event.target.value)}
               aria-label={strings.trainer.triggerMoves}
             />
+            <div className="triggers__colours" role="group" aria-label={strings.trainer.triggerColour}>
+              {TRIGGER_COLOURS.map((colour) => (
+                <button
+                  key={colour}
+                  type="button"
+                  className={
+                    (trigger.colour ?? TRIGGER_COLOURS[0]) === colour
+                      ? 'triggers__colour is-active'
+                      : 'triggers__colour'
+                  }
+                  style={{ background: colour }}
+                  aria-label={colour}
+                  aria-pressed={(trigger.colour ?? TRIGGER_COLOURS[0]) === colour}
+                  onClick={() => void recolour(trigger.id, colour)}
+                />
+              ))}
+            </div>
             <button type="button" onClick={() => void remove(trigger.id)}>
               {strings.solve.delete}
             </button>

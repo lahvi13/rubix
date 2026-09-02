@@ -89,3 +89,15 @@ export const DEFAULT_CUBE_SKIN = CUBE_SKINS[0] ?? {
 export function skinById(id: string): CubeSkin {
   return CUBE_SKINS.find((skin) => skin.id === id) ?? DEFAULT_CUBE_SKIN;
 }
+
+/**
+ * The same skin held the other way up: white on top, green at the front. That
+ * is the orientation a scramble is defined in, and a scramble preview showing
+ * yellow on top would be a picture of a cube nobody is holding.
+ */
+export function withWhiteTop(skin: CubeSkin): CubeSkin {
+  return {
+    ...skin,
+    faces: { ...skin.faces, U: skin.faces.D, D: skin.faces.U },
+  };
+}

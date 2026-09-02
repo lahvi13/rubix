@@ -12,6 +12,7 @@ export const strings = {
     loading: 'Generating scramble…',
     failed: 'Scramble failed — tap to retry',
     next: 'New scramble',
+    replay: 'Show the scramble',
     showPreview: 'Show preview',
     hidePreview: 'Hide preview',
   },
@@ -115,6 +116,7 @@ export const strings = {
     triggerName: 'Name',
     triggerMoves: 'Moves',
     triggerEnabled: 'Highlight',
+    triggerColour: 'Colour',
     addTrigger: 'Add trigger',
   },
   settings: {
@@ -128,6 +130,8 @@ export const strings = {
     timer: 'Timer',
     holdThreshold: 'Hold to start',
     holdOff: 'Off',
+    trainer: 'Trainer',
+    twoLookDefault: 'Open OLL and PLL on',
   },
   data: {
     exportTitle: 'Backup',

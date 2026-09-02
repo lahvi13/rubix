@@ -64,7 +64,9 @@ dostávají hotová data z domény.
   za sebe, dva běžící solvery naráz položí i slušný telefon
 - náhled zamotaného stavu: **plochý rozvin kreslí aplikace sama** (stejný model
   i skin jako trenažér, žádný chunk navíc), 3D volitelně přes `<twisty-player>`
-  — přepíná to nastavení `ui.twistyMode`
+  — přepíná to nastavení `ui.twistyMode`. Rozvin se kreslí **bílou nahoru**
+  (skin se otočí), protože v té poloze je scramble definovaný; ve 3D jde
+  scramble přehrát od složené kostky
 - scramble se ukládá ke každému solvu jako string; při reimportu se nikdy neregeneruje
 - ruční vložení scramblu (paste) pro trénink konkrétní situace
 
@@ -119,11 +121,22 @@ kromě PB, které je globální per `puzzle`.
   zvýrazňují; matchuje se nejdelší shoda zleva. Zabudované jdou vypnout, přepsat
   (tím přechází na uživatele) i smazat; vlastní se přidávají. Tabulka `triggers`
 - **legenda notace**: každý tah jako obrázek kostky po jeho provedení
-- zrcadlení případu (levoruká varianta) přes `mirrorAlg`
+- **zrcadlení** = překlopení obrázku, ne kostky (zrcadlením stavu by se F2L pár
+  přestěhoval do levého slotu, který ten pohled neukazuje). Nabízí se jen u F2L
+  a jen tam, kde algoritmus pracuje jednou stranou + U — jinde by mirror
+  nepřinesl levorukou variantu, jen jinou nešikovnost
+- **animace jen v režimu 3D** (nastavení `ui.twistyMode`); přehrávač dostane
+  `experimental-stickering` podle sady, takže i při přehrávání je kostka
+  ztmavená kromě políček, o která jde
+- triggery mají vlastní barvu zvýraznění (pole `Trigger.colour`)
+- výchozí volba mezi 2-Look a Full je nastavení `trainer.twoLookDefault`
 - pack algoritmy musí **skončit s kostkou nastojato** (rotace uvnitř se musí
   vyrušit) — jinak by se případ kreslil z jiné strany; hlídá to test
 - F2L sada se negeneruje ručně: `scripts/generate-f2l.ts` prohledá tahy R, U, F
-  do hloubky 9 a najde ke každé z 41 poloh páru nejkratší algoritmus
+  do hloubky 9 a najde ke každé z 41 poloh páru nejkratší algoritmus. Ze všech
+  AUF variant se vybírá ta, kde jsou **oba kusy páru vidět** (roh vpředu vpravo
+  nahoře nebo ve slotu) — algoritmus si pak nese AUF sám, jak to dělají
+  publikované seznamy
 - drill mód: náhodný případ z vybrané podmnožiny, generovaný scramble
   s náhodným AUF/rotací, měření času stejným timerem jako běžný solve
 - statistiky zvlášť per case: počet pokusů, best, ao5, ao12, poslední čas, DNF rate,
@@ -299,6 +312,7 @@ interface Trigger {
   name: string;
   moves: string;
   source: 'pack' | 'user';
+  colour?: string;       // barva zvýraznění; chybí = výchozí
   isEnabled: Flag;       // 0 = ponechat, ale nezvýrazňovat
   createdAt: number;
   updatedAt: number;
@@ -407,6 +421,7 @@ phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativníc
 | `ui.theme` | 1 | `'system'` |
 | `ui.twistyMode` | 0 | `'2D'` |
 | `ui.cubeSkin` | 0 | `'classic'` |
+| `trainer.twoLookDefault` | 0 | `false` |
 | `stats.chartWindow` | 0 | 100 |
 | `audio.inputDeviceId` | **1** | `null` |
 | `audio.thresholdDb` | **1** | -30 |

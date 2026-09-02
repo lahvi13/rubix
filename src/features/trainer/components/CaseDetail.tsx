@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
-import { formatAlg, mirrorAlg, parseAlg } from '../../../domain/cube/notation';
+import { formatAlg, isOneHanded, mirrorAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
+import { useSetting } from '../../../hooks/use-setting';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
-import { useSetting } from '../../../hooks/use-setting';
 import { useCaseDetail } from '../hooks/use-case-detail';
 import { AlgText } from './AlgText';
 import { CasePlayer } from './CasePlayer';
@@ -15,6 +15,9 @@ interface CaseDetailProps {
   caseId: string;
   view: DiagramView;
   stickering: Stickering;
+  playerStickering: string;
+  /** Whether a mirror image of this set says anything useful. */
+  allowMirror: boolean;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
   onClose: () => void;
@@ -24,6 +27,8 @@ export function CaseDetail({
   caseId,
   view,
   stickering,
+  playerStickering,
+  allowMirror,
   skin,
   triggers,
   onClose,
@@ -40,12 +45,14 @@ export function CaseDetail({
 
   const shownMoves = isMirrored ? mirrorAlg(moves) : moves;
   const setupMoves = parseAlg(algCase.setupAlg);
-  const setup = setupMoves.ok
-    ? isMirrored
-      ? mirrorAlg(setupMoves.moves)
-      : setupMoves.moves
-    : [];
+  const setup = setupMoves.ok ? setupMoves.moves : [];
+  // The case itself is never mirrored — only the picture of it is. Mirroring
+  // the cube would move an F2L pair into the slot this view cannot show.
   const state = applyAlg(solvedState(), setup);
+  const canPlay = previewMode === '3D';
+  // A left-handed version only exists for an algorithm that works one side of
+  // the cube; mirroring the rest swaps awkward for awkward.
+  const canMirror = allowMirror && isOneHanded(moves);
 
   const play = (): void => {
     setPlaying(true);
@@ -64,11 +71,11 @@ export function CaseDetail({
       </div>
 
       <div className="case-detail__stage">
-        {isPlaying ? (
+        {isPlaying && canPlay ? (
           <CasePlayer
-            setupAlg={formatAlg(setup)}
+            setupAlg={formatAlg(isMirrored ? mirrorAlg(setup) : setup)}
             alg={formatAlg(shownMoves)}
-            visualization={previewMode}
+            stickering={playerStickering}
             replayToken={replayToken}
           />
         ) : (
@@ -78,29 +85,38 @@ export function CaseDetail({
             view={view}
             stickering={stickering}
             skin={skin}
+            mirrored={isMirrored}
             label={algCase.name}
           />
         )}
       </div>
 
       <div className="case-detail__controls">
-        <button type="button" className="is-primary" onClick={isPlaying ? () => setPlaying(false) : play}>
-          {isPlaying ? strings.trainer.stop : strings.trainer.play}
-        </button>
-        <button
-          type="button"
-          className={isMirrored ? 'is-active' : ''}
-          onClick={() => setMirrored((mirrored) => !mirrored)}
-          title={strings.trainer.mirrorHint}
-        >
-          {strings.trainer.mirror}
-        </button>
+        {canPlay ? (
+          <button
+            type="button"
+            className="is-primary"
+            onClick={isPlaying ? () => setPlaying(false) : play}
+          >
+            {isPlaying ? strings.trainer.stop : strings.trainer.play}
+          </button>
+        ) : null}
+        {canMirror ? (
+          <button
+            type="button"
+            className={isMirrored ? 'is-active' : ''}
+            onClick={() => setMirrored((mirrored) => !mirrored)}
+            title={strings.trainer.mirrorHint}
+          >
+            {strings.trainer.mirror}
+          </button>
+        ) : null}
       </div>
 
       <AlgText
         moves={shownMoves}
         triggers={triggers}
-        onPlay={play}
+        onPlay={canPlay ? play : undefined}
         playLabel={strings.trainer.play}
       />
 

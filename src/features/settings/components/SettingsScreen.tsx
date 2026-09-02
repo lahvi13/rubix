@@ -13,6 +13,7 @@ const HOLD_THRESHOLDS = [0, 200, 300, 500] as const;
 export function SettingsScreen() {
   const [skinId, setSkinId] = useSetting('ui.cubeSkin');
   const [twistyMode, setTwistyMode] = useSetting('ui.twistyMode');
+  const [twoLookDefault, setTwoLookDefault] = useSetting('trainer.twoLookDefault');
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
 
@@ -61,6 +62,30 @@ export function SettingsScreen() {
           </div>
         </div>
         <p className="data-section__hint">{strings.settings.twistyModeHint}</p>
+      </section>
+
+      <section className="data-section">
+        <h2 className="data-section__title">{strings.settings.trainer}</h2>
+
+        <div className="settings-row">
+          <span>{strings.settings.twoLookDefault}</span>
+          <div className="settings-row__choices">
+            <button
+              type="button"
+              className={twoLookDefault ? 'is-active' : ''}
+              onClick={() => setTwoLookDefault(true)}
+            >
+              {strings.trainer.twoLook}
+            </button>
+            <button
+              type="button"
+              className={twoLookDefault ? '' : 'is-active'}
+              onClick={() => setTwoLookDefault(false)}
+            >
+              {strings.trainer.fullSet}
+            </button>
+          </div>
+        </div>
       </section>
 
       <section className="data-section">

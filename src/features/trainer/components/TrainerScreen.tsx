@@ -5,6 +5,7 @@ import { strings } from '../../../lib/strings';
 import { FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { useAlgSets, useSetCases, type CaseGroup, type TrainerCase } from '../hooks/use-alg-cases';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
+import { useSetting } from '../../../hooks/use-setting';
 import { useTriggers } from '../hooks/use-triggers';
 import { CaseDetail } from './CaseDetail';
 import { NotationReference } from './NotationReference';
@@ -15,6 +16,13 @@ type Panel = 'none' | 'notation' | 'triggers';
 interface Diagram {
   view: DiagramView;
   stickering: Stickering;
+  /** What the animated player should dim, in cubing.js's own terms. */
+  playerStickering: string;
+  /**
+   * A last-layer case has no left-handed twin — its mirror is a different case
+   * with its own entry. An F2L pair does: the same insert, other hand.
+   */
+  allowMirror: boolean;
 }
 
 /**
@@ -24,14 +32,38 @@ interface Diagram {
  */
 function diagramFor(setId: string, group: string): Diagram {
   if (setId === '2look-oll') {
-    return { view: 'lastLayer', stickering: group.includes('Edges') ? 'edgeOrientation' : 'orientation' };
+    return {
+      view: 'lastLayer',
+      stickering: group.includes('Edges') ? 'edgeOrientation' : 'orientation',
+      playerStickering: 'OLL',
+      allowMirror: false,
+    };
   }
   if (setId === '2look-pll') {
-    return { view: 'lastLayer', stickering: group.includes('Corners') ? 'corners' : 'edges' };
+    return {
+      view: 'lastLayer',
+      stickering: group.includes('Corners') ? 'corners' : 'edges',
+      playerStickering: 'PLL',
+      allowMirror: false,
+    };
   }
-  if (setId === 'oll') return { view: 'lastLayer', stickering: 'orientation' };
-  if (setId === 'f2l') return { view: 'isometric', stickering: 'pair' };
-  return { view: 'lastLayer', stickering: 'full' };
+  if (setId === 'oll') {
+    return {
+      view: 'lastLayer',
+      stickering: 'orientation',
+      playerStickering: 'OLL',
+      allowMirror: false,
+    };
+  }
+  if (setId === 'f2l') {
+    return { view: 'isometric', stickering: 'pair', playerStickering: 'F2L', allowMirror: true };
+  }
+  return {
+    view: 'lastLayer',
+    stickering: 'full',
+    playerStickering: 'PLL',
+    allowMirror: false,
+  };
 }
 
 export function TrainerScreen() {
@@ -39,7 +71,9 @@ export function TrainerScreen() {
   // Two-look sets hang off their full set rather than standing beside it.
   const fullSets = sets.filter((set) => !Object.hasOwn(FULL_SETS, set.id));
   const [chosenSetId, setChosenSetId] = useState<string | null>(null);
-  const [isTwoLook, setTwoLook] = useState(false);
+  const [twoLookDefault] = useSetting('trainer.twoLookDefault');
+  const [chosenLook, setChosenLook] = useState<boolean | null>(null);
+  const isTwoLook = chosenLook ?? twoLookDefault;
 
   const baseSetId = chosenSetId ?? fullSets[0]?.id ?? null;
   const twoLookId = baseSetId === null ? undefined : TWO_LOOK_SETS[baseSetId];
@@ -66,7 +100,9 @@ export function TrainerScreen() {
             className={set.id === baseSetId ? 'is-active' : ''}
             onClick={() => {
               setChosenSetId(set.id);
-              setTwoLook(false);
+              // Back to whatever the settings say; the set button is not a
+              // vote on how to solve the last layer.
+              setChosenLook(null);
               setOpenCase(null);
             }}
           >
@@ -96,7 +132,7 @@ export function TrainerScreen() {
             type="button"
             className={isTwoLook ? 'is-active' : ''}
             onClick={() => {
-              setTwoLook(true);
+              setChosenLook(true);
               setOpenCase(null);
             }}
           >
@@ -106,7 +142,7 @@ export function TrainerScreen() {
             type="button"
             className={isTwoLook ? '' : 'is-active'}
             onClick={() => {
-              setTwoLook(false);
+              setChosenLook(false);
               setOpenCase(null);
             }}
           >

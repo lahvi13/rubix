@@ -6,7 +6,12 @@ interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
   setupAlg: string;
   alg: string;
-  visualization: '2D' | '3D';
+  /**
+   * Which pieces matter, in cubing.js's own vocabulary ("PLL", "OLL", "F2L").
+   * The player dims the rest, so the moving cube shows the same thing the
+   * still picture does instead of a full-colour cube nobody has to read.
+   */
+  stickering: string;
   /** Bumped by the caller to replay the same algorithm again. */
   replayToken: number;
 }
@@ -16,7 +21,7 @@ interface CasePlayerProps {
  * weight — a still picture is drawn far more cheaply by CubeDiagram, but
  * nothing else shows what the moves do to the cube.
  */
-export function CasePlayer({ setupAlg, alg, visualization, replayToken }: CasePlayerProps) {
+export function CasePlayer({ setupAlg, alg, stickering, replayToken }: CasePlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
@@ -51,7 +56,8 @@ export function CasePlayer({ setupAlg, alg, visualization, replayToken }: CasePl
       alg={alg}
       experimental-setup-alg={setupAlg}
       experimental-setup-anchor="start"
-      visualization={visualization}
+      experimental-stickering={stickering}
+      visualization="3D"
       background="none"
       control-panel="none"
       hint-facelets="none"
