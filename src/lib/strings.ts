@@ -87,6 +87,10 @@ export const strings = {
     database: 'Database unavailable',
     dismiss: 'Dismiss',
   },
+  crash: {
+    message: 'Something went wrong — this usually happens after an update.',
+    reload: 'Reload',
+  },
   update: {
     available: 'A new version is available.',
     reload: 'Reload',

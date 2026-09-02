@@ -751,6 +751,34 @@ button.is-danger {
   font-variant-numeric: tabular-nums;
 }
 
+/* Crash screen (error boundary) */
+
+.crash {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.crash__message {
+  margin: 0;
+  color: var(--muted);
+}
+
+.crash__reload {
+  background: none;
+  border: 1px solid var(--accent);
+  border-radius: 0.5rem;
+  color: var(--accent);
+  padding: 0.6rem 1.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
 .error-banner {
   position: fixed;
   inset-inline: 1rem;
