@@ -13,7 +13,9 @@ export function App() {
   return (
     <div className="app">
       <header className="app__header">
-        <h1 className="app__title">{strings.appName}</h1>
+        <h1 className="app__title">
+          {strings.appName} <span className="app__version">v{__APP_VERSION__}</span>
+        </h1>
         <nav className="app__nav">
           {ROUTES.map((target) => (
             <button

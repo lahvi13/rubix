@@ -47,6 +47,15 @@ body {
   color: var(--muted);
 }
 
+.app__version {
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
 .screen {
   display: grid;
   grid-template-rows: auto 1fr auto;
