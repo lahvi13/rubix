@@ -14,6 +14,8 @@ export interface SettingValues {
   'ui.cubeSkin': string;
   /** Which route through the last layer the trainer opens on. */
   'trainer.twoLookDefault': boolean;
+  /** Print the algorithm on every card, not just in the case sheet. */
+  'trainer.showAlgs': boolean;
   'stats.chartWindow': number;
 }
 
@@ -24,6 +26,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.twistyMode': '2D',
   'ui.cubeSkin': 'classic',
   'trainer.twoLookDefault': false,
+  'trainer.showAlgs': false,
   'stats.chartWindow': 100,
 };
 

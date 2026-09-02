@@ -132,6 +132,7 @@ export const strings = {
     holdOff: 'Off',
     trainer: 'Trainer',
     twoLookDefault: 'Open OLL and PLL on',
+    showAlgs: 'Show algorithms on the case list',
   },
   data: {
     exportTitle: 'Backup',

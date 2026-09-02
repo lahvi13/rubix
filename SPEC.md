@@ -115,6 +115,8 @@ kromě PB, které je globální per `puzzle`.
   načítá až ve chvíli, kdy si uživatel nechá algoritmus **přehrát**
 - pohled podle sady: PLL a OLL jako klasický LL diagram (OLL jen orientace,
   žlutá/šedá), F2L isometricky s obarveným jen řešeným párem
+- u permutačních případů se kreslí **šipky, kam který kus patří** (výměna =
+  jedna obousměrná šipka); bez nich se v PLL nedá orientovat
 - **skiny**: barevná schémata nálepek (`lib/cube-skins.ts`, nastavení `ui.cubeSkin`);
   proto vlastní vykreslování — twisty si barvy určuje sám
 - **triggery**: pojmenované sekvence (sexy move, sledgehammer, …) se v algoritmu
@@ -127,9 +129,12 @@ kromě PB, které je globální per `puzzle`.
   nepřinesl levorukou variantu, jen jinou nešikovnost
 - **animace jen v režimu 3D** (nastavení `ui.twistyMode`); přehrávač dostane
   `experimental-stickering` podle sady, takže i při přehrávání je kostka
-  ztmavená kromě políček, o která jde
+  ztmavená kromě políček, o která jde. Přehrává se **otočená žlutou nahoru**
+  (`x2` + `flipAlg`) — twisty maluje bílou nahoru, diagramy mají žlutou, a dvě
+  různé orientace v jednom detailu jsou matoucí
 - triggery mají vlastní barvu zvýraznění (pole `Trigger.colour`)
-- výchozí volba mezi 2-Look a Full je nastavení `trainer.twoLookDefault`
+- výchozí volba mezi 2-Look a Full je nastavení `trainer.twoLookDefault`;
+  `trainer.showAlgs` vypíše algoritmus i na kartu v seznamu případů
 - pack algoritmy musí **skončit s kostkou nastojato** (rotace uvnitř se musí
   vyrušit) — jinak by se případ kreslil z jiné strany; hlídá to test
 - F2L sada se negeneruje ručně: `scripts/generate-f2l.ts` prohledá tahy R, U, F
@@ -422,6 +427,7 @@ phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativníc
 | `ui.twistyMode` | 0 | `'2D'` |
 | `ui.cubeSkin` | 0 | `'classic'` |
 | `trainer.twoLookDefault` | 0 | `false` |
+| `trainer.showAlgs` | 0 | `false` |
 | `stats.chartWindow` | 0 | 100 |
 | `audio.inputDeviceId` | **1** | `null` |
 | `audio.thresholdDb` | **1** | -30 |

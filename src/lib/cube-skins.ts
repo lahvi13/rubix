@@ -15,6 +15,8 @@ export interface CubeSkin {
   faces: Record<Face, string>;
   muted: string;
   outline: string;
+  /** Arrows drawn over the stickers of a permutation case. */
+  arrow: string;
 }
 
 export const CUBE_SKINS: readonly CubeSkin[] = [
@@ -29,8 +31,9 @@ export const CUBE_SKINS: readonly CubeSkin[] = [
       L: '#e8811c',
       R: '#d63a3a',
     },
-    muted: '#3a4152',
+    muted: '#525b70',
     outline: '#0f1115',
+    arrow: '#f4f6fb',
   },
   {
     id: 'contrast',
@@ -43,8 +46,9 @@ export const CUBE_SKINS: readonly CubeSkin[] = [
       L: '#ff8a00',
       R: '#ff2d2d',
     },
-    muted: '#2b3040',
+    muted: '#4b5468',
     outline: '#000000',
+    arrow: '#ffffff',
   },
   {
     id: 'pastel',
@@ -57,8 +61,9 @@ export const CUBE_SKINS: readonly CubeSkin[] = [
       L: '#f0b681',
       R: '#e79a9a',
     },
-    muted: '#39404f',
+    muted: '#5a6379',
     outline: '#1b1f28',
+    arrow: '#f2f4f8',
   },
   {
     // Red and green are the pair most often confused; this swaps them for a
@@ -73,8 +78,9 @@ export const CUBE_SKINS: readonly CubeSkin[] = [
       L: '#e69f00',
       R: '#d55e00',
     },
-    muted: '#333a49',
+    muted: '#4f586d',
     outline: '#0f1115',
+    arrow: '#f8fafc',
   },
 ];
 
@@ -82,8 +88,9 @@ export const DEFAULT_CUBE_SKIN = CUBE_SKINS[0] ?? {
   id: 'classic',
   name: 'Classic',
   faces: { U: '#f2d024', D: '#f4f4f4', F: '#25b05a', B: '#2f6fd0', L: '#e8811c', R: '#d63a3a' },
-  muted: '#3a4152',
+  muted: '#525b70',
   outline: '#0f1115',
+  arrow: '#f4f6fb',
 };
 
 export function skinById(id: string): CubeSkin {

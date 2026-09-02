@@ -1,6 +1,8 @@
 :root {
   --bg: #0f1115;
   --surface: #171a21;
+  /* Cards that hold a dark cube need to sit above the background, not in it. */
+  --surface-raised: #232936;
   --border: #262b36;
   --text: #e8eaf0;
   --muted: #868ea3;
@@ -949,7 +951,7 @@ button.is-danger {
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
-  background: var(--surface);
+  background: var(--surface-raised);
   border: 1px solid transparent;
   border-radius: 0.6rem;
   padding: 0.5rem;
@@ -967,6 +969,14 @@ button.is-danger {
   width: 100%;
   height: auto;
   aspect-ratio: 1;
+}
+
+.case-card__alg {
+  font-size: 0.66rem;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  color: var(--muted);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .case-card__name {
@@ -1046,10 +1056,11 @@ button.is-danger {
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: center;
-  gap: 0.15rem 0.45rem;
-  font-size: 1.05rem;
+  gap: 0.2rem 0.5rem;
+  font-size: clamp(1.2rem, 5.5vw, 1.75rem);
   font-weight: 600;
   letter-spacing: 0.02em;
+  line-height: 1.35;
 }
 
 .alg--play {
@@ -1077,7 +1088,7 @@ button.is-danger {
 }
 
 .alg__label {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;

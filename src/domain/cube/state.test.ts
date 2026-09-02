@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FACES,
   formatAlg,
+  flipAlg,
   invertAlg,
   isOneHanded,
   parseAlg,
@@ -110,6 +111,21 @@ describe('cube state', () => {
     ['U U2', false],
   ])('isOneHanded(%s) is %s', (text, expected) => {
     expect(isOneHanded(alg(text))).toBe(expected);
+  });
+
+  it.each([
+    "R U R' U'",
+    "R U R' U' R' F R2 U' R' U' R U R' F'",
+    "M2 U M U2 M' U M2",
+    "r U R' U R U2 r'",
+    "R U2 R' U' R U' R'",
+  ])('turning the cube over and renaming the moves is the same solve: %s', (text) => {
+    // Doing the flipped algorithm on a flipped cube must land where doing the
+    // original and then flipping does.
+    const flipped = applyAlg(applyAlg(solvedState(), alg('x2')), flipAlg(alg(text)));
+    const original = applyAlg(applyAlg(solvedState(), alg(text)), alg('x2'));
+
+    expect(stateKey(flipped)).toBe(stateKey(original));
   });
 
   it('reads lowercase wide moves as the same turn', () => {

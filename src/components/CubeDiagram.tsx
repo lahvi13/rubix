@@ -4,7 +4,9 @@ import {
   isometricView,
   lastLayerView,
   netView,
+  permutationArrows,
   type Cell,
+  type PieceArrow,
   type Stickering,
 } from '../domain/cube/views';
 import { DEFAULT_CUBE_SKIN, type CubeSkin } from '../lib/cube-skins';
@@ -117,8 +119,58 @@ function LastLayerDiagram({ state, stickering, skin, label, mirrored, className 
       {view.right.map((cell, index) => (
         <Strip key={`right-${index}`} cell={cell} skin={skin} index={index} at={SIZE - STRIP} />
       ))}
+      {permutationArrows(state, stickering).map((arrow) => (
+        <Arrow key={`${arrow.from}-${arrow.to}`} arrow={arrow} skin={skin} />
+      ))}
       </g>
     </svg>
+  );
+}
+
+/** Centre of a cell of the top-face grid. */
+function cellCentre(cell: number): readonly [number, number] {
+  return [
+    OFFSET + ((cell % 3) + 0.5) * CELL,
+    OFFSET + (Math.floor(cell / 3) + 0.5) * CELL,
+  ];
+}
+
+/**
+ * Where a piece has to go. Drawn short of both cells so the arrow sits between
+ * the stickers rather than on top of them, and double-headed for a swap.
+ */
+function Arrow({ arrow, skin }: { arrow: PieceArrow; skin: CubeSkin }) {
+  const [fromX, fromY] = cellCentre(arrow.from);
+  const [toX, toY] = cellCentre(arrow.to);
+  const length = Math.hypot(toX - fromX, toY - fromY);
+  const unitX = (toX - fromX) / length;
+  const unitY = (toY - fromY) / length;
+
+  const inset = CELL * 0.32;
+  const startX = fromX + unitX * inset;
+  const startY = fromY + unitY * inset;
+  const endX = toX - unitX * inset;
+  const endY = toY - unitY * inset;
+
+  const head = (x: number, y: number, towardsX: number, towardsY: number): string => {
+    const size = 3.4;
+    const wingX = -towardsY * size * 0.7;
+    const wingY = towardsX * size * 0.7;
+    return [
+      `${x},${y}`,
+      `${x - towardsX * size + wingX},${y - towardsY * size + wingY}`,
+      `${x - towardsX * size - wingX},${y - towardsY * size - wingY}`,
+    ].join(' ');
+  };
+
+  return (
+    <g className="diagram-arrow" stroke={skin.arrow} fill={skin.arrow}>
+      <line x1={startX} y1={startY} x2={endX} y2={endY} strokeWidth={1.6} strokeLinecap="round" />
+      <polygon points={head(endX, endY, unitX, unitY)} stroke="none" />
+      {arrow.isSwap ? (
+        <polygon points={head(startX, startY, -unitX, -unitY)} stroke="none" />
+      ) : null}
+    </g>
   );
 }
 

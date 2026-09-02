@@ -14,6 +14,7 @@ export function SettingsScreen() {
   const [skinId, setSkinId] = useSetting('ui.cubeSkin');
   const [twistyMode, setTwistyMode] = useSetting('ui.twistyMode');
   const [twoLookDefault, setTwoLookDefault] = useSetting('trainer.twoLookDefault');
+  const [showAlgs, setShowAlgs] = useSetting('trainer.showAlgs');
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
 
@@ -86,6 +87,15 @@ export function SettingsScreen() {
             </button>
           </div>
         </div>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={showAlgs}
+            onChange={(event) => setShowAlgs(event.target.checked)}
+          />
+          {strings.settings.showAlgs}
+        </label>
       </section>
 
       <section className="data-section">

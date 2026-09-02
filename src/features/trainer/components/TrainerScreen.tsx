@@ -72,6 +72,7 @@ export function TrainerScreen() {
   const fullSets = sets.filter((set) => !Object.hasOwn(FULL_SETS, set.id));
   const [chosenSetId, setChosenSetId] = useState<string | null>(null);
   const [twoLookDefault] = useSetting('trainer.twoLookDefault');
+  const [showAlgs] = useSetting('trainer.showAlgs');
   const [chosenLook, setChosenLook] = useState<boolean | null>(null);
   const isTwoLook = chosenLook ?? twoLookDefault;
 
@@ -166,6 +167,7 @@ export function TrainerScreen() {
                 entry={entry}
                 diagram={diagramFor(setId ?? '', group.name)}
                 skin={skin}
+                showAlg={showAlgs}
                 onOpen={() => setOpenCase({ id: entry.algCase.id, group: group.name })}
               />
             ))}
@@ -198,10 +200,11 @@ interface CaseCardProps {
   entry: TrainerCase;
   diagram: Diagram;
   skin: ReturnType<typeof useCubeSkin>;
+  showAlg: boolean;
   onOpen: () => void;
 }
 
-function CaseCard({ entry, diagram, skin, onOpen }: CaseCardProps) {
+function CaseCard({ entry, diagram, skin, showAlg, onOpen }: CaseCardProps) {
   return (
     <button type="button" className="case-card" onClick={onOpen}>
       <CubeDiagram
@@ -213,6 +216,9 @@ function CaseCard({ entry, diagram, skin, onOpen }: CaseCardProps) {
         label={null}
       />
       <span className="case-card__name">{entry.algCase.name}</span>
+      {showAlg && entry.algorithm ? (
+        <span className="case-card__alg">{entry.algorithm.moves}</span>
+      ) : null}
     </button>
   );
 }

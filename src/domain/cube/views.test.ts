@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseAlg, type Move } from './notation';
 import { applyAlg, solvedState } from './state';
-import { isometricView, lastLayerView } from './views';
+import { isometricView, lastLayerView, permutationArrows } from './views';
 
 function alg(text: string): Move[] {
   const parsed = parseAlg(text);
@@ -130,6 +130,39 @@ describe('two-look stickerings', () => {
       null,
     ]);
     expect(view.front).toEqual([null, 'B', null]);
+  });
+});
+
+describe('permutationArrows', () => {
+  it('finds nothing on a solved last layer', () => {
+    expect(permutationArrows(solvedState())).toEqual([]);
+  });
+
+  it('marks a swap once, not twice', () => {
+    // A T perm swaps two corners and two edges.
+    const arrows = permutationArrows(after("R U R' U' R' F R2 U' R' U' R U R' F'"));
+
+    expect(arrows).toHaveLength(2);
+    expect(arrows.every((arrow) => arrow.isSwap)).toBe(true);
+  });
+
+  it('follows a three-cycle round', () => {
+    // Ua perm cycles three edges, so each one points at the next.
+    const arrows = permutationArrows(after('M2 U M U2 M\' U M2'), 'edges');
+
+    expect(arrows).toHaveLength(3);
+    expect(arrows.some((arrow) => arrow.isSwap)).toBe(false);
+    // Every arrow starts where another one ends: a closed cycle.
+    const starts = new Set(arrows.map((arrow) => arrow.from));
+    expect(arrows.every((arrow) => starts.has(arrow.to))).toBe(true);
+  });
+
+  it('shows only the pieces the stickering is about', () => {
+    const state = after("R U R' U' R' F R2 U' R' U' R U R' F'");
+
+    expect(permutationArrows(state, 'corners').every((arrow) => arrow.from % 2 === 0)).toBe(true);
+    expect(permutationArrows(state, 'edges').every((arrow) => arrow.from % 2 === 1)).toBe(true);
+    expect(permutationArrows(state, 'orientation')).toEqual([]);
   });
 });
 

@@ -154,6 +154,87 @@ export function isometricView(state: CubeState, stickering: Stickering = 'full')
   };
 }
 
+export interface PieceArrow {
+  /** Cell of the top-face grid the piece sits in now. */
+  from: number;
+  /** Cell it belongs in. */
+  to: number;
+  /** True when the other piece comes back the other way: one swap, one arrow. */
+  isSwap: boolean;
+}
+
+/** Where a piece with these colours belongs, as a cell of the top-face grid. */
+const HOME_CELL = new Map<string, number>([
+  ['BLU', 0],
+  ['BU', 1],
+  ['BRU', 2],
+  ['LU', 3],
+  ['RU', 5],
+  ['FLU', 6],
+  ['FU', 7],
+  ['FRU', 8],
+]);
+
+/** The top-layer cubie sitting in each cell of the grid. */
+const CELL_CUBIE: readonly (readonly [number, string])[] = [
+  [0, '-1,1,-1'],
+  [1, '0,1,-1'],
+  [2, '1,1,-1'],
+  [3, '-1,1,0'],
+  [5, '1,1,0'],
+  [6, '-1,1,1'],
+  [7, '0,1,1'],
+  [8, '1,1,1'],
+];
+
+/**
+ * Which last-layer piece has to go where. A permutation case is unreadable
+ * without this: the colours say a piece is in the wrong place, the arrow says
+ * which place is the right one.
+ *
+ * Only the pieces the stickering is about get an arrow — a corner arrow on an
+ * edge-permutation case is noise.
+ */
+export function permutationArrows(
+  state: CubeState,
+  stickering: Stickering = 'full',
+): PieceArrow[] {
+  const wanted =
+    stickering === 'corners'
+      ? 3
+      : stickering === 'edges'
+        ? 2
+        : stickering === 'full'
+          ? 0
+          : null;
+  if (wanted === null) return [];
+
+  const moves = new Map<number, number>();
+  for (const [cell, cubie] of CELL_CUBIE) {
+    const stickers = STICKERS_BY_CUBIE.get(cubie) ?? [];
+    if (wanted !== 0 && stickers.length !== wanted) continue;
+
+    const colours = stickers
+      .map((index) => colourAt(state, index))
+      .sort()
+      .join('');
+    const home = HOME_CELL.get(colours);
+    if (home === undefined || home === cell) continue;
+    moves.set(cell, home);
+  }
+
+  const arrows: PieceArrow[] = [];
+  const drawn = new Set<number>();
+  for (const [from, to] of moves) {
+    if (drawn.has(from)) continue;
+
+    const isSwap = moves.get(to) === from;
+    if (isSwap) drawn.add(to);
+    arrows.push({ from, to, isSwap });
+  }
+  return arrows;
+}
+
 export interface NetView {
   up: Cell[];
   left: Cell[];
