@@ -136,12 +136,20 @@ na stůl / kostku. **Nejde o rozpoznávání řeči** a nikdy nesmí odejít ž�
 
 ### 3.7 Export / import
 
-- export: jeden JSON soubor se všemi tabulkami + tombstones (viz 4.7)
+- export: jeden JSON soubor se všemi tabulkami + tombstones (viz 4.7); řádky
+  se řadí podle primárního klíče, takže dva exporty stejných dat jsou identické
 - import ve dvou režimech:
   - **merge** — párování podle `id`, vyhrává vyšší `updatedAt`, tombstones mažou
   - **replace** — smazat vše a nahradit obsahem souboru
+- **smazání vs. editace:** tombstone řádek smaže, pokud `deletedAt >= updatedAt`
+  toho řádku; novější editace tedy smazaný řádek vzkřísí. Platí to na obě strany
+  (tombstones lokální i ze souboru), takže na směru importu nezáleží — A do B a
+  B do A skončí stejně
 - před importem vždy preview: kolik záznamů přibude / změní se / smaže se
-- device-local nastavení (kalibrace mikrofonu, vybrané audio zařízení) se **neexportuje**
+- device-local nastavení (kalibrace mikrofonu, vybrané audio zařízení) se
+  **neexportuje** a import ho nikdy nepřepíše — ani v režimu replace
+- „smazat všechna data“ je jediné mazání **bez** tombstonů: jinak by po něm
+  nešel naimportovat vlastní starší export
 
 ## 4. Datový model
 

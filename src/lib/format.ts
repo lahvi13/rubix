@@ -56,4 +56,15 @@ export function formatDateTime(timestamp: number): string {
   return `${formatDate(timestamp)} ${formatClock(timestamp)}`;
 }
 
+/**
+ * Local calendar day as YYYY-MM-DD. Used in export file names, where a locale
+ * date would put slashes into a file name and sort backups randomly.
+ */
+export function formatIsoDate(timestamp: number): string {
+  const date = new Date(timestamp);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
 export { MS_PER_MINUTE, MS_PER_SECOND };

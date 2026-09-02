@@ -7,9 +7,9 @@ import './index.css';
 
 installGlobalErrorHandlers();
 
-// Until export/import lands, solves exist only in IndexedDB. Persistent
-// storage tells the browser this origin's data must survive disk pressure;
-// installed PWAs and engaged sites get it without any prompt.
+// Between backups, solves exist only in IndexedDB. Persistent storage tells
+// the browser this origin's data must survive disk pressure; installed PWAs
+// and engaged sites get it without any prompt.
 if ('storage' in navigator && typeof navigator.storage.persist === 'function') {
   void navigator.storage.persist().catch(() => {});
 }

@@ -797,6 +797,165 @@ button.is-danger {
   font-variant-numeric: tabular-nums;
 }
 
+/* Data — export, import, wipe */
+
+.data-section {
+  background: var(--surface);
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  padding: 0.9rem;
+  margin: 0 auto 1rem;
+  max-width: 40rem;
+}
+
+.data-section--danger {
+  border-color: var(--danger);
+}
+
+.data-section__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.data-section__subtitle {
+  margin: 1rem 0 0.4rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.data-section__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.data-section__error {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.data-section__row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.data-section button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  color: var(--text);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+}
+
+.data-section button.is-primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.data-section button.is-danger {
+  font-size: inherit;
+  padding: 0.45rem 0.9rem;
+}
+
+.data-section input[type='file'] {
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--muted);
+  max-width: 100%;
+}
+
+.import-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.75rem;
+}
+
+.import-modes legend {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.import-modes__option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 0.5rem;
+  align-items: baseline;
+  cursor: pointer;
+}
+
+.import-modes__hint {
+  grid-column: 2;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.preview-table th,
+.preview-table td {
+  padding: 0.3rem 0.4rem;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-table thead th,
+.preview-table tbody th {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.preview-table tbody th {
+  text-align: left;
+  color: var(--text);
+}
+
+.import-preview__actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.import-result {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.import-totals {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0.4rem 0 0;
+}
+
+.import-totals__item {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.import-totals__item dt {
+  color: var(--muted);
+}
+
+.import-totals__item dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Crash screen (error boundary) */
 
 .crash {

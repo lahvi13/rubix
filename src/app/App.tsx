@@ -1,3 +1,4 @@
+import { DataScreen } from '../features/data-transfer';
 import { HistoryScreen } from '../features/history';
 import { SessionsScreen } from '../features/sessions';
 import { StatsScreen } from '../features/stats';
@@ -34,6 +35,7 @@ export function App() {
       {route === 'history' ? <HistoryScreen /> : null}
       {route === 'stats' ? <StatsScreen /> : null}
       {route === 'sessions' ? <SessionsScreen /> : null}
+      {route === 'data' ? <DataScreen /> : null}
 
       <ErrorBanner />
       <UpdatePrompt />

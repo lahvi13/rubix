@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatInspection, formatMs, formatTime } from './format';
+import { formatInspection, formatIsoDate, formatMs, formatTime } from './format';
 
 describe('formatMs', () => {
   it.each<[number, string]>([
@@ -21,6 +21,13 @@ describe('formatTime', () => {
   it('renders DNF for a null result', () => {
     expect(formatTime(null)).toBe('DNF');
     expect(formatTime(1234)).toBe('1.23');
+  });
+});
+
+describe('formatIsoDate', () => {
+  it('pads to a sortable file-name date', () => {
+    expect(formatIsoDate(new Date(2026, 0, 5, 23, 30).getTime())).toBe('2026-01-05');
+    expect(formatIsoDate(new Date(2026, 11, 31, 0, 1).getTime())).toBe('2026-12-31');
   });
 });
 
