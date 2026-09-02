@@ -1,7 +1,18 @@
 import { db } from '../schema';
 import type { AlgCase, AlgSet, Algorithm } from '../types';
+import { formatAlg, parseAlg } from '../../domain/cube/notation';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
+
+/**
+ * Algorithms are stored the way the app writes them, so the same moves read
+ * the same on the case list and in the case sheet. Text that does not parse is
+ * kept as typed — the UI is what refuses it.
+ */
+function normaliseMoves(moves: string): string {
+  const parsed = parseAlg(moves);
+  return parsed.ok ? formatAlg(parsed.moves) : moves.trim();
+}
 
 export interface CaseWithAlg {
   algCase: AlgCase;
@@ -65,7 +76,7 @@ export async function addUserAlgorithm(caseId: string, moves: string): Promise<A
   const algorithm: Algorithm = {
     id: createId(),
     caseId,
-    moves: moves.trim(),
+    moves: normaliseMoves(moves),
     isActive: 1,
     source: 'user',
     packVersion: null,
@@ -91,7 +102,7 @@ export async function setActiveAlgorithm(id: string): Promise<void> {
 }
 
 export async function updateUserAlgorithm(id: string, moves: string): Promise<void> {
-  await db.algorithms.update(id, { moves: moves.trim(), updatedAt: now() });
+  await db.algorithms.update(id, { moves: normaliseMoves(moves), updatedAt: now() });
 }
 
 /**

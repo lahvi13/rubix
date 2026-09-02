@@ -82,9 +82,24 @@ function normaliseAmount(amount: number): number {
   return wrapped === 0 ? 0 : wrapped;
 }
 
+/**
+ * `Rw` and `r` are the same turn, and published algorithms mix both. Written
+ * out, only one spelling may win, or the same algorithm reads as two — the
+ * short one, because that is what the packs are typed in.
+ */
+const SHORT_BY_WIDE: Partial<Record<MoveFamily, string>> = {
+  Uw: 'u',
+  Dw: 'd',
+  Lw: 'l',
+  Rw: 'r',
+  Fw: 'f',
+  Bw: 'b',
+};
+
 export function formatMove(move: Move): string {
-  if (move.amount === 2) return `${move.family}2`;
-  return move.amount === -1 ? `${move.family}'` : move.family;
+  const family = SHORT_BY_WIDE[move.family] ?? move.family;
+  if (move.amount === 2) return `${family}2`;
+  return move.amount === -1 ? `${family}'` : family;
 }
 
 export function formatAlg(moves: readonly Move[]): string {

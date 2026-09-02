@@ -13,12 +13,12 @@ interface NotationReferenceProps {
  * cube with that one move applied, drawn by the same code as the cases.
  */
 const ROWS: readonly (readonly string[])[] = [
-  ['R', "R'", 'R2', 'Rw', "Rw'", 'x'],
-  ['U', "U'", 'U2', 'Uw', "Uw'", 'y'],
-  ['F', "F'", 'F2', 'Fw', "Fw'", 'z'],
-  ['L', "L'", 'L2', 'Lw', "Lw'", 'M'],
-  ['B', "B'", 'B2', 'Bw', "Bw'", "M'"],
-  ['D', "D'", 'D2', 'Dw', "Dw'", 'E'],
+  ['R', "R'", 'R2', 'r', "r'", 'x'],
+  ['U', "U'", 'U2', 'u', "u'", 'y'],
+  ['F', "F'", 'F2', 'f', "f'", 'z'],
+  ['L', "L'", 'L2', 'l', "l'", 'M'],
+  ['B', "B'", 'B2', 'b', "b'", "M'"],
+  ['D', "D'", 'D2', 'd', "d'", 'E'],
 ];
 
 export function NotationReference({ skin }: NotationReferenceProps) {
@@ -36,7 +36,7 @@ export function NotationReference({ skin }: NotationReferenceProps) {
                 skin={skin}
                 label={token}
               />
-              <figcaption>{lowercaseAlias(token)}</figcaption>
+              <figcaption>{wideAlias(token)}</figcaption>
             </figure>
           ))}
         </div>
@@ -46,14 +46,13 @@ export function NotationReference({ skin }: NotationReferenceProps) {
 }
 
 /**
- * Wide turns get written both ways — `Rw` and `r` mean the same thing, and the
- * packs use whichever the source did. The reference shows both so neither
- * spelling is a surprise.
+ * The app writes wide turns the short way, but published algorithms elsewhere
+ * spell them `Rw`. The reference names both so neither is a surprise.
  */
-function lowercaseAlias(token: string): string {
-  const wide = /^([UDLRFB])w(['2]?)$/.exec(token);
+function wideAlias(token: string): string {
+  const wide = /^([udlrfb])(['2]?)$/.exec(token);
   if (!wide) return token;
-  return `${token} · ${wide[1]?.toLowerCase() ?? ''}${wide[2] ?? ''}`;
+  return `${token} · ${wide[1]?.toUpperCase() ?? ''}w${wide[2] ?? ''}`;
 }
 
 function stateAfter(token: string) {

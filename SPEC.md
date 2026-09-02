@@ -121,9 +121,16 @@ kromě PB, které je globální per `puzzle`.
   proto vlastní vykreslování — twisty si barvy určuje sám
 - **triggery**: pojmenované sekvence (sexy move, sledgehammer, …) se v algoritmu
   zvýrazňují; matchuje se nejdelší shoda zleva. Zabudované jdou vypnout, přepsat
-  (tím přechází na uživatele) i smazat; vlastní se přidávají. Tabulka `triggers`
+  (tím přechází na uživatele) i smazat; vlastní se přidávají. Tabulka `triggers`.
+  Každý trigger je **karta, ne řádek tabulky**: jméno, tahy přes celou šířku a
+  barvy jako terčíky na prst — na telefonu se do jednoho řádku nevejde nic, do
+  čeho by šlo psát
 - **legenda notace**: každý tah jako obrázek kostky po jeho provedení, včetně
-  širokých tahů v obou zápisech (`Rw` i `r`) — packy používají oba
+  širokých tahů; legenda uvádí oba zápisy, protože zdroje algoritmů používají oba
+- **jeden zápis širokých tahů**: čte se `Rw` i `r`, ale **vypisuje se vždy krátce**
+  (`f`, ne `Fw`) — jinak stejný algoritmus vypadá na dvou místech jako dva.
+  Normalizuje se i to, co uživatel napíše (`db/repositories/alg-repository.ts`),
+  aby se karta případu a detail shodly; nečitelný text se uloží tak, jak byl napsán
 - **zrcadlení případu se nedělá** (zkoušeno a zahozeno): zrcadlený F2L pár patří
   do druhého slotu, a překlopený obrázek ukazuje jiné stěny, než na jaké se
   algoritmus odkazuje. Levoruké varianty by chtěly vlastní sadu pro druhý slot

@@ -102,6 +102,10 @@ describe('cube state', () => {
 
   it('reads lowercase wide moves as the same turn', () => {
     expect(stateKey(after("r U r'"))).toBe(stateKey(after("Rw U Rw'")));
-    expect(formatAlg(alg("r U' u2"))).toBe("Rw U' Uw2");
+  });
+
+  it('writes wide moves the short way, whichever spelling came in', () => {
+    expect(formatAlg(alg("r U' u2"))).toBe("r U' u2");
+    expect(formatAlg(alg("Rw U' Uw2"))).toBe("r U' u2");
   });
 });
