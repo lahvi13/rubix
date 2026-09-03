@@ -5,7 +5,7 @@ import { drillPool } from '../../domain/drill/selection';
 import { now } from '../../lib/clock';
 import { listCasesWithAlgs, type CaseWithAlg } from './alg-repository';
 import { getOrCreateActiveSession } from './session-repository';
-import { addSolve } from './solve-repository';
+import { addSolve, deleteSolves } from './solve-repository';
 
 /**
  * Drill attempts. They are ordinary solves — same table, same timer, same
@@ -98,6 +98,16 @@ export async function loadDrillPool(
   );
   const ids = new Set(wanted.map((entry) => entry.id));
   return cases.filter((entry) => ids.has(entry.algCase.id));
+}
+
+/**
+ * Throws away everything drilled on one case — for when the numbers describe
+ * a week when you did not know the algorithm yet, and you would rather start
+ * again than wait for the average to forget.
+ */
+export async function deleteCaseAttempts(caseId: string): Promise<void> {
+  const attempts = await listCaseAttempts(caseId);
+  await deleteSolves(attempts.map((solve) => solve.id));
 }
 
 /**

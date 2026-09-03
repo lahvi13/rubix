@@ -1191,6 +1191,104 @@ button.is-danger {
   cursor: pointer;
 }
 
+/* What a set has cost so far, and where to start next */
+
+.set-summary {
+  max-width: 60rem;
+  margin: 0 auto 1rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.set-summary--empty {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.set-summary__counts {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.set-summary__slowest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.set-summary__chip {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  font-size: 0.85rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+.set-summary__chip span {
+  color: var(--warn);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Drill attempts, as a list you can correct */
+
+.attempts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.attempts__row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+.attempts__time {
+  font-variant-numeric: tabular-nums;
+}
+
+.attempts__when {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.attempts__wipe {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--muted);
+  padding: 0.4rem 0.8rem;
+  font: inherit;
+  font-size: 0.8rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+.attempts__wipe.is-armed {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
 /* Case detail */
 
 /* Above the backdrop, or the backdrop swallows every click in here. */

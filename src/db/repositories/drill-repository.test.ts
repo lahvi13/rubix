@@ -3,6 +3,7 @@ import { db } from '../schema';
 import { seedPacks } from '../seed/seed';
 import {
   addDrillSolve,
+  deleteCaseAttempts,
   detachCase,
   listAttemptsByCase,
   listCaseAttempts,
@@ -126,6 +127,19 @@ describe('drill repository', () => {
 
     const pool = await loadDrillPool('pll', ['pll-t', 'pll-h']);
     expect(pool.map((entry) => entry.algCase.id)).toEqual(['pll-h', 'pll-t']);
+  });
+
+  it('wipes one case without touching another', async () => {
+    await addDrillSolve(makeAttempt('pll-t', 3000));
+    await addDrillSolve(makeAttempt('pll-t', 2000));
+    await addDrillSolve(makeAttempt('pll-y', 4000));
+
+    await deleteCaseAttempts('pll-t');
+
+    expect(await listCaseAttempts('pll-t')).toEqual([]);
+    expect(await listCaseAttempts('pll-y')).toHaveLength(1);
+    // Deleted rows leave tombstones, or an old export would bring them back.
+    expect(await db.tombstones.count()).toBe(2);
   });
 
   it('keeps the attempts when a case goes away', async () => {

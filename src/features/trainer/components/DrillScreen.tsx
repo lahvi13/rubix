@@ -6,15 +6,17 @@ import { CROSS_HOLDS, crossSolutions, warmCrossSolver } from '../../../domain/cu
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { withWhiteTop } from '../../../lib/cube-skins';
 import { slowestCases, type CaseStats } from '../../../domain/drill/case-stats';
+import type { Penalty } from '../../../db/types';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
 import { stateOf, useAlgSets } from '../hooks/use-alg-cases';
 import { useCaseStats } from '../hooks/use-case-stats';
-import { useDrill, type DrillItem, type DrillView } from '../hooks/use-drill';
+import { useDrill, type DrillItem, type DrillView, type StoredAttempt } from '../hooks/use-drill';
 import { useTriggers } from '../hooks/use-triggers';
 import { AlgText } from './AlgText';
+import { AttemptActions } from './AttemptList';
 import { CaseStatsRow } from './CaseStats';
 
 /**
@@ -183,6 +185,9 @@ export function DrillScreen() {
               stats={stats?.get(current.algCase.id)}
               gaveUp={drill.gaveUp}
               isCross={drill.isCross}
+              stored={drill.stored}
+              onJudge={drill.judge}
+              onDiscard={drill.discard}
               onNext={drill.next}
             />
           ) : null}
@@ -231,11 +236,26 @@ interface AnswerProps {
   stats: CaseStats | undefined;
   gaveUp: boolean;
   isCross: boolean;
+  stored: StoredAttempt | null;
+  onJudge: (penalty: Exclude<Penalty, 'none'>) => void;
+  onDiscard: () => void;
   onNext: () => void;
 }
 
 /** What the case was, once the attempt can no longer benefit from knowing. */
-function Answer({ current, setId, skin, triggers, stats, gaveUp, isCross, onNext }: AnswerProps) {
+function Answer({
+  current,
+  setId,
+  skin,
+  triggers,
+  stats,
+  gaveUp,
+  isCross,
+  stored,
+  onJudge,
+  onDiscard,
+  onNext,
+}: AnswerProps) {
   const diagram = diagramFor(setId, current.algCase.group ?? '');
   const moves = movesOf(current.algorithm?.moves ?? '');
 
@@ -258,6 +278,11 @@ function Answer({ current, setId, skin, triggers, stats, gaveUp, isCross, onNext
       {isCross ? <CrossSolution scramble={current.scramble} /> : null}
 
       <CaseStatsRow stats={stats} />
+      {/* The attempt is stored the moment the clock stops, so a dropped cube
+          has to be fixable right here rather than hunted down later. */}
+      {stored === null ? null : (
+        <AttemptActions penalty={stored.penalty} onJudge={onJudge} onDelete={onDiscard} />
+      )}
 
       <button type="button" className="result-bar__next" onClick={onNext}>
         {strings.drill.next}

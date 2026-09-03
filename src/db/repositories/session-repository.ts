@@ -40,10 +40,19 @@ export async function getActiveSession(
   return session ?? null;
 }
 
-export async function listSessions(includeArchived = false): Promise<Session[]> {
+/**
+ * Newest first. The mode is worth passing: the drill keeps a session of its
+ * own, and offering it in a picker would be offering a session that changes
+ * nothing — the timer and the history are about freestyle solves.
+ */
+export async function listSessions(
+  includeArchived = false,
+  mode?: SolveMode,
+): Promise<Session[]> {
   const sessions = await db.sessions.toArray();
   return sessions
     .filter((session) => includeArchived || session.isArchived === 0)
+    .filter((session) => mode === undefined || session.mode === mode)
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 

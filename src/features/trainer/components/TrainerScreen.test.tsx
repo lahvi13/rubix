@@ -4,12 +4,38 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../../db/schema';
 import { getActiveAlgorithm } from '../../../db/repositories/alg-repository';
 import { seedPacks } from '../../../db/seed/seed';
+import { addDrillSolve } from '../../../db/repositories/drill-repository';
 import { TrainerScreen } from './TrainerScreen';
 
 describe('TrainerScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
     await seedPacks();
+  });
+
+  it('says what is drilled and which cases to work on', async () => {
+    const user = userEvent.setup();
+    // Three attempts on one F2L case, slow ones: enough to be ranked.
+    for (const rawMs of [9000, 9500, 10_000]) {
+      await addDrillSolve({
+        puzzle: '333',
+        caseId: 'f2l-1',
+        scramble: "R U R'",
+        rawMs,
+        penalty: 'none',
+        penaltySource: 'auto',
+        inspectionMs: null,
+        startedAt: Date.now(),
+      });
+    }
+
+    render(<TrainerScreen />);
+
+    expect(await screen.findByText('1 / 41 drilled · 3 attempts')).toBeInTheDocument();
+    // The suggestion is a way into the case, not just a label: its ao5 is the
+    // 9.50 in the middle of those three attempts.
+    await user.click(await screen.findByRole('button', { name: 'F2L 1 9.50' }));
+    expect(await screen.findByRole('dialog', { name: 'F2L 1' })).toBeInTheDocument();
   });
 
   it('shows the cases of the first set as pictures you can open', async () => {

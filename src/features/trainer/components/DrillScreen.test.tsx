@@ -298,6 +298,33 @@ describe('DrillScreen', () => {
     });
   });
 
+  it('lets a dropped cube be judged or thrown away on the spot', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText(/R2 F'/);
+
+    await attempt(user, 3210);
+    await screen.findByRole('heading', { name: 'T' });
+
+    await user.click(screen.getByRole('button', { name: '+2' }));
+    await waitFor(async () => {
+      expect((await db.solves.toCollection().first())?.penalty).toBe('plus2');
+    });
+
+    // Pressing it again clears it, the way every cubing timer behaves.
+    await user.click(screen.getByRole('button', { name: '+2' }));
+    await waitFor(async () => {
+      expect((await db.solves.toCollection().first())?.penalty).toBe('none');
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(0);
+    });
+    // Gone means gone: the buttons go with it.
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+  });
+
   it('says how much of the set is being drilled', async () => {
     render(<DrillScreen />);
 

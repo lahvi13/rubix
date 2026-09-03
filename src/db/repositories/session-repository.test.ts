@@ -94,4 +94,12 @@ describe('session repository', () => {
     expect(stored?.isActive).toBe(1);
     expect(stored?.createdAt).toBe(session.createdAt);
   });
+  it('leaves drill sessions out when a mode is asked for', async () => {
+    await getOrCreateActiveSession('333', 'freestyle');
+    await getOrCreateActiveSession('333', 'drill');
+
+    expect(await listSessions()).toHaveLength(2);
+    expect((await listSessions(false, 'freestyle')).every((s) => s.mode === 'freestyle')).toBe(true);
+    expect(await listSessions(false, 'freestyle')).toHaveLength(1);
+  });
 });

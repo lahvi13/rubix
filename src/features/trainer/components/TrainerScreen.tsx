@@ -10,6 +10,7 @@ import { useSetting } from '../../../hooks/use-setting';
 import { useTriggers } from '../hooks/use-triggers';
 import { CaseDetail } from './CaseDetail';
 import { NotationReference } from './NotationReference';
+import { SetSummary } from './SetSummary';
 import { TriggerPanel } from './TriggerPanel';
 
 type Panel = 'none' | 'notation' | 'triggers';
@@ -117,6 +118,8 @@ export function TrainerScreen() {
           </button>
         </div>
       ) : null}
+
+      <SetSummary groups={groups} onOpen={(id, group) => setOpenCase({ id, group })} />
 
       {panel === 'notation' ? <NotationReference skin={skin} /> : null}
       {panel === 'triggers' ? <TriggerPanel /> : null}

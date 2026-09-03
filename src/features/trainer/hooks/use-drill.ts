@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { AlgCase, Algorithm } from '../../../db/types';
+import type { AlgCase, Algorithm, Penalty } from '../../../db/types';
 import { listCasesWithAlgs, type CaseWithAlg } from '../../../db/repositories/alg-repository';
 import { addDrillSolve, loadDrillPool } from '../../../db/repositories/drill-repository';
+import { deleteSolve, setPenalty } from '../../../db/repositories/solve-repository';
+import { togglePenalty } from '../../../domain/solve/penalty';
 import { CROSS_SET_ID } from '../../../db/seed/packs';
 import { drillScramble } from '../../../domain/drill/scramble';
 import { pickNextCase } from '../../../domain/drill/selection';
 import { useScramble } from '../../../hooks/use-scramble';
 import { useTimer, type CompletedAttempt, type TimerView } from '../../../hooks/use-timer';
 import { now } from '../../../lib/clock';
-import { reportError } from '../../../lib/errors';
+import { reportError, watchWrite } from '../../../lib/errors';
 import { systemRandom } from '../../../lib/random';
 import { strings } from '../../../lib/strings';
 
@@ -21,6 +23,12 @@ export interface DrillItem {
   algorithm: Algorithm | null;
   /** Empty while a cross scramble is still being generated. */
   scramble: string;
+}
+
+/** A stored drill attempt, kept only while its answer is on screen. */
+export interface StoredAttempt {
+  id: string;
+  penalty: Penalty;
 }
 
 /** An answer on show, and the case it is the answer to. */
@@ -46,6 +54,15 @@ export interface DrillView {
   gaveUp: boolean;
   /** Give up on the case being drilled. */
   reveal: () => void;
+  /**
+   * The attempt just stored, while it is still on screen. Null before there
+   * is one, and after it has been thrown away.
+   */
+  stored: StoredAttempt | null;
+  /** +2 or DNF on that attempt; pressing the one already set clears it. */
+  judge: (penalty: Exclude<Penalty, 'none'>) => void;
+  /** That was not a solve: take it out of the case's numbers for good. */
+  discard: () => void;
   /** Put the screen back to a fresh attempt: no answer, blank clock. */
   reset: () => void;
   /** Move on to the next case. */
@@ -89,6 +106,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
    * matching, and there is no state left over to forget to clear.
    */
   const [revealed, setRevealed] = useState<Revealed | null>(null);
+  const [stored, setStored] = useState<StoredAttempt | null>(null);
 
   const current: DrillItem | null = useMemo(() => {
     if (!isCross) return pick;
@@ -135,6 +153,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     const lookedUp = revealedRef.current?.caseId === item.algCase.id && revealedRef.current.gaveUp;
     setRevealed({ caseId: item.algCase.id, gaveUp: lookedUp });
 
+    const penalty = lookedUp ? 'dnf' : attempt.penalty;
     void addDrillSolve({
       puzzle: PUZZLE,
       caseId: item.algCase.id,
@@ -142,13 +161,15 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
       rawMs: attempt.rawMs,
       // Looking the case up is not a solve; it is kept as an attempt so the
       // count stays honest, but it cannot count as a time.
-      penalty: lookedUp ? 'dnf' : attempt.penalty,
+      penalty,
       penaltySource: 'auto',
       inspectionMs: attempt.inspectionMs,
       startedAt: now() - Math.round(attempt.rawMs),
-    }).catch((cause: unknown) => {
-      reportError(strings.errors.saveSolve, cause);
-    });
+    })
+      .then((solve) => setStored({ id: solve.id, penalty: solve.penalty }))
+      .catch((cause: unknown) => {
+        reportError(strings.errors.saveSolve, cause);
+      });
   }, []);
 
   // Inspection is off for algorithm cases — fifteen seconds of it over a
@@ -173,6 +194,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   const resetTimer = timer.reset;
   const reset = useCallback(() => {
     setRevealed(null);
+    setStored(null);
     resetTimer();
   }, [resetTimer]);
 
@@ -194,6 +216,18 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     timer,
     isRevealed,
     gaveUp: shownAnswer?.gaveUp ?? false,
+    stored,
+    judge: (penalty) => {
+      if (stored === null) return;
+      const next = togglePenalty(stored.penalty, penalty);
+      setStored({ ...stored, penalty: next });
+      watchWrite(() => setPenalty(stored.id, next), strings.drill.judging);
+    },
+    discard: () => {
+      if (stored === null) return;
+      setStored(null);
+      watchWrite(() => deleteSolve(stored.id), strings.drill.discarding);
+    },
     reveal: () => {
       if (current !== null) setRevealed({ caseId: current.algCase.id, gaveUp: true });
     },

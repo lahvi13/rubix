@@ -202,6 +202,14 @@ kromě PB, které je globální per `puzzle`.
   si barvy přečte ze středů, ne z výchozího obarvení
 - statistiky zvlášť per case: počet pokusů, best, ao5, ao12, poslední čas, DNF rate,
   „nejpomalejších 10 případů“ jako doporučení k tréninku
+- **pokus jde opravit i zahodit**: rychlá penalta a smazání hned po pokusu v drillu
+  (spadlá kostka se řeší tam, kde o ní víš), a v detailu případu seznam posledních
+  pokusů s toutéž volbou plus „smazat všechny pokusy případu“. Mazání je normální
+  smazání solvu, tedy **s tombstonem**
+- obrazovka sady ukazuje, **co je nadrilované** (kolik případů z kolika, kolik pokusů)
+  a **nejpomalejší případy** jako tlačítka, která případ rovnou otevřou
+- **drill session se nenabízí v seznamu sessionů**: je to aktivní session pro
+  `mode: 'drill'`, přepnutí na ni nic viditelného nedělá
 - vlastní algoritmus: uživatel může k případu přidat variantu a označit ji jako aktivní;
   zabudovaný pack se při updatu aplikace **nikdy** nepřepíše přes uživatelskou variantu
 - vlastní případy (`isCustom: 1`) — vlastní název, setup alg, sada
@@ -619,6 +627,11 @@ statistiky per case, vlastní varianty algoritmů, vlastní případy.
 → *Použitelné jako: samostatný trenažér algoritmů.*
 
 ### Fáze 6 — Fázové splity přes mikrofon
+
+**Vedený solve** (scramble → cross → F2L → OLL → PLL s mezičasy) patří sem, ne do
+drillu: drill měří jeden případ, tohle měří jeden solve po fázích. Bude to **volba
+v timeru** („jen celkový čas“ / „po fázích“), ne další obrazovka — a ruční varianta
+(ťuknutí na konci fáze) nepotřebuje mikrofon, ten je až druhá implementace téhož.
 
 `AudioWorklet` onset detektor za rozhraním `SplitSource`, kalibrace v nastavení,
 zápis splitů do solvu, zobrazení a editace splitů v detailu, průměrné časy fází

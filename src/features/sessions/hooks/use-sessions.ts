@@ -22,9 +22,14 @@ export interface SessionsView {
   setArchived: (id: string, archived: boolean) => Promise<void>;
 }
 
+/**
+ * The sessions worth switching between. Freestyle only: the drill has an
+ * active session of its own, and putting it in this list would offer a switch
+ * that changes nothing anybody can see.
+ */
 export function useSessions(includeArchived: boolean): SessionsView {
   const sessions = useLiveQuery(async () => {
-    const rows = await listSessions(includeArchived);
+    const rows = await listSessions(includeArchived, 'freestyle');
     return Promise.all(
       rows.map(async (session) => ({
         ...session,
