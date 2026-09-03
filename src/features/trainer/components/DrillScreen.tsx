@@ -33,9 +33,14 @@ export function DrillScreen() {
   const stats = useCaseStats(caseIds);
   const tickedHere = caseIds.filter((id) => selectedIds.includes(id));
 
-  /** Ticks of other sets are left alone — case ids say which set they are in. */
+  /**
+   * Ticks of other sets are left alone — case ids say which set they are in.
+   * Changing what is drilled starts a fresh attempt: the answer and the time
+   * on the clock belong to the case that was on screen a moment ago.
+   */
   const chooseHere = (ids: readonly string[]): void => {
     setSelectedIds([...selectedIds.filter((id) => !caseIds.includes(id)), ...ids]);
+    drill.reset();
   };
 
   const status = drill.timer.state.status;
@@ -54,6 +59,7 @@ export function DrillScreen() {
               onClick={() => {
                 setSetId(set.id);
                 setPickerOpen(false);
+                drill.reset();
               }}
             >
               {set.name}
@@ -121,6 +127,13 @@ export function DrillScreen() {
                     </label>
                   ))}
                 </div>
+                <button
+                  type="button"
+                  className="drill__picker-done"
+                  onClick={() => setPickerOpen(false)}
+                >
+                  {strings.drill.poolDone}
+                </button>
               </div>
             ) : null}
           </div>
@@ -158,7 +171,9 @@ export function DrillScreen() {
               gaveUp={drill.gaveUp}
               onNext={drill.next}
             />
-          ) : (
+          ) : null}
+          {/* Nothing to look up on the cross: no case to name, no algorithm. */}
+          {drill.isRevealed || drill.isCross ? null : (
             <button type="button" className="drill__give-up" onClick={drill.reveal}>
               {strings.drill.showCase}
             </button>

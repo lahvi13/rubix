@@ -91,7 +91,12 @@ export function TimerScreen() {
             <button
               type="button"
               className="result-bar__next"
-              onClick={() => setShowResult(false)}
+              onClick={() => {
+                setShowResult(false);
+                // Moving on to the next scramble takes the finished time off
+                // the clock with it — it belongs to the solve now in the list.
+                timer.reset();
+              }}
             >
               {strings.timer.nextScramble}
             </button>

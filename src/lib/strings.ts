@@ -130,6 +130,7 @@ export const strings = {
     poolAll: 'All',
     poolSlowest: 'Slowest 10',
     poolHint: 'Tick the cases to drill. Nothing ticked means the whole set.',
+    poolDone: 'Done',
     caseHint: 'Perform it, then hold to start.',
     crossHint: 'Perform it, then hold to start — solve the cross only.',
     showCase: 'Show me',

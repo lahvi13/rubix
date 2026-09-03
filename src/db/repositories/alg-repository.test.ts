@@ -36,6 +36,17 @@ describe('alg repository', () => {
     expect(cases.map((entry) => entry.order)).toEqual([...cases.keys()]);
   });
 
+  it('offers the sets in solving order, not alphabetical order', async () => {
+    expect((await listSets()).map((set) => set.id)).toEqual([
+      'cross',
+      'f2l',
+      '2look-oll',
+      'oll',
+      '2look-pll',
+      'pll',
+    ]);
+  });
+
   it('hands every case its active algorithm in one go', async () => {
     const cases = await listCasesWithAlgs('oll');
 

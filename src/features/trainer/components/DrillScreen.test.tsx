@@ -114,6 +114,7 @@ describe('DrillScreen', () => {
     expect(await screen.findByText("R U R' U' F2")).toBeInTheDocument();
     // Nothing to pick from and nothing to look up.
     expect(screen.queryByRole('button', { name: /^Cases/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Show me' })).not.toBeInTheDocument();
 
     await attempt(user, 4000);
 
@@ -151,6 +152,53 @@ describe('DrillScreen', () => {
     const solve = await db.solves.toCollection().first();
     expect(solve?.rawMs).toBe(12_000);
     expect(solve?.inspectionMs).toBe(7400);
+  });
+
+  it('takes the answer and the time with it when you move on', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText(/R2 F'/);
+
+    await attempt(user, 3210);
+    expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
+    // On the clock, and again in the case's own record of it.
+    expect(screen.getAllByText('3.21').length).toBeGreaterThan(1);
+
+    await user.click(screen.getByRole('button', { name: 'Next case' }));
+
+    // The answer belonged to that attempt, and so did the time on the clock.
+    expect(screen.queryByRole('heading', { name: 'T' })).not.toBeInTheDocument();
+    expect(screen.queryByText('3.21')).not.toBeInTheDocument();
+    expect(screen.getByText('0.00')).toBeInTheDocument();
+  });
+
+  it('does not carry the answer over to another set', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText(/R2 F'/);
+
+    await attempt(user, 3210);
+    expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'F2L' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: 'T' })).not.toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'Show me' })).toBeInTheDocument();
+    expect(screen.getByText('0.00')).toBeInTheDocument();
+  });
+
+  it('closes the case picker without scrolling back to the top', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+
+    await user.click(await screen.findByRole('button', { name: /^Cases/ }));
+    expect(await screen.findByLabelText('T')).toBeInTheDocument();
+
+    // Closing it from the bottom of the list, where the reader already is.
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByLabelText('T')).not.toBeInTheDocument();
   });
 
   it('says how much of the set is being drilled', async () => {

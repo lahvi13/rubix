@@ -1,6 +1,7 @@
 import { db } from '../schema';
 import type { AlgCase, AlgSet, Algorithm } from '../types';
 import { formatAlg, parseAlg } from '../../domain/cube/notation';
+import { SET_ORDER } from '../seed/packs';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 
@@ -20,9 +21,14 @@ export interface CaseWithAlg {
   active: Algorithm | null;
 }
 
+/** In solving order (SET_ORDER); anything the packs do not name goes last. */
 export async function listSets(): Promise<AlgSet[]> {
   const sets = await db.algSets.toArray();
-  return sets.sort((a, b) => a.name.localeCompare(b.name));
+  const rank = (set: AlgSet): number => {
+    const index = SET_ORDER.indexOf(set.id);
+    return index === -1 ? SET_ORDER.length : index;
+  };
+  return sets.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 }
 
 export async function getSet(id: string): Promise<AlgSet | undefined> {

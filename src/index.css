@@ -1078,11 +1078,13 @@ button.is-danger {
   min-height: 4rem;
 }
 
+/* Read at arm's length with a cube in both hands, so bigger than body text
+   by a long way; the clamp keeps a 21-move cross scramble on the screen. */
 .drill__moves {
   margin: 0;
-  max-width: 40ch;
+  max-width: 30ch;
   text-align: center;
-  font-size: clamp(1rem, 3.5vw, 1.4rem);
+  font-size: clamp(1.4rem, 6vw, 2.1rem);
   font-family: ui-monospace, 'Cascadia Code', monospace;
   line-height: 1.5;
   user-select: text;
@@ -1124,6 +1126,20 @@ button.is-danger {
    algorithm is read at a glance rather than at case-sheet size. */
 .drill__answer .alg {
   font-size: clamp(1.1rem, 5vw, 1.6rem);
+}
+
+.drill__picker-done {
+  width: 100%;
+  margin-top: 0.6rem;
+  background: none;
+  border: 1px solid var(--accent);
+  border-radius: 0.5rem;
+  color: var(--accent);
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-size: 0.85rem;
+  min-height: 2.75rem;
+  cursor: pointer;
 }
 
 .drill__give-up {

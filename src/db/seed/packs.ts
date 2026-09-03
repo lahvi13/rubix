@@ -57,6 +57,20 @@ export const FULL_SETS: Readonly<Record<string, string>> = {
   '2look-pll': 'pll',
 };
 
+/**
+ * The order the sets are offered in: the order they come up in a solve, not
+ * the alphabet. A trainer sorted A to Z puts the last layer before the cross,
+ * which is not how anybody works through a solve.
+ */
+export const SET_ORDER: readonly string[] = [
+  'cross',
+  'f2l',
+  '2look-oll',
+  'oll',
+  '2look-pll',
+  'pll',
+];
+
 export const CROSS_SET_ID = 'cross';
 export const CROSS_CASE_ID = 'cross';
 

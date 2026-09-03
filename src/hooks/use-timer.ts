@@ -30,6 +30,13 @@ export interface TimerView {
   armed: boolean;
   inspectionEnabled: boolean;
   setInspectionEnabled: (enabled: boolean) => void;
+  /**
+   * Back to a blank clock. The time of a finished attempt stays up until the
+   * next one starts, but only while it still refers to what is on screen —
+   * moving on to another scramble or another case has to clear it, or the
+   * number ends up describing something the user is no longer looking at.
+   */
+  reset: () => void;
   /** Spread onto the touch surface; the keyboard is wired up globally. */
   touchHandlers: {
     onPointerDown: (event: ReactPointerEvent) => void;
@@ -103,6 +110,8 @@ export function useTimer(
   const setInspectionEnabled = useCallback((enabled: boolean) => {
     void setSetting('timer.inspectionEnabled', enabled);
   }, []);
+
+  const reset = useCallback(() => dispatch({ type: 'reset' }), [dispatch]);
 
   // A finished attempt leaves the machine through 'stopped' exactly once.
   useEffect(() => {
@@ -191,6 +200,7 @@ export function useTimer(
     armed: isArmed(state, frameAt, config),
     inspectionEnabled: config.inspectionEnabled,
     setInspectionEnabled,
+    reset,
     touchHandlers: {
       onPointerDown: (event: ReactPointerEvent) => {
         event.preventDefault();

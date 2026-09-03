@@ -23,6 +23,13 @@ export interface DrillItem {
   scramble: string;
 }
 
+/** An answer on show, and the case it is the answer to. */
+interface Revealed {
+  caseId: string;
+  /** The user asked to see it before solving, so the attempt cannot count. */
+  gaveUp: boolean;
+}
+
 export interface DrillView {
   /** Every case of the set, for the picker. Undefined while loading. */
   cases: CaseWithAlg[] | undefined;
@@ -39,6 +46,8 @@ export interface DrillView {
   gaveUp: boolean;
   /** Give up on the case being drilled. */
   reveal: () => void;
+  /** Put the screen back to a fresh attempt: no answer, blank clock. */
+  reset: () => void;
   /** Move on to the next case. */
   next: () => void;
 }
@@ -73,8 +82,13 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   const scramble = useScramble(PUZZLE, isCross);
 
   const [pick, setPick] = useState<DrillItem | null>(null);
-  const [hasFinished, setFinished] = useState(false);
-  const [gaveUp, setGaveUp] = useState(false);
+  /**
+   * The answer on show, and which case it belongs to. Keyed by case rather
+   * than a plain flag, so an answer can never outlive the case it answers:
+   * moving on — Next case, another set, a different pool — makes it stop
+   * matching, and there is no state left over to forget to clear.
+   */
+  const [revealed, setRevealed] = useState<Revealed | null>(null);
 
   const current: DrillItem | null = useMemo(() => {
     if (!isCross) return pick;
@@ -109,16 +123,17 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   // The completion callback lives as long as the timer does, so what it needs
   // is read from refs rather than captured.
   const currentRef = useRef(current);
-  const gaveUpRef = useRef(gaveUp);
+  const revealedRef = useRef(revealed);
   useEffect(() => {
     currentRef.current = current;
-    gaveUpRef.current = gaveUp;
+    revealedRef.current = revealed;
   });
 
   const handleComplete = useCallback((attempt: CompletedAttempt) => {
-    setFinished(true);
     const item = currentRef.current;
     if (item === null) return;
+    const lookedUp = revealedRef.current?.caseId === item.algCase.id && revealedRef.current.gaveUp;
+    setRevealed({ caseId: item.algCase.id, gaveUp: lookedUp });
 
     void addDrillSolve({
       puzzle: PUZZLE,
@@ -127,7 +142,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
       rawMs: attempt.rawMs,
       // Looking the case up is not a solve; it is kept as an attempt so the
       // count stays honest, but it cannot count as a time.
-      penalty: gaveUpRef.current ? 'dnf' : attempt.penalty,
+      penalty: lookedUp ? 'dnf' : attempt.penalty,
       penaltySource: 'auto',
       inspectionMs: attempt.inspectionMs,
       startedAt: now() - Math.round(attempt.rawMs),
@@ -145,20 +160,30 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   const status = timer.state.status;
 
   // Derived rather than synchronised, like the timer screen's result: the
-  // answer stays up only while the clock is at rest. Starting the next
-  // attempt hides it with no bookkeeping at all.
+  // answer stays up only while the clock is at rest and still belongs to the
+  // case on screen. Starting the next attempt hides it with no bookkeeping.
   const isAtRest = status === 'stopped' || status === 'idle';
-  const isRevealed = (hasFinished || gaveUp) && isAtRest;
+  const shownAnswer = revealed?.caseId === current?.algCase.id ? revealed : null;
+  const isRevealed = shownAnswer !== null && isAtRest;
+
+  /**
+   * Back to a fresh attempt: no answer, and a clock that is not still showing
+   * a time somebody got on a different case.
+   */
+  const resetTimer = timer.reset;
+  const reset = useCallback(() => {
+    setRevealed(null);
+    resetTimer();
+  }, [resetTimer]);
 
   const next = useCallback(() => {
-    setFinished(false);
-    setGaveUp(false);
+    reset();
     if (isCross) {
       scramble.next();
       return;
     }
     advance(currentRef.current?.algCase.id ?? null);
-  }, [advance, isCross, scramble]);
+  }, [advance, isCross, reset, scramble]);
 
   return {
     cases,
@@ -168,8 +193,11 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     scrambleError: isCross ? scramble.error : null,
     timer,
     isRevealed,
-    gaveUp,
-    reveal: () => setGaveUp(true),
+    gaveUp: shownAnswer?.gaveUp ?? false,
+    reveal: () => {
+      if (current !== null) setRevealed({ caseId: current.algCase.id, gaveUp: true });
+    },
+    reset,
     next,
   };
 }
