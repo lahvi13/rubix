@@ -3,20 +3,23 @@ import { CubeDiagram } from '../../../components/CubeDiagram';
 import { TimerDisplay } from '../../../components/TimerDisplay';
 import { formatAlg, parseAlg, type Move } from '../../../domain/cube/notation';
 import { CROSS_HOLDS, crossSolutions, warmCrossSolver } from '../../../domain/cube/cross-solver';
+import { CROSS_CASE_ID } from '../../../db/seed/packs';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { withWhiteTop } from '../../../lib/cube-skins';
 import { slowestCases, type CaseStats } from '../../../domain/drill/case-stats';
 import type { Penalty } from '../../../db/types';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
+import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
 import { stateOf, useAlgSets } from '../hooks/use-alg-cases';
 import { useCaseStats } from '../hooks/use-case-stats';
+import { useCaseAttempts } from '../hooks/use-case-attempts';
 import { useDrill, type DrillItem, type DrillView, type StoredAttempt } from '../hooks/use-drill';
 import { useTriggers } from '../hooks/use-triggers';
 import { AlgText } from './AlgText';
-import { AttemptActions } from './AttemptList';
+import { AttemptActions, AttemptList } from './AttemptList';
 import { CaseStatsRow } from './CaseStats';
 
 /**
@@ -92,6 +95,7 @@ export function DrillScreen() {
               {strings.timer.inspectionToggle}
             </label>
             <FrontPicker skin={skin} />
+            <CrossHistory stats={stats?.get(CROSS_CASE_ID)} />
           </>
         ) : (
           <div className="drill__pool">
@@ -377,6 +381,49 @@ function FrontPicker({ skin }: { skin: ReturnType<typeof useCubeSkin> }) {
           onClick={() => setFront(choice.front)}
         />
       ))}
+    </div>
+  );
+}
+
+/**
+ * Everything drilled on the cross, and the two things you might want to do to
+ * it. Every other set keeps this in the case sheet, but the cross is not in
+ * the trainer's list of sets — there is nothing there to read — so its
+ * history lives where it is made.
+ */
+function CrossHistory({ stats }: { stats: CaseStats | undefined }) {
+  const [isOpen, setOpen] = useState(false);
+  const attempts = useCaseAttempts(CROSS_CASE_ID);
+
+  if (attempts.attempts.length === 0) return null;
+
+  return (
+    <div className="drill__pool">
+      <button
+        type="button"
+        className="drill__pool-toggle"
+        aria-expanded={isOpen}
+        onClick={() => setOpen((open) => !open)}
+      >
+        {strings.drill.attemptsTitle} {attempts.attempts.length}
+      </button>
+
+      {isOpen ? (
+        <div className="drill__picker">
+          <CaseStatsRow stats={stats} />
+          <AttemptList
+            attempts={attempts.attempts}
+            onJudge={(id, penalty) =>
+              watchWrite(() => attempts.changePenalty(id, penalty), strings.drill.judging)
+            }
+            onDelete={(id) => watchWrite(() => attempts.remove(id), strings.drill.discarding)}
+            onDeleteAll={() => watchWrite(attempts.removeAll, strings.drill.discarding)}
+          />
+          <button type="button" className="drill__picker-done" onClick={() => setOpen(false)}>
+            {strings.drill.poolDone}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

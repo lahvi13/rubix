@@ -325,6 +325,49 @@ describe('DrillScreen', () => {
     expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
   });
 
+  it('keeps the cross history where the cross is drilled', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.drillSetId', 'cross');
+    await setSetting('timer.inspectionEnabled', false);
+    render(<DrillScreen />);
+    await screen.findByText(SCRAMBLE);
+
+    // Nothing drilled yet, nothing to offer.
+    expect(screen.queryByRole('button', { name: /^Attempts/ })).not.toBeInTheDocument();
+
+    await attempt(user, 8000);
+    await user.click(screen.getByRole('button', { name: 'Next case' }));
+
+    // The cross has no case sheet in the trainer, so its attempts have to be
+    // reachable from here.
+    await user.click(await screen.findByRole('button', { name: 'Attempts 1' }));
+    // The panel says 8.00 three times over: last, best, and the attempt row
+    // itself — which is the one with the buttons on it.
+    expect(screen.getAllByText('8.00').length).toBeGreaterThan(1);
+
+    await user.click(screen.getByRole('button', { name: 'Delete all' }));
+    await user.click(screen.getByRole('button', { name: 'Delete them all?' }));
+
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(0);
+    });
+  });
+
+  it('judges a cross attempt on the spot as well', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.drillSetId', 'cross');
+    await setSetting('timer.inspectionEnabled', false);
+    render(<DrillScreen />);
+    await screen.findByText(SCRAMBLE);
+
+    await attempt(user, 8000);
+    await user.click(await screen.findByRole('button', { name: 'DNF' }));
+
+    await waitFor(async () => {
+      expect((await db.solves.toCollection().first())?.penalty).toBe('dnf');
+    });
+  });
+
   it('says how much of the set is being drilled', async () => {
     render(<DrillScreen />);
 

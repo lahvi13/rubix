@@ -205,7 +205,9 @@ kromě PB, které je globální per `puzzle`.
 - **pokus jde opravit i zahodit**: rychlá penalta a smazání hned po pokusu v drillu
   (spadlá kostka se řeší tam, kde o ní víš), a v detailu případu seznam posledních
   pokusů s toutéž volbou plus „smazat všechny pokusy případu“. Mazání je normální
-  smazání solvu, tedy **s tombstonem**
+  smazání solvu, tedy **s tombstonem**. Cross nemá v trenažéru detail případu,
+  do kterého by se to dalo dát, takže **svou historii drží na drill obrazovce** —
+  v místě, kde ostatní sady mají výběr případů
 - obrazovka sady ukazuje, **co je nadrilované** (kolik případů z kolika, kolik pokusů)
   a **nejpomalejší případy** jako tlačítka, která případ rovnou otevřou
 - **drill session se nenabízí v seznamu sessionů**: je to aktivní session pro
