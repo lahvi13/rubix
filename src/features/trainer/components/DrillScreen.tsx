@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { TimerDisplay } from '../../../components/TimerDisplay';
-import { parseAlg, type Move } from '../../../domain/cube/notation';
+import { formatAlg, parseAlg, type Move } from '../../../domain/cube/notation';
+import { CROSS_HOLDS, solveCross, warmCrossSolver } from '../../../domain/cube/cross-solver';
+import { applyAlg, solvedState } from '../../../domain/cube/state';
+import { withWhiteTop } from '../../../lib/cube-skins';
 import { slowestCases, type CaseStats } from '../../../domain/drill/case-stats';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
@@ -46,6 +49,13 @@ export function DrillScreen() {
   const status = drill.timer.state.status;
   const isSolving = status === 'running';
   const current = drill.current;
+
+  // Building the solver's table takes about a tenth of a second, so it is
+  // built while the user is still scrambling rather than while they wait for
+  // an answer. Never during a solve: this runs on a set change, not per frame.
+  useEffect(() => {
+    if (drill.isCross) warmCrossSolver();
+  }, [drill.isCross]);
 
   return (
     <main className="screen">
@@ -169,11 +179,11 @@ export function DrillScreen() {
               triggers={definitions}
               stats={stats?.get(current.algCase.id)}
               gaveUp={drill.gaveUp}
+              isCross={drill.isCross}
               onNext={drill.next}
             />
           ) : null}
-          {/* Nothing to look up on the cross: no case to name, no algorithm. */}
-          {drill.isRevealed || drill.isCross ? null : (
+          {drill.isRevealed ? null : (
             <button type="button" className="drill__give-up" onClick={drill.reveal}>
               {strings.drill.showCase}
             </button>
@@ -217,11 +227,12 @@ interface AnswerProps {
   triggers: ReturnType<typeof useTriggers>['definitions'];
   stats: CaseStats | undefined;
   gaveUp: boolean;
+  isCross: boolean;
   onNext: () => void;
 }
 
 /** What the case was, once the attempt can no longer benefit from knowing. */
-function Answer({ current, setId, skin, triggers, stats, gaveUp, onNext }: AnswerProps) {
+function Answer({ current, setId, skin, triggers, stats, gaveUp, isCross, onNext }: AnswerProps) {
   const diagram = diagramFor(setId, current.algCase.group ?? '');
   const moves = movesOf(current.algorithm?.moves ?? '');
 
@@ -241,6 +252,7 @@ function Answer({ current, setId, skin, triggers, stats, gaveUp, onNext }: Answe
         />
       )}
       {moves.length === 0 ? null : <AlgText moves={moves} triggers={triggers} />}
+      {isCross ? <CrossSolution scramble={current.scramble} skin={skin} /> : null}
 
       <CaseStatsRow stats={stats} />
 
@@ -254,4 +266,66 @@ function Answer({ current, setId, skin, triggers, stats, gaveUp, onNext }: Answe
 function movesOf(text: string): Move[] {
   const parsed = parseAlg(text);
   return parsed.ok ? parsed.moves : [];
+}
+
+/** Indexable by any face; the four sides are the ones that can be in front. */
+const COLOUR_NAMES: Record<string, string> = strings.drill.crossColours;
+
+interface CrossSolutionProps {
+  scramble: string;
+  skin: ReturnType<typeof useCubeSkin>;
+}
+
+/**
+ * The shortest cross for the scramble that was just performed, written for
+ * the cube as the reader is holding it.
+ *
+ * The cube can be picked up four ways with the cross face down, and the moves
+ * differ for each — so rather than printing a rotation and hoping, the four
+ * colours are on show and tapping one rewrites the solution. That also
+ * explains the convention without a word of explanation.
+ */
+function CrossSolution({ scramble, skin }: CrossSolutionProps) {
+  const [front, setFront] = useSetting('trainer.crossFront');
+  // A scramble is performed with white on top, and these are its colours.
+  const scrambleSkin = withWhiteTop(skin);
+
+  const parsed = parseAlg(scramble);
+  const hold = CROSS_HOLDS.find((choice) => choice.front === front) ?? CROSS_HOLDS[0];
+  const solution =
+    parsed.ok && hold !== undefined
+      ? solveCross(applyAlg(applyAlg(solvedState(), parsed.moves), hold.rotation))
+      : null;
+
+  return (
+    <>
+      <h3 className="drill__case-name">
+        {strings.drill.crossSolution}
+        {solution === null || solution.length === 0
+          ? ''
+          : ` · ${solution.length} ${strings.drill.crossMoves}`}
+      </h3>
+      {solution !== null && solution.length === 0 ? (
+        <p className="drill__hint">{strings.drill.crossSolved}</p>
+      ) : null}
+      {solution !== null && solution.length > 0 ? (
+        <p className="drill__moves">{formatAlg(solution)}</p>
+      ) : null}
+
+      <p className="drill__hint">{strings.drill.crossFront}</p>
+      <div className="drill__fronts">
+        {CROSS_HOLDS.map((choice) => (
+          <button
+            key={choice.front}
+            type="button"
+            className={choice.front === hold?.front ? 'drill__front is-active' : 'drill__front'}
+            style={{ background: scrambleSkin.faces[choice.front] }}
+            aria-label={COLOUR_NAMES[choice.front] ?? choice.front}
+            aria-pressed={choice.front === hold?.front}
+            onClick={() => setFront(choice.front)}
+          />
+        ))}
+      </div>
+    </>
+  );
 }

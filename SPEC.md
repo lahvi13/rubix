@@ -185,6 +185,19 @@ kromě PB, které je globální per `puzzle`.
   k přečtení a scramble je skutečný random-state z cubing.js. Řádek v `algSets`
   a `algCases` má proto, že pokus míří na `caseId` a per-case statistiky se
   podle něj počítají; z trenažéru (seznam sad) je schovaný
+- **cross se řeší, ne memoruje**, takže po pokusu (a po „ukázat") se vypíše
+  **nejkratší možný cross** — `domain/cube/cross-solver.ts`. Cubing.js na to
+  není potřeba: čtyři hrany mají 24 poloh každá, celý prostor se vejde do
+  jednoho `Uint8Array` (24⁴ ≈ 332 tis. políček) a BFS ze složeného kříže dá
+  **přesné** vzdálenosti; řešení se pak nehledá, jen se čte sestup z tabulky,
+  takže je vždycky optimální (v HTM, nejvýš 8 tahů). Tabulka se staví líně,
+  jednou, mimo běžící timer
+- **poloha se nepředepisuje, vybírá se**: kostku lze po scramblu vzít křížem
+  dolů čtyřmi způsoby a tahy se pro každý liší. Místo prefixu `z2` a doufání
+  jsou na obrazovce **čtyři barvy** a ťuknutím na tu, kterou máš vpředu, se
+  řešení přepíše (`CROSS_HOLDS`, nastavení `trainer.crossFront`). Vysvětluje
+  to konvenci beze slov. Řeší se vždy kříž **té stěny, co je dole** — solver
+  si barvy přečte ze středů, ne z výchozího obarvení
 - statistiky zvlášť per case: počet pokusů, best, ao5, ao12, poslední čas, DNF rate,
   „nejpomalejších 10 případů“ jako doporučení k tréninku
 - vlastní algoritmus: uživatel může k případu přidat variantu a označit ji jako aktivní;
@@ -473,6 +486,7 @@ phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativníc
 | `trainer.showRotationAlgs` | 0 | `true` |
 | `trainer.drillSetId` | 0 | `'pll'` |
 | `trainer.drillCaseIds` | 0 | `[]` |
+| `trainer.crossFront` | 0 | `'F'` |
 | `stats.chartWindow` | 0 | 100 |
 | `audio.inputDeviceId` | **1** | `null` |
 | `audio.thresholdDb` | **1** | -30 |

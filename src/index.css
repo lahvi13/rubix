@@ -1128,6 +1128,29 @@ button.is-danger {
   font-size: clamp(1.1rem, 5vw, 1.6rem);
 }
 
+.drill__fronts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+/* A colour you tap, so it is a target for a thumb, not a dot. */
+.drill__front {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  padding: 0;
+  cursor: pointer;
+}
+
+.drill__front.is-active {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--bg) inset;
+}
+
 .drill__picker-done {
   width: 100%;
   margin-top: 0.6rem;

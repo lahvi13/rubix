@@ -28,6 +28,13 @@ export interface SettingValues {
    * and a subset picked for PLL survives a detour through OLL.
    */
   'trainer.drillCaseIds': readonly string[];
+  /**
+   * Which side the reader has in front when they solve the cross, as the face
+   * the app's own model calls it. It decides how the cross solution is
+   * written, and it is remembered because most people pick the cube up the
+   * same way every time.
+   */
+  'trainer.crossFront': string;
   'stats.chartWindow': number;
 }
 
@@ -43,6 +50,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'trainer.showRotationAlgs': true,
   'trainer.drillSetId': 'pll',
   'trainer.drillCaseIds': [],
+  'trainer.crossFront': 'F',
   'stats.chartWindow': 100,
 };
 

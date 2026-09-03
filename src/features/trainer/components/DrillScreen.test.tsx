@@ -2,6 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
+import { parseAlg } from '../../../domain/cube/notation';
+import { applyAlg, solvedState, FACELETS } from '../../../domain/cube/state';
 import { setSetting } from '../../../db/repositories/settings-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { DrillScreen } from './DrillScreen';
@@ -23,6 +25,31 @@ async function attempt(user: ReturnType<typeof userEvent.setup>, solveMs: number
   clock += solveMs;
   await user.keyboard('[Space>]');
   await user.keyboard('[/Space]');
+}
+
+/** Whether the printed solution really solves the cross of the held cube. */
+function isCrossSolvedAfter(scramble: string, hold: string, solution: string): boolean {
+  const moves = [scramble, hold, solution].map((text) => {
+    const parsed = parseAlg(text);
+    if (!parsed.ok) throw new Error(`unparsable: ${text}`);
+    return parsed.moves;
+  });
+  const state = moves.reduce((cube, part) => applyAlg(cube, part), solvedState());
+
+  const centre = (face: string): string | undefined =>
+    state[
+      FACELETS.findIndex(
+        (sticker) =>
+          sticker.face === face &&
+          sticker.position.filter((coordinate) => coordinate === 0).length === 2,
+      )
+    ];
+
+  return FACELETS.every((sticker, index) => {
+    const zeros = sticker.position.filter((coordinate) => coordinate === 0).length;
+    if (zeros !== 1 || sticker.position[1] !== -1) return true;
+    return state[index] === centre(sticker.face);
+  });
 }
 
 describe('DrillScreen', () => {
@@ -114,7 +141,6 @@ describe('DrillScreen', () => {
     expect(await screen.findByText("R U R' U' F2")).toBeInTheDocument();
     // Nothing to pick from and nothing to look up.
     expect(screen.queryByRole('button', { name: /^Cases/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Show me' })).not.toBeInTheDocument();
 
     await attempt(user, 4000);
 
@@ -199,6 +225,43 @@ describe('DrillScreen', () => {
     // Closing it from the bottom of the list, where the reader already is.
     await user.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.queryByLabelText('T')).not.toBeInTheDocument();
+  });
+
+  it('shows the shortest cross for the scramble it just gave you', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.drillSetId', 'cross');
+    await setSetting('timer.inspectionEnabled', false);
+    render(<DrillScreen />);
+    await screen.findByText("R U R' U' F2");
+
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+
+    const heading = await screen.findByRole('heading', { name: /Shortest cross/ });
+    // Green in front by default: the cube turned over and round, x2 y2. The
+    // printed solution has to solve the cross of the cube held exactly so.
+    const solution = heading.parentElement?.querySelector('.drill__moves')?.textContent ?? '';
+    expect(solution).not.toBe('');
+    expect(isCrossSolvedAfter("R U R' U' F2", 'x2 y2', solution)).toBe(true);
+  });
+
+  it('rewrites the cross for the side you say is in front', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.drillSetId', 'cross');
+    await setSetting('timer.inspectionEnabled', false);
+    render(<DrillScreen />);
+    await screen.findByText("R U R' U' F2");
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+    await screen.findByRole('heading', { name: /Shortest cross/ });
+
+    await user.click(screen.getByRole('button', { name: 'Red' }));
+
+    await waitFor(() => {
+      const solution =
+        screen.getByRole('heading', { name: /Shortest cross/ }).parentElement
+          ?.querySelector('.drill__moves')?.textContent ?? '';
+      // Red in front is x2 y instead, and the moves have to follow.
+      expect(isCrossSolvedAfter("R U R' U' F2", 'x2 y', solution)).toBe(true);
+    });
   });
 
   it('says how much of the set is being drilled', async () => {

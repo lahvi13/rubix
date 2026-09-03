@@ -140,6 +140,11 @@ export const strings = {
     attempts: 'Attempts',
     last: 'Last',
     noAttempts: 'First time on this case.',
+    crossSolution: 'Shortest cross',
+    crossMoves: 'moves',
+    crossSolved: 'The cross is already done.',
+    crossFront: 'Turn it cross-down, then tap what you have in front:',
+    crossColours: { F: 'Green', R: 'Red', B: 'Blue', L: 'Orange' },
   },
   settings: {
     appearance: 'Appearance',
