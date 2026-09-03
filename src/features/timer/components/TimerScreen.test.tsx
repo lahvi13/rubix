@@ -226,6 +226,44 @@ describe('TimerScreen', () => {
     expect(solve?.splits).toEqual([{ phase: 'cross', atMs: 2000, source: 'manual' }]);
   });
 
+  it('ends a phase on any key, the same way any key stops a plain solve', async () => {
+    await seedCfop();
+    const user = userEvent.setup();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await screen.findByText("R U R' U' F2");
+    const phaseToggle = await screen.findByRole('checkbox', { name: 'Phases' });
+    await waitFor(() => expect(phaseToggle).toBeEnabled());
+    await user.click(phaseToggle);
+
+    await user.keyboard('[Space>]');
+    clock += 50;
+    await user.keyboard('[/Space]');
+    clock += 3000;
+    await user.keyboard('[Space>]');
+    clock += 400;
+    await user.keyboard('[/Space]');
+
+    // Mid-solve nobody aims for a particular key (SPEC 3.1), so a phase has to
+    // end on whatever was hit — and the machine must not stay parked waiting
+    // for a release it filtered out.
+    clock += 2000;
+    await user.keyboard('[KeyK>]');
+    clock += 40;
+    await user.keyboard('[/KeyK]');
+
+    expect(await screen.findByText('F2L')).toBeInTheDocument();
+
+    clock += 7000;
+    await user.keyboard('[KeyJ>]');
+    clock += 40;
+    await user.keyboard('[/KeyJ]');
+
+    expect(await screen.findByText('OLL')).toBeInTheDocument();
+  });
+
   it('creates the default session on first render', async () => {
     render(<TimerScreen />);
 

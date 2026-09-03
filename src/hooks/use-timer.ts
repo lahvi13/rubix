@@ -197,9 +197,11 @@ export function useTimer(
 
     const onKeyUp = (event: KeyboardEvent) => {
       if (isTypingTarget(event.target)) return;
-      // The key that stopped the solve may not have been Space; its release
-      // must still end the attempt, or the machine stays parked in 'stopped'.
-      if (event.code !== 'Space' && stateRef.current.status !== 'stopped') return;
+      // The key that ended a phase or stopped the solve may not have been
+      // Space, and its release still has to reach the machine — otherwise the
+      // attempt stays parked in 'stopped', or worse, mid-phase with a press
+      // that never resolves and a clock nothing but ESC can stop.
+      if (event.code !== 'Space' && !awaitingRelease(stateRef.current)) return;
       event.preventDefault();
       dispatch({ type: 'release', at: monotonicNow() });
     };
@@ -234,6 +236,16 @@ export function useTimer(
       },
     },
   };
+}
+
+/**
+ * States where a release matters whatever key produced it: the press that
+ * stopped the solve, and the press that is deciding between ending a phase
+ * and finishing the solve.
+ */
+function awaitingRelease(state: TimerState): boolean {
+  if (state.status === 'stopped') return true;
+  return state.status === 'running' && state.pressedAt !== null;
 }
 
 /**
