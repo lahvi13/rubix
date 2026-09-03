@@ -22,9 +22,11 @@ interface ScramblePanelProps {
  * repaints on animation frames — the panel must not be dragged through those
  * re-renders.
  *
- * The flat preview is drawn here from the app's own cube model, so it follows
- * the chosen skin and costs nothing to render. Only the 3D preview needs
- * cubing.js, and only if the user asked for it.
+ * The preview is drawn here from the app's own cube model, so it follows the
+ * chosen skin and costs nothing to render. cubing.js paints its own colours
+ * and cannot be given a skin, so the 3D mode does not replace the picture —
+ * it adds a button that plays the scramble and hands the picture back
+ * afterwards.
  */
 export const ScramblePanel = memo(function ScramblePanel({
   scramble,
@@ -34,6 +36,10 @@ export const ScramblePanel = memo(function ScramblePanel({
 }: ScramblePanelProps) {
   const [mode] = useSetting('ui.twistyMode');
   const skin = useCubeSkin();
+  // Which scramble is being watched, rather than a flag: a new scramble means
+  // a new cube to look at, not the previous animation still running.
+  const [watched, setWatched] = useState<string | null>(null);
+  const isWatching = watched !== null && watched === scramble;
 
   return (
     <div className={hidden ? 'scramble scramble--hidden' : 'scramble'} aria-hidden={hidden}>
@@ -44,8 +50,8 @@ export const ScramblePanel = memo(function ScramblePanel({
       ) : (
         <>
           <p className="scramble__text">{scramble ?? strings.scramble.loading}</p>
-          {scramble === null ? null : mode === '3D' ? (
-            <SpatialPreview scramble={scramble} />
+          {scramble === null ? null : isWatching ? (
+            <SpatialPreview scramble={scramble} onDone={() => setWatched(null)} />
           ) : (
             <CubeDiagram
               className="scramble__preview"
@@ -57,6 +63,11 @@ export const ScramblePanel = memo(function ScramblePanel({
               label={strings.scramble.label}
             />
           )}
+          {scramble !== null && mode === '3D' && !isWatching ? (
+            <button type="button" className="scramble__replay" onClick={() => setWatched(scramble)}>
+              {strings.scramble.replay}
+            </button>
+          ) : null}
         </>
       )}
     </div>
@@ -69,12 +80,13 @@ function stateAfter(scramble: string) {
 }
 
 /**
- * The scramble in 3D, and a button to watch it being applied — a still picture
- * of a scrambled cube never says which way round it started.
+ * The scramble being applied, move by move — a still picture never says which
+ * way round the cube started. Shown on request only, because these are
+ * cubing.js's colours, not the chosen skin's.
  *
  * cubing/twisty is a heavy chunk; it loads after the first paint.
  */
-function SpatialPreview({ scramble }: { scramble: string }) {
+function SpatialPreview({ scramble, onDone }: { scramble: string; onDone: () => void }) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
@@ -88,13 +100,15 @@ function SpatialPreview({ scramble }: { scramble: string }) {
     };
   }, []);
 
-  // The preview shows the scrambled cube; the animation is on request.
   useEffect(() => {
     if (!isReady) return;
-    player.current?.jumpToEnd();
+    const element = player.current;
+    if (!element) return;
+    element.jumpToStart();
+    element.play();
   }, [isReady, scramble]);
 
-  if (!isReady) return null;
+  if (!isReady) return <p className="scramble__loading">{strings.trainer.loadingPlayer}</p>;
 
   return (
     <>
@@ -109,15 +123,8 @@ function SpatialPreview({ scramble }: { scramble: string }) {
         control-panel="none"
         hint-facelets="none"
       />
-      <button
-        type="button"
-        className="scramble__replay"
-        onClick={() => {
-          player.current?.jumpToStart();
-          player.current?.play();
-        }}
-      >
-        {strings.scramble.replay}
+      <button type="button" className="scramble__replay" onClick={onDone}>
+        {strings.scramble.showPicture}
       </button>
     </>
   );

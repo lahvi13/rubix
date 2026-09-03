@@ -1654,3 +1654,98 @@ button.is-danger {
   padding: 0.2rem 0.6rem;
   cursor: pointer;
 }
+
+/* Tap targets
+ *
+ * The phone is the main device, and a finger is not a mouse pointer: every
+ * control that is tapped rather than aimed at gets at least ~44px of height.
+ * These rules sit last on purpose — they override the compact paddings above
+ * without each component having to remember the rule.
+ */
+
+.app__menu-toggle {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.filters button,
+.scramble__replay,
+.session__actions button,
+.trainer__sets button,
+.trainer__looks button,
+.settings-row__choices button,
+.case-detail__controls button,
+.solves__actions button,
+.data-section button,
+.import-preview__actions button {
+  min-height: 2.5rem;
+  padding-inline: 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* A checkbox at the browser's default 13px is the smallest thing on any
+   screen; the label around it carries the rest of the hit area. */
+input[type='checkbox'],
+input[type='radio'] {
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.toggle,
+.import-modes__option {
+  min-height: 2.75rem;
+  gap: 0.6rem;
+}
+
+.history__row,
+.history__open {
+  min-height: 2.75rem;
+}
+
+/* A dotted-underline text button is still a button you hit with a thumb. */
+.solves-panel__session {
+  padding: 0.5rem 0;
+  min-height: 2.25rem;
+}
+
+/* Troubleshooting */
+
+.diagnostics__state {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
+.diagnostics__state.is-bad {
+  color: var(--danger);
+}
+
+.diagnostics__log {
+  list-style: none;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.diagnostics__when {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+.scramble__loading {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}

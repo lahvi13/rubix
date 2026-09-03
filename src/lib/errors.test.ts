@@ -1,6 +1,15 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { clearError, lastError, onError, reportError } from './errors';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  clearError,
+  forgetErrors,
+  lastError,
+  onError,
+  recentErrors,
+  reportError,
+  watchWrite,
+} from './errors';
 
+beforeEach(() => forgetErrors());
 afterEach(() => clearError());
 
 describe('error channel', () => {
@@ -30,5 +39,68 @@ describe('error channel', () => {
     reportError('database', new Error('nope'));
 
     expect(listener).not.toHaveBeenCalled();
+  });
+});
+
+describe('the log that outlives the page', () => {
+  it('keeps failures where a restart cannot lose them', () => {
+    reportError('cube skin', new Error('DatabaseClosedError'));
+    reportError('database', new Error('VersionError'));
+
+    // What a fresh page load would read back.
+    expect(recentErrors().map((error) => error.message)).toEqual([
+      'VersionError',
+      'DatabaseClosedError',
+    ]);
+  });
+
+  it('keeps the error name when it says more than the message', () => {
+    const closed = new Error('Database has been closed');
+    closed.name = 'DatabaseClosedError';
+
+    reportError('database', closed);
+
+    expect(lastError()?.message).toBe('DatabaseClosedError: Database has been closed');
+  });
+
+  it('holds the last few, not the whole history', () => {
+    for (let i = 0; i < 12; i++) reportError('database', new Error(`failure ${i}`));
+
+    expect(recentErrors()).toHaveLength(8);
+    expect(recentErrors()[0]?.message).toBe('failure 11');
+  });
+});
+
+describe('watched writes', () => {
+  it('reports a write that rejects with nobody awaiting it', async () => {
+    watchWrite(Promise.reject(new Error('QuotaExceededError')), 'cube skin');
+    await vi.waitFor(() => expect(lastError()?.context).toBe('cube skin'));
+
+    expect(lastError()?.message).toBe('QuotaExceededError');
+  });
+
+  it('reports a write that never settles — the silent freeze', async () => {
+    vi.useFakeTimers();
+    try {
+      watchWrite(new Promise(() => {}), 'cube skin');
+      await vi.advanceTimersByTimeAsync(6000);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(lastError()?.context).toBe('cube skin');
+    expect(lastError()?.message).toMatch(/did not answer/);
+  });
+
+  it('stays quiet when the write lands', async () => {
+    vi.useFakeTimers();
+    try {
+      watchWrite(Promise.resolve(), 'cube skin');
+      await vi.advanceTimersByTimeAsync(10000);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(lastError()).toBeNull();
   });
 });

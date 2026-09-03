@@ -139,6 +139,9 @@ kromě PB, které je globální per `puzzle`.
   ztmavená kromě políček, o která jde. Přehrává se **přesně to, co je napsané** — twisty
   maluje bílou nahoru, zatímco diagramy mají žlutou, ale kostka, která na `F`
   otočí `B`, je horší než kostka špatné barvy (zkoušeno, vráceno)
+- **twisty se nedá obarvit skinem** — barvy si drží cubing.js. Proto náhled scramblu
+  v timeru kreslíme vždy sami (skin platí) a 3D je tam jen tlačítko „Watch the
+  scramble“, které animaci pustí a pak vrátí obrázek
 - triggery mají vlastní barvu zvýraznění (pole `Trigger.colour`)
 - výchozí volba mezi 2-Look a Full je nastavení `trainer.twoLookDefault`;
   `trainer.showAlgs` vypíše algoritmus i na kartu v seznamu případů
@@ -487,7 +490,7 @@ formátů žije v `src/db/migrations/import/`.
 | 7 | **Trenažér — případ** | `<twisty-player>`, varianty algoritmů, statistiky případu |
 | 8 | **Drill** | timer nad náhodným případem z vybrané podmnožiny |
 | 9 | **Nastavení** | timer, vzhled, kalibrace mikrofonu s live meterem |
-| 10 | **Data** | export, import (preview + merge/replace), smazání všech dat |
+| 10 | **Data** | export, import (preview + merge/replace), smazání všech dat, troubleshooting |
 
 Navigace: **hamburger menu** v hlavičce se všemi routami; hlavička ukazuje název
 aktuální obrazovky. Timer je výchozí route. (Původně tu byl dolní tab bar na
@@ -496,6 +499,20 @@ jich bude ještě víc.) Dokud je menu otevřené, klávesy patří jemu, ne tim
 
 Každá akce, po které obrazovka vypadá stejně jako předtím (export, import,
 smazání dat), musí říct, že se stala — `components/Notice.tsx`.
+
+**Dotykové cíle**: co se na telefonu ťuká prstem, má aspoň ~44 px výšky. Zaškrtávátko
+se nezvětšuje samo o sobě — plochu nese `<label>` kolem něj. Pravidla jsou pohromadě
+na konci `index.css`, aby si je nemusela pamatovat každá komponenta zvlášť.
+
+**Když databáze přestane odpovídat**: IndexedDB umí spojení zavřít pod rukama
+(Android zmrazí PWA na pozadí) a další otevření může uvíznout — Dexie pak zařadí
+každý dotaz do fronty, obrazovky si drží poslední obsah a ťukání nedělá nic, bez
+jediné chyby. Proto: `ensureDatabaseOpen()` má timeout a hlásí, že se nedočkal;
+`db.on('close' | 'blocked')` se hlásí a zkouší otevřít znovu; návrat aplikace do
+popředí spojení překontroluje; každý zápis „fire-and-forget“ jde přes
+`watchWrite()`, který ohlásí i zápis, co nikdy nedoběhne. Poslední selhání se
+ukládají do `localStorage` (`lib/errors.ts`), protože se zkoumají až po restartu,
+a obrazovka Data je vypisuje spolu s tlačítkem na obnovení spojení.
 
 ## 6. Fáze
 

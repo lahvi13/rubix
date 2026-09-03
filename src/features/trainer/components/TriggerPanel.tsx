@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { TRIGGER_COLOURS } from '../../../db/repositories/trigger-repository';
 import { parseAlg } from '../../../domain/cube/notation';
+import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { useTriggers } from '../hooks/use-triggers';
 
@@ -31,34 +32,53 @@ export function TriggerPanel() {
                 <input
                   type="checkbox"
                   checked={trigger.isEnabled === 1}
-                  onChange={(event) => void setEnabled(trigger.id, event.target.checked)}
+                  onChange={(event) =>
+                    watchWrite(
+                      setEnabled(trigger.id, event.target.checked),
+                      strings.trainer.triggerEnabled,
+                    )
+                  }
                   aria-label={`${strings.trainer.triggerEnabled}: ${trigger.name}`}
                 />
               </label>
               <input
                 className="trigger__name"
                 value={trigger.name}
-                onChange={(event) => void rename(trigger.id, event.target.value)}
+                onChange={(event) =>
+                  watchWrite(rename(trigger.id, event.target.value), strings.trainer.triggerName)
+                }
                 aria-label={strings.trainer.triggerName}
                 // Shown in its own colour, so the palette below needs no legend.
                 style={{ color: trigger.colour ?? TRIGGER_COLOURS[0] }}
               />
-              <button type="button" className="trigger__delete" onClick={() => void remove(trigger.id)}>
+              <button
+                type="button"
+                className="trigger__delete"
+                onClick={() => watchWrite(remove(trigger.id), strings.solve.delete)}
+              >
                 {strings.solve.delete}
               </button>
             </div>
 
             <input
-              className={parseAlg(trigger.moves).ok ? 'trigger__moves' : 'trigger__moves is-invalid'}
+              className={
+                parseAlg(trigger.moves).ok ? 'trigger__moves' : 'trigger__moves is-invalid'
+              }
               value={trigger.moves}
-              onChange={(event) => void rewrite(trigger.id, event.target.value)}
+              onChange={(event) =>
+                watchWrite(rewrite(trigger.id, event.target.value), strings.trainer.triggerMoves)
+              }
               aria-label={strings.trainer.triggerMoves}
               spellCheck={false}
               autoCapitalize="none"
               autoCorrect="off"
             />
 
-            <div className="trigger__colours" role="group" aria-label={strings.trainer.triggerColour}>
+            <div
+              className="trigger__colours"
+              role="group"
+              aria-label={strings.trainer.triggerColour}
+            >
               {TRIGGER_COLOURS.map((colour) => (
                 <button
                   key={colour}
@@ -71,7 +91,9 @@ export function TriggerPanel() {
                   style={{ background: colour }}
                   aria-label={colour}
                   aria-pressed={(trigger.colour ?? TRIGGER_COLOURS[0]) === colour}
-                  onClick={() => void recolour(trigger.id, colour)}
+                  onClick={() =>
+                    watchWrite(recolour(trigger.id, colour), strings.trainer.triggerColour)
+                  }
                 />
               ))}
             </div>
@@ -84,7 +106,7 @@ export function TriggerPanel() {
         onSubmit={(event) => {
           event.preventDefault();
           if (!isValid) return;
-          void create(name, moves);
+          watchWrite(create(name, moves), strings.trainer.addTrigger);
           setName('');
           setMoves('');
         }}

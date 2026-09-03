@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Notice } from '../../../components/Notice';
 import {
   hasChanges,
@@ -7,6 +8,7 @@ import {
 } from '../../../domain/transfer/merge';
 import { TRANSFER_TABLES } from '../../../domain/transfer/types';
 import type { ImportProblem } from '../../../domain/transfer/validate';
+import { useDatabaseHealth } from '../../../hooks/use-database-health';
 import { formatDateTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useConfirmDelay } from '../hooks/use-confirm-delay';
@@ -154,7 +156,66 @@ export function DataScreen() {
           </button>
         )}
       </section>
+
+      <Troubleshooting />
     </main>
+  );
+}
+
+/**
+ * The way out of a database that stopped answering, and the record of what
+ * went wrong. An installed app has no console and no address bar, so without
+ * this the only cure a user can find is opening the site in a browser.
+ */
+function Troubleshooting() {
+  const { isOpen, errors, reconnect, clearErrors } = useDatabaseHealth();
+  const [outcome, setOutcome] = useState<string | null>(null);
+
+  return (
+    <section className="data-section">
+      <h2 className="data-section__title">{strings.diagnostics.title}</h2>
+      <p className="data-section__hint">{strings.diagnostics.hint}</p>
+
+      <p className={isOpen ? 'diagnostics__state' : 'diagnostics__state is-bad'}>
+        {isOpen ? strings.diagnostics.databaseOpen : strings.diagnostics.databaseClosed}
+      </p>
+
+      <div className="data-section__row">
+        <button
+          type="button"
+          onClick={() => {
+            void reconnect().then((ok) =>
+              setOutcome(ok ? strings.diagnostics.reconnected : strings.diagnostics.stillBroken),
+            );
+          }}
+        >
+          {strings.diagnostics.reconnect}
+        </button>
+        <button type="button" onClick={() => window.location.reload()}>
+          {strings.diagnostics.reload}
+        </button>
+      </div>
+      {outcome === null ? null : <p className="data-section__hint">{outcome}</p>}
+
+      <h3 className="data-section__subtitle">{strings.diagnostics.recent}</h3>
+      {errors.length === 0 ? (
+        <p className="data-section__hint">{strings.diagnostics.none}</p>
+      ) : (
+        <>
+          <ul className="diagnostics__log">
+            {errors.map((error) => (
+              <li key={`${error.at}-${error.message}`}>
+                <span className="diagnostics__when">{formatDateTime(error.at)}</span>
+                {error.context}: {error.message}
+              </li>
+            ))}
+          </ul>
+          <button type="button" onClick={clearErrors}>
+            {strings.diagnostics.clear}
+          </button>
+        </>
+      )}
+    </section>
   );
 }
 

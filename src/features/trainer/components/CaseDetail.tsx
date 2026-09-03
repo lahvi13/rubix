@@ -6,6 +6,7 @@ import type { Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CubeSkin } from '../../../lib/cube-skins';
+import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { useCaseDetail } from '../hooks/use-case-detail';
 import { AlgText } from './AlgText';
@@ -118,7 +119,7 @@ export function CaseDetail({
                 type="radio"
                 name="variant"
                 checked={algorithm.id === active?.id}
-                onChange={() => void choose(algorithm.id)}
+                onChange={() => watchWrite(choose(algorithm.id), strings.trainer.chooseAlgorithm)}
               />
               <span className="variants__moves">{algorithm.moves}</span>
             </label>
@@ -126,7 +127,12 @@ export function CaseDetail({
               {algorithm.source === 'pack' ? strings.trainer.packAlg : strings.trainer.ownAlg}
             </span>
             {algorithm.source === 'user' ? (
-              <button type="button" onClick={() => void removeVariant(algorithm.id)}>
+              <button
+                type="button"
+                onClick={() =>
+                  watchWrite(removeVariant(algorithm.id), strings.trainer.removeAlgorithm)
+                }
+              >
                 {strings.solve.delete}
               </button>
             ) : null}
@@ -139,7 +145,7 @@ export function CaseDetail({
         onSubmit={(event) => {
           event.preventDefault();
           if (draft.trim() === '' || draftError) return;
-          void addVariant(draft);
+          watchWrite(addVariant(draft), strings.trainer.addAlgorithm);
           setDraft('');
         }}
       >

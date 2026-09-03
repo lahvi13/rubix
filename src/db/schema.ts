@@ -63,17 +63,70 @@ export class RubixDB extends Dexie {
 
 export const db = new RubixDB();
 
-// Opening eagerly turns a blocked or corrupted database into a visible error
-// instead of every read and write quietly doing nothing. One delayed retry,
-// because Chrome has been seen refusing the first open right after a renderer
-// crash — a failure Dexie would otherwise latch for the whole session, making
-// intact data look deleted.
-db.open().catch(async (cause: unknown) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  db.close();
-  try {
-    await db.open();
-  } catch {
-    reportError(strings.errors.database, cause);
+/**
+ * How long an open may take before it counts as stuck. An open that never
+ * settles is the worst failure this app has: Dexie queues every read and write
+ * behind it, so the screens keep their last contents, taps change nothing, and
+ * nothing is thrown for anyone to report. Seen on Android, where a backgrounded
+ * PWA has its IndexedDB connection force-closed and the reopen can then be
+ * blocked by the frozen page that still holds it.
+ */
+const OPEN_TIMEOUT_MS = 6000;
+
+/**
+ * Opens the database, and turns "it never answered" into an error somebody can
+ * see. Safe to call at any time: an already open database resolves at once.
+ */
+export async function ensureDatabaseOpen(): Promise<boolean> {
+  if (db.isOpen()) return true;
+
+  const opening = db.open();
+  const verdict = await Promise.race([
+    opening.then(() => 'open' as const),
+    new Promise<'stuck'>((resolve) => setTimeout(() => resolve('stuck'), OPEN_TIMEOUT_MS)),
+  ]).catch((cause: unknown) => cause);
+
+  if (verdict === 'open') return true;
+  if (verdict === 'stuck') {
+    reportError(strings.errors.database, new Error(strings.errors.databaseStuck));
+    return false;
   }
+  reportError(strings.errors.database, verdict);
+  return false;
+}
+
+/**
+ * Closes and opens again. The way out of a connection that Chrome closed under
+ * the app, without asking the user to work out that "reload the page in a
+ * browser" is what an installed app needs.
+ */
+export function isDatabaseOpen(): boolean {
+  return db.isOpen();
+}
+
+export async function reconnectDatabase(): Promise<boolean> {
+  db.close();
+  return ensureDatabaseOpen();
+}
+
+// An upgrade waiting on another window would otherwise hang every query in
+// this one, silently.
+db.on('blocked', () => {
+  reportError(strings.errors.database, new Error(strings.errors.databaseBlocked));
+});
+
+// Dexie reopens on the next operation, but only if the reopen gets through;
+// saying so out loud is what makes the difference between a diagnosable
+// failure and an app that "just stopped reacting".
+db.on('close', () => {
+  reportError(strings.errors.database, new Error(strings.errors.databaseClosed));
+  void ensureDatabaseOpen();
+});
+
+void ensureDatabaseOpen();
+
+// Coming back to the foreground is exactly when a phone has taken the
+// connection away, so that is when it is worth checking.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') void ensureDatabaseOpen();
 });

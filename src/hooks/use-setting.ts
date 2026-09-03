@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { watchWrite } from '../lib/errors';
 import {
   SETTING_DEFAULTS,
   getSetting,
@@ -20,7 +21,7 @@ export function useSetting<K extends SettingKey>(
   return [
     value,
     (next) => {
-      void setSetting(key, next);
+      watchWrite(setSetting(key, next), key);
     },
   ];
 }
