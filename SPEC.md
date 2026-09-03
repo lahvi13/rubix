@@ -277,12 +277,23 @@ od kostky.
   čas, o kterém se uživatel nedozvěděl
 - **oprava `rawMs` zahodí hranice, které se do zkráceného solvu nevejdou** — split
   za koncem solvu není split
+- **v historii nese řádek tenký pruh fází bez čísel** — jinak se fázově měřený solve
+  nedá od obyčejného odlišit jinak než tím, že se otevře
 - statistiky: průměrné časy fází nad session, po oknech ao5 / ao12 / ao50 / ao100 / ALL.
   Sloupce fází se počítají nad **týmiž solvy, které projdou trimem** daného průměru,
   takže se při kompletně zaznamenaných hranicích sečtou na celkový čas vpravo
   (jediná výjimka je solve s `+2` — penalta nepatří do žádné fáze). Do tabulky
   vstupují **jen solvy měřené po fázích**; okno přes všechny solvy by bylo skoro
   vždycky prázdné
+- řádek **Best** je nejrychlejší, co která fáze kdy byla. Je to jediný řádek, jehož
+  sloupce se **nemají** sečíst na celkový čas — nejlepší kříž a nejlepší PLL skoro
+  nikdy nejsou týž solve; vpravo proto stojí nejlepší single, ne jejich součet
+- **trend fází** je stohovaný plošný graf klouzavého průměru: výška je celý solve,
+  takže zrychlený kříž je vidět dvakrát — jako užší pásmo i jako nižší strop.
+  Okno je **5**, ne 12 jako u trendu ao — fázově měřených solvů je míň než obyčejných,
+  takže vyhrává nejmenší standardní okno. Do grafu jdou **jen solvy, kde je známá
+  délka každé fáze**: graf, jehož díly nedávají dohromady solve, je horší než
+  kratší graf
 - zdroj každého splitu je uložen (`mic` / `smartcube` / `manual`) — ruční je zatím
   jediný, který se zapisuje
 
@@ -604,10 +615,10 @@ formátů žije v `src/db/migrations/import/`.
 | # | Obrazovka | Obsah |
 |---|---|---|
 | 1 | **Timer** | scramble + náhled, velký čas, inspekce, přepínač „po fázích“, pruh fází dokončeného solvu, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12/session mean) |
-| 2 | **Historie** | seznam solvů session, filtry (tag, penalta, hvězdička), hromadné akce |
+| 2 | **Historie** | seznam solvů session s pruhem fází u měřených, filtry (tag, penalta, hvězdička), hromadné akce |
 | 3 | **Detail solvu** | modal/drawer: čas, scramble + náhled, splity, tagy, poznámka, editace |
 | 4 | **Sessiony** | seznam, založení, přejmenování, archivace, přepnutí aktivní |
-| 5 | **Statistiky** | karty s ao/PB/mean/SD/DNF rate, průměrné časy fází po oknech, histogram, trend rolling ao12 |
+| 5 | **Statistiky** | karty s ao/PB/mean/SD/DNF rate, průměrné a nejlepší časy fází po oknech, stohovaný trend fází, histogram, trend rolling ao12 |
 | 6 | **Trenažér — sady** | PLL / OLL / F2L, progress a nejslabší případy |
 | 7 | **Trenažér — případ** | `<twisty-player>`, varianty algoritmů, statistiky případu |
 | 8 | **Drill** | timer nad náhodným případem z vybrané podmnožiny |

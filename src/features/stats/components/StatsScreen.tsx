@@ -16,6 +16,9 @@ const HistogramChart = lazy(() =>
 const TrendChart = lazy(() =>
   import('../charts/TrendChart').then((module) => ({ default: module.TrendChart })),
 );
+const PhaseTrendChart = lazy(() =>
+  import('../charts/PhaseTrendChart').then((module) => ({ default: module.PhaseTrendChart })),
+);
 
 interface StatCardProps {
   label: string;
@@ -95,6 +98,15 @@ export function StatsScreen() {
               phases={phases}
               measuredCount={stats.measuredCount}
             />
+
+            {stats.phaseTrend.length > 0 ? (
+              <section className="chart-card">
+                <h2 className="stats__section-title">{strings.splits.phaseTrend}</h2>
+                <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
+                  <PhaseTrendChart points={stats.phaseTrend} phases={phases} />
+                </Suspense>
+              </section>
+            ) : null}
 
             <section className="chart-card">
               <h2 className="stats__section-title">{strings.stats.distribution}</h2>

@@ -4,6 +4,13 @@ import { formatAverage } from '../../../lib/format';
 import { phaseColour } from '../../../lib/phase-colours';
 import { strings } from '../../../lib/strings';
 
+/** The window column: an average, every solve, or the fastest each phase has been. */
+function rowLabel(n: PhaseAverageRow['n']): string {
+  if (n === 'all') return strings.splits.all;
+  if (n === 'best') return strings.splits.best;
+  return `ao${n}`;
+}
+
 interface PhaseAveragesProps {
   rows: readonly PhaseAverageRow[];
   phases: readonly MethodPhase[];
@@ -40,7 +47,7 @@ export function PhaseAverages({ rows, phases, measuredCount }: PhaseAveragesProp
           <tbody>
             {rows.map((row) => (
               <tr key={String(row.n)}>
-                <th scope="row">{row.n === 'all' ? strings.splits.all : `ao${row.n}`}</th>
+                <th scope="row">{rowLabel(row.n)}</th>
                 {row.phases.map((phase, index) => (
                   <td
                     key={phase.phase}

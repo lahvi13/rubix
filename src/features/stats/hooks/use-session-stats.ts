@@ -27,7 +27,9 @@ import { pbSingle } from '../../../domain/stats/pb';
 import {
   measuredSolves,
   phaseAverageTable,
+  phaseTrend,
   type PhaseAverageRow,
+  type PhaseTrendPoint,
 } from '../../../domain/stats/phases';
 
 /** The trend chart tracks rolling ao12 (SPEC 3.4). */
@@ -62,6 +64,8 @@ export interface SessionStats {
   phaseRows: PhaseAverageRow[];
   /** How many of the solves were timed by phase — the sample behind phaseRows. */
   measuredCount: number;
+  /** Rolling mean of each phase over the session, for the stacked trend. */
+  phaseTrend: PhaseTrendPoint[];
 }
 
 /**
@@ -110,6 +114,11 @@ export function useSessionStats(
         .map((aoMs, offset) => ({ index: trendStart + offset + 1, aoMs })),
       phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(solves, phaseKeys),
       measuredCount: measuredSolves(solves).length,
+      phaseTrend: phaseTrend(
+        solves,
+        phaseKeys,
+        chartWindow ?? SETTING_DEFAULTS['stats.chartWindow'],
+      ),
     };
   }, [solves, globalPbMs, chartWindow, phaseKeys]);
 }

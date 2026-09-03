@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import type { Penalty, Solve } from '../../../db/types';
+import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
 import { formatClock, formatTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useActiveSession } from '../../sessions';
-import { usePhases } from '../../splits';
+import { PhaseBar, usePhases } from '../../splits';
 import { useHistory } from '../hooks/use-history';
 import { useTags } from '../hooks/use-tags';
 import { SolveDetail } from './SolveDetail';
@@ -106,6 +106,7 @@ export function HistoryScreen() {
             <HistoryRow
               key={solve.id}
               solve={solve}
+              phases={phases}
               tagColors={solve.tagIds.map((id) => tags.byId.get(id)?.color ?? '#555')}
               isSelected={selected.has(solve.id)}
               onToggleSelected={() => toggleSelected(solve.id)}
@@ -144,6 +145,7 @@ export function HistoryScreen() {
 
 interface HistoryRowProps {
   solve: Solve;
+  phases: readonly MethodPhase[];
   tagColors: string[];
   isSelected: boolean;
   onToggleSelected: () => void;
@@ -152,6 +154,7 @@ interface HistoryRowProps {
 
 function HistoryRow({
   solve,
+  phases,
   tagColors,
   isSelected,
   onToggleSelected,
@@ -177,6 +180,18 @@ function HistoryRow({
             <span key={index} className="history__dot" style={{ background: color }} />
           ))}
         </span>
+        {/* Which solves were timed by phase, without opening every one of
+            them. No numbers — at this size only the shape is readable. */}
+        {solve.splits.length > 0 ? (
+          <span className="history__phases">
+            <PhaseBar
+              splits={solve.splits}
+              phases={phases}
+              rawMs={solve.rawMs}
+              showLabels={false}
+            />
+          </span>
+        ) : null}
       </button>
     </li>
   );

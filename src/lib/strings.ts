@@ -33,6 +33,8 @@ export const strings = {
   splits: {
     title: 'Phases',
     phaseAverages: 'Phase averages',
+    phaseTrend: 'Phase trend',
+    best: 'Best',
     total: 'Total',
     all: 'All',
     length: 'Length',
@@ -183,6 +185,9 @@ export const strings = {
     holdThreshold: 'Hold to start',
     holdOff: 'Off',
     showScramblePreview: 'Show the cube next to the scramble',
+    splitMode: 'Time solves by phase',
+    splitModeHint:
+      'A tap ends the phase in progress and starts the next one; the last phase stops the clock. Hold a tap to finish a solve early when a phase was skipped.',
     trainer: 'Trainer',
     twoLookDefault: 'Open OLL and PLL on',
     showAlgs: 'Show algorithms on the case list',

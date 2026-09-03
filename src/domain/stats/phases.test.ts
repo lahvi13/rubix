@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Penalty, Solve, Split } from '../../db/types';
-import { measuredSolves, phaseAverageTable } from './phases';
+import { measuredSolves, phaseAverageTable, phaseTrend } from './phases';
 
 const PHASES = ['cross', 'f2l', 'oll', 'pll'];
 
@@ -14,7 +14,7 @@ function solve(rawMs: number, splitMs: number[], penalty: Penalty = 'none'): Sol
   return { rawMs, penalty, splits } as Solve;
 }
 
-function row(solves: Solve[], n: number | 'all') {
+function row(solves: Solve[], n: number | 'all' | 'best') {
   const found = phaseAverageTable(solves, PHASES).find((entry) => entry.n === n);
   return {
     phases: found?.phases.map((phase) => phase.ms),
@@ -96,5 +96,79 @@ describe('phaseAverageTable', () => {
   it('says nothing at all when no solve was timed by phase', () => {
     const table = phaseAverageTable([solve(10_000, []), solve(11_000, [])], PHASES);
     expect(table.every((entry) => entry.totalMs === null)).toBe(true);
+  });
+});
+
+describe('phaseAverageTable best row', () => {
+  const solves = [
+    solve(20_000, [2000, 10_000, 14_000]), // cross 2.0  f2l 8.0  oll 4.0  pll 6.0
+    solve(18_000, [3000, 9000, 15_000]), //   cross 3.0  f2l 6.0  oll 6.0  pll 3.0
+    solve(30_000, [1000, 12_000, 20_000], 'dnf'),
+  ];
+
+  it('takes the fastest each phase has been, whichever solve it came from', () => {
+    expect(row(solves, 'best').phases).toEqual([2000, 6000, 4000, 3000]);
+  });
+
+  it('reports the best single alongside it, not the sum of the phases', () => {
+    expect(row(solves, 'best').total).toBe(18_000);
+  });
+
+  it('ignores a DNF however fast its phases were', () => {
+    expect(row(solves, 'best').phases?.[0]).toBe(2000);
+  });
+
+  it('says nothing without a phase-timed solve', () => {
+    expect(row([solve(10_000, [])], 'best')).toEqual({
+      phases: [null, null, null, null],
+      total: null,
+    });
+  });
+});
+
+describe('phaseTrend', () => {
+  /** n solves whose cross grows by a second each time; the rest stay put. */
+  function improving(count: number): Solve[] {
+    return Array.from({ length: count }, (_, i) =>
+      solve(20_000 + i * 1000, [2000 + i * 1000, 10_000 + i * 1000, 14_000 + i * 1000]),
+    );
+  }
+
+  it('says nothing until the rolling window is full', () => {
+    expect(phaseTrend(improving(4), PHASES, 100)).toEqual([]);
+    expect(phaseTrend(improving(5), PHASES, 100)).toHaveLength(1);
+  });
+
+  it('averages each phase over the last five solves', () => {
+    const [point] = phaseTrend(improving(5), PHASES, 100);
+    // Cross runs 2..6s, so the mean is 4s; the other phases never move.
+    expect(point).toEqual({ index: 5, phases: [4000, 8000, 4000, 6000] });
+  });
+
+  it('numbers the points by position, so the axis reads as solve count', () => {
+    expect(phaseTrend(improving(7), PHASES, 100).map((p) => p.index)).toEqual([5, 6, 7]);
+  });
+
+  it('keeps only the last points the chart window asks for', () => {
+    expect(phaseTrend(improving(10), PHASES, 2).map((p) => p.index)).toEqual([9, 10]);
+  });
+
+  it('skips solves that did not measure every phase, so the parts add up', () => {
+    const mixed = [...improving(5), solve(20_000, [2000]), ...improving(5)];
+    for (const point of phaseTrend(mixed, PHASES, 100)) {
+      const sum = point.phases.reduce((total, ms) => total + ms, 0);
+      expect(sum).toBeGreaterThan(0);
+    }
+    // Ten complete solves, so six windows — the incomplete one is not one of them.
+    expect(phaseTrend(mixed, PHASES, 100)).toHaveLength(6);
+  });
+
+  it('skips a DNF, whose phases describe a solve that did not work', () => {
+    const withDnf = [...improving(5), solve(20_000, [2000, 10_000, 14_000], 'dnf')];
+    expect(phaseTrend(withDnf, PHASES, 100)).toHaveLength(1);
+  });
+
+  it('draws nothing for a method with no phases', () => {
+    expect(phaseTrend(improving(10), [], 100)).toEqual([]);
   });
 });

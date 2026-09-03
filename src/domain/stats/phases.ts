@@ -19,14 +19,19 @@ export interface PhaseAverage {
   count: number;
 }
 
+/**
+ * Which solves a row covers: an aoN window, every phase-timed solve ('all'),
+ * or the fastest each phase has ever been ('best').
+ */
+export type PhaseWindow = number | 'all' | 'best';
+
 export interface PhaseAverageRow {
-  /** 'all' is every phase-timed solve of the session, untrimmed. */
-  n: number | 'all';
+  n: PhaseWindow;
   phases: PhaseAverage[];
   totalMs: Average;
 }
 
-export const PHASE_AVERAGE_WINDOWS: readonly (number | 'all')[] = [...AVERAGE_WINDOWS, 'all'];
+export const PHASE_AVERAGE_WINDOWS: readonly PhaseWindow[] = [...AVERAGE_WINDOWS, 'all', 'best'];
 
 /** Solves timed by phase, chronological. Everything below works over these. */
 export function measuredSolves(solves: readonly Solve[]): Solve[] {
@@ -44,7 +49,7 @@ export function phaseAverageTable(
 function phaseAverageRow(
   measured: readonly Solve[],
   phaseKeys: readonly string[],
-  n: number | 'all',
+  n: PhaseWindow,
 ): PhaseAverageRow {
   const empty: PhaseAverageRow = {
     n,
@@ -52,11 +57,22 @@ function phaseAverageRow(
     totalMs: null,
   };
   if (measured.length === 0) return empty;
-  if (n !== 'all' && measured.length < n) return empty;
+  if (typeof n === 'number' && measured.length < n) return empty;
 
-  const window = n === 'all' ? measured : measured.slice(measured.length - n);
-  const kept = n === 'all' ? window.filter((solve) => !isDnf(solve)) : trimmed(window);
+  // 'best' and 'all' both look at every phase-timed solve; only the fold differs.
+  const window = typeof n === 'number' ? measured.slice(measured.length - n) : measured;
+  const kept = typeof n === 'number' ? trimmed(window) : window.filter((solve) => !isDnf(solve));
   const finals = window.map(finalMs);
+
+  if (n === 'best') {
+    // The fastest cross and the fastest PLL are almost never the same solve,
+    // so this row is the only one whose columns are not meant to add up.
+    return {
+      n,
+      phases: phaseKeys.map((phase) => bestOfPhase(kept, phaseKeys, phase)),
+      totalMs: leastOf(kept.map(finalMs)),
+    };
+  }
 
   return {
     n,
@@ -83,6 +99,16 @@ function averageOfPhase(
   phaseKeys: readonly string[],
   phase: string,
 ): PhaseAverage {
+  const lengths = lengthsOfPhase(solves, phaseKeys, phase);
+  return { phase, ms: meanOf(lengths), count: lengths.length };
+}
+
+/** Known lengths of one phase across the given solves. Unknown ones are skipped. */
+function lengthsOfPhase(
+  solves: readonly Solve[],
+  phaseKeys: readonly string[],
+  phase: string,
+): number[] {
   const lengths: number[] = [];
   for (const solve of solves) {
     const duration = phaseDurations(solve.splits, phaseKeys, solve.rawMs).find(
@@ -90,11 +116,87 @@ function averageOfPhase(
     );
     if (duration?.ms != null) lengths.push(duration.ms);
   }
-  return { phase, ms: meanOf(lengths), count: lengths.length };
+  return lengths;
+}
+
+function bestOfPhase(
+  solves: readonly Solve[],
+  phaseKeys: readonly string[],
+  phase: string,
+): PhaseAverage {
+  const lengths = lengthsOfPhase(solves, phaseKeys, phase);
+  return { phase, ms: leastOf(lengths), count: lengths.length };
+}
+
+function leastOf(values: readonly (number | null)[]): number | null {
+  let best: number | null = null;
+  for (const value of values) {
+    if (value !== null && (best === null || value < best)) best = value;
+  }
+  return best;
 }
 
 function meanOf(values: readonly (number | null)[]): number | null {
   const known = values.filter((value): value is number => value !== null);
   if (known.length === 0) return null;
   return Math.round(known.reduce((sum, value) => sum + value, 0) / known.length);
+}
+
+/**
+ * How long each phase takes as the session goes on. Rolling mean rather than
+ * the raw times: one solve says nothing about whether the cross got faster.
+ *
+ * The window is 5, not the trend chart's 12 — phase-timed solves are rarer
+ * than plain ones, so the smallest standard window is the one that fills.
+ */
+export const PHASE_TREND_WINDOW = 5;
+
+export interface PhaseTrendPoint {
+  /** 1-based position among the solves this trend is drawn over. */
+  index: number;
+  /** Rolling mean of each phase, in method order. */
+  phases: number[];
+}
+
+/**
+ * Only solves where EVERY phase length is known take part. A stacked chart
+ * whose parts do not add up to the solve is worse than a shorter chart, and
+ * a solve that ended early genuinely has no OLL to plot.
+ */
+export function fullyMeasuredSolves(
+  solves: readonly Solve[],
+  phaseKeys: readonly string[],
+): { solve: Solve; lengths: number[] }[] {
+  const complete: { solve: Solve; lengths: number[] }[] = [];
+  for (const solve of measuredSolves(solves)) {
+    if (isDnf(solve)) continue;
+    const durations = phaseDurations(solve.splits, phaseKeys, solve.rawMs);
+    const lengths = durations.map((duration) => duration.ms);
+    if (lengths.every((ms): ms is number => ms !== null)) {
+      complete.push({ solve, lengths: lengths as number[] });
+    }
+  }
+  return complete;
+}
+
+export function phaseTrend(
+  solves: readonly Solve[],
+  phaseKeys: readonly string[],
+  limit: number,
+  window: number = PHASE_TREND_WINDOW,
+): PhaseTrendPoint[] {
+  if (phaseKeys.length === 0) return [];
+  const complete = fullyMeasuredSolves(solves, phaseKeys);
+
+  const points: PhaseTrendPoint[] = [];
+  for (let end = window; end <= complete.length; end += 1) {
+    const slice = complete.slice(end - window, end);
+    points.push({
+      index: end,
+      phases: phaseKeys.map((_, phase) =>
+        Math.round(slice.reduce((sum, entry) => sum + (entry.lengths[phase] ?? 0), 0) / window),
+      ),
+    });
+  }
+  return points.slice(Math.max(0, points.length - limit));
 }

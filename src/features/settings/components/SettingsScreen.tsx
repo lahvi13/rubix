@@ -19,6 +19,7 @@ export function SettingsScreen() {
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
   const [isPreviewShown, setPreviewShown] = useSetting('timer.showScramblePreview');
+  const [splitMode, setSplitMode] = useSetting('timer.splitMode');
 
   const previewState = previewCube();
 
@@ -146,6 +147,16 @@ export function SettingsScreen() {
           />
           {strings.settings.showScramblePreview}
         </label>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={splitMode === 'phases'}
+            onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
+          />
+          {strings.settings.splitMode}
+        </label>
+        <p className="data-section__hint">{strings.settings.splitModeHint}</p>
       </section>
     </main>
   );

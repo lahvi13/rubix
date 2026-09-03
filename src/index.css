@@ -2070,6 +2070,20 @@ input[type='radio'] {
   font-weight: 400;
 }
 
+/* Spans the row's three columns, under the time it belongs to. */
+.history__phases {
+  grid-column: 1 / -1;
+  margin-top: 0.35rem;
+}
+
+.history__phases .phase-bar {
+  padding: 0;
+}
+
+.history__phases .phase-bar__track {
+  height: 0.3rem;
+}
+
 .timer-slot {
   display: flex;
   flex-direction: column;
