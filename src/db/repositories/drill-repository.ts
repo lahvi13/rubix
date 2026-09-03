@@ -1,0 +1,114 @@
+import Dexie from 'dexie';
+import { db } from '../schema';
+import type { Penalty, Puzzle, Solve } from '../types';
+import { drillPool } from '../../domain/drill/selection';
+import { now } from '../../lib/clock';
+import { listCasesWithAlgs, type CaseWithAlg } from './alg-repository';
+import { getOrCreateActiveSession } from './session-repository';
+import { addSolve } from './solve-repository';
+
+/**
+ * Drill attempts. They are ordinary solves — same table, same timer, same
+ * penalties — told apart by `mode: 'drill'` and the case they belong to, and
+ * kept out of the main statistics by living in their own session (SPEC 3.5).
+ */
+
+/** What the drill screen supplies; the repository owns ids and timestamps. */
+export interface NewDrillSolve {
+  puzzle: Puzzle;
+  caseId: string;
+  scramble: string;
+  rawMs: number;
+  penalty: Penalty;
+  penaltySource: Solve['penaltySource'];
+  inspectionMs: number | null;
+  startedAt: number;
+}
+
+/**
+ * Stores one attempt. Drills go to the puzzle's drill session, which is a
+ * separate active session from the freestyle one — that is the whole reason
+ * a session carries a mode, and it is what keeps a drilled T perm out of
+ * somebody's ao100.
+ */
+export async function addDrillSolve(input: NewDrillSolve): Promise<Solve> {
+  const session = await getOrCreateActiveSession(input.puzzle, 'drill');
+  return addSolve({
+    sessionId: session.id,
+    puzzle: input.puzzle,
+    mode: 'drill',
+    caseId: input.caseId,
+    scramble: input.scramble,
+    rawMs: input.rawMs,
+    penalty: input.penalty,
+    penaltySource: input.penaltySource,
+    inspectionMs: input.inspectionMs,
+    startedAt: input.startedAt,
+  });
+}
+
+/**
+ * Every attempt at one case, oldest first — the order rolling averages are
+ * defined over. Spans sessions on purpose: a case you drilled last month is
+ * still a case you have drilled.
+ */
+export async function listCaseAttempts(caseId: string): Promise<Solve[]> {
+  const solves = await db.solves
+    .where('[caseId+createdAt]')
+    .between([caseId, Dexie.minKey], [caseId, Dexie.maxKey])
+    .toArray();
+  return solves.filter((solve) => solve.mode === 'drill');
+}
+
+/**
+ * The same for a whole set at once, keyed by case. One pass over the caseId
+ * index rather than a query per case — the OLL screen needs 57 of these to
+ * draw its progress.
+ */
+export async function listAttemptsByCase(
+  caseIds: readonly string[],
+): Promise<Map<string, Solve[]>> {
+  const grouped = new Map<string, Solve[]>(caseIds.map((caseId) => [caseId, []]));
+  if (caseIds.length === 0) return grouped;
+
+  const solves = await db.solves.where('caseId').anyOf([...caseIds]).toArray();
+  for (const solve of solves) {
+    if (solve.mode !== 'drill' || solve.caseId === null) continue;
+    grouped.get(solve.caseId)?.push(solve);
+  }
+  for (const attempts of grouped.values()) {
+    attempts.sort((a, b) => a.createdAt - b.createdAt);
+  }
+  return grouped;
+}
+
+/**
+ * The cases a drill draws from: the set, narrowed to the user's selection,
+ * each with the algorithm it is drilled with. Selecting nothing drills
+ * everything (see drillPool).
+ */
+export async function loadDrillPool(
+  setId: string,
+  selectedIds: readonly string[] | null = null,
+): Promise<CaseWithAlg[]> {
+  const cases = await listCasesWithAlgs(setId);
+  const wanted = drillPool(
+    cases.map((entry) => ({ id: entry.algCase.id })),
+    selectedIds,
+  );
+  const ids = new Set(wanted.map((entry) => entry.id));
+  return cases.filter((entry) => ids.has(entry.algCase.id));
+}
+
+/**
+ * Lets go of a case that no longer exists, leaving the attempts themselves
+ * alone. A drill solve is a time somebody actually got; deleting a custom
+ * case must not delete their history with it (SPEC 4.3).
+ */
+export async function detachCase(caseId: string): Promise<void> {
+  const timestamp = now();
+  await db.solves
+    .where('[caseId+createdAt]')
+    .between([caseId, Dexie.minKey], [caseId, Dexie.maxKey])
+    .modify({ caseId: null, updatedAt: timestamp });
+}
