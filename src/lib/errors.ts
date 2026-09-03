@@ -116,6 +116,8 @@ const PROBE_TIMEOUT_MS = 4000;
 export interface WriteWatchdog {
   /** A trivial read. If this answers, the slow write was only slow. */
   probe: () => Promise<unknown>;
+  /** What is stuck, in one line, for the log to carry to whoever asks. */
+  survey: () => Promise<string>;
   /** Opens the connection if it is gone, without disturbing a working one. */
   reopen: () => Promise<unknown>;
   /** Closes and opens again, which also throws away whatever was stuck. */
@@ -211,6 +213,7 @@ export function watchWrite(run: () => Promise<unknown>, context: string): void {
     }
 
     logQuietly(context, new Error(strings.errors.notResponding));
+    logQuietly(strings.errors.databaseSurvey, await watchdog.survey());
     await retry(watchdog.recover);
   }
 

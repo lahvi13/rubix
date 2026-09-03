@@ -168,7 +168,7 @@ export function DataScreen() {
  * this the only cure a user can find is opening the site in a browser.
  */
 function Troubleshooting() {
-  const { isOpen, errors, reconnect, clearErrors } = useDatabaseHealth();
+  const { isOpen, errors, reconnect, survey, clearErrors } = useDatabaseHealth();
   const [outcome, setOutcome] = useState<string | null>(null);
 
   return (
@@ -194,8 +194,11 @@ function Troubleshooting() {
         <button type="button" onClick={() => window.location.reload()}>
           {strings.diagnostics.reload}
         </button>
+        <button type="button" onClick={() => void survey().then(setOutcome)}>
+          {strings.diagnostics.survey}
+        </button>
       </div>
-      {outcome === null ? null : <p className="data-section__hint">{outcome}</p>}
+      {outcome === null ? null : <p className="data-section__hint diagnostics__outcome">{outcome}</p>}
 
       <h3 className="data-section__subtitle">{strings.diagnostics.recent}</h3>
       {errors.length === 0 ? (

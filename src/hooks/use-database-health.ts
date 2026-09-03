@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   databaseGeneration,
+  ensureDatabaseOpen,
   isDatabaseOpen,
   onDatabaseReconnect,
   reconnectDatabase,
+  surveyDatabase,
 } from '../db/schema';
 import { onError, recentErrors, forgetErrors, type AppError } from '../lib/errors';
 
@@ -24,6 +26,8 @@ export interface DatabaseHealth {
   /** Newest first, and kept across restarts — see lib/errors. */
   errors: AppError[];
   reconnect: () => Promise<boolean>;
+  /** What is stuck, table by table — the line that ends the guessing. */
+  survey: () => Promise<string>;
   clearErrors: () => void;
 }
 
@@ -37,6 +41,10 @@ export function useDatabaseHealth(): DatabaseHealth {
   const [errors, setErrors] = useState<AppError[]>(recentErrors);
 
   useEffect(() => {
+    // Opening takes a moment, and a screen that exists to answer "is the
+    // database there?" must not say no while the answer is still on its way.
+    void ensureDatabaseOpen().then(setOpen);
+
     const stop = onError(() => {
       setErrors(recentErrors());
       setOpen(isDatabaseOpen());
@@ -56,6 +64,11 @@ export function useDatabaseHealth(): DatabaseHealth {
       setOpen(reconnected);
       setErrors(recentErrors());
       return reconnected;
+    }, []),
+    survey: useCallback(async () => {
+      const outcome = await surveyDatabase();
+      setErrors(recentErrors());
+      return outcome;
     }, []),
     clearErrors: useCallback(() => {
       forgetErrors();

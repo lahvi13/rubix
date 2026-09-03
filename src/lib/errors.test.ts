@@ -83,7 +83,7 @@ describe('watched writes', () => {
       .mockRejectedValueOnce(new Error('DatabaseClosedError'))
       .mockResolvedValueOnce(undefined);
     const reopen = vi.fn(() => Promise.resolve());
-    installWriteWatchdog({ probe: alive, reopen, recover: () => Promise.resolve() });
+    installWriteWatchdog({ probe: alive, survey: () => Promise.resolve('survey'), reopen, recover: () => Promise.resolve() });
 
     watchWrite(run, 'cube skin');
     await vi.waitFor(() => expect(run).toHaveBeenCalledTimes(2));
@@ -98,6 +98,7 @@ describe('watched writes', () => {
     const run = vi.fn(() => Promise.reject(new Error('QuotaExceededError')));
     installWriteWatchdog({
       probe: alive,
+    survey: () => Promise.resolve("survey"),
       reopen: () => Promise.resolve(),
       recover: () => Promise.resolve(),
     });
@@ -112,6 +113,7 @@ describe('watched writes', () => {
   it('says nothing when the write is only slow — the database still answers', async () => {
     installWriteWatchdog({
       probe: alive,
+    survey: () => Promise.resolve("survey"),
       reopen: () => Promise.resolve(),
       recover: () => Promise.resolve(),
     });
@@ -129,7 +131,7 @@ describe('watched writes', () => {
   it('puts the connection back and writes again when nothing answers', async () => {
     const recover = vi.fn(() => Promise.resolve());
     const run = vi.fn().mockImplementationOnce(dead).mockResolvedValueOnce(undefined);
-    installWriteWatchdog({ probe: dead, reopen: () => Promise.resolve(), recover });
+    installWriteWatchdog({ probe: dead, survey: () => Promise.resolve('survey'), reopen: () => Promise.resolve(), recover });
 
     vi.useFakeTimers();
     try {
@@ -141,9 +143,13 @@ describe('watched writes', () => {
 
     expect(recover).toHaveBeenCalledTimes(1);
     expect(run).toHaveBeenCalledTimes(2);
-    // Quietly: the write did land in the end.
+    // Quietly: the write did land in the end, with the survey of what was
+    // stuck written down next to it.
     expect(lastError()).toBeNull();
-    expect(recentErrors()[0]?.message).toMatch(/did not answer/);
+    expect(recentErrors().map((error) => error.message)).toEqual([
+      'survey',
+      expect.stringMatching(/did not answer/) as unknown as string,
+    ]);
   });
 
   it('keeps a handled failure in the log without raising the banner', () => {

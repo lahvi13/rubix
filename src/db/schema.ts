@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import { installWriteWatchdog, logQuietly, reportError } from '../lib/errors';
+import { now } from '../lib/clock';
 import { strings } from '../lib/strings';
 import type {
   AlgCase,
@@ -140,6 +141,7 @@ export async function reconnectDatabase(): Promise<boolean> {
  */
 installWriteWatchdog({
   probe: () => db.settings.get('probe.alive'),
+  survey: surveyDatabase,
   reopen: ensureDatabaseOpen,
   recover: reconnectDatabase,
 });
@@ -166,3 +168,70 @@ void ensureDatabaseOpen();
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') void ensureDatabaseOpen();
 });
+
+/**
+ * A hidden copy of this app must not hold the database.
+ *
+ * Two copies are normal — the installed app and a browser tab — and the phone
+ * freezes whichever is in the background. A frozen page keeps its connection
+ * and any transaction inside it, and that blocks the copy the user is actually
+ * looking at: writes queue for ever, and no amount of reloading *that* copy
+ * helps, because the block is in the other one. So this copy lets go the
+ * moment it is put away, and takes the database back when it returns.
+ */
+document.addEventListener('freeze', () => db.close());
+window.addEventListener('pagehide', () => db.close());
+document.addEventListener('resume', () => void ensureDatabaseOpen());
+window.addEventListener('pageshow', () => void ensureDatabaseOpen());
+
+/**
+ * What is actually stuck, table by table, and whether a brand new connection
+ * fares any better. Run when a write times out: "the database did not answer"
+ * is where the diagnosis used to stop, and this is the line that carries it
+ * further — a fresh connection that also hangs means the block is held by
+ * another copy of the app, which is a different problem from a connection of
+ * ours gone bad.
+ */
+export async function surveyDatabase(): Promise<string> {
+  const budget = 2500;
+  const timed = async (label: string, work: () => Promise<unknown>): Promise<string> => {
+    const started = performance.now();
+    const outcome = await Promise.race([
+      work().then(
+        () => 'ok',
+        (cause: unknown) => (cause instanceof Error ? cause.name : 'failed'),
+      ),
+      new Promise<string>((resolve) => setTimeout(() => resolve('STUCK'), budget)),
+    ]);
+    const took = Math.round(performance.now() - started);
+    return `${label}=${outcome === 'ok' ? `${took}ms` : outcome}`;
+  };
+
+  const parts = await Promise.all([
+    timed('settings', () => db.settings.get('probe.alive')),
+    timed('algorithms', () => db.algorithms.count()),
+    timed('solves', () => db.solves.count()),
+    timed('write', () =>
+      db.settings.put({ key: 'probe.alive', value: 1, deviceLocal: 1, updatedAt: now() }),
+    ),
+    timed('newConnection', openFreshConnection),
+  ]);
+
+  return parts.join(' ');
+}
+
+/**
+ * A connection opened straight through the browser, bypassing Dexie. If this
+ * one hangs as well, nothing about our connection is to blame.
+ */
+async function openFreshConnection(): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME);
+    request.onsuccess = () => {
+      request.result.close();
+      resolve();
+    };
+    request.onerror = () => reject(request.error ?? new Error('open failed'));
+    request.onblocked = () => reject(new Error('blocked'));
+  });
+}

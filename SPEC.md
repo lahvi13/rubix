@@ -533,6 +533,15 @@ jediná chyba. Řetěz obrany:
   `databaseGeneration()` a `App` podle něj přemountuje obrazovky — bez toho je
   databáze „connected", ale seznamy zůstanou prázdné (přesně tak vypadalo
   „zmizely všechny algoritmy"). Ze stejného důvodu se po přepojení znovu pouští seed
+- **dvě kopie aplikace jsou normální stav** (instalovaná PWA + tab v prohlížeči) a
+  telefon tu na pozadí zmrazí. Zmrazená stránka si drží spojení i rozdělanou
+  transakci, a tím blokuje tu kopii, na kterou se uživatel dívá — reload té
+  viditelné nepomůže, protože blokáda je jinde. Proto se při `freeze`/`pagehide`
+  spojení **pouští** a při `resume`/`pageshow` bere zpět
+- `surveyDatabase()` změří každou tabulku zvlášť plus čerstvé spojení mimo Dexie
+  a zapíše jednu řádku typu `settings=STUCK algorithms=1ms newConnection=0ms`.
+  Spouští se sama, když zápis nedoběhne, a je i tlačítkem na obrazovce Data —
+  bez ní diagnóza končila u „databáze neodpověděla"
 - poslední selhání se ukládají do `localStorage` (`lib/errors.ts`), protože se
   zkoumají až po restartu; obrazovka Data je vypisuje a nabízí ruční přepojení
 - **prázdno se nesmí plést s „ještě nenačteno"**: hooky vracejí `undefined`, dokud
