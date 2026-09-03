@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CROSS_HOLDS, MAX_CROSS_MOVES, solveCross } from './cross-solver';
+import { CROSS_HOLDS, MAX_CROSS_MOVES, crossSolutions, solveCross } from './cross-solver';
 import { formatAlg, parseAlg, type Move } from './notation';
 import { FACELETS, applyAlg, solvedState, type CubeState } from './state';
 
@@ -140,6 +140,29 @@ describe('solveCross', () => {
       // The face the cross ends on is the one that was on top for the scramble.
       expect(centreOf(solved, 'D')).toBe('U');
     }
+  });
+
+  it('offers several ways of the same length, all of which work', () => {
+    const state = scrambled("F R U' L2 D B' R2 U D' F2");
+    const solutions = crossSolutions(state, 4);
+    const best = solveCross(state)?.length ?? 0;
+
+    expect(solutions.length).toBeGreaterThan(1);
+    for (const solution of solutions) {
+      expect(solution).toHaveLength(best);
+      expect(isCrossSolved(applyAlg(state, solution))).toBe(true);
+    }
+  });
+
+  it('does not count the same moves in another order as another way', () => {
+    // Every ordering of these four solves the cross, and they are all one idea.
+    const solutions = crossSolutions(scrambled('F2 R2 B2 L2'), 4);
+    expect(solutions).toHaveLength(1);
+  });
+
+  it('offers exactly one way when the cross is already done: nothing', () => {
+    expect(crossSolutions(solvedState(), 4)).toEqual([[]]);
+    expect(solveCross(solvedState())).toEqual([]);
   });
 
   it('refuses a state whose cross edges are not all there', () => {

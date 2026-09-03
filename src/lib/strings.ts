@@ -143,7 +143,7 @@ export const strings = {
     crossSolution: 'Shortest cross',
     crossMoves: 'moves',
     crossSolved: 'The cross is already done.',
-    crossFront: 'Turn it cross-down, then tap what you have in front:',
+    crossFront: 'In front:',
     crossColours: { F: 'Green', R: 'Red', B: 'Blue', L: 'Orange' },
   },
   settings: {

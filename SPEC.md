@@ -190,7 +190,9 @@ kromě PB, které je globální per `puzzle`.
   není potřeba: čtyři hrany mají 24 poloh každá, celý prostor se vejde do
   jednoho `Uint8Array` (24⁴ ≈ 332 tis. políček) a BFS ze složeného kříže dá
   **přesné** vzdálenosti; řešení se pak nehledá, jen se čte sestup z tabulky,
-  takže je vždycky optimální (v HTM, nejvýš 8 tahů). Tabulka se staví líně,
+  takže je vždycky optimální (v HTM, nejvýš 8 tahů). Vypíše se **víc řešení téže
+  délky** (bez těch, co jsou jen jiné pořadí týchž tahů) — které sedne do ruky,
+  je celý smysl toho koukání. Tabulka se staví líně,
   jednou, mimo běžící timer
 - **poloha se nepředepisuje, vybírá se**: kostku lze po scramblu vzít křížem
   dolů čtyřmi způsoby a tahy se pro každý liší. Místo prefixu `z2` a doufání

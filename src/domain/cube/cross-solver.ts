@@ -14,7 +14,7 @@
  * the same permutations the rest of the app is tested on.
  */
 
-import { FACES, parseAlg, parseMove, type Face, type Move } from './notation';
+import { FACES, formatMove, parseAlg, parseMove, type Face, type Move } from './notation';
 import { FACELETS, applyAlg, movePermutation, solvedState, type CubeState } from './state';
 
 /** The cross is the D face; U is yellow in this model (see cube-skins.ts). */
@@ -247,32 +247,63 @@ function placesOf(state: CubeState): number[] | null {
  * the answer needs no rewriting afterwards.
  */
 export function solveCross(state: CubeState): Move[] | null {
+  return crossSolutions(state, 1)[0] ?? (placesOf(state) === null ? null : []);
+}
+
+/** Keeps the search honest if a position ever had an unreasonable number. */
+const SEARCH_BUDGET = 50_000;
+
+/**
+ * Several ways to do it, not just one — there is nearly always more than one
+ * shortest cross, and which one suits your hands is the whole point of
+ * looking.
+ *
+ * All of them are the same length; the ones that differ only in the order of
+ * the same moves are left out, because four spellings of one idea is not four
+ * ideas.
+ */
+export function crossSolutions(state: CubeState, limit = 4): Move[][] {
   const places = placesOf(state);
-  if (places === null) return null;
+  if (places === null) return [];
 
   const table = crossDistances();
-  let index = encode(places);
-  let distance = table[index] ?? UNVISITED;
-  if (distance === UNVISITED) return null;
+  const start = encode(places);
+  if ((table[start] ?? UNVISITED) === UNVISITED) return [];
 
-  const solution: Move[] = [];
-  while (distance > 0) {
-    const next = MOVES.findIndex((_, moveIndex) => {
+  const found: Move[][] = [];
+  const seen = new Set<string>();
+  const path: Move[] = [];
+  let budget = SEARCH_BUDGET;
+
+  const walk = (index: number, distance: number): void => {
+    if (found.length >= limit || budget <= 0) return;
+    budget -= 1;
+
+    if (distance === 0) {
+      // Same moves in another order is the same answer to a reader.
+      const signature = [...path.map(formatMove)].sort().join(' ');
+      if (seen.has(signature)) return;
+      seen.add(signature);
+      found.push([...path]);
+      return;
+    }
+
+    for (const [moveIndex, move] of MOVES.entries()) {
       const transition = TRANSITIONS[moveIndex];
-      if (transition === undefined) return false;
-      return table[step(index, transition)] === distance - 1;
-    });
-    // Every position above zero has a neighbour one step closer; the table
-    // was built by walking outwards from the solved one.
-    const move = MOVES[next];
-    const transition = TRANSITIONS[next];
-    if (move === undefined || transition === undefined) return null;
+      if (transition === undefined) continue;
 
-    solution.push(move);
-    index = step(index, transition);
-    distance -= 1;
-  }
-  return solution;
+      const next = step(index, transition);
+      if (table[next] !== distance - 1) continue;
+
+      path.push(move);
+      walk(next, distance - 1);
+      path.pop();
+      if (found.length >= limit) return;
+    }
+  };
+
+  walk(start, table[start] ?? 0);
+  return found;
 }
 
 /**

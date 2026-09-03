@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { TimerDisplay } from '../../../components/TimerDisplay';
 import { formatAlg, parseAlg, type Move } from '../../../domain/cube/notation';
-import { CROSS_HOLDS, solveCross, warmCrossSolver } from '../../../domain/cube/cross-solver';
+import { CROSS_HOLDS, crossSolutions, warmCrossSolver } from '../../../domain/cube/cross-solver';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { withWhiteTop } from '../../../lib/cube-skins';
 import { slowestCases, type CaseStats } from '../../../domain/drill/case-stats';
@@ -78,16 +78,19 @@ export function DrillScreen() {
         </div>
 
         {drill.isCross ? (
-          // The cross is the one drill that inspects, so it is the one that
-          // needs the switch. It is the same switch as the timer screen's.
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={drill.timer.inspectionEnabled}
-              onChange={(event) => drill.timer.setInspectionEnabled(event.target.checked)}
-            />
-            {strings.timer.inspectionToggle}
-          </label>
+          <>
+            {/* The cross is the one drill that inspects, so it is the one that
+                needs the switch. It is the same switch as the timer screen's. */}
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={drill.timer.inspectionEnabled}
+                onChange={(event) => drill.timer.setInspectionEnabled(event.target.checked)}
+              />
+              {strings.timer.inspectionToggle}
+            </label>
+            <FrontPicker skin={skin} />
+          </>
         ) : (
           <div className="drill__pool">
             <button
@@ -252,7 +255,7 @@ function Answer({ current, setId, skin, triggers, stats, gaveUp, isCross, onNext
         />
       )}
       {moves.length === 0 ? null : <AlgText moves={moves} triggers={triggers} />}
-      {isCross ? <CrossSolution scramble={current.scramble} skin={skin} /> : null}
+      {isCross ? <CrossSolution scramble={current.scramble} /> : null}
 
       <CaseStatsRow stats={stats} />
 
@@ -273,7 +276,6 @@ const COLOUR_NAMES: Record<string, string> = strings.drill.crossColours;
 
 interface CrossSolutionProps {
   scramble: string;
-  skin: ReturnType<typeof useCubeSkin>;
 }
 
 /**
@@ -285,47 +287,71 @@ interface CrossSolutionProps {
  * colours are on show and tapping one rewrites the solution. That also
  * explains the convention without a word of explanation.
  */
-function CrossSolution({ scramble, skin }: CrossSolutionProps) {
-  const [front, setFront] = useSetting('trainer.crossFront');
-  // A scramble is performed with white on top, and these are its colours.
-  const scrambleSkin = withWhiteTop(skin);
+function CrossSolution({ scramble }: CrossSolutionProps) {
+  const [front] = useSetting('trainer.crossFront');
 
   const parsed = parseAlg(scramble);
   const hold = CROSS_HOLDS.find((choice) => choice.front === front) ?? CROSS_HOLDS[0];
-  const solution =
+  const solutions =
     parsed.ok && hold !== undefined
-      ? solveCross(applyAlg(applyAlg(solvedState(), parsed.moves), hold.rotation))
-      : null;
+      ? crossSolutions(applyAlg(applyAlg(solvedState(), parsed.moves), hold.rotation))
+      : [];
+
+  const [best, ...rest] = solutions;
+  if (best === undefined) return null;
 
   return (
     <>
       <h3 className="drill__case-name">
         {strings.drill.crossSolution}
-        {solution === null || solution.length === 0
-          ? ''
-          : ` · ${solution.length} ${strings.drill.crossMoves}`}
+        {best.length === 0 ? '' : ` · ${best.length} ${strings.drill.crossMoves}`}
       </h3>
-      {solution !== null && solution.length === 0 ? (
+      {best.length === 0 ? (
         <p className="drill__hint">{strings.drill.crossSolved}</p>
-      ) : null}
-      {solution !== null && solution.length > 0 ? (
-        <p className="drill__moves">{formatAlg(solution)}</p>
-      ) : null}
-
-      <p className="drill__hint">{strings.drill.crossFront}</p>
-      <div className="drill__fronts">
-        {CROSS_HOLDS.map((choice) => (
-          <button
-            key={choice.front}
-            type="button"
-            className={choice.front === hold?.front ? 'drill__front is-active' : 'drill__front'}
-            style={{ background: scrambleSkin.faces[choice.front] }}
-            aria-label={COLOUR_NAMES[choice.front] ?? choice.front}
-            aria-pressed={choice.front === hold?.front}
-            onClick={() => setFront(choice.front)}
-          />
-        ))}
-      </div>
+      ) : (
+        <>
+          <p className="drill__moves">{formatAlg(best)}</p>
+          {/* The others are the same length; which one suits your hands is
+              exactly what there is to look at. */}
+          {rest.length === 0 ? null : (
+            <ul className="drill__alternatives">
+              {rest.map((solution) => (
+                <li key={formatAlg(solution)}>{formatAlg(solution)}</li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
     </>
+  );
+}
+
+/**
+ * Which side is towards you. It sits with the scramble rather than with the
+ * answer, because that is when you know: you read the scramble, put the cube
+ * down cross-first and tap the colour you are looking at. The answer is then
+ * already written for that grip — and tapping another colour after the fact
+ * rewrites it, because this row is still on screen.
+ */
+function FrontPicker({ skin }: { skin: ReturnType<typeof useCubeSkin> }) {
+  const [front, setFront] = useSetting('trainer.crossFront');
+  // A scramble is performed with white on top, and these are its colours.
+  const scrambleSkin = withWhiteTop(skin);
+
+  return (
+    <div className="drill__fronts">
+      <span className="drill__hint">{strings.drill.crossFront}</span>
+      {CROSS_HOLDS.map((choice) => (
+        <button
+          key={choice.front}
+          type="button"
+          className={choice.front === front ? 'drill__front is-active' : 'drill__front'}
+          style={{ background: scrambleSkin.faces[choice.front] }}
+          aria-label={COLOUR_NAMES[choice.front] ?? choice.front}
+          aria-pressed={choice.front === front}
+          onClick={() => setFront(choice.front)}
+        />
+      ))}
+    </div>
   );
 }

@@ -1151,6 +1151,21 @@ button.is-danger {
   box-shadow: 0 0 0 2px var(--bg) inset;
 }
 
+/* The other shortest solutions: there to be compared, so quieter than the
+   first but still in the same monospaced shape. */
+.drill__alternatives {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 1rem;
+  color: var(--muted);
+  text-align: center;
+}
+
 .drill__picker-done {
   width: 100%;
   margin-top: 0.6rem;
