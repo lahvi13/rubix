@@ -74,45 +74,50 @@ describe('the log that outlives the page', () => {
 });
 
 describe('watched writes', () => {
-  it('reports a write that rejects with nobody awaiting it', async () => {
-    watchWrite(Promise.reject(new Error('QuotaExceededError')), 'cube skin');
+  const alive = () => Promise.resolve(null);
+  const dead = () => new Promise<never>(() => {});
+
+  it('repeats a write the lost connection swallowed, and says nothing', async () => {
+    const run = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('DatabaseClosedError'))
+      .mockResolvedValueOnce(undefined);
+    const reopen = vi.fn(() => Promise.resolve());
+    installWriteWatchdog({ probe: alive, reopen, recover: () => Promise.resolve() });
+
+    watchWrite(run, 'cube skin');
+    await vi.waitFor(() => expect(run).toHaveBeenCalledTimes(2));
+
+    expect(reopen).toHaveBeenCalledTimes(1);
+    expect(lastError()).toBeNull();
+    // The swallowed attempt is still on the record for anyone looking.
+    expect(recentErrors()[0]?.message).toContain('DatabaseClosedError');
+  });
+
+  it('reports when the second attempt fails too — then the tap really was lost', async () => {
+    const run = vi.fn(() => Promise.reject(new Error('QuotaExceededError')));
+    installWriteWatchdog({
+      probe: alive,
+      reopen: () => Promise.resolve(),
+      recover: () => Promise.resolve(),
+    });
+
+    watchWrite(run, 'cube skin');
     await vi.waitFor(() => expect(lastError()?.context).toBe('cube skin'));
 
+    expect(run).toHaveBeenCalledTimes(2);
     expect(lastError()?.message).toBe('QuotaExceededError');
   });
 
-  it('reports a write that never settles — the silent freeze', async () => {
+  it('says nothing when the write is only slow — the database still answers', async () => {
+    installWriteWatchdog({
+      probe: alive,
+      reopen: () => Promise.resolve(),
+      recover: () => Promise.resolve(),
+    });
     vi.useFakeTimers();
     try {
-      watchWrite(new Promise(() => {}), 'cube skin');
-      await vi.advanceTimersByTimeAsync(9000);
-    } finally {
-      vi.useRealTimers();
-    }
-
-    expect(lastError()?.context).toBe('cube skin');
-    expect(lastError()?.message).toMatch(/did not answer/);
-  });
-
-  it('stays quiet when the write lands', async () => {
-    vi.useFakeTimers();
-    try {
-      watchWrite(Promise.resolve(), 'cube skin');
-      await vi.advanceTimersByTimeAsync(10000);
-    } finally {
-      vi.useRealTimers();
-    }
-
-    expect(lastError()).toBeNull();
-  });
-});
-
-describe('recovering rather than shouting', () => {
-  it('says nothing when the write was only slow — the database still answers', async () => {
-    installWriteWatchdog({ probe: () => Promise.resolve(null), recover: () => Promise.resolve() });
-    vi.useFakeTimers();
-    try {
-      watchWrite(new Promise(() => {}), 'cube skin');
+      watchWrite(dead, 'cube skin');
       await vi.advanceTimersByTimeAsync(20000);
     } finally {
       vi.useRealTimers();
@@ -121,19 +126,24 @@ describe('recovering rather than shouting', () => {
     expect(lastError()).toBeNull();
   });
 
-  it('reports and reconnects when the database stops answering too', async () => {
+  it('puts the connection back and writes again when nothing answers', async () => {
     const recover = vi.fn(() => Promise.resolve());
-    installWriteWatchdog({ probe: () => new Promise(() => {}), recover });
+    const run = vi.fn().mockImplementationOnce(dead).mockResolvedValueOnce(undefined);
+    installWriteWatchdog({ probe: dead, reopen: () => Promise.resolve(), recover });
+
     vi.useFakeTimers();
     try {
-      watchWrite(new Promise(() => {}), 'cube skin');
+      watchWrite(run, 'cube skin');
       await vi.advanceTimersByTimeAsync(20000);
     } finally {
       vi.useRealTimers();
     }
 
-    expect(lastError()?.context).toBe('cube skin');
     expect(recover).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledTimes(2);
+    // Quietly: the write did land in the end.
+    expect(lastError()).toBeNull();
+    expect(recentErrors()[0]?.message).toMatch(/did not answer/);
   });
 
   it('keeps a handled failure in the log without raising the banner', () => {

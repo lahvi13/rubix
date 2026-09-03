@@ -17,8 +17,11 @@ describe('TrainerScreen', () => {
 
     const card = await screen.findByRole('button', { name: 'F2L 1' });
     // The picture is the card; its name is the caption, so the diagram itself
-    // stays out of the accessibility tree.
-    expect(card.querySelector('svg')).toBeInTheDocument();
+    // stays out of the accessibility tree — an image with no alt text.
+    const diagram = card.querySelector('img');
+    expect(diagram).toBeInTheDocument();
+    expect(diagram?.getAttribute('alt')).toBe('');
+    expect(diagram?.getAttribute('src')).toContain('data:image/svg+xml,');
     expect(screen.getAllByRole('button', { name: /^F2L \d+$/ })).toHaveLength(41);
   });
 

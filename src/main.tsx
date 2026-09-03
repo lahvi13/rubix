@@ -23,7 +23,8 @@ const seed = () => void seedPacks().catch((cause: unknown) => reportError(string
 seed();
 
 // A connection lost mid-seed can leave the packs half written, and nothing
-// else would ever notice: the seed only runs at startup.
+// else would ever notice: the seed only runs at startup. It is cheap when
+// there is nothing to do, so running it after a repair costs little.
 onDatabaseReconnect(seed);
 
 const container = document.getElementById('root');

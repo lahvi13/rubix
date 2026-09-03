@@ -958,6 +958,12 @@ button.is-danger {
   color: var(--text);
   font: inherit;
   cursor: pointer;
+  /* A set is up to 57 cards, each a cube drawn from 54 stickers. Laying out
+     and painting the ones nobody has scrolled to yet is what made the trainer
+     take seconds to appear on a phone — and while it did, nothing else on the
+     main thread could answer, taps included. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 7rem;
 }
 
 .case-card:hover,

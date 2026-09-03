@@ -116,7 +116,9 @@ const PROBE_TIMEOUT_MS = 4000;
 export interface WriteWatchdog {
   /** A trivial read. If this answers, the slow write was only slow. */
   probe: () => Promise<unknown>;
-  /** Closes and opens the connection again. */
+  /** Opens the connection if it is gone, without disturbing a working one. */
+  reopen: () => Promise<unknown>;
+  /** Closes and opens again, which also throws away whatever was stuck. */
   recover: () => Promise<unknown>;
 }
 
@@ -140,47 +142,94 @@ async function settlesWithin<T>(work: Promise<T>, ms: number): Promise<boolean> 
   return outcome !== timeout;
 }
 
+/** A timer this late means the thread is busy, not that the database is gone. */
+const JAM_THRESHOLD_MS = 250;
+
 /**
- * A write nobody awaits, watched. Three things go wrong invisibly here: the
- * promise rejects with no handler, it never settles at all, or the whole
- * database stops answering — and any of them looks exactly like a switch that
- * ignores taps.
- *
- * A slow write on its own says nothing, so the alarm is only raised once a
- * plain read has failed to answer too. Then the connection is put back
- * together, because a database that stopped answering never starts again on
- * its own.
+ * How long a zero-delay timer really takes. Rendering fifty cube diagrams, or
+ * cubing.js starting up, blocks everything for seconds — and while it does, a
+ * database call cannot answer either.
  */
-export function watchWrite(work: Promise<unknown>, context: string): void {
-  let isSettled = false;
+export async function isMainThreadJammed(): Promise<boolean> {
+  const start = performance.now();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  return performance.now() - start > JAM_THRESHOLD_MS;
+}
+
+/**
+ * A write nobody awaits, and it is given a second chance rather than a report.
+ *
+ * The phone takes the connection away whenever it feels like it — often while
+ * a tap is being written — and a write caught by that is simply lost. So the
+ * work is passed as something that can be run again: if the first attempt
+ * fails or hangs, the connection is put back and the write is repeated. Only a
+ * second failure is worth telling the user about, because only then did their
+ * tap really not happen.
+ *
+ * A slow write on its own means nothing: a phone loading the 3D cube blocks
+ * the main thread for seconds. That is what the probe is for — a plain read
+ * that answers proves the database is fine and the alarm stays down.
+ */
+export function watchWrite(run: () => Promise<unknown>, context: string): void {
+  let isDone = false;
+  const first = run();
   const timer = setTimeout(() => void checkOn(), WRITE_TIMEOUT_MS);
 
+  /** The write again, on a connection that has been put back first. */
+  async function retry(repair: () => Promise<unknown>): Promise<void> {
+    if (isDone || isRecovering) return;
+    isRecovering = true;
+    try {
+      await repair();
+      await run();
+      isDone = true;
+    } catch (cause: unknown) {
+      isDone = true;
+      reportError(context, cause);
+    } finally {
+      isRecovering = false;
+      clearTimeout(timer);
+    }
+  }
+
   async function checkOn(): Promise<void> {
-    if (isSettled) return;
+    if (isDone) return;
     if (watchdog === null) {
       reportError(context, new Error(strings.errors.notResponding));
       return;
     }
 
+    // Busy is not broken: if a plain read comes back, the write is on its way.
     if (await settlesWithin(watchdog.probe(), PROBE_TIMEOUT_MS)) return;
-    if (isSettled) return;
+    if (isDone) return;
 
-    reportError(context, new Error(strings.errors.notResponding));
-    if (isRecovering) return;
-    isRecovering = true;
-    try {
-      await watchdog.recover();
-    } finally {
-      isRecovering = false;
+    // Nor is a jammed main thread: nothing can answer while it is blocked, the
+    // database least of all, and closing the connection would help nobody.
+    if (await isMainThreadJammed()) {
+      logQuietly(context, new Error(strings.errors.mainThreadBusy));
+      return;
     }
+
+    logQuietly(context, new Error(strings.errors.notResponding));
+    await retry(watchdog.recover);
   }
 
-  void work
-    .catch((cause: unknown) => reportError(context, cause))
-    .finally(() => {
-      isSettled = true;
+  void first.then(
+    () => {
+      isDone = true;
       clearTimeout(timer);
-    });
+    },
+    (cause: unknown) => {
+      // A connection taken away mid-write: reopen and do it again.
+      if (watchdog === null) {
+        isDone = true;
+        reportError(context, cause);
+        return;
+      }
+      logQuietly(context, cause);
+      void retry(watchdog.reopen);
+    },
+  );
 }
 
 /** Catches the failures nobody remembered to await. */

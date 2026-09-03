@@ -119,7 +119,7 @@ export function CaseDetail({
                 type="radio"
                 name="variant"
                 checked={algorithm.id === active?.id}
-                onChange={() => watchWrite(choose(algorithm.id), strings.trainer.chooseAlgorithm)}
+                onChange={() => watchWrite(() => choose(algorithm.id), strings.trainer.chooseAlgorithm)}
               />
               <span className="variants__moves">{algorithm.moves}</span>
             </label>
@@ -130,7 +130,7 @@ export function CaseDetail({
               <button
                 type="button"
                 onClick={() =>
-                  watchWrite(removeVariant(algorithm.id), strings.trainer.removeAlgorithm)
+                  watchWrite(() => removeVariant(algorithm.id), strings.trainer.removeAlgorithm)
                 }
               >
                 {strings.solve.delete}
@@ -145,7 +145,7 @@ export function CaseDetail({
         onSubmit={(event) => {
           event.preventDefault();
           if (draft.trim() === '' || draftError) return;
-          watchWrite(addVariant(draft), strings.trainer.addAlgorithm);
+          watchWrite(() => addVariant(draft), strings.trainer.addAlgorithm);
           setDraft('');
         }}
       >

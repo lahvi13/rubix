@@ -204,6 +204,7 @@ export const strings = {
     databaseBlocked: 'another window of the app is holding the database — close it and reload',
     databaseClosed: 'the connection was closed — reconnecting',
     notResponding: 'the database did not answer in time — reload the app',
+    mainThreadBusy: 'the app was too busy to write it; it will land in a moment',
     seed: 'Could not load the algorithm packs',
     dismiss: 'Dismiss',
   },

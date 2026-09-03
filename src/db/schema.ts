@@ -74,13 +74,14 @@ export const db = new RubixDB();
 const OPEN_TIMEOUT_MS = 6000;
 
 /**
- * Counts connections, not opens: it goes up every time the database comes back
- * after having been open once already. Live queries do not survive their
- * connection — they simply stop delivering — so whoever holds one has to start
- * it again, and this is the signal to do it by.
+ * Goes up when the connection had to be *repaired* — not when the phone merely
+ * took it away and it came back. A repair throws away whatever was stuck,
+ * which can include the queries a screen is waiting on, so those screens have
+ * to ask again. A routine reopen leaves them alone: on a phone the connection
+ * is lost every few minutes, and rebuilding fifty cube diagrams each time is
+ * its own kind of broken.
  */
 let generation = 0;
-let hasEverOpened = false;
 const reconnectListeners = new Set<() => void>();
 
 export function databaseGeneration(): number {
@@ -104,14 +105,7 @@ export async function ensureDatabaseOpen(): Promise<boolean> {
     new Promise<'stuck'>((resolve) => setTimeout(() => resolve('stuck'), OPEN_TIMEOUT_MS)),
   ]).catch((cause: unknown) => cause);
 
-  if (verdict === 'open') {
-    if (hasEverOpened) {
-      generation += 1;
-      for (const listener of reconnectListeners) listener();
-    }
-    hasEverOpened = true;
-    return true;
-  }
+  if (verdict === 'open') return true;
   if (verdict === 'stuck') {
     reportError(strings.errors.database, new Error(strings.errors.databaseStuck));
     return false;
@@ -131,7 +125,12 @@ export function isDatabaseOpen(): boolean {
 
 export async function reconnectDatabase(): Promise<boolean> {
   db.close();
-  return ensureDatabaseOpen();
+  const isOpen = await ensureDatabaseOpen();
+  if (isOpen) {
+    generation += 1;
+    for (const listener of reconnectListeners) listener();
+  }
+  return isOpen;
 }
 
 /**
@@ -141,6 +140,7 @@ export async function reconnectDatabase(): Promise<boolean> {
  */
 installWriteWatchdog({
   probe: () => db.settings.get('probe.alive'),
+  reopen: ensureDatabaseOpen,
   recover: reconnectDatabase,
 });
 

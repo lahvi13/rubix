@@ -32,21 +32,23 @@ export function TriggerPanel() {
                 <input
                   type="checkbox"
                   checked={trigger.isEnabled === 1}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const isEnabled = event.target.checked;
                     watchWrite(
-                      setEnabled(trigger.id, event.target.checked),
+                      () => setEnabled(trigger.id, isEnabled),
                       strings.trainer.triggerEnabled,
-                    )
-                  }
+                    );
+                  }}
                   aria-label={`${strings.trainer.triggerEnabled}: ${trigger.name}`}
                 />
               </label>
               <input
                 className="trigger__name"
                 value={trigger.name}
-                onChange={(event) =>
-                  watchWrite(rename(trigger.id, event.target.value), strings.trainer.triggerName)
-                }
+                onChange={(event) => {
+                  const name = event.target.value;
+                  watchWrite(() => rename(trigger.id, name), strings.trainer.triggerName);
+                }}
                 aria-label={strings.trainer.triggerName}
                 // Shown in its own colour, so the palette below needs no legend.
                 style={{ color: trigger.colour ?? TRIGGER_COLOURS[0] }}
@@ -54,7 +56,7 @@ export function TriggerPanel() {
               <button
                 type="button"
                 className="trigger__delete"
-                onClick={() => watchWrite(remove(trigger.id), strings.solve.delete)}
+                onClick={() => watchWrite(() => remove(trigger.id), strings.solve.delete)}
               >
                 {strings.solve.delete}
               </button>
@@ -65,9 +67,10 @@ export function TriggerPanel() {
                 parseAlg(trigger.moves).ok ? 'trigger__moves' : 'trigger__moves is-invalid'
               }
               value={trigger.moves}
-              onChange={(event) =>
-                watchWrite(rewrite(trigger.id, event.target.value), strings.trainer.triggerMoves)
-              }
+              onChange={(event) => {
+                const moves = event.target.value;
+                watchWrite(() => rewrite(trigger.id, moves), strings.trainer.triggerMoves);
+              }}
               aria-label={strings.trainer.triggerMoves}
               spellCheck={false}
               autoCapitalize="none"
@@ -92,7 +95,7 @@ export function TriggerPanel() {
                   aria-label={colour}
                   aria-pressed={(trigger.colour ?? TRIGGER_COLOURS[0]) === colour}
                   onClick={() =>
-                    watchWrite(recolour(trigger.id, colour), strings.trainer.triggerColour)
+                    watchWrite(() => recolour(trigger.id, colour), strings.trainer.triggerColour)
                   }
                 />
               ))}
@@ -106,7 +109,7 @@ export function TriggerPanel() {
         onSubmit={(event) => {
           event.preventDefault();
           if (!isValid) return;
-          watchWrite(create(name, moves), strings.trainer.addTrigger);
+          watchWrite(() => create(name, moves), strings.trainer.addTrigger);
           setName('');
           setMoves('');
         }}

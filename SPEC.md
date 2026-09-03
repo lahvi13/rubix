@@ -115,6 +115,14 @@ kromě PB, které je globální per `puzzle`.
   z vlastního modelu kostky (`domain/cube/`), ne `<twisty-player>`: na jedné
   obrazovce je až 57 náhledů a tolik custom elementů telefon nedá. Twisty se
   načítá až ve chvíli, kdy si uživatel nechá algoritmus **přehrát**
+- **náhled je obrázek, ne strom elementů**: SVG se poskládá jako text
+  (`components/cube-diagram-svg.ts`), zapamatuje podle klíče
+  `skin|view|stickering|stav` a vykreslí jediným `<img>`. Kostka z 54 obdélníků
+  krát 57 případů byly přes tisíc uzlů na obrazovku a telefon je layoutoval
+  vteřiny, během kterých nereagovalo nic — ani ťuknutí, ani zápis do DB
+  (měřeno: 1189 → 82 uzlů, 14 → 3 dlouhé úlohy). Překreslí se, až když se
+  změní skin nebo případ; karty mají `content-visibility: auto`, takže to,
+  co není vidět, nestojí nic
 - pohled podle sady: PLL a OLL jako klasický LL diagram (OLL jen orientace,
   žlutá/šedá), F2L isometricky s obarveným jen řešeným párem
 - u permutačních případů se kreslí **šipky, kam který kus patří** (výměna =

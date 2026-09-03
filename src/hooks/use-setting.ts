@@ -21,7 +21,7 @@ export function useSetting<K extends SettingKey>(
   return [
     value,
     (next) => {
-      watchWrite(setSetting(key, next), key);
+      watchWrite(() => setSetting(key, next), key);
     },
   ];
 }
