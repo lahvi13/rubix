@@ -9,12 +9,12 @@ import {
   type TimerConfig,
   type TimerEvent,
   type TimerState,
-} from '../../../domain/timer/timer-machine';
-import { penaltyForInspection } from '../../../domain/solve/penalty';
-import type { Penalty } from '../../../db/types';
-import { monotonicNow } from '../../../lib/clock';
-import { beep, primeBeep } from '../../../lib/beep';
-import { SETTING_DEFAULTS, getSetting, setSetting } from '../../../db/repositories/settings-repository';
+} from '../domain/timer/timer-machine';
+import { penaltyForInspection } from '../domain/solve/penalty';
+import type { Penalty } from '../db/types';
+import { monotonicNow } from '../lib/clock';
+import { beep, primeBeep } from '../lib/beep';
+import { SETTING_DEFAULTS, getSetting, setSetting } from '../db/repositories/settings-repository';
 
 export interface CompletedAttempt {
   rawMs: number;
@@ -42,12 +42,25 @@ const DEFAULT_CONFIG: TimerConfig = {
   inspectionEnabled: SETTING_DEFAULTS['timer.inspectionEnabled'],
 };
 
+export interface TimerOptions {
+  /**
+   * 'off' ignores the inspection setting for this timer. The drill uses it:
+   * fifteen seconds of WCA inspection over a three-second PLL is not what is
+   * being trained, and the automatic +2 past fifteen would fire on every
+   * attempt where somebody thought about the case.
+   */
+  inspection?: 'setting' | 'off';
+}
+
 /**
  * Drives the timer state machine from keyboard and pointer input and repaints
  * on animation frames. Nothing is written to the database from here — the
  * caller decides what to do with a finished attempt.
  */
-export function useTimer(onComplete: (attempt: CompletedAttempt) => void): TimerView {
+export function useTimer(
+  onComplete: (attempt: CompletedAttempt) => void,
+  options: TimerOptions = {},
+): TimerView {
   const [state, setState] = useState<TimerState>(initialTimerState);
   const [frameAt, setFrameAt] = useState(() => monotonicNow());
 
@@ -62,7 +75,10 @@ export function useTimer(onComplete: (attempt: CompletedAttempt) => void): Timer
   );
   const config: TimerConfig = {
     holdThresholdMs: settings?.holdThresholdMs ?? DEFAULT_CONFIG.holdThresholdMs,
-    inspectionEnabled: settings?.inspectionEnabled ?? DEFAULT_CONFIG.inspectionEnabled,
+    inspectionEnabled:
+      options.inspection === 'off'
+        ? false
+        : (settings?.inspectionEnabled ?? DEFAULT_CONFIG.inspectionEnabled),
   };
 
   const configRef = useRef(config);

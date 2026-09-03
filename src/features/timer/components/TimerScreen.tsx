@@ -8,11 +8,11 @@ import { reportError } from '../../../lib/errors';
 import { useActiveSession } from '../../sessions';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
-import { useScramble } from '../hooks/use-scramble';
-import { useTimer, type CompletedAttempt } from '../hooks/use-timer';
+import { useScramble } from '../../../hooks/use-scramble';
+import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
 import { ScramblePanel } from './ScramblePanel';
 import { SolveList } from './SolveList';
-import { TimerDisplay } from './TimerDisplay';
+import { TimerDisplay } from '../../../components/TimerDisplay';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';

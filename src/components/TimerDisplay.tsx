@@ -1,8 +1,8 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { TimerState } from '../../../domain/timer/timer-machine';
-import { INSPECTION_LIMIT_MS } from '../../../domain/solve/penalty';
-import { formatInspection, formatMs } from '../../../lib/format';
-import { strings } from '../../../lib/strings';
+import type { TimerState } from '../domain/timer/timer-machine';
+import { INSPECTION_LIMIT_MS } from '../domain/solve/penalty';
+import { formatInspection, formatMs } from '../lib/format';
+import { strings } from '../lib/strings';
 
 interface TimerDisplayProps {
   state: TimerState;
