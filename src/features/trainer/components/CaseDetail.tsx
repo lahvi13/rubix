@@ -9,7 +9,9 @@ import type { CubeSkin } from '../../../lib/cube-skins';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { useCaseDetail } from '../hooks/use-case-detail';
+import { useCaseStat } from '../hooks/use-case-stats';
 import { AlgText } from './AlgText';
+import { CaseStatsRow } from './CaseStats';
 import { CasePlayer } from './CasePlayer';
 
 interface CaseDetailProps {
@@ -38,6 +40,7 @@ export function CaseDetail({
   const [draft, setDraft] = useState('');
   const [previewMode] = useSetting('ui.twistyMode');
   const [showRotationAlgs] = useSetting('trainer.showRotationAlgs');
+  const stats = useCaseStat(caseId);
 
   if (!algCase) return null;
 
@@ -109,6 +112,9 @@ export function CaseDetail({
         onPlay={canPlay ? play : undefined}
         playLabel={strings.trainer.play}
       />
+
+      <h3 className="case-detail__section">{strings.trainer.caseStats}</h3>
+      <CaseStatsRow stats={stats} />
 
       <h3 className="case-detail__section">{strings.trainer.variants}</h3>
       <ul className="variants">

@@ -56,3 +56,23 @@ export const FULL_SETS: Readonly<Record<string, string>> = {
   '2look-oll': 'oll',
   '2look-pll': 'pll',
 };
+
+export const CROSS_SET_ID = 'cross';
+export const CROSS_CASE_ID = 'cross';
+
+/**
+ * The cross is drilled too, and it is not an algorithm set: there is nothing
+ * to recognise and no algorithm to look up, only a real scramble and the
+ * first step of the solve. It still gets a set and a case row, because a
+ * drill attempt points at a case and that is what per-case statistics are
+ * keyed by — an attempt hanging off an id with no row behind it would be a
+ * dangling reference nobody could clean up.
+ *
+ * It is kept out of PACKS: those are lists of algorithms, checked by running
+ * them, and this one has none.
+ */
+export const CROSS_PACK: AlgPack = {
+  packVersion: 1,
+  set: { id: CROSS_SET_ID, name: 'Cross' },
+  cases: [{ id: CROSS_CASE_ID, name: 'Cross', group: null, alg: '', setup: '' }],
+};

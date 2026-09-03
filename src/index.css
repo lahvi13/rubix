@@ -991,6 +991,152 @@ button.is-danger {
   color: var(--text);
 }
 
+/* Drill */
+
+/* Same three rows as the timer screen: what to do, the clock, what happened. */
+.drill__setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+/* Hidden, not removed: the clock must not jump when the solve starts. */
+.drill__setup.is-hidden {
+  visibility: hidden;
+}
+
+.drill__pool {
+  width: 100%;
+}
+
+.drill__pool-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--muted);
+  padding: 0.35rem 0.8rem;
+  font: inherit;
+  font-size: 0.85rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+.drill__picker {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+}
+
+.drill__picker-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.drill__picker-actions button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+  padding: 0.35rem 0.9rem;
+  font: inherit;
+  font-size: 0.85rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+.drill__chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: 0.3rem;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.drill__chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 0.4rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.drill__scramble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 4rem;
+}
+
+.drill__moves {
+  margin: 0;
+  max-width: 40ch;
+  text-align: center;
+  font-size: clamp(1rem, 3.5vw, 1.4rem);
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  line-height: 1.5;
+  user-select: text;
+}
+
+.drill__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.drill__answer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+}
+
+.drill__case-name {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.drill__diagram {
+  width: min(9rem, 40vw);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.drill__stats {
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
+}
+
+/* The answer shares a screen with the clock and the case picture, so the
+   algorithm is read at a glance rather than at case-sheet size. */
+.drill__answer .alg {
+  font-size: clamp(1.1rem, 5vw, 1.6rem);
+}
+
+.drill__give-up {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  color: var(--muted);
+  padding: 0.6rem 1.5rem;
+  font: inherit;
+  min-height: 2.75rem;
+  cursor: pointer;
+}
+
 /* Case detail */
 
 /* Above the backdrop, or the backdrop swallows every click in here. */

@@ -167,8 +167,24 @@ kromě PB, které je globální per `puzzle`.
   R a U) — rotace nehýbe kostkami, mění jen to, která ruka pracuje. Vyšla u 20
   ze 41 případů a seeduje se jako druhý zabudovaný algoritmus, neaktivní;
   zobrazení se dá vypnout nastavením `trainer.showRotationAlgs`
-- drill mód: náhodný případ z vybrané podmnožiny, generovaný scramble
-  s náhodným AUF/rotací, měření času stejným timerem jako běžný solve
+- drill mód (vlastní obrazovka): náhodný případ z vybrané podmnožiny, scramble
+  je setup případu s náhodným AUF a otočením kostky (`y`-rodina — `x`/`z` by
+  sundaly žlutou z vršku), měření času stejným timerem jako běžný solve.
+  Jméno případu, algoritmus i statistiky případu se odkryjí **až po pokusu**;
+  rozpoznání je půlka toho, co se drilluje. Tlačítko „ukázat“ případ odhalí
+  předem a pokus se pak počítá jako DNF
+- **drill nad případem neinspektuje** (inspekce se přebíjí, ne čte z nastavení): 15 s
+  WCA inspekce nad třísekundovým PLL netrénuje nic a automatická +2 by padala
+  na každý pokus, kde se člověk nad případem zamyslel. **Cross je opačný případ** —
+  přečíst scramble a naplánovat cross uvnitř inspekce je přesně to, co se trénuje,
+  takže tam se inspekce řídí přepínačem timeru (a je i na drill obrazovce)
+- výběr podmnožiny je jeden plochý seznam `caseId` napříč sadami
+  (`trainer.drillCaseIds`); nezaškrtnuto = celá sada. Rychlé volby: celá sada,
+  nejpomalejších 10
+- **cross je taky sada k drillování** (`cross`) — jeden případ, žádný algoritmus
+  k přečtení a scramble je skutečný random-state z cubing.js. Řádek v `algSets`
+  a `algCases` má proto, že pokus míří na `caseId` a per-case statistiky se
+  podle něj počítají; z trenažéru (seznam sad) je schovaný
 - statistiky zvlášť per case: počet pokusů, best, ao5, ao12, poslední čas, DNF rate,
   „nejpomalejších 10 případů“ jako doporučení k tréninku
 - vlastní algoritmus: uživatel může k případu přidat variantu a označit ji jako aktivní;
@@ -455,6 +471,8 @@ phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativníc
 | `trainer.twoLookDefault` | 0 | `false` |
 | `trainer.showAlgs` | 0 | `false` |
 | `trainer.showRotationAlgs` | 0 | `true` |
+| `trainer.drillSetId` | 0 | `'pll'` |
+| `trainer.drillCaseIds` | 0 | `[]` |
 | `stats.chartWindow` | 0 | 100 |
 | `audio.inputDeviceId` | **1** | `null` |
 | `audio.thresholdDb` | **1** | -30 |

@@ -5,7 +5,7 @@ import { SessionsScreen } from '../features/sessions';
 import { SettingsScreen } from '../features/settings';
 import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
-import { TrainerScreen } from '../features/trainer';
+import { DrillScreen, TrainerScreen } from '../features/trainer';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
@@ -92,6 +92,7 @@ export function App() {
         {route === 'stats' ? <StatsScreen /> : null}
         {route === 'sessions' ? <SessionsScreen /> : null}
         {route === 'trainer' ? <TrainerScreen /> : null}
+        {route === 'drill' ? <DrillScreen /> : null}
         {route === 'settings' ? <SettingsScreen /> : null}
         {route === 'data' ? <DataScreen /> : null}
       </Fragment>

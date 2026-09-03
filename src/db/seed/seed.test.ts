@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
 import { addUserAlgorithm } from '../repositories/alg-repository';
 import { deleteTrigger, updateTrigger } from '../repositories/trigger-repository';
-import { PACKS } from './packs';
+import { CROSS_CASE_ID, CROSS_SET_ID, PACKS } from './packs';
 import { seedPacks } from './seed';
 
 const totalCases = PACKS.reduce((count, pack) => count + pack.cases.length, 0);
@@ -40,8 +40,9 @@ describe('seed', () => {
   it('puts every pack case in place with an algorithm to drill', async () => {
     await seedPacks();
 
-    expect(await db.algSets.count()).toBe(PACKS.length);
-    expect(await db.algCases.count()).toBe(totalCases);
+    // The cross is a set and a case of its own, on top of the packs.
+    expect(await db.algSets.count()).toBe(PACKS.length + 1);
+    expect(await db.algCases.count()).toBe(totalCases + 1);
     expect(await db.algorithms.count()).toBe(totalAlgorithms);
     expect(await db.methods.get('cfop')).toBeDefined();
   });
@@ -49,8 +50,17 @@ describe('seed', () => {
   it('gives every case a setup that undoes its algorithm', async () => {
     await seedPacks();
 
-    const cases = await db.algCases.toArray();
+    // Except the cross, which is met through a real scramble, not a setup.
+    const cases = (await db.algCases.toArray()).filter((entry) => entry.id !== CROSS_CASE_ID);
     expect(cases.every((entry) => entry.setupAlg.length > 0)).toBe(true);
+  });
+
+  it('seeds the cross as a set to drill, with nothing to look up', async () => {
+    await seedPacks();
+
+    expect((await db.algSets.get(CROSS_SET_ID))?.name).toBe('Cross');
+    expect((await db.algCases.get(CROSS_CASE_ID))?.setId).toBe(CROSS_SET_ID);
+    expect(await db.algorithms.where('caseId').equals(CROSS_CASE_ID).count()).toBe(0);
   });
 
   it('runs twice with the same result', async () => {

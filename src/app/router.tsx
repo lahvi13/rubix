@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  * preview URL or an installed PWA.
  */
 
-export const ROUTES = ['timer', 'trainer', 'history', 'stats', 'sessions', 'settings', 'data'] as const;
+export const ROUTES = ['timer', 'trainer', 'drill', 'history', 'stats', 'sessions', 'settings', 'data'] as const;
 export type Route = (typeof ROUTES)[number];
 
 const DEFAULT_ROUTE: Route = 'timer';

@@ -2,7 +2,14 @@ import { db } from '../schema';
 import type { AlgCase, AlgSet, Algorithm, Method, Trigger } from '../types';
 import { formatAlg, invertAlg, parseAlg } from '../../domain/cube/notation';
 import { now } from '../../lib/clock';
-import { PACKS, PACK_METHOD_ID, PACK_PUZZLE, type AlgPack, type PackCase } from './packs';
+import {
+  CROSS_PACK,
+  PACKS,
+  PACK_METHOD_ID,
+  PACK_PUZZLE,
+  type AlgPack,
+  type PackCase,
+} from './packs';
 import { TRIGGER_PACK } from './triggers';
 
 /**
@@ -98,7 +105,9 @@ function planSeed(current: CurrentState): SeedChanges {
   const method = buildMethod(current.methods.get(PACK_METHOD_ID));
   if (hasChanged(current.methods.get(PACK_METHOD_ID), method)) changes.methods.push(method);
 
-  for (const pack of PACKS) {
+  // Cross rides along with the algorithm sets: it is a set to drill, just not
+  // one to read.
+  for (const pack of [...PACKS, CROSS_PACK]) {
     const existingSet = current.algSets.get(pack.set.id);
     const algSet = buildSet(pack, existingSet);
     if (hasChanged(existingSet, algSet)) changes.algSets.push(algSet);
@@ -112,6 +121,9 @@ function planSeed(current: CurrentState): SeedChanges {
         const algCase = buildCase(pack, entry, index, existingCase);
         if (hasChanged(existingCase, algCase)) changes.algCases.push(algCase);
       }
+
+      // A case with nothing to look up — the cross — gets no algorithm row.
+      if (entry.alg === '') continue;
 
       const algorithmId = `${entry.id}-pack`;
       if (current.buried.has(algorithmId)) continue;

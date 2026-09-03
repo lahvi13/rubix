@@ -24,6 +24,8 @@ describe('alg repository', () => {
     expect(sets.map((set) => set.id).sort()).toEqual([
       '2look-oll',
       '2look-pll',
+      // A set to drill rather than to read, but a set all the same.
+      'cross',
       'f2l',
       'oll',
       'pll',

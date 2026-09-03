@@ -20,6 +20,14 @@ export interface SettingValues {
   'trainer.showAlgs': boolean;
   /** Offer the built-in variants that start by turning the cube. */
   'trainer.showRotationAlgs': boolean;
+  /** Which set the drill draws its cases from. */
+  'trainer.drillSetId': string;
+  /**
+   * Cases ticked for drilling. One flat list across every set — case ids are
+   * unique, so the drill simply keeps the ones belonging to the set it is on,
+   * and a subset picked for PLL survives a detour through OLL.
+   */
+  'trainer.drillCaseIds': readonly string[];
   'stats.chartWindow': number;
 }
 
@@ -33,6 +41,8 @@ export const SETTING_DEFAULTS: SettingValues = {
   'trainer.twoLookDefault': false,
   'trainer.showAlgs': false,
   'trainer.showRotationAlgs': true,
+  'trainer.drillSetId': 'pll',
+  'trainer.drillCaseIds': [],
   'stats.chartWindow': 100,
 };
 
