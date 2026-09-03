@@ -1,6 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
-import { isDatabaseOpen, reconnectDatabase } from '../db/schema';
+import {
+  databaseGeneration,
+  isDatabaseOpen,
+  onDatabaseReconnect,
+  reconnectDatabase,
+} from '../db/schema';
 import { onError, recentErrors, forgetErrors, type AppError } from '../lib/errors';
+
+/**
+ * Goes up each time the connection comes back. Used as a `key`: a live query
+ * whose connection died never delivers again, so the screens holding those
+ * queries are mounted afresh rather than left showing whatever they had when
+ * the database went away.
+ */
+export function useDatabaseGeneration(): number {
+  const [generation, setGeneration] = useState(databaseGeneration);
+  useEffect(() => onDatabaseReconnect(() => setGeneration(databaseGeneration())), []);
+  return generation;
+}
 
 export interface DatabaseHealth {
   isOpen: boolean;

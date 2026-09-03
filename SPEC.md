@@ -63,10 +63,12 @@ dostávají hotová data z domény.
 - prefetch: další scramble se generuje hned po zobrazení aktuálního; požadavky se řadí
   za sebe, dva běžící solvery naráz položí i slušný telefon
 - náhled zamotaného stavu: **plochý rozvin kreslí aplikace sama** (stejný model
-  i skin jako trenažér, žádný chunk navíc), 3D volitelně přes `<twisty-player>`
-  — přepíná to nastavení `ui.twistyMode`. Rozvin se kreslí **bílou nahoru**
-  (skin se otočí), protože v té poloze je scramble definovaný; ve 3D jde
-  scramble přehrát od složené kostky
+  i skin jako trenažér, žádný chunk navíc), 3D přes `<twisty-player>`
+  — přepíná to nastavení `ui.twistyMode`, vypnout celý náhled jde přes
+  `timer.showScramblePreview`. Rozvin se kreslí **bílou nahoru** (skin se otočí),
+  protože v té poloze je scramble definovaný. Skin platí jen na plochý rozvin;
+  ve 3D si barvy drží cubing.js, a proto se do 3D nikdy nepřepíná samo —
+  z plochého náhledu se scramble dá přehrát tlačítkem a obrázek se pak vrátí
 - scramble se ukládá ke každému solvu jako string; při reimportu se nikdy neregeneruje
 - ruční vložení scramblu (paste) pro trénink konkrétní situace
 
@@ -139,9 +141,10 @@ kromě PB, které je globální per `puzzle`.
   ztmavená kromě políček, o která jde. Přehrává se **přesně to, co je napsané** — twisty
   maluje bílou nahoru, zatímco diagramy mají žlutou, ale kostka, která na `F`
   otočí `B`, je horší než kostka špatné barvy (zkoušeno, vráceno)
-- **twisty se nedá obarvit skinem** — barvy si drží cubing.js. Proto náhled scramblu
-  v timeru kreslíme vždy sami (skin platí) a 3D je tam jen tlačítko „Watch the
-  scramble“, které animaci pustí a pak vrátí obrázek
+- **twisty se nedá obarvit skinem** — barvy si drží cubing.js (má sice experimentální
+  `experimentalSprite`, ale to je textura, ne paleta). Volba je tedy vědomá:
+  `ui.twistyMode` říká, jestli chceš svoje barvy (plochý rozvin), nebo animovanou
+  kostku v barvách cubing.js
 - triggery mají vlastní barvu zvýraznění (pole `Trigger.colour`)
 - výchozí volba mezi 2-Look a Full je nastavení `trainer.twoLookDefault`;
   `trainer.showAlgs` vypíše algoritmus i na kartu v seznamu případů
@@ -437,6 +440,7 @@ phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativníc
 | `timer.holdThresholdMs` | 0 | 300 |
 | `timer.inspectionEnabled` | 0 | 1 |
 | `timer.inspectionCues` | 0 | `[8000, 12000]` |
+| `timer.showScramblePreview` | 0 | `true` |
 | `ui.theme` | 1 | `'system'` |
 | `ui.twistyMode` | 0 | `'2D'` |
 | `ui.cubeSkin` | 0 | `'classic'` |
@@ -505,14 +509,26 @@ se nezvětšuje samo o sobě — plochu nese `<label>` kolem něj. Pravidla jsou
 na konci `index.css`, aby si je nemusela pamatovat každá komponenta zvlášť.
 
 **Když databáze přestane odpovídat**: IndexedDB umí spojení zavřít pod rukama
-(Android zmrazí PWA na pozadí) a další otevření může uvíznout — Dexie pak zařadí
-každý dotaz do fronty, obrazovky si drží poslední obsah a ťukání nedělá nic, bez
-jediné chyby. Proto: `ensureDatabaseOpen()` má timeout a hlásí, že se nedočkal;
-`db.on('close' | 'blocked')` se hlásí a zkouší otevřít znovu; návrat aplikace do
-popředí spojení překontroluje; každý zápis „fire-and-forget“ jde přes
-`watchWrite()`, který ohlásí i zápis, co nikdy nedoběhne. Poslední selhání se
-ukládají do `localStorage` (`lib/errors.ts`), protože se zkoumají až po restartu,
-a obrazovka Data je vypisuje spolu s tlačítkem na obnovení spojení.
+(Android zmrazí PWA na pozadí) a zápis může uvíznout ve frontě, která se sama
+nerozjede — obrazovky si pak drží poslední obsah, ťukání nedělá nic a nevyhodí se
+jediná chyba. Řetěz obrany:
+
+- `ensureDatabaseOpen()` má timeout a hlásí, když se nedočkal; `db.on('blocked')`
+  se hlásí, `db.on('close')` se **jen zapíše do logu** a rovnou zkouší otevřít znovu
+  (co se samo spraví, nemá dělat červený banner)
+- návrat aplikace do popředí spojení překontroluje
+- každý zápis „fire-and-forget" jde přes `watchWrite()`. Pomalý zápis **sám o sobě
+  nic neznamená** — telefon při načítání 3D kostky blokuje hlavní vlákno na sekundy —
+  takže se nejdřív pošle sonda (triviální čtení). Když odpoví, je ticho; když
+  neodpoví ani ta, ohlásí se to a spojení se **samo přepojí**
+- **živé dotazy nepřežijí své spojení.** Po každém opětovném otevření jde nahoru
+  `databaseGeneration()` a `App` podle něj přemountuje obrazovky — bez toho je
+  databáze „connected", ale seznamy zůstanou prázdné (přesně tak vypadalo
+  „zmizely všechny algoritmy"). Ze stejného důvodu se po přepojení znovu pouští seed
+- poslední selhání se ukládají do `localStorage` (`lib/errors.ts`), protože se
+  zkoumají až po restartu; obrazovka Data je vypisuje a nabízí ruční přepojení
+- **prázdno se nesmí plést s „ještě nenačteno"**: hooky vracejí `undefined`, dokud
+  databáze neodpověděla, a obrazovka na to říká „načítám", ne „nic tu není"
 
 ## 6. Fáze
 

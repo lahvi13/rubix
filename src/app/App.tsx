@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { DataScreen } from '../features/data-transfer';
 import { HistoryScreen } from '../features/history';
 import { SessionsScreen } from '../features/sessions';
@@ -6,6 +6,7 @@ import { SettingsScreen } from '../features/settings';
 import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
 import { TrainerScreen } from '../features/trainer';
+import { useDatabaseGeneration } from '../hooks/use-database-health';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
 import { ErrorBanner } from './ErrorBanner';
@@ -14,6 +15,9 @@ import { UpdatePrompt } from './UpdatePrompt';
 export function App() {
   const route = useRoute();
   const [isMenuOpen, setMenuOpen] = useState(false);
+  // A screen that lived through a lost connection holds dead live queries; the
+  // key mounts it again once the database is back.
+  const generation = useDatabaseGeneration();
 
   // While the menu is open the keyboard belongs to it: the timer listens on
   // the window, and a Space meant for a menu item must not start a solve
@@ -82,13 +86,15 @@ export function App() {
         </>
       ) : null}
 
-      {route === 'timer' ? <TimerScreen /> : null}
-      {route === 'history' ? <HistoryScreen /> : null}
-      {route === 'stats' ? <StatsScreen /> : null}
-      {route === 'sessions' ? <SessionsScreen /> : null}
-      {route === 'trainer' ? <TrainerScreen /> : null}
-      {route === 'settings' ? <SettingsScreen /> : null}
-      {route === 'data' ? <DataScreen /> : null}
+      <Fragment key={generation}>
+        {route === 'timer' ? <TimerScreen /> : null}
+        {route === 'history' ? <HistoryScreen /> : null}
+        {route === 'stats' ? <StatsScreen /> : null}
+        {route === 'sessions' ? <SessionsScreen /> : null}
+        {route === 'trainer' ? <TrainerScreen /> : null}
+        {route === 'settings' ? <SettingsScreen /> : null}
+        {route === 'data' ? <DataScreen /> : null}
+      </Fragment>
 
       <ErrorBanner />
       <UpdatePrompt />

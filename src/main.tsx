@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import { ErrorBoundary } from './app/ErrorBoundary';
+import { onDatabaseReconnect } from './db/schema';
 import { seedPacks } from './db/seed/seed';
 import { installGlobalErrorHandlers, reportError } from './lib/errors';
 import { strings } from './lib/strings';
@@ -18,7 +19,12 @@ if ('storage' in navigator && typeof navigator.storage.persist === 'function') {
 
 // The built-in algorithm packs are put in place before anything reads them.
 // An upsert keyed by id, so this is also how a new version ships a fix.
-void seedPacks().catch((cause: unknown) => reportError(strings.errors.seed, cause));
+const seed = () => void seedPacks().catch((cause: unknown) => reportError(strings.errors.seed, cause));
+seed();
+
+// A connection lost mid-seed can leave the packs half written, and nothing
+// else would ever notice: the seed only runs at startup.
+onDatabaseReconnect(seed);
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing #root element');

@@ -81,6 +81,15 @@ function isAppError(value: unknown): value is AppError {
   );
 }
 
+/**
+ * Writes to the log without raising the banner. For failures the app has
+ * already dealt with: worth having when someone asks what happened, not worth
+ * a red box in front of a user who saw nothing go wrong.
+ */
+export function logQuietly(context: string, cause: unknown): void {
+  remember({ context, message: describe(cause), at: Date.now() });
+}
+
 export function onError(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
@@ -95,21 +104,76 @@ export function clearError(): void {
 }
 
 /**
- * How long a write may take before the app says so. Generous: a slow phone
- * mid-seed is normal, a write that never lands is not.
+ * How long a write may take before it is worth asking whether the database is
+ * still there. Generous, because a phone busy loading the 3D cube can hold the
+ * main thread for seconds and every promise waits with it.
  */
-const WRITE_TIMEOUT_MS = 6000;
+const WRITE_TIMEOUT_MS = 8000;
+
+/** How long the probe gets to prove the database is alive. */
+const PROBE_TIMEOUT_MS = 4000;
+
+export interface WriteWatchdog {
+  /** A trivial read. If this answers, the slow write was only slow. */
+  probe: () => Promise<unknown>;
+  /** Closes and opens the connection again. */
+  recover: () => Promise<unknown>;
+}
+
+let watchdog: WriteWatchdog | null = null;
+let isRecovering = false;
+
+/** Installed by the database layer; `lib` must not reach for Dexie itself. */
+export function installWriteWatchdog(next: WriteWatchdog): void {
+  watchdog = next;
+}
+
+async function settlesWithin<T>(work: Promise<T>, ms: number): Promise<boolean> {
+  const timeout = Symbol('timeout');
+  const outcome = await Promise.race([
+    work.then(
+      () => 'settled',
+      () => 'settled',
+    ),
+    new Promise((resolve) => setTimeout(() => resolve(timeout), ms)),
+  ]);
+  return outcome !== timeout;
+}
 
 /**
- * A write nobody awaits, watched. Two things go wrong invisibly here: the
- * promise rejects with no handler, or it never settles at all — and a database
- * that stopped answering looks exactly like a switch that ignores taps.
+ * A write nobody awaits, watched. Three things go wrong invisibly here: the
+ * promise rejects with no handler, it never settles at all, or the whole
+ * database stops answering — and any of them looks exactly like a switch that
+ * ignores taps.
+ *
+ * A slow write on its own says nothing, so the alarm is only raised once a
+ * plain read has failed to answer too. Then the connection is put back
+ * together, because a database that stopped answering never starts again on
+ * its own.
  */
 export function watchWrite(work: Promise<unknown>, context: string): void {
   let isSettled = false;
-  const timer = setTimeout(() => {
-    if (!isSettled) reportError(context, new Error(strings.errors.notResponding));
-  }, WRITE_TIMEOUT_MS);
+  const timer = setTimeout(() => void checkOn(), WRITE_TIMEOUT_MS);
+
+  async function checkOn(): Promise<void> {
+    if (isSettled) return;
+    if (watchdog === null) {
+      reportError(context, new Error(strings.errors.notResponding));
+      return;
+    }
+
+    if (await settlesWithin(watchdog.probe(), PROBE_TIMEOUT_MS)) return;
+    if (isSettled) return;
+
+    reportError(context, new Error(strings.errors.notResponding));
+    if (isRecovering) return;
+    isRecovering = true;
+    try {
+      await watchdog.recover();
+    } finally {
+      isRecovering = false;
+    }
+  }
 
   void work
     .catch((cause: unknown) => reportError(context, cause))

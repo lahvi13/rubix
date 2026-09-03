@@ -56,7 +56,7 @@ function diagramFor(setId: string, group: string): Diagram {
 export function TrainerScreen() {
   const sets = useAlgSets();
   // Two-look sets hang off their full set rather than standing beside it.
-  const fullSets = sets.filter((set) => !Object.hasOwn(FULL_SETS, set.id));
+  const fullSets = (sets ?? []).filter((set) => !Object.hasOwn(FULL_SETS, set.id));
   const [chosenSetId, setChosenSetId] = useState<string | null>(null);
   const [twoLookDefault] = useSetting('trainer.twoLookDefault');
   const [showAlgs] = useSetting('trainer.showAlgs');
@@ -70,13 +70,15 @@ export function TrainerScreen() {
   const fullGroups = useSetCases(baseSetId);
   const twoLookGroups = useSetCases(twoLookId ?? null);
   const groups = isTwoLook && twoLookId !== undefined ? twoLookGroups : fullGroups;
+  // Nothing has answered yet is not the same as there is nothing to show.
+  const isLoading = sets === undefined || groups === undefined;
   const skin = useCubeSkin();
   const { definitions } = useTriggers();
   const [openCase, setOpenCase] = useState<{ id: string; group: string } | null>(null);
   const [panel, setPanel] = useState<Panel>('none');
 
-  const countOf = (list: CaseGroup[]): number =>
-    list.reduce((count, group) => count + group.cases.length, 0);
+  const countOf = (list: CaseGroup[] | undefined): number =>
+    (list ?? []).reduce((count, group) => count + group.cases.length, 0);
 
   return (
     <main className="screen screen--scroll">
@@ -142,9 +144,12 @@ export function TrainerScreen() {
       {panel === 'notation' ? <NotationReference skin={skin} /> : null}
       {panel === 'triggers' ? <TriggerPanel /> : null}
 
-      {groups.length === 0 ? <p className="data-section__hint">{strings.trainer.empty}</p> : null}
+      {isLoading ? <p className="data-section__hint">{strings.trainer.loading}</p> : null}
+      {!isLoading && groups.length === 0 ? (
+        <p className="data-section__hint">{strings.trainer.empty}</p>
+      ) : null}
 
-      {groups.map((group) => (
+      {(groups ?? []).map((group) => (
         <section key={group.name} className="trainer__group">
           <h2 className="trainer__group-title">{group.name}</h2>
           <div className="case-grid">

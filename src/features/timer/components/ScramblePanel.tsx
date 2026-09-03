@@ -35,6 +35,7 @@ export const ScramblePanel = memo(function ScramblePanel({
   hidden,
 }: ScramblePanelProps) {
   const [mode] = useSetting('ui.twistyMode');
+  const [isPreviewShown] = useSetting('timer.showScramblePreview');
   const skin = useCubeSkin();
   // Which scramble is being watched, rather than a flag: a new scramble means
   // a new cube to look at, not the previous animation still running.
@@ -50,24 +51,30 @@ export const ScramblePanel = memo(function ScramblePanel({
       ) : (
         <>
           <p className="scramble__text">{scramble ?? strings.scramble.loading}</p>
-          {scramble === null ? null : isWatching ? (
+          {scramble === null || !isPreviewShown ? null : mode === '3D' ? (
+            <SpatialPreview scramble={scramble} />
+          ) : isWatching ? (
             <SpatialPreview scramble={scramble} onDone={() => setWatched(null)} />
           ) : (
-            <CubeDiagram
-              className="scramble__preview"
-              state={stateAfter(scramble)}
-              view="net"
-              // A scramble is defined from white on top and green in front;
-              // the trainer's yellow-top view would be a different cube.
-              skin={withWhiteTop(skin)}
-              label={strings.scramble.label}
-            />
+            <>
+              <CubeDiagram
+                className="scramble__preview"
+                state={stateAfter(scramble)}
+                view="net"
+                // A scramble is defined from white on top and green in front;
+                // the trainer's yellow-top view would be a different cube.
+                skin={withWhiteTop(skin)}
+                label={strings.scramble.label}
+              />
+              <button
+                type="button"
+                className="scramble__replay"
+                onClick={() => setWatched(scramble)}
+              >
+                {strings.scramble.replay}
+              </button>
+            </>
           )}
-          {scramble !== null && mode === '3D' && !isWatching ? (
-            <button type="button" className="scramble__replay" onClick={() => setWatched(scramble)}>
-              {strings.scramble.replay}
-            </button>
-          ) : null}
         </>
       )}
     </div>
@@ -80,15 +87,20 @@ function stateAfter(scramble: string) {
 }
 
 /**
- * The scramble being applied, move by move — a still picture never says which
- * way round the cube started. Shown on request only, because these are
- * cubing.js's colours, not the chosen skin's.
+ * The cube in 3D. It has two jobs, and they differ only in where the animation
+ * starts: as the preview it shows the scrambled cube and offers to replay the
+ * scramble, and as the answer to "watch it" it plays straight away and hands
+ * the flat picture back afterwards.
+ *
+ * These are cubing.js's colours either way — the player cannot be given a
+ * skin — which is why the flat mode never falls back to it on its own.
  *
  * cubing/twisty is a heavy chunk; it loads after the first paint.
  */
-function SpatialPreview({ scramble, onDone }: { scramble: string; onDone: () => void }) {
+function SpatialPreview({ scramble, onDone }: { scramble: string; onDone?: () => void }) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
+  const isWatching = onDone !== undefined;
 
   useEffect(() => {
     let cancelled = false;
@@ -104,9 +116,18 @@ function SpatialPreview({ scramble, onDone }: { scramble: string; onDone: () => 
     if (!isReady) return;
     const element = player.current;
     if (!element) return;
+    if (!isWatching) {
+      element.jumpToEnd();
+      return;
+    }
     element.jumpToStart();
     element.play();
-  }, [isReady, scramble]);
+  }, [isReady, isWatching, scramble]);
+
+  const replay = (): void => {
+    player.current?.jumpToStart();
+    player.current?.play();
+  };
 
   if (!isReady) return <p className="scramble__loading">{strings.trainer.loadingPlayer}</p>;
 
@@ -123,8 +144,8 @@ function SpatialPreview({ scramble, onDone }: { scramble: string; onDone: () => 
         control-panel="none"
         hint-facelets="none"
       />
-      <button type="button" className="scramble__replay" onClick={onDone}>
-        {strings.scramble.showPicture}
+      <button type="button" className="scramble__replay" onClick={onDone ?? replay}>
+        {isWatching ? strings.scramble.showPicture : strings.scramble.replay}
       </button>
     </>
   );

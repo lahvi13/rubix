@@ -17,8 +17,13 @@ export interface CaseGroup {
   cases: TrainerCase[];
 }
 
-export function useAlgSets(): AlgSet[] {
-  return useLiveQuery(listSets, [], []);
+/**
+ * The sets, or `undefined` while the database has not answered yet. The
+ * difference matters: a stuck connection would otherwise be indistinguishable
+ * from an app with no algorithms in it, which is exactly what it looked like.
+ */
+export function useAlgSets(): AlgSet[] | undefined {
+  return useLiveQuery(listSets, []);
 }
 
 /**
@@ -27,12 +32,9 @@ export function useAlgSets(): AlgSet[] {
  * out here rather than stored — a stored picture would go stale the moment a
  * setup changed.
  */
-export function useSetCases(setId: string | null): CaseGroup[] {
-  const cases = useLiveQuery(
-    async () => (setId === null ? [] : listCasesWithAlgs(setId)),
-    [setId],
-    [],
-  );
+export function useSetCases(setId: string | null): CaseGroup[] | undefined {
+  const cases = useLiveQuery(async () => (setId === null ? [] : listCasesWithAlgs(setId)), [setId]);
+  if (cases === undefined) return undefined;
 
   const groups: CaseGroup[] = [];
   for (const entry of cases) {

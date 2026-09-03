@@ -10,6 +10,8 @@ export interface SettingValues {
   'timer.holdThresholdMs': number;
   'timer.inspectionEnabled': boolean;
   'timer.inspectionCues': readonly number[];
+  /** Whether the timer draws the scrambled cube at all. */
+  'timer.showScramblePreview': boolean;
   'ui.twistyMode': '2D' | '3D';
   'ui.cubeSkin': string;
   /** Which route through the last layer the trainer opens on. */
@@ -25,6 +27,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'timer.holdThresholdMs': 300,
   'timer.inspectionEnabled': true,
   'timer.inspectionCues': [8000, 12000],
+  'timer.showScramblePreview': true,
   'ui.twistyMode': '2D',
   'ui.cubeSkin': 'classic',
   'trainer.twoLookDefault': false,

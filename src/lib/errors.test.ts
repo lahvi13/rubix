@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearError,
   forgetErrors,
+  installWriteWatchdog,
+  logQuietly,
   lastError,
   onError,
   recentErrors,
@@ -83,7 +85,7 @@ describe('watched writes', () => {
     vi.useFakeTimers();
     try {
       watchWrite(new Promise(() => {}), 'cube skin');
-      await vi.advanceTimersByTimeAsync(6000);
+      await vi.advanceTimersByTimeAsync(9000);
     } finally {
       vi.useRealTimers();
     }
@@ -102,5 +104,42 @@ describe('watched writes', () => {
     }
 
     expect(lastError()).toBeNull();
+  });
+});
+
+describe('recovering rather than shouting', () => {
+  it('says nothing when the write was only slow — the database still answers', async () => {
+    installWriteWatchdog({ probe: () => Promise.resolve(null), recover: () => Promise.resolve() });
+    vi.useFakeTimers();
+    try {
+      watchWrite(new Promise(() => {}), 'cube skin');
+      await vi.advanceTimersByTimeAsync(20000);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(lastError()).toBeNull();
+  });
+
+  it('reports and reconnects when the database stops answering too', async () => {
+    const recover = vi.fn(() => Promise.resolve());
+    installWriteWatchdog({ probe: () => new Promise(() => {}), recover });
+    vi.useFakeTimers();
+    try {
+      watchWrite(new Promise(() => {}), 'cube skin');
+      await vi.advanceTimersByTimeAsync(20000);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(lastError()?.context).toBe('cube skin');
+    expect(recover).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a handled failure in the log without raising the banner', () => {
+    logQuietly('database', new Error('the connection was closed'));
+
+    expect(lastError()).toBeNull();
+    expect(recentErrors()[0]?.message).toBe('the connection was closed');
   });
 });

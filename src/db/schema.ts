@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import { reportError } from '../lib/errors';
+import { installWriteWatchdog, logQuietly, reportError } from '../lib/errors';
 import { strings } from '../lib/strings';
 import type {
   AlgCase,
@@ -74,19 +74,44 @@ export const db = new RubixDB();
 const OPEN_TIMEOUT_MS = 6000;
 
 /**
+ * Counts connections, not opens: it goes up every time the database comes back
+ * after having been open once already. Live queries do not survive their
+ * connection — they simply stop delivering — so whoever holds one has to start
+ * it again, and this is the signal to do it by.
+ */
+let generation = 0;
+let hasEverOpened = false;
+const reconnectListeners = new Set<() => void>();
+
+export function databaseGeneration(): number {
+  return generation;
+}
+
+export function onDatabaseReconnect(listener: () => void): () => void {
+  reconnectListeners.add(listener);
+  return () => reconnectListeners.delete(listener);
+}
+
+/**
  * Opens the database, and turns "it never answered" into an error somebody can
  * see. Safe to call at any time: an already open database resolves at once.
  */
 export async function ensureDatabaseOpen(): Promise<boolean> {
   if (db.isOpen()) return true;
 
-  const opening = db.open();
   const verdict = await Promise.race([
-    opening.then(() => 'open' as const),
+    db.open().then(() => 'open' as const),
     new Promise<'stuck'>((resolve) => setTimeout(() => resolve('stuck'), OPEN_TIMEOUT_MS)),
   ]).catch((cause: unknown) => cause);
 
-  if (verdict === 'open') return true;
+  if (verdict === 'open') {
+    if (hasEverOpened) {
+      generation += 1;
+      for (const listener of reconnectListeners) listener();
+    }
+    hasEverOpened = true;
+    return true;
+  }
   if (verdict === 'stuck') {
     reportError(strings.errors.database, new Error(strings.errors.databaseStuck));
     return false;
@@ -109,17 +134,28 @@ export async function reconnectDatabase(): Promise<boolean> {
   return ensureDatabaseOpen();
 }
 
+/**
+ * The read the watchdog probes with. A readwrite transaction that never
+ * commits blocks reads of the same table too, so a settings read that does not
+ * answer means the queue is stuck rather than merely busy.
+ */
+installWriteWatchdog({
+  probe: () => db.settings.get('probe.alive'),
+  recover: reconnectDatabase,
+});
+
 // An upgrade waiting on another window would otherwise hang every query in
 // this one, silently.
 db.on('blocked', () => {
   reportError(strings.errors.database, new Error(strings.errors.databaseBlocked));
 });
 
-// Dexie reopens on the next operation, but only if the reopen gets through;
-// saying so out loud is what makes the difference between a diagnosable
-// failure and an app that "just stopped reacting".
+// A connection can go away for reasons the user need not hear about — the
+// phone freezing the app in the background is one. It is logged either way,
+// because it is the first thing worth knowing afterwards, but it only becomes
+// a banner if the way back fails.
 db.on('close', () => {
-  reportError(strings.errors.database, new Error(strings.errors.databaseClosed));
+  logQuietly(strings.errors.database, new Error(strings.errors.databaseClosed));
   void ensureDatabaseOpen();
 });
 

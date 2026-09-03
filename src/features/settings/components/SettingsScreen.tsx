@@ -18,6 +18,7 @@ export function SettingsScreen() {
   const [showRotationAlgs, setShowRotationAlgs] = useSetting('trainer.showRotationAlgs');
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
+  const [isPreviewShown, setPreviewShown] = useSetting('timer.showScramblePreview');
 
   const previewState = previewCube();
 
@@ -135,6 +136,15 @@ export function SettingsScreen() {
             onChange={(event) => setInspectionEnabled(event.target.checked)}
           />
           {strings.timer.inspectionToggle}
+        </label>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={isPreviewShown}
+            onChange={(event) => setPreviewShown(event.target.checked)}
+          />
+          {strings.settings.showScramblePreview}
         </label>
       </section>
     </main>
