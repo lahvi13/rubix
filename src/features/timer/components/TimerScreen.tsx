@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
@@ -6,9 +6,11 @@ import { strings } from '../../../lib/strings';
 import { navigate } from '../../../app/router';
 import { reportError } from '../../../lib/errors';
 import { useActiveSession } from '../../sessions';
+import { PhaseBar, usePhases } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../../../hooks/use-scramble';
+import { useSetting } from '../../../hooks/use-setting';
 import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
 import { ScramblePanel } from './ScramblePanel';
 import { SolveList } from './SolveList';
@@ -16,11 +18,19 @@ import { TimerDisplay } from '../../../components/TimerDisplay';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
+const EMPTY_PHASES: never[] = [];
 
 export function TimerScreen() {
   const session = useActiveSession(PUZZLE, MODE);
   const scramble = useScramble(PUZZLE);
   const { solves, changePenalty, remove } = useRecentSolves(session?.id ?? null);
+  const [splitMode, setSplitMode] = useSetting('timer.splitMode');
+  const methodPhases = usePhases(session?.methodId ?? null);
+
+  // Empty means the plain timer. The phases come from the session's method,
+  // never from a list in the code (SPEC 3.6).
+  const phases = splitMode === 'phases' ? methodPhases : EMPTY_PHASES;
+  const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   // After a solve the screen shows the result, not the next scramble; the
   // user moves on explicitly (or just starts the next attempt).
   const [showResult, setShowResult] = useState(false);
@@ -47,6 +57,12 @@ export function TimerScreen() {
         penaltySource: 'auto',
         inspectionMs: attempt.inspectionMs,
         startedAt: now() - Math.round(attempt.rawMs),
+        splits: attempt.splitMs.map((atMs, index) => ({
+          phase: phaseKeys[index] ?? '',
+          atMs: Math.round(atMs),
+          source: 'manual' as const,
+        })),
+        phaseKeys,
       })
         .then(() => {
           scramble.next();
@@ -55,16 +71,17 @@ export function TimerScreen() {
           reportError(strings.errors.saveSolve, cause);
         });
     },
-    [session, scramble],
+    [session, scramble, phaseKeys],
   );
 
-  const timer = useTimer(handleComplete);
+  const timer = useTimer(handleComplete, { phases: phaseKeys });
   const status = timer.state.status;
   const isSolving = status === 'running';
 
   // Derived, not synchronized: the result stays up only while the machine is
   // at rest with a finished time. Starting the next attempt (or cancelling,
   // which wipes lastRawMs) hides it without any bookkeeping.
+  const lastSolve = solves[0];
   const resultVisible =
     showResult &&
     (status === 'stopped' || (timer.state.status === 'idle' && timer.state.lastRawMs !== null));
@@ -104,14 +121,33 @@ export function TimerScreen() {
         ) : null}
       </div>
 
-      <TimerDisplay
-        state={timer.state}
-        displayMs={timer.displayMs}
-        inspectionMs={timer.inspectionMs}
-        armed={timer.armed}
-        inspectionEnabled={timer.inspectionEnabled}
-        touchHandlers={timer.touchHandlers}
-      />
+      {/* One grid cell, so the phase bar stays with the number it belongs to
+          instead of being pushed to the bottom by the stretching timer. */}
+      <div className="timer-slot">
+        <TimerDisplay
+          state={timer.state}
+          displayMs={timer.displayMs}
+          inspectionMs={timer.inspectionMs}
+          armed={timer.armed}
+          finishArmed={timer.finishArmed}
+          phase={
+            timer.phaseIndex === null
+              ? null
+              : {
+                  label: phases[timer.phaseIndex]?.label ?? '',
+                  index: timer.phaseIndex,
+                  count: phases.length,
+                }
+          }
+          inspectionEnabled={timer.inspectionEnabled}
+          touchHandlers={timer.touchHandlers}
+        />
+
+        {/* The phases of the solve just finished, under the time it produced. */}
+        {resultVisible && lastSolve && lastSolve.splits.length > 0 ? (
+          <PhaseBar splits={lastSolve.splits} phases={methodPhases} rawMs={lastSolve.rawMs} />
+        ) : null}
+      </div>
 
       {/* Mid-solve nobody aims for the numbers: any tap must stop the clock,
           and the release after it is swallowed here too. */}
@@ -131,14 +167,25 @@ export function TimerScreen() {
             {session?.name ?? strings.appName}
           </button>
           · {solves.length}
-          <label className="toggle solves-panel__toggle">
-            <input
-              type="checkbox"
-              checked={timer.inspectionEnabled}
-              onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
-            />
-            {strings.timer.inspectionToggle}
-          </label>
+          <span className="solves-panel__toggles">
+            <label className="toggle solves-panel__toggle">
+              <input
+                type="checkbox"
+                checked={timer.inspectionEnabled}
+                onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
+              />
+              {strings.timer.inspectionToggle}
+            </label>
+            <label className="toggle solves-panel__toggle">
+              <input
+                type="checkbox"
+                checked={splitMode === 'phases'}
+                disabled={methodPhases.length === 0}
+                onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
+              />
+              {strings.timer.phaseToggle}
+            </label>
+          </span>
         </h2>
         <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
         <SolveList solves={solves} onChangePenalty={handleChangePenalty} onDelete={handleDelete} />

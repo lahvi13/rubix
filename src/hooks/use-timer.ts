@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
+  currentPhaseIndex,
   displayedMs,
   initialTimerState,
   inspectionElapsedMs,
   isArmed,
+  isFinishArmed,
   timerReducer,
   type TimerConfig,
   type TimerEvent,
@@ -20,6 +22,8 @@ export interface CompletedAttempt {
   rawMs: number;
   inspectionMs: number | null;
   penalty: Penalty;
+  /** Phase boundaries as offsets from the start; empty unless the solve was guided. */
+  splitMs: readonly number[];
 }
 
 export interface TimerView {
@@ -28,6 +32,10 @@ export interface TimerView {
   displayMs: number | null;
   inspectionMs: number | null;
   armed: boolean;
+  /** A phase press has been held long enough that releasing it finishes the solve. */
+  finishArmed: boolean;
+  /** Index into the configured phases, or null outside a guided run. */
+  phaseIndex: number | null;
   inspectionEnabled: boolean;
   setInspectionEnabled: (enabled: boolean) => void;
   /**
@@ -44,9 +52,12 @@ export interface TimerView {
   };
 }
 
+const NO_PHASES: readonly string[] = [];
+
 const DEFAULT_CONFIG: TimerConfig = {
   holdThresholdMs: SETTING_DEFAULTS['timer.holdThresholdMs'],
   inspectionEnabled: SETTING_DEFAULTS['timer.inspectionEnabled'],
+  phases: NO_PHASES,
 };
 
 export interface TimerOptions {
@@ -57,6 +68,11 @@ export interface TimerOptions {
    * attempt where somebody thought about the case.
    */
   inspection?: 'setting' | 'off';
+  /**
+   * Phase keys of the guided solve, in method order. Empty (the default) is
+   * the plain timer: one press stops the clock.
+   */
+  phases?: readonly string[];
 }
 
 /**
@@ -80,12 +96,14 @@ export function useTimer(
     }),
     [],
   );
+  const phases = options.phases ?? NO_PHASES;
   const config: TimerConfig = {
     holdThresholdMs: settings?.holdThresholdMs ?? DEFAULT_CONFIG.holdThresholdMs,
     inspectionEnabled:
       options.inspection === 'off'
         ? false
         : (settings?.inspectionEnabled ?? DEFAULT_CONFIG.inspectionEnabled),
+    phases,
   };
 
   const configRef = useRef(config);
@@ -120,6 +138,7 @@ export function useTimer(
       rawMs: state.rawMs,
       inspectionMs: state.inspectionMs,
       penalty: penaltyForInspection(state.inspectionMs),
+      splitMs: state.splitMs,
     });
   }, [state]);
 
@@ -198,6 +217,8 @@ export function useTimer(
     displayMs: displayedMs(state, frameAt),
     inspectionMs: inspectionElapsedMs(state, frameAt),
     armed: isArmed(state, frameAt, config),
+    finishArmed: isFinishArmed(state, frameAt, config),
+    phaseIndex: currentPhaseIndex(state, config),
     inspectionEnabled: config.inspectionEnabled,
     setInspectionEnabled,
     reset,

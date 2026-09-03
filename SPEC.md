@@ -222,25 +222,83 @@ Do hlavních statistik a PB **nevstupují** (filtr `mode === 'freestyle'`).
 
 ### 3.6 Fázové splity
 
-Splity dělí solve na fáze (u CFOP cross / F2L / OLL / PLL). Zaznamenávají se
-detekcí **nástupu zvuku** (onset) ve Web Audio API — uživatel na konci fáze klepne
-na stůl / kostku. **Nejde o rozpoznávání řeči** a nikdy nesmí odejít žádný zvuk mimo zařízení.
+Splity dělí solve na fáze (u CFOP cross / F2L / OLL / PLL). Fáze se berou
+z `Method.phases` aktivní session, **nikdy z enumu v kódu** — jiná metoda je pak
+data, ne migrace.
 
-- `AudioWorklet` počítá krátkodobou energii; onset = překročení adaptivního prahu
-  nad klouzavým průměrem + `refractoryMs` (default 250 ms) na potlačení zákmitů
-- kalibrace v nastavení: výběr vstupu, práh, gain, live meter, test detekce
-- splity se přiřazují k fázím **v pořadí** podle definice metody; chybějící fáze je povolená
-- dodatečná editace: posun času splitu, doplnění chybějícího, smazání celé sady
-- zdroj každého splitu je uložen (`mic` / `smartcube` / `manual`) — smart cube přes
-  Web Bluetooth je plánovaný, model už s ním počítá
+**Vedený solve** je volba přímo na obrazovce timeru (`timer.splitMode`), ne další
+obrazovka: „jen celkový čas" / „po fázích". Ve fázovém režimu ťuknutí (mezerník
+nebo dotyk kdekoliv) ukončí právě běžící fázi a rovnou začne další; ťuknutí
+za poslední fází zastaví čas. Během běhu je pod časem vidět **jen jméno fáze**
+a její pořadí — vedení je celý smysl režimu, další číslo by jen odvádělo oči
+od kostky.
 
-> **Otevřené rozhodnutí (vědomě odložené).** Přesná sémantika splitů se doladí až při
-> implementaci fáze 6. Model je proto navržený tak, aby změna nebolela:
-> splity jsou **embedded pole uvnitř solvu** (ne vlastní tabulka, žádné cizí klíče k migraci),
-> `phase` je volný `string` odkazující do `methods.phases[].key` (ne enum v kódu),
-> časy jsou **kumulativní od startu** (z nich lze dopočítat délky fází, obráceně to při
-> chybějící fázi nejde) a celý blok nese vlastní `splitsSchemaVersion`, takže lze migrovat
-> jen splity bez zásahu do zbytku DB.
+**Sémantika (rozhodnuto při stavbě fáze 6, krok 1):**
+
+- **Split je vnitřní hranice fáze.** Poslední fázi uzavírá `rawMs` solvu, takže
+  čtyřfázová metoda ukládá nejvýš tři splity. Split na `rawMs` by byl duplikát
+  čísla, které už existuje, a každá pozdější oprava času by ho musela dorovnávat.
+  Invariant je pak triviální: `0 <= atMs[i] <= atMs[i+1] < rawMs`.
+- **Vynechaná fáze je fáze nulové délky** — dvě hranice ve stejný čas. Nepotřebuje
+  vlastní příznak ani tlačítko; při solvu se prostě ťukne dvakrát po sobě.
+- **Chybějící hranice není vynechaná fáze, ale „nezměřeno".** Chybí-li hranice
+  **uvnitř** zaznamenaných, je neznámá délka fáze před ní i po ní, protože známý je
+  jen jejich součet: do průměrů nesmí ani jedna a pruh je kreslí jako jeden šedý blok.
+- **Kde skončila poslední zaznamenaná hranice, tam solve skončil.** Fázi, do které
+  solve dojel, se dopočítá z pořadí (poslední hranice + 1) a uzavírá ji `rawMs`;
+  pozdější fáze se nestaly. Smazat poslední hranici v detailu proto znamená
+  „tuhle fázi jsem neměřil **a dál už jsem nedojel**" — informaci o pozdějších
+  fázích nese jen ta hranice. Vrátit ji je jedno ťuknutí a pruh i tabulka to hned
+  ukážou, takže se to nedá udělat omylem a nevšimnout si.
+- **Ťuknutí nejde vzít zpět.** Ruce jsou na kostce a undo by chtělo další gesto;
+  oprava patří do detailu solvu, kde se splity stejně editují. Žádný práh proti
+  zákmitu prstu — `refractoryMs` je věc onset detektoru, ne dotyku.
+- **ESC zahodí celý pokus i se splity**, jako u běžného solvu. ESC má jeden význam
+  a nedělá se z něj „smaž poslední split".
+- **Fázový solve smí skončit dřív než na poslední fázi.** Ťuknutí **podržené** přes
+  `holdThresholdMs` ukončí solve tam, kde je — skip OLL nebo PLL nesmí nutit
+  doťukávat fáze, které se nestaly. Čas se bere z okamžiku **stisku**, takže držení
+  nic nestojí. Na poslední fázi zastavuje stisk okamžitě, jak to timer dělal vždycky.
+- `splits: []` zůstává „neměřeno". Fázový solve ukončený už v první fázi tedy
+  nezaznamená nic — není co dělit.
+- Fázový režim je jen freestyle timer; drill měří jeden případ, ne solve po fázích.
+
+**Zobrazení a editace:**
+
+- po dokončeném solvu (a v detailu solvu) **pruh fází**: blok na fázi, široký podle
+  toho, jak dlouho trvala. Barvy se přiřazují **podle pořadí, ne podle jména** —
+  první fáze bílá (cross), poslední žlutá (poslední vrstva), mezi tím zbylé barvy
+  nálepek (`lib/phase-colours.ts`). Metoda, o které aplikace nikdy neslyšela, tak
+  dostane čitelný pruh
+- detail solvu: posun času kterékoliv hranice (edituje se **kumulativní** čas, protože
+  ten je uložený a posun jedné hranice má změnit přesně dvě fáze), doplnění chybějící
+  fáze (vloží se doprostřed bloku, který dělí), smazání jedné hranice i celé sady.
+  Posun mimo sousední hranice se **odmítne**, neořízne — tiše oříznutý čas je špatný
+  čas, o kterém se uživatel nedozvěděl
+- **oprava `rawMs` zahodí hranice, které se do zkráceného solvu nevejdou** — split
+  za koncem solvu není split
+- statistiky: průměrné časy fází nad session, po oknech ao5 / ao12 / ao50 / ao100 / ALL.
+  Sloupce fází se počítají nad **týmiž solvy, které projdou trimem** daného průměru,
+  takže se při kompletně zaznamenaných hranicích sečtou na celkový čas vpravo
+  (jediná výjimka je solve s `+2` — penalta nepatří do žádné fáze). Do tabulky
+  vstupují **jen solvy měřené po fázích**; okno přes všechny solvy by bylo skoro
+  vždycky prázdné
+- zdroj každého splitu je uložen (`mic` / `smartcube` / `manual`) — ruční je zatím
+  jediný, který se zapisuje
+
+**Detekce nástupu zvuku (krok 2, zatím se nestaví — viz fáze 6):** uživatel na konci
+fáze klepne na stůl / kostku, `AudioWorklet` počítá krátkodobou energii a onset je
+překročení adaptivního prahu nad klouzavým průměrem + `refractoryMs` (default 250 ms)
+na potlačení zákmitů; kalibrace v nastavení (výběr vstupu, práh, gain, live meter,
+test detekce). **Nejde o rozpoznávání řeči** a nikdy nesmí odejít žádný zvuk mimo
+zařízení. Splity se přiřazují k fázím **v pořadí** podle definice metody a chybějící
+hranice je povolená — přesně ten případ, na který je pravidlo „nezměřeno" výše.
+
+Model je navržený tak, aby změna sémantiky nebolela: splity jsou **embedded pole
+uvnitř solvu** (ne vlastní tabulka, žádné cizí klíče k migraci), `phase` je volný
+`string` do `methods.phases[].key`, časy jsou **kumulativní od startu** (z nich lze
+dopočítat délky fází, obráceně to při chybějící fázi nejde) a celý blok nese vlastní
+`splitsSchemaVersion`, takže lze migrovat jen splity bez zásahu do zbytku DB.
 
 ### 3.7 Export / import
 
@@ -480,7 +538,13 @@ ze všech solvů, smazání `AlgCase` osiří `Solve.caseId` → nastaví se `nu
 ```ts
 finalMs(s: Solve): number | null   // dnf -> null; plus2 -> rawMs + 2000; jinak rawMs
 isDnf(s: Solve): boolean
-phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativních atMs
+
+// Délky fází v pořadí metody. Klíče fází musí přijít zvenčí (Method.phases),
+// protože Solve o své metodě nic neví. ms === null = hranice není známá nebo
+// se tam solve vůbec nedostal; poslední zapsanou fázi uzavírá rawMs.
+phaseDurations(splits: Split[], phaseKeys: string[], rawMs: number): PhaseDuration[]
+// Totéž pro kreslení: fáze kolem chybějící hranice splynou do jednoho bloku.
+phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment[]
 ```
 
 ### 4.5 Nastavení (klíče)
@@ -491,6 +555,7 @@ phaseDurations(s: Solve): { phase: string; ms: number }[]  // diff kumulativníc
 | `timer.inspectionEnabled` | 0 | 1 |
 | `timer.inspectionCues` | 0 | `[8000, 12000]` |
 | `timer.showScramblePreview` | 0 | `true` |
+| `timer.splitMode` | 0 | `'total'` |
 | `ui.theme` | 1 | `'system'` |
 | `ui.twistyMode` | 0 | `'2D'` |
 | `ui.cubeSkin` | 0 | `'classic'` |
@@ -538,11 +603,11 @@ formátů žije v `src/db/migrations/import/`.
 
 | # | Obrazovka | Obsah |
 |---|---|---|
-| 1 | **Timer** | scramble + náhled, velký čas, inspekce, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12/session mean) |
+| 1 | **Timer** | scramble + náhled, velký čas, inspekce, přepínač „po fázích“, pruh fází dokončeného solvu, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12/session mean) |
 | 2 | **Historie** | seznam solvů session, filtry (tag, penalta, hvězdička), hromadné akce |
 | 3 | **Detail solvu** | modal/drawer: čas, scramble + náhled, splity, tagy, poznámka, editace |
 | 4 | **Sessiony** | seznam, založení, přejmenování, archivace, přepnutí aktivní |
-| 5 | **Statistiky** | karty s ao/PB/mean/SD/DNF rate, histogram, trend rolling ao12 |
+| 5 | **Statistiky** | karty s ao/PB/mean/SD/DNF rate, průměrné časy fází po oknech, histogram, trend rolling ao12 |
 | 6 | **Trenažér — sady** | PLL / OLL / F2L, progress a nejslabší případy |
 | 7 | **Trenažér — případ** | `<twisty-player>`, varianty algoritmů, statistiky případu |
 | 8 | **Drill** | timer nad náhodným případem z vybrané podmnožiny |
@@ -645,21 +710,20 @@ nemigruje.
 
 **Dva samostatně použitelné kroky, a druhý není rozhodnutý:**
 
-1. **Ruční mezičasy** — vedený solve, ťuknutí ukončí fázi. Žádný mikrofon, žádné
-   nové riziko, a hotové je to použitelné samo o sobě.
+1. **Ruční mezičasy — hotové.** Vedený solve jako volba v timeru („jen celkový čas“ /
+   „po fázích“), ťuknutí ukončí fázi a rovnou začne další, poslední zastaví čas.
+   Zápis splitů do solvu, pruh fází po solvu, zobrazení a editace splitů v detailu,
+   průměrné časy fází ve statistikách. Žádný mikrofon, žádné nové riziko.
+   **Sémantika splitů je rozhodnutá a zapsaná v 3.6.**
 2. **Detekce nástupu zvuku** (`AudioWorklet`) za tímtéž rozhraním. **Zatím se
    nestaví**: jestli se vyplatí, se pozná až podle toho, jestli se fázové časy
    doopravdy používají. Model se kvůli tomu nemění (`Split.source`), takže
    rozhodnutí smí přijít později — a smart cube (fáze 7) řeší totéž přesněji.
+   Chybí k němu onset detektor za rozhraním `SplitSource` a kalibrace v nastavení;
+   všechno ostatní (uložení, editace, statistiky) už stojí z kroku 1.
 
 **Vedený solve** (scramble → cross → F2L → OLL → PLL s mezičasy) patří sem, ne do
-drillu: drill měří jeden případ, tohle měří jeden solve po fázích. Bude to **volba
-v timeru** („jen celkový čas“ / „po fázích“), ne další obrazovka — a ruční varianta
-(ťuknutí na konci fáze) nepotřebuje mikrofon, ten je až druhá implementace téhož.
-
-`AudioWorklet` onset detektor za rozhraním `SplitSource`, kalibrace v nastavení,
-zápis splitů do solvu, zobrazení a editace splitů v detailu, průměrné časy fází
-ve statistikách. Sémantika splitů se dorozhodne tady (viz 3.6).
+drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
 → *Použitelné jako: analýza slabé fáze.*
 
 ### Fáze 7 — Smart cube (později)

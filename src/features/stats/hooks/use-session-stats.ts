@@ -24,6 +24,11 @@ import {
   type HistogramBin,
 } from '../../../domain/stats/distribution';
 import { pbSingle } from '../../../domain/stats/pb';
+import {
+  measuredSolves,
+  phaseAverageTable,
+  type PhaseAverageRow,
+} from '../../../domain/stats/phases';
 
 /** The trend chart tracks rolling ao12 (SPEC 3.4). */
 const TREND_WINDOW = 12;
@@ -53,13 +58,21 @@ export interface SessionStats {
   plusTwoRate: number | null;
   histogramBins: HistogramBin[];
   trend: TrendPoint[];
+  /** Average length of each phase, per window. Empty without a method to name them. */
+  phaseRows: PhaseAverageRow[];
+  /** How many of the solves were timed by phase — the sample behind phaseRows. */
+  measuredCount: number;
 }
 
 /**
  * Everything the stats screen shows, recomputed live. Nothing here is stored;
  * the whole object is derived from the session's solves on every write.
  */
-export function useSessionStats(sessionId: string | null, puzzle: Puzzle): SessionStats | null {
+export function useSessionStats(
+  sessionId: string | null,
+  puzzle: Puzzle,
+  phaseKeys: readonly string[] = [],
+): SessionStats | null {
   const solves = useLiveQuery(
     async () => (sessionId ? listSolvesChronological(sessionId) : []),
     [sessionId],
@@ -95,6 +108,8 @@ export function useSessionStats(sessionId: string | null, puzzle: Puzzle): Sessi
       trend: rolling
         .slice(trendStart)
         .map((aoMs, offset) => ({ index: trendStart + offset + 1, aoMs })),
+      phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(solves, phaseKeys),
+      measuredCount: measuredSolves(solves).length,
     };
-  }, [solves, globalPbMs, chartWindow]);
+  }, [solves, globalPbMs, chartWindow, phaseKeys]);
 }

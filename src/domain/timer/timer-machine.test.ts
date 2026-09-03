@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  currentPhaseIndex,
   initialTimerState,
   isArmed,
+  isFinishArmed,
   timerReducer,
   type TimerConfig,
   type TimerEvent,
   type TimerState,
 } from './timer-machine';
 
-const withInspection: TimerConfig = { holdThresholdMs: 300, inspectionEnabled: true };
-const noInspection: TimerConfig = { holdThresholdMs: 300, inspectionEnabled: false };
+const withInspection: TimerConfig = { holdThresholdMs: 300, inspectionEnabled: true, phases: [] };
+const noInspection: TimerConfig = { holdThresholdMs: 300, inspectionEnabled: false, phases: [] };
+const byPhase: TimerConfig = { ...noInspection, phases: ['cross', 'f2l', 'oll', 'pll'] };
 
 function run(events: TimerEvent[], config: TimerConfig): TimerState {
   return events.reduce((state, event) => timerReducer(state, event, config), initialTimerState);
@@ -24,7 +27,13 @@ describe('timerReducer without inspection', () => {
       ],
       noInspection,
     );
-    expect(state).toEqual({ status: 'running', startedAt: 300, inspectionMs: null });
+    expect(state).toEqual({
+      status: 'running',
+      startedAt: 300,
+      inspectionMs: null,
+      splitMs: [],
+      pressedAt: null,
+    });
   });
 
   it('falls back to idle when released too early', () => {
@@ -47,7 +56,7 @@ describe('timerReducer without inspection', () => {
       ],
       noInspection,
     );
-    expect(state).toEqual({ status: 'stopped', rawMs: 12_340, inspectionMs: null });
+    expect(state).toEqual({ status: 'stopped', rawMs: 12_340, inspectionMs: null, splitMs: [] });
   });
 });
 
@@ -73,7 +82,13 @@ describe('timerReducer with inspection', () => {
       ],
       withInspection,
     );
-    expect(state).toEqual({ status: 'running', startedAt: 8400, inspectionMs: 8300 });
+    expect(state).toEqual({
+      status: 'running',
+      startedAt: 8400,
+      inspectionMs: 8300,
+      splitMs: [],
+      pressedAt: null,
+    });
   });
 
   it('returns to inspection when the hold was too short', () => {
@@ -116,7 +131,7 @@ describe('timerReducer edge cases', () => {
   });
 
   it('keeps a stopped result when cancel arrives, so the solve is not lost', () => {
-    const stopped: TimerState = { status: 'stopped', rawMs: 1234, inspectionMs: null };
+    const stopped: TimerState = { status: 'stopped', rawMs: 1234, inspectionMs: null, splitMs: [] };
     expect(timerReducer(stopped, { type: 'cancel' }, noInspection)).toBe(stopped);
   });
 
@@ -125,5 +140,116 @@ describe('timerReducer edge cases', () => {
     expect(isArmed(holding, 299, noInspection)).toBe(false);
     expect(isArmed(holding, 300, noInspection)).toBe(true);
     expect(isArmed(initialTimerState, 5000, noInspection)).toBe(false);
+  });
+});
+
+/**
+ * Start a phase solve and tap it through the given moments. A tap with no
+ * release is the press still being down — that is where the machine sits
+ * right after the last phase stops the clock.
+ */
+function runPhases(taps: [press: number, release?: number][]): TimerState {
+  const events: TimerEvent[] = [
+    { type: 'press', at: 0 },
+    { type: 'release', at: 400 },
+  ];
+  for (const [press, release] of taps) {
+    events.push({ type: 'press', at: press });
+    if (release !== undefined) events.push({ type: 'release', at: release });
+  }
+  return run(events, byPhase);
+}
+
+describe('timerReducer by phase', () => {
+  it('ends a phase on a tap and keeps the clock running', () => {
+    const state = runPhases([[2400, 2450]]);
+    expect(state).toEqual({
+      status: 'running',
+      startedAt: 400,
+      inspectionMs: null,
+      splitMs: [2000],
+      pressedAt: null,
+    });
+  });
+
+  it('stops on the tap that ends the last phase', () => {
+    const state = runPhases([
+      [2400, 2450],
+      [10_400, 10_450],
+      [14_400, 14_450],
+      [20_400],
+    ]);
+    expect(state).toEqual({
+      status: 'stopped',
+      rawMs: 20_000,
+      inspectionMs: null,
+      splitMs: [2000, 10_000, 14_000],
+    });
+  });
+
+  it('takes the boundary from the press, not the release that follows it', () => {
+    const state = runPhases([[2400, 2900]]);
+    // 500ms is past the hold threshold, so this one finished the solve early.
+    expect(state).toEqual({
+      status: 'stopped',
+      rawMs: 2000,
+      inspectionMs: null,
+      splitMs: [],
+    });
+  });
+
+  it('finishes early when a phase tap is held, keeping the splits already made', () => {
+    const state = runPhases([
+      [2400, 2450],
+      [9400, 9800],
+    ]);
+    expect(state).toEqual({
+      status: 'stopped',
+      rawMs: 9000,
+      inspectionMs: null,
+      splitMs: [2000],
+    });
+  });
+
+  it('records equal boundaries for a skipped phase, without any special case', () => {
+    const state = runPhases([
+      [2400, 2450],
+      [10_400, 10_450],
+      [10_400, 10_450],
+    ]);
+    expect(state).toMatchObject({ status: 'running', splitMs: [2000, 10_000, 10_000] });
+  });
+
+  it('stops immediately on the last phase however long the press is held', () => {
+    const state = runPhases([
+      [2400, 2450],
+      [10_400, 10_450],
+      [14_400, 14_450],
+      [20_400],
+    ]);
+    expect(timerReducer(state, { type: 'release', at: 25_000 }, byPhase)).toMatchObject({
+      status: 'idle',
+      lastRawMs: 20_000,
+    });
+    expect(state).toMatchObject({ status: 'stopped', rawMs: 20_000 });
+  });
+
+  it('discards the whole attempt on cancel, splits included', () => {
+    const running = runPhases([[2400, 2450]]);
+    expect(timerReducer(running, { type: 'cancel' }, byPhase).status).toBe('idle');
+  });
+
+  it('names the phase being solved, and stays on the last one', () => {
+    expect(currentPhaseIndex(runPhases([]), byPhase)).toBe(0);
+    expect(currentPhaseIndex(runPhases([[2400, 2450]]), byPhase)).toBe(1);
+    expect(currentPhaseIndex(initialTimerState, byPhase)).toBeNull();
+    expect(currentPhaseIndex(runPhases([[2400, 2450]]), noInspection)).toBeNull();
+  });
+
+  it('arms the finish only once a phase press has been held long enough', () => {
+    const pressed = timerReducer(runPhases([]), { type: 'press', at: 2400 }, byPhase);
+    expect(isFinishArmed(pressed, 2699, byPhase)).toBe(false);
+    expect(isFinishArmed(pressed, 2700, byPhase)).toBe(true);
+    expect(isFinishArmed(runPhases([]), 9999, byPhase)).toBe(false);
   });
 });

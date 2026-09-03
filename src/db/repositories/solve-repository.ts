@@ -1,7 +1,8 @@
 import Dexie from 'dexie';
 import { db } from '../schema';
-import { SPLITS_SCHEMA_VERSION, type Penalty, type Puzzle, type Solve } from '../types';
+import { SPLITS_SCHEMA_VERSION, type Penalty, type Puzzle, type Solve, type Split } from '../types';
 import { finalMs } from '../../domain/solve/final-time';
+import { clampSplitsToRaw, normaliseSplits } from '../../domain/solve/splits';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 
@@ -17,6 +18,10 @@ export interface NewSolve {
   penaltySource: Solve['penaltySource'];
   inspectionMs: number | null;
   startedAt: number;
+  /** Phase boundaries, cumulative from the start. Omitted for a solve timed as a whole. */
+  splits?: Split[];
+  /** Method phase keys, in order — splits outside them cannot be read back and are dropped. */
+  phaseKeys?: readonly string[];
 }
 
 /** Fields the user is allowed to change after the fact. */
@@ -26,6 +31,9 @@ export interface SolvePatch {
   note?: string | null;
   starred?: 0 | 1;
   tagIds?: string[];
+  splits?: Split[];
+  /** Required alongside splits, for the same reason as in NewSolve. */
+  phaseKeys?: readonly string[];
 }
 
 export interface SolveFilters {
@@ -48,7 +56,7 @@ export async function addSolve(input: NewSolve): Promise<Solve> {
     penaltySource: input.penaltySource,
     inspectionMs: input.inspectionMs === null ? null : Math.round(input.inspectionMs),
     startedAt: input.startedAt,
-    splits: [],
+    splits: normaliseSplits(input.splits ?? [], input.phaseKeys ?? [], Math.round(input.rawMs)),
     splitsSchemaVersion: SPLITS_SCHEMA_VERSION,
     tagIds: [],
     note: null,
@@ -149,6 +157,17 @@ export async function updateSolve(id: string, patch: SolvePatch): Promise<void> 
     changes.penaltySource = 'manual';
   }
   if (patch.rawMs !== undefined) changes.rawMs = Math.round(patch.rawMs);
+
+  // Splits are bounded by the raw time, so anything touching either of them
+  // has to be checked against the raw time this patch leaves behind.
+  if (patch.splits !== undefined || patch.rawMs !== undefined) {
+    const existing = await db.solves.get(id);
+    const rawMs = changes.rawMs ?? existing?.rawMs ?? 0;
+    changes.splits =
+      patch.splits === undefined
+        ? clampSplitsToRaw(existing?.splits ?? [], rawMs)
+        : normaliseSplits(patch.splits, patch.phaseKeys ?? [], rawMs);
+  }
   if (patch.note !== undefined) changes.note = patch.note;
   if (patch.starred !== undefined) changes.starred = patch.starred;
   if (patch.tagIds !== undefined) changes.tagIds = patch.tagIds;

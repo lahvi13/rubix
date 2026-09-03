@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import type { Solve, Tag } from '../../../db/types';
+import type { MethodPhase, Solve, Tag } from '../../../db/types';
 import type { SolvePatch } from '../../../db/repositories/solve-repository';
 import { finalMs } from '../../../domain/solve/final-time';
 import { parseTimeInput } from '../../../domain/solve/parse-time';
 import { togglePenalty } from '../../../domain/solve/penalty';
 import { formatDateTime, formatMs, formatTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
+import { SplitEditor } from '../../splits';
 
 interface SolveDetailProps {
   solve: Solve;
+  phases: readonly MethodPhase[];
   tags: Tag[];
   onEdit: (id: string, patch: SolvePatch) => void;
   onCreateTag: (name: string) => Promise<Tag>;
@@ -18,6 +20,7 @@ interface SolveDetailProps {
 
 export function SolveDetail({
   solve,
+  phases,
   tags,
   onEdit,
   onCreateTag,
@@ -108,6 +111,22 @@ export function SolveDetail({
           {strings.history.star}
         </button>
       </div>
+
+      {phases.length > 0 ? (
+        <div className="detail__row">
+          <span>{strings.splits.title}</span>
+          {solve.splits.length === 0 ? (
+            <p className="detail__hint">{strings.splits.none}</p>
+          ) : null}
+          <SplitEditor
+            solve={solve}
+            phases={phases}
+            onChange={(splits) =>
+              onEdit(solve.id, { splits, phaseKeys: phases.map((phase) => phase.key) })
+            }
+          />
+        </div>
+      ) : null}
 
       <div className="detail__row">
         <span>{strings.history.tags}</span>

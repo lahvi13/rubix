@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { formatAverage, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useActiveSession } from '../../sessions';
+import { PhaseAverages, usePhases } from '../../splits';
 import { useSessionStats } from '../hooks/use-session-stats';
 
 const PUZZLE = '333';
@@ -33,7 +34,9 @@ function StatCard({ label, value, highlight = false }: StatCardProps) {
 
 export function StatsScreen() {
   const session = useActiveSession(PUZZLE, MODE);
-  const stats = useSessionStats(session?.id ?? null, PUZZLE);
+  const phases = usePhases(session?.methodId ?? null);
+  const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
+  const stats = useSessionStats(session?.id ?? null, PUZZLE, phaseKeys);
 
   if (stats === null) return <main className="screen screen--scroll" />;
 
@@ -86,6 +89,12 @@ export function StatsScreen() {
                 </tbody>
               </table>
             </section>
+
+            <PhaseAverages
+              rows={stats.phaseRows}
+              phases={phases}
+              measuredCount={stats.measuredCount}
+            />
 
             <section className="chart-card">
               <h2 className="stats__section-title">{strings.stats.distribution}</h2>

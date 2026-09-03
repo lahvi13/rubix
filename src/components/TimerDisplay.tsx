@@ -9,6 +9,10 @@ interface TimerDisplayProps {
   displayMs: number | null;
   inspectionMs: number | null;
   armed: boolean;
+  /** A phase press held long enough that releasing it ends the solve. */
+  finishArmed?: boolean;
+  /** Guided solve: which phase is being solved, and how many there are. */
+  phase?: { label: string; index: number; count: number } | null;
   inspectionEnabled: boolean;
   touchHandlers: {
     onPointerDown: (event: ReactPointerEvent) => void;
@@ -21,11 +25,13 @@ export function TimerDisplay({
   displayMs,
   inspectionMs,
   armed,
+  finishArmed = false,
+  phase = null,
   inspectionEnabled,
   touchHandlers,
 }: TimerDisplayProps) {
   const isInspecting = inspectionMs !== null;
-  const modifier = armed ? 'armed' : state.status;
+  const modifier = armed || finishArmed ? 'armed' : state.status;
 
   return (
     <div
@@ -40,15 +46,30 @@ export function TimerDisplay({
           ? formatInspection(inspectionMs, INSPECTION_LIMIT_MS)
           : formatMs(displayMs ?? 0)}
       </div>
-      <p className="timer__hint">{hintFor(state, armed, inspectionEnabled)}</p>
+      {/* The phase name is the whole point of the guided run: without it the
+          taps have to be counted in your head. It is the only thing the run
+          shows besides the clock. */}
+      {phase ? (
+        <p className="timer__phase">
+          {phase.label} <span className="timer__phase-count">{phase.index + 1}/{phase.count}</span>
+        </p>
+      ) : null}
+      <p className="timer__hint">{hintFor(state, armed, finishArmed, phase !== null, inspectionEnabled)}</p>
     </div>
   );
 }
 
 /** The hint must describe what the CURRENT gesture will do, stage by stage. */
-function hintFor(state: TimerState, armed: boolean, inspectionEnabled: boolean): string {
+function hintFor(
+  state: TimerState,
+  armed: boolean,
+  finishArmed: boolean,
+  byPhase: boolean,
+  inspectionEnabled: boolean,
+): string {
   if (armed) return strings.timer.releaseToStart;
-  if (state.status === 'running') return '';
+  if (finishArmed) return strings.timer.releaseToFinish;
+  if (state.status === 'running') return byPhase ? strings.timer.tapToEndPhase : '';
   if (state.status === 'inspecting') return strings.timer.holdToStartInspection;
   if (state.status === 'holding') {
     if (state.inspectionStartedAt !== null) return strings.timer.holdToStartInspection;

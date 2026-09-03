@@ -4,6 +4,7 @@ import { finalMs } from '../../../domain/solve/final-time';
 import { formatClock, formatTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useActiveSession } from '../../sessions';
+import { usePhases } from '../../splits';
 import { useHistory } from '../hooks/use-history';
 import { useTags } from '../hooks/use-tags';
 import { SolveDetail } from './SolveDetail';
@@ -15,6 +16,7 @@ const PENALTY_FILTERS: Penalty[] = ['plus2', 'dnf'];
 export function HistoryScreen() {
   const session = useActiveSession(PUZZLE, MODE);
   const history = useHistory(session?.id ?? null);
+  const phases = usePhases(session?.methodId ?? null);
   const tags = useTags();
   const [openId, setOpenId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -125,6 +127,7 @@ export function HistoryScreen() {
         <SolveDetail
           key={open.id}
           solve={open}
+          phases={phases}
           tags={tags.tags}
           onEdit={(id, patch) => void history.edit(id, patch)}
           onCreateTag={tags.create}

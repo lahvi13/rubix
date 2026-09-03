@@ -226,3 +226,84 @@ describe('solve editing', () => {
     expect(await db.tombstones.count()).toBe(0);
   });
 });
+
+describe('solve repository splits', () => {
+  const PHASES = ['cross', 'f2l', 'oll', 'pll'];
+  let sessionId: string;
+
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    sessionId = session.id;
+  });
+
+  it('stores the phase boundaries of a guided solve, in method order', async () => {
+    const solve = await addSolve({
+      ...(await makeSolve(sessionId, 20_000)),
+      splits: [
+        { phase: 'oll', atMs: 14_000, source: 'manual' },
+        { phase: 'cross', atMs: 2000, source: 'manual' },
+      ],
+      phaseKeys: PHASES,
+    });
+
+    expect(solve.splits.map((split) => split.phase)).toEqual(['cross', 'oll']);
+    expect((await db.solves.get(solve.id))?.splits).toEqual(solve.splits);
+  });
+
+  it('drops a boundary that does not fit inside the solve', async () => {
+    const solve = await addSolve({
+      ...(await makeSolve(sessionId, 20_000)),
+      splits: [{ phase: 'cross', atMs: 25_000, source: 'manual' }],
+      phaseKeys: PHASES,
+    });
+
+    expect(solve.splits).toEqual([]);
+  });
+
+  it('replaces the whole set when the user edits them, and marks the solve edited', async () => {
+    const solve = await addSolve({
+      ...(await makeSolve(sessionId, 20_000)),
+      splits: [{ phase: 'cross', atMs: 2000, source: 'manual' }],
+      phaseKeys: PHASES,
+    });
+
+    await updateSolve(solve.id, {
+      splits: [{ phase: 'cross', atMs: 3000, source: 'manual' }],
+      phaseKeys: PHASES,
+    });
+
+    const stored = await db.solves.get(solve.id);
+    expect(stored?.splits).toEqual([{ phase: 'cross', atMs: 3000, source: 'manual' }]);
+    expect(stored?.editedAt).not.toBeNull();
+  });
+
+  it('drops the boundaries a corrected raw time no longer contains', async () => {
+    const solve = await addSolve({
+      ...(await makeSolve(sessionId, 20_000)),
+      splits: [
+        { phase: 'cross', atMs: 2000, source: 'manual' },
+        { phase: 'f2l', atMs: 10_000, source: 'manual' },
+      ],
+      phaseKeys: PHASES,
+    });
+
+    await updateSolve(solve.id, { rawMs: 5000 });
+
+    expect((await db.solves.get(solve.id))?.splits).toEqual([
+      { phase: 'cross', atMs: 2000, source: 'manual' },
+    ]);
+  });
+
+  it('leaves the boundaries alone when an unrelated field changes', async () => {
+    const solve = await addSolve({
+      ...(await makeSolve(sessionId, 20_000)),
+      splits: [{ phase: 'cross', atMs: 2000, source: 'manual' }],
+      phaseKeys: PHASES,
+    });
+
+    await updateSolve(solve.id, { penalty: 'plus2' });
+
+    expect((await db.solves.get(solve.id))?.splits).toHaveLength(1);
+  });
+});

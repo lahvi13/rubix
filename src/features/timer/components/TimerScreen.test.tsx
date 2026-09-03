@@ -11,6 +11,23 @@ vi.mock('../../../lib/scramble-client', () => ({
 }));
 vi.mock('cubing/twisty', () => ({}));
 
+/** The phase toggle needs a method to take its phases from. */
+async function seedCfop(): Promise<void> {
+  await db.methods.put({
+    id: 'cfop',
+    name: 'CFOP',
+    puzzle: '333',
+    phases: [
+      { key: 'cross', label: 'Cross', order: 0 },
+      { key: 'f2l', label: 'F2L', order: 1 },
+      { key: 'oll', label: 'OLL', order: 2 },
+      { key: 'pll', label: 'PLL', order: 3 },
+    ],
+    createdAt: 0,
+    updatedAt: 0,
+  });
+}
+
 describe('TimerScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
@@ -124,6 +141,89 @@ describe('TimerScreen', () => {
       'scramble--hidden',
     );
     expect(screen.queryByRole('button', { name: 'Next scramble' })).not.toBeInTheDocument();
+  });
+
+  it('times a solve phase by phase, and the last tap stops the clock', async () => {
+    await seedCfop();
+    const user = userEvent.setup();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await screen.findByText("R U R' U' F2");
+    const phaseToggle = await screen.findByRole('checkbox', { name: 'Phases' });
+    // The toggle stays disabled until the method's phases have been read.
+    await waitFor(() => expect(phaseToggle).toBeEnabled());
+    await user.click(phaseToggle);
+
+    // Tap to inspect, hold to start.
+    await user.keyboard('[Space>]');
+    clock += 50;
+    await user.keyboard('[/Space]');
+    clock += 3000;
+    await user.keyboard('[Space>]');
+    clock += 400;
+    await user.keyboard('[/Space]');
+
+    expect(await screen.findByText('Cross')).toBeInTheDocument();
+
+    // Cross, F2L and OLL end on a tap; the fourth tap ends PLL and the solve.
+    for (const phaseMs of [2000, 8000, 4000, 6000]) {
+      clock += phaseMs;
+      await user.keyboard('[Space>]');
+      await user.keyboard('[/Space]');
+    }
+
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+    const solve = await db.solves.toCollection().first();
+    expect(solve?.rawMs).toBe(20_000);
+    expect(solve?.splits).toEqual([
+      { phase: 'cross', atMs: 2000, source: 'manual' },
+      { phase: 'f2l', atMs: 10_000, source: 'manual' },
+      { phase: 'oll', atMs: 14_000, source: 'manual' },
+    ]);
+  });
+
+  it('finishes a phase solve early when the tap is held', async () => {
+    await seedCfop();
+    const user = userEvent.setup();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await screen.findByText("R U R' U' F2");
+    const phaseToggle = await screen.findByRole('checkbox', { name: 'Phases' });
+    // The toggle stays disabled until the method's phases have been read.
+    await waitFor(() => expect(phaseToggle).toBeEnabled());
+    await user.click(phaseToggle);
+
+    await user.keyboard('[Space>]');
+    clock += 50;
+    await user.keyboard('[/Space]');
+    clock += 3000;
+    await user.keyboard('[Space>]');
+    clock += 400;
+    await user.keyboard('[/Space]');
+
+    clock += 2000;
+    await user.keyboard('[Space>]');
+    await user.keyboard('[/Space]');
+
+    // The cube was done during F2L: hold instead of tapping through OLL and PLL.
+    clock += 7000;
+    await user.keyboard('[Space>]');
+    clock += 400;
+    await user.keyboard('[/Space]');
+
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+    const solve = await db.solves.toCollection().first();
+    // The time comes from the press, so holding it costs nothing.
+    expect(solve?.rawMs).toBe(9000);
+    expect(solve?.splits).toEqual([{ phase: 'cross', atMs: 2000, source: 'manual' }]);
   });
 
   it('creates the default session on first render', async () => {

@@ -12,6 +12,11 @@ export interface SettingValues {
   'timer.inspectionCues': readonly number[];
   /** Whether the timer draws the scrambled cube at all. */
   'timer.showScramblePreview': boolean;
+  /**
+   * 'phases' turns the timer into the guided solve: a tap ends the phase in
+   * progress instead of stopping the clock, and the last one stops it.
+   */
+  'timer.splitMode': 'total' | 'phases';
   'ui.twistyMode': '2D' | '3D';
   'ui.cubeSkin': string;
   /** Which route through the last layer the trainer opens on. */
@@ -43,6 +48,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'timer.inspectionEnabled': true,
   'timer.inspectionCues': [8000, 12000],
   'timer.showScramblePreview': true,
+  'timer.splitMode': 'total',
   'ui.twistyMode': '2D',
   'ui.cubeSkin': 'classic',
   'trainer.twoLookDefault': false,

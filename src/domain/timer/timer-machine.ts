@@ -10,6 +10,12 @@
 export interface TimerConfig {
   holdThresholdMs: number;
   inspectionEnabled: boolean;
+  /**
+   * Phases of the guided solve, in method order. Empty means the plain timer:
+   * one press stops the clock. With phases, a press ends the phase in progress
+   * and the last one stops the clock.
+   */
+  phases: readonly string[];
 }
 
 export type TimerState =
@@ -17,13 +23,29 @@ export type TimerState =
   | { status: 'idle'; lastRawMs: number | null }
   | { status: 'inspecting'; inspectionStartedAt: number }
   | { status: 'holding'; heldSince: number; inspectionStartedAt: number | null }
-  | { status: 'running'; startedAt: number; inspectionMs: number | null }
-  | { status: 'stopped'; rawMs: number; inspectionMs: number | null };
+  | {
+      status: 'running';
+      startedAt: number;
+      inspectionMs: number | null;
+      /** Phase boundaries so far, as offsets from startedAt. */
+      splitMs: readonly number[];
+      /**
+       * When a phase-ending press is down but not yet resolved: releasing it
+       * quickly moves to the next phase, holding it finishes the solve.
+       */
+      pressedAt: number | null;
+    }
+  | {
+      status: 'stopped';
+      rawMs: number;
+      inspectionMs: number | null;
+      splitMs: readonly number[];
+    };
 
 export type TimerEvent =
   | { type: 'press'; at: number }
   | { type: 'release'; at: number }
-  /** ESC — abandon the attempt without recording it. */
+  /** ESC — abandon the attempt without recording it, splits included. */
   | { type: 'cancel' }
   /** The stopped solve has been dealt with; back to idle. */
   | { type: 'reset' };
@@ -66,35 +88,69 @@ export function timerReducer(
           return { status: 'inspecting', inspectionStartedAt: event.at };
         }
         return heldLongEnough(state.heldSince, event.at, config)
-          ? { status: 'running', startedAt: event.at, inspectionMs: null }
+          ? startRunning(event.at, null)
           : initialTimerState;
       }
 
       if (!heldLongEnough(state.heldSince, event.at, config)) {
         return { status: 'inspecting', inspectionStartedAt: state.inspectionStartedAt };
       }
-      return {
-        status: 'running',
-        startedAt: event.at,
-        inspectionMs: event.at - state.inspectionStartedAt,
-      };
+      return startRunning(event.at, event.at - state.inspectionStartedAt);
     }
 
-    case 'running':
+    case 'running': {
       if (event.type === 'press') {
-        return {
-          status: 'stopped',
-          rawMs: event.at - state.startedAt,
-          inspectionMs: state.inspectionMs,
-        };
+        if (state.pressedAt !== null) return state;
+        // In the last phase (and in the plain timer, which is all last phase)
+        // the press itself ends the solve, so the clock freezes on the way
+        // down exactly as it always has.
+        if (isFinalPhase(state, config)) return stopAt(state, event.at);
+        return { ...state, pressedAt: event.at };
       }
-      return state;
+
+      if (state.pressedAt === null) return state;
+      // A press held past the threshold finishes the solve wherever it is —
+      // an OLL or PLL skip must not force taps through phases that never
+      // happened. The time is taken from the press, not this release, so
+      // holding costs nothing.
+      if (heldLongEnough(state.pressedAt, event.at, config)) {
+        return stopAt(state, state.pressedAt);
+      }
+      return {
+        ...state,
+        splitMs: [...state.splitMs, state.pressedAt - state.startedAt],
+        pressedAt: null,
+      };
+    }
 
     case 'stopped':
       // The press that stopped the timer is still down. Only its release ends
       // the attempt, so that one keystroke cannot both stop and re-arm.
       return event.type === 'release' ? { status: 'idle', lastRawMs: state.rawMs } : state;
   }
+}
+
+function startRunning(at: number, inspectionMs: number | null): TimerState {
+  return { status: 'running', startedAt: at, inspectionMs, splitMs: [], pressedAt: null };
+}
+
+function stopAt(
+  state: Extract<TimerState, { status: 'running' }>,
+  at: number,
+): TimerState {
+  return {
+    status: 'stopped',
+    rawMs: at - state.startedAt,
+    inspectionMs: state.inspectionMs,
+    splitMs: state.splitMs,
+  };
+}
+
+function isFinalPhase(
+  state: Extract<TimerState, { status: 'running' }>,
+  config: TimerConfig,
+): boolean {
+  return config.phases.length === 0 || state.splitMs.length + 1 >= config.phases.length;
 }
 
 function heldLongEnough(heldSince: number, at: number, config: TimerConfig): boolean {
@@ -104,6 +160,18 @@ function heldLongEnough(heldSince: number, at: number, config: TimerConfig): boo
 /** Held long enough that releasing will start the solve — the green state. */
 export function isArmed(state: TimerState, at: number, config: TimerConfig): boolean {
   return state.status === 'holding' && heldLongEnough(state.heldSince, at, config);
+}
+
+/** Held long enough that releasing will end a phase solve early. */
+export function isFinishArmed(state: TimerState, at: number, config: TimerConfig): boolean {
+  if (state.status !== 'running' || state.pressedAt === null) return false;
+  return heldLongEnough(state.pressedAt, at, config);
+}
+
+/** Which phase of the method is being solved right now, or null outside a run. */
+export function currentPhaseIndex(state: TimerState, config: TimerConfig): number | null {
+  if (state.status !== 'running' || config.phases.length === 0) return null;
+  return Math.min(state.splitMs.length, config.phases.length - 1);
 }
 
 /** Milliseconds shown on screen for the current state, or null when there is nothing to show. */
