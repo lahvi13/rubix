@@ -214,7 +214,8 @@ kromě PB, které je globální per `puzzle`.
   `mode: 'drill'`, přepnutí na ni nic viditelného nedělá
 - vlastní algoritmus: uživatel může k případu přidat variantu a označit ji jako aktivní;
   zabudovaný pack se při updatu aplikace **nikdy** nepřepíše přes uživatelskou variantu
-- vlastní případy (`isCustom: 1`) — vlastní název, setup alg, sada
+- vlastní případy (`isCustom: 1`) — vlastní název, setup alg, sada.
+  **Vědomě odložené, ne opomenuté** (viz fáze 5)
 
 Drilly se ukládají do stejné tabulky `solves` s `mode: 'drill'` a `caseId`.
 Do hlavních statistik a PB **nevstupují** (filtr `mode === 'freestyle'`).
@@ -625,10 +626,31 @@ nastavení. Od téhle chvíle nehrozí ztráta dat při vyčištění prohlíže
 ### Fáze 5 — Trenažér algoritmů
 
 Seed PLL/OLL/F2L, sady a případy, `<twisty-player>`, drill mód (`mode: 'drill'`),
-statistiky per case, vlastní varianty algoritmů, vlastní případy.
+statistiky per case, vlastní varianty algoritmů.
 → *Použitelné jako: samostatný trenažér algoritmů.*
 
-### Fáze 6 — Fázové splity přes mikrofon
+**Vlastní případy (`isCustom: 1`) se zatím nedělají — vědomé rozhodnutí.**
+Přizpůsobit si člověk chce **algoritmus** („T perm dělám jinak"), a to hotové je.
+Vlastní *případ* chce správně napsaný setup alg, jinak se nenakreslí, a dává smysl
+hlavně na COLL/ZBLL nebo F2L v druhém slotu — učivo, ke kterému se většina lidí
+nedostane. Za tu obrazovku, validaci a další místo, kde se dá něco rozbít, to zatím
+nestojí.
+
+Odložit to je levné, protože instalatérství stojí: seed se řádku s `isCustom: 1`
+nedotkne, `detachCase()` osiří pokusy smazaného případu, drill bere případy z poolu
+a diagram se počítá ze setupu. Až to bude potřeba, přibude formulář a nic se
+nemigruje.
+
+### Fáze 6 — Fázové splity
+
+**Dva samostatně použitelné kroky, a druhý není rozhodnutý:**
+
+1. **Ruční mezičasy** — vedený solve, ťuknutí ukončí fázi. Žádný mikrofon, žádné
+   nové riziko, a hotové je to použitelné samo o sobě.
+2. **Detekce nástupu zvuku** (`AudioWorklet`) za tímtéž rozhraním. **Zatím se
+   nestaví**: jestli se vyplatí, se pozná až podle toho, jestli se fázové časy
+   doopravdy používají. Model se kvůli tomu nemění (`Split.source`), takže
+   rozhodnutí smí přijít později — a smart cube (fáze 7) řeší totéž přesněji.
 
 **Vedený solve** (scramble → cross → F2L → OLL → PLL s mezičasy) patří sem, ne do
 drillu: drill měří jeden případ, tohle měří jeden solve po fázích. Bude to **volba
