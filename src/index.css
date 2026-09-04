@@ -153,6 +153,9 @@
   --font-ui: var(--font-sans);
   /* The clock has a face of its own, the way a stopwatch does. */
   --font-clock: var(--font-ui);
+  /* The inspection ring, in the clock's own em. Wide enough for two digits
+     and the room they need inside it. */
+  --ring-size: 1.9em;
 
   font-family: var(--font-ui);
   background: var(--bg);
@@ -214,6 +217,8 @@
 :root[data-clock-face='digital'] {
   --font-clock: 'DSEG7 Classic', var(--font-mono);
   --clock-scale: 0.72;
+  /* Seven-segment digits are half again as wide as proportional ones. */
+  --ring-size: 2.7em;
 }
 
 /* The clock is set apart from the rest: it is read with a cube in both hands. */
@@ -309,8 +314,14 @@ button[disabled] {
   min-height: 100dvh;
 }
 
+/*
+ * The header scrolls away with the page. It was pinned above a scrolling box,
+ * which meant a long screen scrolled inside a frame instead of scrolling, and
+ * cost a strip of a phone screen the whole time.
+ */
 .app__header {
-  padding: var(--space-5) var(--space-6);
+  position: relative;
+  padding: var(--space-2) var(--space-5);
   border-bottom: 1px solid var(--border);
 }
 
@@ -343,7 +354,9 @@ button[disabled] {
 
 .screen {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  /* The scramble takes what it needs; the clock and the list share the rest,
+     with the list given the larger half — it is the part that is read. */
+  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1.4fr);
   flex: 1;
   gap: var(--space-6);
   padding: var(--space-6);
@@ -407,9 +420,30 @@ button[disabled] {
   color: var(--danger);
 }
 
+/*
+ * One box for the still cube and the animated one. They are different shapes —
+ * an unfolded net is wide, a cube seen from a corner is square — and swapping
+ * one for the other used to resize the screen under the reader's thumb.
+ */
+.scramble__stage {
+  display: grid;
+  place-items: center;
+  width: min(260px, 70vw);
+  height: min(220px, 60vw);
+}
+
+/* A short phone has no room for a big cube and a list of solves both. */
+@media (max-height: 780px) {
+  .scramble__stage {
+    width: min(210px, 58vw);
+    height: min(170px, 47vw);
+  }
+}
+
 /* The flat preview is an unfolded cube: four faces across, three down. */
 .scramble__preview {
-  width: min(260px, 70vw);
+  width: 100%;
+  max-width: min(260px, 70vw);
   height: auto;
 }
 
@@ -480,8 +514,8 @@ button[disabled] {
 
 .timer__ring {
   position: absolute;
-  width: 1.75em;
-  height: 1.75em;
+  width: var(--ring-size);
+  height: var(--ring-size);
   /* Empties from twelve o'clock, the way a stopwatch hand goes round. */
   transform: rotate(-90deg);
   fill: none;
@@ -529,18 +563,21 @@ button[disabled] {
   color: var(--accent);
 }
 
-/* Room for the ring, which is wider than the digits it goes round. */
+/* The box is the ring while it is drawn, so nothing under the clock is
+   reached by it and the number sits in the middle of it. */
 .timer--inspecting .timer__clock {
-  padding: 0.4em;
+  min-width: var(--ring-size);
+  min-height: var(--ring-size);
 }
 
 /* Solves */
 
 .solves-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   border-top: 1px solid var(--border);
-  padding-top: var(--space-5);
-  max-height: 40dvh;
-  overflow-y: auto;
+  padding-top: var(--space-4);
 }
 
 .solves-panel--hidden {
@@ -554,6 +591,11 @@ button[disabled] {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
+}
+
+.solves-panel .solves {
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .solves {
@@ -594,6 +636,13 @@ button[disabled] {
 .solves__actions {
   display: flex;
   gap: var(--space-2);
+}
+
+@media (max-width: 26rem) {
+  .solves__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
 }
 
 .solves__actions button.is-active {
@@ -643,8 +692,8 @@ button[disabled] {
 }
 
 .app__menu {
-  position: fixed;
-  top: 3.1rem;
+  position: absolute;
+  top: 100%;
   inset-inline-start: 0;
   z-index: 9;
   display: flex;
@@ -672,7 +721,6 @@ button[disabled] {
 
 .screen--scroll {
   display: block;
-  overflow-y: auto;
 }
 
 /* Filters */
@@ -2060,8 +2108,8 @@ button[disabled] {
  */
 
 .app__menu-toggle {
-  min-width: 2.75rem;
-  min-height: 2.75rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2153,7 +2201,25 @@ input[type='radio'] {
   margin-top: var(--space-3);
 }
 
-.history__phases /* The guided solve while it runs: a block per phase, the one in hand lit. */
+/* Thinner than in the history: here it only says whether a solve had phases. */
+.solves__phases {
+  grid-column: 1 / -1;
+  margin-top: var(--space-2);
+}
+
+.solves__phases .phase-bar {
+  padding: 0;
+}
+
+.solves__phases .phase-bar__track {
+  height: 0.25rem;
+}
+
+.history__phases .phase-bar {
+  padding: 0;
+}
+
+/* The guided solve while it runs: a block per phase, the one in hand lit. */
 .phase-run {
   display: flex;
   flex-direction: column;
@@ -2225,15 +2291,21 @@ input[type='radio'] {
 }
 
 /*
- * While the solve runs, the clock is the only thing on screen, so it belongs
- * in the middle of it — not in the middle of the row it shares with a hidden
- * scramble above and a hidden list below, which are not the same height.
+ * While the solve runs the clock is the only thing on screen, so it belongs in
+ * the middle of it — not in the middle of the row it shares with a hidden
+ * scramble above and a hidden list below, which are not the same height. The
+ * rows give up their space instead of the clock leaving the page: a fixed
+ * layer over the whole viewport is a repaint of everything, and on a phone
+ * that reads as a flash at the worst possible moment.
  */
-.screen--solving .timer-slot {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  padding: var(--space-6);
+.screen--solving {
+  grid-template-rows: 0 1fr 0;
+  gap: 0;
+}
+
+.screen--solving .scramble-slot,
+.screen--solving .solves-panel {
+  overflow: hidden;
 }
 
 .timer-slot {
@@ -2285,9 +2357,24 @@ input[type='radio'] {
   font-weight: 600;
 }
 
-/* Two toggles do not fit side by side at 412px unless they may wrap. */
+/*
+ * The session on one side, the two switches on the other, and on a narrow
+ * phone the switches drop to a line of their own. Floated, they ran off the
+ * edge of the panel instead of wrapping.
+ */
+.solves-panel__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+}
+
+/* Pushed to the far side, and the count stays next to the name it counts. */
 .solves-panel__toggles {
-  float: right;
+  margin-inline-start: auto;
+}
+
+.solves-panel__toggles {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;

@@ -60,34 +60,33 @@ export function App() {
         </h1>
 
         <span className="app__version">v{__APP_VERSION__}</span>
+        {isMenuOpen ? (
+          <>
+            <button
+              type="button"
+              className="app__scrim"
+              aria-label={strings.nav.closeMenu}
+              onClick={() => setMenuOpen(false)}
+            />
+            <nav id="app-menu" className="app__menu">
+              {ROUTES.map((target) => (
+                <button
+                  key={target}
+                  type="button"
+                  className={route === target ? 'is-active' : ''}
+                  aria-current={route === target ? 'page' : undefined}
+                  onClick={() => {
+                    navigate(target);
+                    setMenuOpen(false);
+                  }}
+                >
+                  {strings.nav[target]}
+                </button>
+              ))}
+            </nav>
+          </>
+        ) : null}
       </header>
-
-      {isMenuOpen ? (
-        <>
-          <button
-            type="button"
-            className="app__scrim"
-            aria-label={strings.nav.closeMenu}
-            onClick={() => setMenuOpen(false)}
-          />
-          <nav id="app-menu" className="app__menu">
-            {ROUTES.map((target) => (
-              <button
-                key={target}
-                type="button"
-                className={route === target ? 'is-active' : ''}
-                aria-current={route === target ? 'page' : undefined}
-                onClick={() => {
-                  navigate(target);
-                  setMenuOpen(false);
-                }}
-              >
-                {strings.nav[target]}
-              </button>
-            ))}
-          </nav>
-        </>
-      ) : null}
 
       <Fragment key={generation}>
         {route === 'timer' ? <TimerScreen /> : null}

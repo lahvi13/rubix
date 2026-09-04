@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
@@ -47,6 +47,23 @@ export const ScramblePanel = memo(function ScramblePanel({
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const isWatching = watched !== null && watched === scramble;
 
+  // Drawn in the reader's own colours, flat or from a corner. The animated
+  // cube paints its own, so it is only fetched when someone asks to watch.
+  const picture =
+    scramble === null ? null : (
+      <CubeDiagram
+        className={
+          mode === '3D' ? 'scramble__preview scramble__preview--3d' : 'scramble__preview'
+        }
+        state={stateAfter(scramble)}
+        view={mode === '3D' ? 'isometric' : 'net'}
+        // A scramble is defined from white on top and green in front; the
+        // trainer's yellow-top view would be a different cube.
+        skin={withWhiteTop(skin)}
+        label={strings.scramble.label}
+      />
+    );
+
   return (
     <div className={hidden ? 'scramble scramble--hidden' : 'scramble'} aria-hidden={hidden}>
       {error ? (
@@ -60,32 +77,31 @@ export const ScramblePanel = memo(function ScramblePanel({
           ) : (
             <ScrambleMoves scramble={scramble} playingMove={playingMove} />
           )}
-          {scramble === null || !isPreviewShown ? null : isWatching ? (
-            <SpatialPreview
-              scramble={scramble}
-              onMove={setPlayingMove}
-              onDone={() => setWatched(null)}
-            />
-          ) : (
+          {scramble === null || !isPreviewShown ? null : (
             <>
-              {/* Drawn here in the reader's own colours, flat or from a corner.
-                  The animated cube paints its own, so it is only fetched when
-                  someone actually asks to watch the scramble. */}
-              <CubeDiagram
-                className={mode === '3D' ? 'scramble__preview scramble__preview--3d' : 'scramble__preview'}
-                state={stateAfter(scramble)}
-                view={mode === '3D' ? 'isometric' : 'net'}
-                // A scramble is defined from white on top and green in front;
-                // the trainer's yellow-top view would be a different cube.
-                skin={withWhiteTop(skin)}
-                label={strings.scramble.label}
-              />
+              {/* One box for both cubes, so watching the scramble does not
+                  resize the screen under the reader's thumb. */}
+              <div className="scramble__stage">
+                {isWatching ? (
+                  <SpatialPreview
+                    scramble={scramble}
+                    onMove={setPlayingMove}
+                    onDone={() => setWatched(null)}
+                    /* Until the player is ready, the still cube stays up:
+                       there is nothing to animate yet and a "loading" line in
+                       its place is a flash of empty screen. */
+                    placeholder={picture}
+                  />
+                ) : (
+                  picture
+                )}
+              </div>
               <button
                 type="button"
                 className="scramble__replay"
-                onClick={() => setWatched(scramble)}
+                onClick={() => (isWatching ? setWatched(null) : setWatched(scramble))}
               >
-                {strings.scramble.replay}
+                {isWatching ? strings.scramble.showPicture : strings.scramble.replay}
               </button>
             </>
           )}
@@ -136,11 +152,12 @@ function stateAfter(scramble: string) {
 function SpatialPreview({
   scramble,
   onMove,
-  onDone,
+  placeholder,
 }: {
   scramble: string;
   onMove: (index: number | null) => void;
   onDone: () => void;
+  placeholder: ReactNode;
 }) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
@@ -165,11 +182,10 @@ function SpatialPreview({
     element.play();
   }, [isReady, scramble]);
 
-  if (!isReady) return <p className="scramble__loading">{strings.trainer.loadingPlayer}</p>;
+  if (!isReady) return placeholder;
 
   return (
-    <>
-      <twisty-player
+    <twisty-player
         ref={player}
         className="scramble__preview scramble__preview--3d"
         puzzle="3x3x3"
@@ -178,11 +194,7 @@ function SpatialPreview({
         visualization="3D"
         background="none"
         control-panel="none"
-        hint-facelets="none"
-      />
-      <button type="button" className="scramble__replay" onClick={onDone}>
-        {strings.scramble.showPicture}
-      </button>
-    </>
+      hint-facelets="none"
+    />
   );
 }

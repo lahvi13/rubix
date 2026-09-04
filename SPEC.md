@@ -645,7 +645,7 @@ formátů žije v `src/db/migrations/import/`.
 | # | Obrazovka | Obsah |
 |---|---|---|
 | 1 | **Timer** | scramble v mřížce (tah na buňku) + náhled, velký čas (setiny tišeji), inspekce s ubývajícím kruhem, přepínač „po fázích“, pruh běžících i dokončených fází, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12/session mean). Během solvu je na obrazovce jen hodiny — vycentrované na viewport a o kus větší |
-| 2 | **Historie** | seznam solvů session s pruhem fází u měřených, filtry (tag, penalta, hvězdička), hromadné akce |
+| 2 | **Historie** | seznam solvů session s pruhem fází u měřených, filtry (tag, penalta, hvězdička), hromadné akce. Čas u solvu je hodina; u staršího než dnešek i den (a rok, pokud je z jiného) — stejně jako v seznamu na timeru |
 | 3 | **Detail solvu** | modal/drawer: čas, scramble + náhled, splity, tagy, poznámka, editace |
 | 4 | **Sessiony** | seznam, založení, přejmenování, archivace, přepnutí aktivní |
 | 5 | **Statistiky** | karty s ao/PB/mean/SD/DNF rate, průměrné a nejlepší časy fází po oknech, stohovaný trend fází, histogram, trend rolling ao12 |
@@ -656,7 +656,9 @@ formátů žije v `src/db/migrations/import/`.
 | 10 | **Data** | export, import (preview + merge/replace), smazání všech dat, troubleshooting |
 
 Navigace: **hamburger menu** v hlavičce se všemi routami; hlavička ukazuje název
-aktuální obrazovky. Timer je výchozí route. (Původně tu byl dolní tab bar na
+aktuální obrazovky a **roluje se stránkou** (dlouhá obrazovka se posouvá celá, ne
+uvnitř rámu pod přišpendlenou lištou). Menu visí na hlavičce, takže se otevírá
+tam, kde je tlačítko, které ho otevřelo. Timer je výchozí route. (Původně tu byl dolní tab bar na
 mobilu — obrazovek je ale víc, než se do něj vejde, a s trenažérem a nastavením
 jich bude ještě víc.) Dokud je menu otevřené, klávesy patří jemu, ne timeru.
 

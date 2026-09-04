@@ -61,6 +61,34 @@ export function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString();
 }
 
+/**
+ * When a solve happened, in as much detail as it needs: today's are told apart
+ * by the clock alone, and anything older needs the day — otherwise a list of
+ * times says nothing about whether it was this session or last week.
+ */
+export function formatWhen(timestamp: number, at: number): string {
+  const when = new Date(timestamp);
+  const now = new Date(at);
+
+  if (isSameDay(when, now)) return formatClock(timestamp);
+
+  const day = when.toLocaleDateString([], {
+    day: 'numeric',
+    month: 'numeric',
+    // A year is only worth the room once the list reaches back into another one.
+    year: when.getFullYear() === now.getFullYear() ? undefined : 'numeric',
+  });
+  return `${day} ${formatClock(timestamp)}`;
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 export function formatDateTime(timestamp: number): string {
   return `${formatDate(timestamp)} ${formatClock(timestamp)}`;
 }

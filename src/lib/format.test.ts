@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { formatInspection, formatIsoDate, formatMs, formatMsParts, formatTime } from './format';
+import {
+  formatClock,
+  formatInspection,
+  formatIsoDate,
+  formatMs,
+  formatMsParts,
+  formatTime,
+  formatWhen,
+} from './format';
 
 describe('formatMs', () => {
   it.each<[number, string]>([
@@ -53,5 +61,25 @@ describe('formatMsParts', () => {
     [61050, '1:01', '05'],
   ])('splits %i into %s and %s', (ms, seconds, hundredths) => {
     expect(formatMsParts(ms)).toEqual({ seconds, hundredths });
+  });
+});
+
+describe('formatWhen', () => {
+  const noon = new Date(2026, 8, 4, 12, 0).getTime();
+
+  it('gives the clock alone for a solve from today', () => {
+    const earlier = new Date(2026, 8, 4, 9, 5).getTime();
+    expect(formatWhen(earlier, noon)).toBe(formatClock(earlier));
+  });
+
+  it('adds the day for a solve from another day', () => {
+    const yesterday = new Date(2026, 8, 3, 22, 30).getTime();
+    expect(formatWhen(yesterday, noon)).toContain(formatClock(yesterday));
+    expect(formatWhen(yesterday, noon).length).toBeGreaterThan(formatClock(yesterday).length);
+  });
+
+  it('adds the year once the solve is from another one', () => {
+    const lastYear = new Date(2025, 8, 4, 9, 5).getTime();
+    expect(formatWhen(lastYear, noon)).toContain('2025');
   });
 });

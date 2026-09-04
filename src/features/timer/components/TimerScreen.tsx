@@ -131,6 +131,7 @@ export function TimerScreen() {
           armed={timer.armed}
           finishArmed={timer.finishArmed}
           byPhase={timer.phaseIndex !== null}
+          resultShown={resultVisible}
           inspectionCues={timer.inspectionCues}
           inspectionEnabled={timer.inspectionEnabled}
           touchHandlers={timer.touchHandlers}
@@ -190,7 +191,12 @@ export function TimerScreen() {
           </span>
         </h2>
         <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
-        <SolveList solves={solves} onChangePenalty={handleChangePenalty} onDelete={handleDelete} />
+        <SolveList
+          solves={solves}
+          phases={methodPhases}
+          onChangePenalty={handleChangePenalty}
+          onDelete={handleDelete}
+        />
       </section>
     </main>
   );

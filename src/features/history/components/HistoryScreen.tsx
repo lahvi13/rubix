@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
-import { formatClock, formatTime } from '../../../lib/format';
+import { now } from '../../../lib/clock';
+import { formatTime, formatWhen } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useActiveSession } from '../../sessions';
 import { PhaseBar, usePhases } from '../../splits';
@@ -160,6 +161,8 @@ function HistoryRow({
   onToggleSelected,
   onOpen,
 }: HistoryRowProps) {
+  const at = now();
+
   return (
     <li className="history__row">
       <input
@@ -171,7 +174,7 @@ function HistoryRow({
       <button type="button" className="history__open" onClick={onOpen}>
         <span className="history__time">{formatTime(finalMs(solve))}</span>
         <span className="history__meta">
-          {formatClock(solve.createdAt)}
+          {formatWhen(solve.createdAt, at)}
           {solve.starred === 1 ? ' ★' : ''}
           {solve.note ? ' ✎' : ''}
         </span>

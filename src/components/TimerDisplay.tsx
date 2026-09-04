@@ -17,6 +17,11 @@ interface TimerDisplayProps {
    * phase strip, not here.
    */
   byPhase?: boolean;
+  /**
+   * A finished time is on the clock and the screen is offering the next
+   * scramble. The hint would be describing the solve that is already over.
+   */
+  resultShown?: boolean;
   /** When inspection beeps, in elapsed milliseconds; the ring changes with them. */
   inspectionCues?: readonly number[];
   inspectionEnabled: boolean;
@@ -33,6 +38,7 @@ export function TimerDisplay({
   armed,
   finishArmed = false,
   byPhase = false,
+  resultShown = false,
   inspectionCues = [],
   inspectionEnabled,
   touchHandlers,
@@ -63,7 +69,9 @@ export function TimerDisplay({
           )}
         </div>
       </div>
-      <p className="timer__hint">{hintFor(state, armed, finishArmed, byPhase, inspectionEnabled)}</p>
+      <p className="timer__hint">
+        {resultShown ? '' : hintFor(state, armed, finishArmed, byPhase, inspectionEnabled)}
+      </p>
     </div>
   );
 }

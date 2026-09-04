@@ -1,12 +1,16 @@
 import { memo } from 'react';
-import type { Penalty, Solve } from '../../../db/types';
+import type { MethodPhase, Penalty, Solve } from '../../../db/types';
+import { PhaseBar } from '../../splits';
 import { finalMs } from '../../../domain/solve/final-time';
 import { togglePenalty } from '../../../domain/solve/penalty';
-import { formatClock, formatTime } from '../../../lib/format';
+import { now } from '../../../lib/clock';
+import { formatTime, formatWhen } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 
 interface SolveListProps {
   solves: Solve[];
+  /** The session's method, so a timed solve can show the shape of its phases. */
+  phases: readonly MethodPhase[];
   onChangePenalty: (id: string, penalty: Penalty) => void;
   onDelete: (id: string) => void;
 }
@@ -19,12 +23,16 @@ interface SolveListProps {
  */
 export const SolveList = memo(function SolveList({
   solves,
+  phases,
   onChangePenalty,
   onDelete,
 }: SolveListProps) {
   if (solves.length === 0) {
     return <p className="solves__empty">{strings.solve.empty}</p>;
   }
+
+  // Read once for the whole list: every row is asking the same question.
+  const at = now();
 
   return (
     <ol className="solves">
@@ -35,7 +43,7 @@ export const SolveList = memo(function SolveList({
           <span className="solves__meta">
             {solve.penalty !== 'none' && solve.penaltySource === 'auto'
               ? strings.solve.autoPenalty
-              : formatClock(solve.createdAt)}
+              : formatWhen(solve.createdAt, at)}
           </span>
           {index === 0 ? (
             <span className="solves__actions">
@@ -56,6 +64,18 @@ export const SolveList = memo(function SolveList({
               <button type="button" onClick={() => onDelete(solve.id)}>
                 {strings.solve.delete}
               </button>
+            </span>
+          ) : null}
+          {/* Which of them were timed by phase, without opening any. No
+              numbers: at this height only the shape can be read. */}
+          {solve.splits.length > 0 ? (
+            <span className="solves__phases">
+              <PhaseBar
+                splits={solve.splits}
+                phases={phases}
+                rawMs={solve.rawMs}
+                showLabels={false}
+              />
             </span>
           ) : null}
         </li>
