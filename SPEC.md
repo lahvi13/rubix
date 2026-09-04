@@ -45,7 +45,9 @@ dostávají hotová data z domény.
 - hold-to-start: podržet mezerník / dotyk na ploše po dobu `holdThresholdMs` (default 300),
   vizuální stav *armed*, uvolnění spouští čas
 - WCA inspekce 15 s, vypnutelná přepínačem přímo na obrazovce timeru; zvukové cue
-  na 8 s a 12 s (jen lokální beep, žádný TTS)
+  na 8 s a 12 s (jen lokální beep, žádný TTS). Zbývající čas kreslí i **kruh
+  kolem čísla**, který ubývá — s cubem v obou rukou se to čte bez čtení. Kruh
+  i číslo mění barvu na stejných cue jako pípání, aby si nikdy neodporovaly
 - automatická penalizace z inspekce: 15–17 s → `plus2`, > 17 s → `dnf`,
   vždy s `penaltySource: 'auto'`
 - ruční penalizace `+2` / `DNF` bezprostředně po solvu i kdykoliv později z historie
@@ -642,7 +644,7 @@ formátů žije v `src/db/migrations/import/`.
 
 | # | Obrazovka | Obsah |
 |---|---|---|
-| 1 | **Timer** | scramble + náhled, velký čas, inspekce, přepínač „po fázích“, pruh fází dokončeného solvu, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12/session mean) |
+| 1 | **Timer** | scramble v mřížce (tah na buňku) + náhled, velký čas (setiny tišeji), inspekce s ubývajícím kruhem, přepínač „po fázích“, pruh běžících i dokončených fází, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12/session mean). Během solvu je na obrazovce jen hodiny — vycentrované na viewport a o kus větší |
 | 2 | **Historie** | seznam solvů session s pruhem fází u měřených, filtry (tag, penalta, hvězdička), hromadné akce |
 | 3 | **Detail solvu** | modal/drawer: čas, scramble + náhled, splity, tagy, poznámka, editace |
 | 4 | **Sessiony** | seznam, založení, přejmenování, archivace, přepnutí aktivní |

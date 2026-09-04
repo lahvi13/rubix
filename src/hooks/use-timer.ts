@@ -37,6 +37,8 @@ export interface TimerView {
   /** Index into the configured phases, or null outside a guided run. */
   phaseIndex: number | null;
   inspectionEnabled: boolean;
+  /** When inspection beeps, in elapsed ms. The countdown is drawn from these too. */
+  inspectionCues: readonly number[];
   setInspectionEnabled: (enabled: boolean) => void;
   /**
    * Back to a blank clock. The time of a finished attempt stays up until the
@@ -222,6 +224,7 @@ export function useTimer(
     finishArmed: isFinishArmed(state, frameAt, config),
     phaseIndex: currentPhaseIndex(state, config),
     inspectionEnabled: config.inspectionEnabled,
+    inspectionCues: settings?.inspectionCues ?? SETTING_DEFAULTS['timer.inspectionCues'],
     setInspectionEnabled,
     reset,
     touchHandlers: {

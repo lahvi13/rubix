@@ -6,7 +6,7 @@ import { strings } from '../../../lib/strings';
 import { navigate } from '../../../app/router';
 import { reportError } from '../../../lib/errors';
 import { useActiveSession } from '../../sessions';
-import { PhaseBar, usePhases } from '../../splits';
+import { PhaseBar, PhaseRun, usePhases } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../../../hooks/use-scramble';
@@ -95,7 +95,7 @@ export function TimerScreen() {
   const handleDelete = useCallback((id: string) => void remove(id), [remove]);
 
   return (
-    <main className="screen">
+    <main className={isSolving ? 'screen screen--solving' : 'screen'}>
       <div className="scramble-slot">
         <ScramblePanel
           scramble={scramble.scramble}
@@ -130,18 +130,20 @@ export function TimerScreen() {
           inspectionMs={timer.inspectionMs}
           armed={timer.armed}
           finishArmed={timer.finishArmed}
-          phase={
-            timer.phaseIndex === null
-              ? null
-              : {
-                  label: phases[timer.phaseIndex]?.label ?? '',
-                  index: timer.phaseIndex,
-                  count: phases.length,
-                }
-          }
+          byPhase={timer.phaseIndex !== null}
+          inspectionCues={timer.inspectionCues}
           inspectionEnabled={timer.inspectionEnabled}
           touchHandlers={timer.touchHandlers}
         />
+
+        {/* The phases of the solve being run, under the clock they add up to. */}
+        {timer.state.status === 'running' && phases.length > 0 ? (
+          <PhaseRun
+            phases={phases}
+            splitMs={timer.state.splitMs}
+            elapsedMs={timer.displayMs ?? 0}
+          />
+        ) : null}
 
         {/* The phases of the solve just finished, under the time it produced. */}
         {resultVisible && lastSolve && lastSolve.splits.length > 0 ? (

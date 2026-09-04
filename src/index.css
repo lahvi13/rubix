@@ -464,9 +464,43 @@ button[disabled] {
   touch-action: none;
 }
 
+/* The clock and the ring around it share a box, and its font size is the
+   clock's, so the ring can be measured in the digits it surrounds. */
+.timer__clock {
+  position: relative;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--clock-size) * var(--clock-scale, 1));
+}
+
+/* Running, the clock is all there is to look at, so it takes the room. */
+.timer--running .timer__clock {
+  font-size: calc(var(--clock-size) * var(--clock-scale, 1) * 1.22);
+}
+
+.timer__ring {
+  position: absolute;
+  width: 1.75em;
+  height: 1.75em;
+  /* Empties from twelve o'clock, the way a stopwatch hand goes round. */
+  transform: rotate(-90deg);
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.timer__ring-track {
+  stroke: var(--border);
+}
+
+.timer__ring-left {
+  /* The number and the ring are one signal; the colour is set on the pair. */
+  stroke: currentColor;
+}
+
 .timer__value {
   font-family: var(--font-clock);
-  font-size: calc(var(--clock-size) * var(--clock-scale, 1));
+  font-size: 1em;
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -495,8 +529,9 @@ button[disabled] {
   color: var(--accent);
 }
 
-.timer--inspecting .timer__value {
-  color: var(--warn);
+/* Room for the ring, which is wider than the digits it goes round. */
+.timer--inspecting .timer__clock {
+  padding: 0.4em;
 }
 
 /* Solves */
@@ -2112,31 +2147,93 @@ input[type='radio'] {
 /* Phase splits */
 
 /* The guided run says which phase it is on; that is all it adds to the clock. */
-.timer__phase {
-  margin: 0;
-  font-size: var(--text-xl);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.timer__phase-count {
-  color: var(--muted);
-  font-weight: 400;
-}
-
 /* Spans the row's three columns, under the time it belongs to. */
 .history__phases {
   grid-column: 1 / -1;
   margin-top: var(--space-3);
 }
 
-.history__phases .phase-bar {
+.history__phases /* The guided solve while it runs: a block per phase, the one in hand lit. */
+.phase-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0 var(--space-2);
+}
+
+.phase-run__track {
+  display: flex;
+  gap: 3px;
+  height: 0.5rem;
+}
+
+.phase-run__block {
+  flex: 1 1 0;
+  border-radius: var(--radius-pill);
+  /* Phases still to come are the empty part of the strip. */
+  background: var(--tint);
+}
+
+/* The one being solved is lit but not finished, so it is not yet solid. */
+.phase-run__block.is-running {
+  opacity: 0.55;
+}
+
+.phase-run__labels {
+  display: flex;
+  /* The same split as the blocks above, so a name sits under its own block. */
+  gap: 3px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.phase-run__label {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1em;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.phase-run__name {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.phase-run__time {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  /* Empty until the phase has been reached; the row must not jump then. */
+  min-height: 1.2em;
+}
+
+.phase-run__label.is-running .phase-run__time {
+  color: inherit;
+}
+
+.phase-bar {
   padding: 0;
 }
 
 .history__phases .phase-bar__track {
   height: 0.3rem;
+}
+
+/*
+ * While the solve runs, the clock is the only thing on screen, so it belongs
+ * in the middle of it — not in the middle of the row it shares with a hidden
+ * scramble above and a hidden list below, which are not the same height.
+ */
+.screen--solving .timer-slot {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  padding: var(--space-6);
 }
 
 .timer-slot {
