@@ -289,8 +289,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(2.8ch, 1fr));
   justify-items: start;
-  /* The rows are far enough apart for the dot under a playing move. */
-  gap: var(--space-4) var(--space-2);
+  gap: var(--space-2);
   width: 100%;
   max-width: 26ch;
 }
@@ -302,28 +301,14 @@ body {
 
 /*
  * The move the cube is turning, while a scramble or an algorithm is played
- * back: a dot under the move, so the eye can follow the written line and the
- * cube at the same time.
+ * back. The move itself changes colour rather than getting a mark of its own:
+ * the scramble is a grid of left-aligned cells, so anything centred under a
+ * cell is not centred under the move in it. Colour needs no alignment, and it
+ * cannot collide with the row below.
  */
-.scramble__moves span,
-.alg__move {
-  /* Positioned so the dot has something to hang from, inline-block so that
-     'below the move' means the same thing in a line of text as in a cell. */
-  position: relative;
-  display: inline-block;
-}
-
-.scramble__moves span[aria-current]::after,
-.alg__move[aria-current]::after {
-  content: '';
-  position: absolute;
-  inset-block-start: calc(100% - 0.12em);
-  inset-inline-start: 50%;
-  width: 0.3em;
-  height: 0.3em;
-  margin-inline-start: -0.15em;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
+.scramble__moves span[aria-current],
+.alg__move[aria-current] {
+  color: var(--accent);
 }
 
 .scramble__error {
