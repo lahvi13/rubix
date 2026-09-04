@@ -315,6 +315,16 @@ button[disabled] {
 }
 
 /*
+ * A screen that does not scroll is exactly the viewport, and it has to be told
+ * so: without a definite height its rows size to their content, and a session
+ * with fifty solves in it stretches the page to fifty rows instead of letting
+ * the list scroll inside.
+ */
+.app:not(:has(.screen--scroll)) {
+  height: 100dvh;
+}
+
+/*
  * The header scrolls away with the page. It was pinned above a scrolling box,
  * which meant a long screen scrolled inside a frame instead of scrolling, and
  * cost a strip of a phone screen the whole time.
@@ -354,9 +364,10 @@ button[disabled] {
 
 .screen {
   display: grid;
+  min-height: 0;
   /* The scramble takes what it needs; the clock and the list share the rest,
      with the list given the larger half — it is the part that is read. */
-  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1.4fr);
+  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1.8fr);
   flex: 1;
   gap: var(--space-6);
   padding: var(--space-6);
@@ -433,7 +444,7 @@ button[disabled] {
 }
 
 /* A short phone has no room for a big cube and a list of solves both. */
-@media (max-height: 780px) {
+@media (max-height: 900px) {
   .scramble__stage {
     width: min(210px, 58vw);
     height: min(170px, 47vw);
