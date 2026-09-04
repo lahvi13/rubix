@@ -922,6 +922,13 @@ button[disabled] {
 
 .detail {
   position: fixed;
+  /*
+   * Over everything, the pinned header included: on a wide screen this is a
+   * panel down the right-hand side starting at the top, and the header was
+   * covering the strip with the close button in it. The header stays reachable
+   * beside it — the panel is only as wide as it needs to be.
+   */
+  z-index: 50;
   inset-inline: 0;
   bottom: 0;
   max-height: 85dvh;
@@ -1612,9 +1619,7 @@ button[disabled] {
 
 /* Case detail */
 
-/* Above the backdrop, or the backdrop swallows every click in here. */
 .case-detail {
-  z-index: 9;
   gap: var(--space-5);
 }
 
