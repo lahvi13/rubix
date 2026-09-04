@@ -1,9 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { getSetting } from '../db/repositories/settings-repository';
-import { DEFAULT_CUBE_SKIN, skinById, type CubeSkin } from '../lib/cube-skins';
+import { getSetting, SETTING_DEFAULTS } from '../db/repositories/settings-repository';
+import { skinById, type CubeSkin } from '../lib/cube-skins';
+import { useResolvedTheme } from './use-theme';
 
-/** The palette every diagram in the app draws with. */
+/** The palette every diagram in the app draws with, in the theme it draws on. */
 export function useCubeSkin(): CubeSkin {
-  const id = useLiveQuery(() => getSetting('ui.cubeSkin'), [], DEFAULT_CUBE_SKIN.id);
-  return skinById(id);
+  const id = useLiveQuery(() => getSetting('ui.cubeSkin'), [], SETTING_DEFAULTS['ui.cubeSkin']);
+  return skinById(id, useResolvedTheme());
 }

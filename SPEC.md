@@ -117,7 +117,7 @@ kromě PB, které je globální per `puzzle`.
   načítá až ve chvíli, kdy si uživatel nechá algoritmus **přehrát**
 - **náhled je obrázek, ne strom elementů**: SVG se poskládá jako text
   (`components/cube-diagram-svg.ts`), zapamatuje podle klíče
-  `skin|view|stickering|stav` a vykreslí jediným `<img>`. Kostka z 54 obdélníků
+  `skin|muted|view|stickering|stav` a vykreslí jediným `<img>`. Kostka z 54 obdélníků
   krát 57 případů byly přes tisíc uzlů na obrazovku a telefon je layoutoval
   vteřiny, během kterých nereagovalo nic — ani ťuknutí, ani zápis do DB
   (měřeno: 1189 → 82 uzlů, 14 → 3 dlouhé úlohy). Překreslí se, až když se
@@ -129,6 +129,12 @@ kromě PB, které je globální per `puzzle`.
   jedna obousměrná šipka); bez nich se v PLL nedá orientovat
 - **skiny**: barevná schémata nálepek (`lib/cube-skins.ts`, nastavení `ui.cubeSkin`);
   proto vlastní vykreslování — twisty si barvy určuje sám
+- **téma**: světlé / tmavé / podle systému (`ui.theme`, device-local). Paleta je
+  jedna sada CSS proměnných zapsaná přes `light-dark()`, takže systémovou volbu
+  řeší samo CSS a výslovná volba je jen `data-theme` na `<html>` (`lib/theme.ts`).
+  Náhledy případů jsou obrázky, na které CSS nedosáhne, takže skin má `muted`
+  (nálepky, na kterých případ nezáleží) zvlášť pro každé téma — na bílé kartě
+  by tmavý odstín byl blok inkoustu
 - **triggery**: pojmenované sekvence (sexy move, sledgehammer, …) se v algoritmu
   zvýrazňují; matchuje se nejdelší shoda zleva. Zabudované jdou vypnout, přepsat
   (tím přechází na uživatele) i smazat; vlastní se přidávají. Tabulka `triggers`.

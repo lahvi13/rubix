@@ -14,3 +14,16 @@ if (!('randomUUID' in crypto)) {
     value: () => `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`,
   });
 }
+
+// jsdom has no matchMedia, and anything that draws a cube asks it which theme
+// is on. Nothing dark-specific is under test, so the light answer will do.
+if (typeof window.matchMedia !== 'function') {
+  Object.defineProperty(window, 'matchMedia', {
+    value: (media: string) => ({
+      media,
+      matches: false,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }),
+  });
+}

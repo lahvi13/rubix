@@ -3,14 +3,24 @@ import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
+import { THEMES, type Theme } from '../../../lib/theme';
 import { useSetting } from '../../../hooks/use-setting';
+import { useResolvedTheme, useTheme } from '../../../hooks/use-theme';
 
 /** A case with some colour in it, so a skin can be judged before it is chosen. */
 const PREVIEW_SETUP = "R U R' U' R' F R2 U' R' U' R U R' F'";
 
+const THEME_LABELS: Record<Theme, string> = {
+  system: strings.settings.themeSystem,
+  light: strings.settings.themeLight,
+  dark: strings.settings.themeDark,
+};
+
 const HOLD_THRESHOLDS = [0, 200, 300, 500] as const;
 
 export function SettingsScreen() {
+  const [theme, setTheme] = useTheme();
+  const resolved = useResolvedTheme();
   const [skinId, setSkinId] = useSetting('ui.cubeSkin');
   const [twistyMode, setTwistyMode] = useSetting('ui.twistyMode');
   const [twoLookDefault, setTwoLookDefault] = useSetting('trainer.twoLookDefault');
@@ -27,6 +37,24 @@ export function SettingsScreen() {
     <main className="screen screen--scroll">
       <section className="data-section">
         <h2 className="data-section__title">{strings.settings.appearance}</h2>
+
+        <div className="settings-row">
+          <span>{strings.settings.theme}</span>
+          <div className="settings-row__choices">
+            {THEMES.map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={theme === option ? 'is-active' : ''}
+                onClick={() => setTheme(option)}
+              >
+                {THEME_LABELS[option]}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="data-section__hint">{strings.settings.themeHint}</p>
+
         <p className="data-section__hint">{strings.settings.skinHint}</p>
 
         <div className="skins">
@@ -42,7 +70,7 @@ export function SettingsScreen() {
                 className="skin__preview"
                 state={previewState}
                 view="lastLayer"
-                skin={skinById(skin.id)}
+                skin={skinById(skin.id, resolved)}
                 label={skin.name}
               />
               <span className="skin__name">{skin.name}</span>

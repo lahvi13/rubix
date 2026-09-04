@@ -175,6 +175,11 @@ export const strings = {
   },
   settings: {
     appearance: 'Appearance',
+    theme: 'Theme',
+    themeSystem: 'System',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeHint: 'System follows what the phone or the browser is set to.',
     skinHint: 'Colours for every case diagram in the app.',
     twistyMode: 'Cube preview',
     previewFlat: 'Flat',

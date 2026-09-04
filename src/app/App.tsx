@@ -7,6 +7,7 @@ import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
 import { DrillScreen, TrainerScreen } from '../features/trainer';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
+import { useTheme } from '../hooks/use-theme';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
 import { ErrorBanner } from './ErrorBanner';
@@ -18,6 +19,8 @@ export function App() {
   // A screen that lived through a lost connection holds dead live queries; the
   // key mounts it again once the database is back.
   const generation = useDatabaseGeneration();
+  // Applied here because this is the one component that is always mounted.
+  useTheme();
 
   // While the menu is open the keyboard belongs to it: the timer listens on
   // the window, and a Space meant for a menu item must not start a solve

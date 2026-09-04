@@ -4,10 +4,13 @@
  * The last layer is drawn yellow-on-top, the way every CFOP diagram is drawn:
  * the cross is white and lives on the bottom, so U is the yellow face here.
  * `muted` is for stickers a case does not depend on — they are still drawn,
- * because an empty square reads as a hole in the cube.
+ * because an empty square reads as a hole in the cube. Those are the one part
+ * of a skin that has to know about the theme: a sticker that recedes into a
+ * dark card is a slab of ink on a white one.
  */
 
 import type { Face } from '../domain/cube/notation';
+import type { ResolvedTheme } from './theme';
 
 export interface CubeSkin {
   id: string;
@@ -19,7 +22,12 @@ export interface CubeSkin {
   arrow: string;
 }
 
-export const CUBE_SKINS: readonly CubeSkin[] = [
+/** A skin as it is written down: muted still has both themes to choose from. */
+interface CubeSkinDefinition extends Omit<CubeSkin, 'muted'> {
+  muted: Record<ResolvedTheme, string>;
+}
+
+export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
   {
     id: 'classic',
     name: 'Classic',
@@ -31,7 +39,7 @@ export const CUBE_SKINS: readonly CubeSkin[] = [
       L: '#e8811c',
       R: '#d63a3a',
     },
-    muted: '#525b70',
+    muted: { dark: '#525b70', light: '#c7cddb' },
     outline: '#0f1115',
     arrow: '#f4f6fb',
   },
@@ -46,7 +54,7 @@ export const CUBE_SKINS: readonly CubeSkin[] = [
       L: '#ff8a00',
       R: '#ff2d2d',
     },
-    muted: '#4b5468',
+    muted: { dark: '#4b5468', light: '#bcc4d3' },
     outline: '#000000',
     arrow: '#ffffff',
   },
@@ -61,7 +69,7 @@ export const CUBE_SKINS: readonly CubeSkin[] = [
       L: '#f0b681',
       R: '#e79a9a',
     },
-    muted: '#5a6379',
+    muted: { dark: '#5a6379', light: '#d2d8e3' },
     outline: '#1b1f28',
     arrow: '#f2f4f8',
   },
@@ -78,23 +86,28 @@ export const CUBE_SKINS: readonly CubeSkin[] = [
       L: '#e69f00',
       R: '#d55e00',
     },
-    muted: '#4f586d',
+    muted: { dark: '#4f586d', light: '#c4cbd9' },
     outline: '#0f1115',
     arrow: '#f8fafc',
   },
 ];
 
-export const DEFAULT_CUBE_SKIN = CUBE_SKINS[0] ?? {
+const FALLBACK: CubeSkinDefinition = {
   id: 'classic',
   name: 'Classic',
   faces: { U: '#f2d024', D: '#f4f4f4', F: '#25b05a', B: '#2f6fd0', L: '#e8811c', R: '#d63a3a' },
-  muted: '#525b70',
+  muted: { dark: '#525b70', light: '#c7cddb' },
   outline: '#0f1115',
   arrow: '#f4f6fb',
 };
 
-export function skinById(id: string): CubeSkin {
-  return CUBE_SKINS.find((skin) => skin.id === id) ?? DEFAULT_CUBE_SKIN;
+export function skinById(id: string, theme: ResolvedTheme): CubeSkin {
+  const definition = CUBE_SKINS.find((skin) => skin.id === id) ?? CUBE_SKINS[0] ?? FALLBACK;
+  return { ...definition, muted: definition.muted[theme] };
+}
+
+export function defaultSkin(theme: ResolvedTheme): CubeSkin {
+  return skinById(FALLBACK.id, theme);
 }
 
 /**

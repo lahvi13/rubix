@@ -1,19 +1,61 @@
+/*
+ * One palette, two themes. `light-dark()` picks a side from the element's
+ * colour scheme, so the system preference is honoured with no JavaScript at
+ * all and an explicit choice is one attribute on <html> (see lib/theme.ts).
+ */
 :root {
-  --bg: #0f1115;
-  --surface: #171a21;
-  /* Cards that hold a dark cube need to sit above the background, not in it. */
-  --surface-raised: #232936;
-  --border: #262b36;
-  --text: #e8eaf0;
-  --muted: #868ea3;
-  --accent: #4ade80;
-  --warn: #fbbf24;
-  --danger: #f87171;
+  color-scheme: light dark;
 
-  color-scheme: dark;
+  --bg: light-dark(#e9ecf2, #0f1115);
+  --surface: light-dark(#fafbfc, #171a21);
+  /* Cards that hold a cube need to sit above the background, not in it —
+     towards the light in either theme. */
+  --surface-raised: light-dark(#ffffff, #232936);
+  --border: light-dark(#d9dde5, #262b36);
+  --text: light-dark(#15181f, #e8eaf0);
+  --muted: light-dark(#5d6575, #868ea3);
+  --accent: light-dark(#15803d, #4ade80);
+  --warn: light-dark(#a35a06, #fbbf24);
+  --danger: light-dark(#c62d2d, #f87171);
+
+  /* A wash over whatever an open menu or sheet is covering. */
+  --scrim: light-dark(rgb(15 24 40 / 32%), rgb(0 0 0 / 45%));
+  /* The faintest fill that still reads as "this one is on". */
+  --tint: light-dark(rgb(21 24 31 / 7%), rgb(255 255 255 / 8%));
+
+  /*
+   * Stored colours — a trigger's, a tag's — were picked to glow on a dark
+   * background and go weak as ink on a white one, so light mode darkens them
+   * towards this floor before writing with them.
+   */
+  --ink-strength: light-dark(64%, 100%);
+  --ink-floor: light-dark(#0b0d12, #000000);
+
+  /*
+   * A colour per solve phase, in the order lib/phase-colours.ts hands them
+   * out. The cross is white on a cube and the last layer is yellow, so the
+   * ramp reads first-to-last the way the cube does — except that white and
+   * yellow are not ink, and light mode has to stand in for both.
+   */
+  --phase-first: light-dark(#4e5566, #e6eaf2);
+  --phase-last: light-dark(#8a6b00, #f2d024);
+  --phase-mid-1: light-dark(#127a44, #25b05a);
+  --phase-mid-2: light-dark(#b45f0a, #e8811c);
+  --phase-mid-3: light-dark(#2359ad, #2f6fd0);
+  --phase-mid-4: light-dark(#b32f2f, #d63a3a);
+
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
+}
+
+/* An explicit choice overrides the system preference; 'system' sets neither. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 * {
@@ -334,7 +376,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 8;
-  background: rgb(0 0 0 / 45%);
+  background: var(--scrim);
   border: none;
   padding: 0;
   cursor: default;
@@ -598,7 +640,7 @@ body {
 
 .tag--on {
   color: var(--text);
-  background: rgb(255 255 255 / 8%);
+  background: var(--tint);
 }
 
 .detail__tag-add {
@@ -1397,7 +1439,7 @@ button.is-danger {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--trigger-colour, var(--accent));
+  color: color-mix(in srgb, var(--trigger-colour, var(--accent)) var(--ink-strength), var(--ink-floor));
 }
 
 .alg__part:not(.alg__part--trigger) .alg__moves {

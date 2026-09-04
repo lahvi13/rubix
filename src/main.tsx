@@ -6,9 +6,15 @@ import { onDatabaseReconnect } from './db/schema';
 import { seedPacks } from './db/seed/seed';
 import { installGlobalErrorHandlers, reportError } from './lib/errors';
 import { strings } from './lib/strings';
+import { applyTheme, cachedTheme } from './lib/theme';
 import './index.css';
 
 installGlobalErrorHandlers();
+
+// Before the first frame: the database holds the real setting, but its answer
+// comes an async tick too late to paint with, and a light-theme reader should
+// not be shown a black screen on the way in.
+applyTheme(cachedTheme());
 
 // Between backups, solves exist only in IndexedDB. Persistent storage tells
 // the browser this origin's data must survive disk pressure; installed PWAs

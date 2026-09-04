@@ -36,7 +36,7 @@ export function diagramUrl(
   stickering: Stickering,
   skin: CubeSkin,
 ): string {
-  const key = `${skin.id}|${view}|${stickering}|${stateKey(state)}`;
+  const key = `${skin.id}|${skin.muted}|${view}|${stickering}|${stateKey(state)}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
 

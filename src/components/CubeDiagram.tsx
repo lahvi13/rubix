@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import type { CubeState } from '../domain/cube/state';
 import type { Stickering } from '../domain/cube/views';
-import { DEFAULT_CUBE_SKIN, type CubeSkin } from '../lib/cube-skins';
+import type { CubeSkin } from '../lib/cube-skins';
 import { diagramUrl, type DiagramView } from './cube-diagram-svg';
 
 export type { DiagramView };
@@ -10,7 +10,7 @@ interface CubeDiagramProps {
   state: CubeState;
   view: DiagramView;
   stickering?: Stickering;
-  skin?: CubeSkin;
+  skin: CubeSkin;
   /**
    * Read out instead of the picture. Pass null where the diagram sits inside
    * something already labelled — a card that names the case underneath does
@@ -36,7 +36,7 @@ export const CubeDiagram = memo(function CubeDiagram({
   state,
   view,
   stickering = 'full',
-  skin = DEFAULT_CUBE_SKIN,
+  skin,
   label,
   className,
 }: CubeDiagramProps) {

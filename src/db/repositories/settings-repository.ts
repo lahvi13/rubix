@@ -1,6 +1,7 @@
 import { db } from '../schema';
 import type { Flag } from '../types';
 import { now } from '../../lib/clock';
+import type { Theme } from '../../lib/theme';
 
 /**
  * Key-value settings. Device-local entries (mic calibration, chosen audio
@@ -17,6 +18,8 @@ export interface SettingValues {
    * progress instead of stopping the clock, and the last one stops it.
    */
   'timer.splitMode': 'total' | 'phases';
+  /** Device-local: the same account can prefer a different theme on each screen. */
+  'ui.theme': Theme;
   'ui.twistyMode': '2D' | '3D';
   'ui.cubeSkin': string;
   /** Which route through the last layer the trainer opens on. */
@@ -49,6 +52,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'timer.inspectionCues': [8000, 12000],
   'timer.showScramblePreview': true,
   'timer.splitMode': 'total',
+  'ui.theme': 'system',
   'ui.twistyMode': '2D',
   'ui.cubeSkin': 'classic',
   'trainer.twoLookDefault': false,

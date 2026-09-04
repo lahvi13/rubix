@@ -3,15 +3,19 @@
  * from Method.phases and a method the app has never heard of must still get a
  * readable bar.
  *
- * The two ends carry the meaning. The first phase is the cross, which is
- * white on a standard cube, and the last one finishes the yellow layer — so
- * the ramp reads first-to-last the way the cube does. Anything in between
- * takes the remaining sticker colours in order.
+ * The colours themselves live in the stylesheet, one variable per slot, so
+ * that both themes can pick their own version of "the white cross" — see the
+ * --phase-* tokens in index.css.
  */
 
-const FIRST_PHASE = '#e6eaf2';
-const LAST_PHASE = '#f2d024';
-const MIDDLE_PHASES = ['#25b05a', '#e8811c', '#2f6fd0', '#d63a3a'];
+const FIRST_PHASE = 'var(--phase-first)';
+const LAST_PHASE = 'var(--phase-last)';
+const MIDDLE_PHASES = [
+  'var(--phase-mid-1)',
+  'var(--phase-mid-2)',
+  'var(--phase-mid-3)',
+  'var(--phase-mid-4)',
+];
 
 export function phaseColour(index: number, count: number): string {
   if (index <= 0) return FIRST_PHASE;
