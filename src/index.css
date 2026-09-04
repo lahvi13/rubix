@@ -457,19 +457,30 @@ button[disabled] {
   border: none;
   background: none;
   min-height: 0;
+  overflow: hidden;
 }
 
 /*
- * Says the picture can be played, without spending a line on saying it. Under
- * the cube rather than off in the corner of the box: the box is the size of
- * the widest of the two cubes, and a badge in its corner looks like it belongs
- * to nothing.
+ * The player draws its cube inside a margin of its own, so at the size of the
+ * box it comes out visibly smaller than the one we draw. It gets a bigger box
+ * and the stage clips the margin away — scaling the canvas instead would only
+ * blur it.
+ */
+.scramble__player {
+  width: 155%;
+  height: 155%;
+}
+
+/*
+ * Says the picture can be played, without spending a line on saying it. The
+ * top right corner is the one place both cubes leave empty: the unfolded net
+ * has only its top face up there, and the cube seen from a corner ends below
+ * it.
  */
 .scramble__play {
   position: absolute;
-  inset-block-end: 0;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
+  inset-block-start: 0;
+  inset-inline-end: 0;
   display: grid;
   place-items: center;
   width: 2.25rem;
@@ -2345,21 +2356,50 @@ input[type='radio'] {
 }
 
 /*
- * While the solve runs the clock is the only thing on screen, so it belongs in
- * the middle of it — not in the middle of the row it shares with a hidden
- * scramble above and a hidden list below, which are not the same height. The
- * rows give up their space instead of the clock leaving the page: a fixed
+ * From the first touch until the time is read, the clock is the only thing on
+ * screen: the scramble has been performed and the list is not being read. The
+ * rows give up their space rather than the clock leaving the page — a fixed
  * layer over the whole viewport is a repaint of everything, and on a phone
  * that reads as a flash at the worst possible moment.
+ *
+ * Giving the clock the whole screen is also what keeps it off the cube: at the
+ * largest text size, a countdown does not fit in a share of the screen.
  */
 .screen--solving {
   grid-template-rows: 0 1fr 0;
   gap: 0;
 }
 
+/* The other way round: the list pulled up over the cube, to be read. */
+.screen--browsing {
+  grid-template-rows: 0 0 1fr;
+  gap: 0;
+}
+
 .screen--solving .scramble-slot,
-.screen--solving .solves-panel {
+.screen--solving .solves-panel,
+.screen--browsing .scramble-slot,
+.screen--browsing .timer-slot {
   overflow: hidden;
+}
+
+/* The chevron that pulls the list up, and puts it back. */
+.solves-panel__more {
+  min-height: 0;
+  padding: 0 var(--space-2);
+  border: none;
+  color: var(--muted);
+}
+
+.solves-panel__more svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .timer-slot {

@@ -194,7 +194,7 @@ function SpatialPreview({
   return (
     <twisty-player
         ref={player}
-        className="scramble__preview scramble__preview--3d"
+        className="scramble__player"
         puzzle="3x3x3"
         alg={scramble}
         experimental-setup-anchor="start"

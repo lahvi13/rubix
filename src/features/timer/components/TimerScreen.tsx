@@ -76,7 +76,16 @@ export function TimerScreen() {
 
   const timer = useTimer(handleComplete, { phases: phaseKeys });
   const status = timer.state.status;
-  const isSolving = status === 'running';
+  /*
+   * From the first touch until the time is read: inspection, the hold, the
+   * solve. The scramble has been performed by then and the list is not being
+   * read, so the clock gets the screen — and nothing else can be under it.
+   */
+  const isEngaged = status === 'inspecting' || status === 'holding' || status === 'running';
+  // The list, pulled up over the cube to be read. Any touch of the timer ends
+  // it, so there is no way to be browsing and solving at once.
+  const [isBrowsing, setBrowsing] = useState(false);
+  const showBrowsing = isBrowsing && status === 'idle';
 
   // Derived, not synchronized: the result stays up only while the machine is
   // at rest with a finished time. Starting the next attempt (or cancelling,
@@ -95,13 +104,21 @@ export function TimerScreen() {
   const handleDelete = useCallback((id: string) => void remove(id), [remove]);
 
   return (
-    <main className={isSolving ? 'screen screen--solving' : 'screen'}>
+    <main
+      className={
+        isEngaged
+          ? 'screen screen--solving'
+          : showBrowsing
+            ? 'screen screen--browsing'
+            : 'screen'
+      }
+    >
       <div className="scramble-slot">
         <ScramblePanel
           scramble={scramble.scramble}
           error={scramble.error}
           onRetry={scramble.next}
-          hidden={isSolving || resultVisible}
+          hidden={isEngaged || resultVisible}
         />
         {resultVisible ? (
           <div className="result-bar">
@@ -158,7 +175,7 @@ export function TimerScreen() {
         <div className="timer-overlay" aria-hidden="true" {...timer.touchHandlers} />
       ) : null}
 
-      <section className={isSolving ? 'solves-panel solves-panel--hidden' : 'solves-panel'}>
+      <section className={isEngaged ? 'solves-panel solves-panel--hidden' : 'solves-panel'}>
         <h2 className="solves-panel__title">
           {/* The session name doubles as the way into session switching. */}
           <button
@@ -170,6 +187,18 @@ export function TimerScreen() {
             {session?.name ?? strings.appName}
           </button>
           · {solves.length}
+          {/* The list is a peek by default; this pulls it up over the cube. */}
+          <button
+            type="button"
+            className="solves-panel__more"
+            aria-expanded={showBrowsing}
+            aria-label={showBrowsing ? strings.solve.collapseList : strings.solve.expandList}
+            onClick={() => setBrowsing((open) => !open)}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d={showBrowsing ? 'M7 14l5-5 5 5' : 'M7 10l5 5 5-5'} />
+            </svg>
+          </button>
           <span className="solves-panel__toggles">
             <label className="toggle solves-panel__toggle">
               <input

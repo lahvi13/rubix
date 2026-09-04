@@ -47,6 +47,8 @@ export const strings = {
     none: 'This solve was timed as a whole.',
   },
   solve: {
+    expandList: 'More solves',
+    collapseList: 'Back to the timer',
     plusTwo: '+2',
     dnf: 'DNF',
     delete: 'Delete',
