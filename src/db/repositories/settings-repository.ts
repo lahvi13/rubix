@@ -1,7 +1,7 @@
 import { db } from '../schema';
 import type { Flag } from '../types';
 import { now } from '../../lib/clock';
-import type { Theme } from '../../lib/theme';
+import type { Font, Size, Theme } from '../../lib/appearance';
 
 /**
  * Key-value settings. Device-local entries (mic calibration, chosen audio
@@ -20,6 +20,12 @@ export interface SettingValues {
   'timer.splitMode': 'total' | 'phases';
   /** Device-local: the same account can prefer a different theme on each screen. */
   'ui.theme': Theme;
+  /** Which typeface the app is set in; 'system' hands it back to the device. */
+  'ui.font': Font;
+  /** Device-local, like the two below it: this is about the screen in front of
+   * the reader, not about what they like. */
+  'ui.textSize': Size;
+  'ui.clockSize': Size;
   'ui.twistyMode': '2D' | '3D';
   'ui.cubeSkin': string;
   /** Which route through the last layer the trainer opens on. */
@@ -53,6 +59,9 @@ export const SETTING_DEFAULTS: SettingValues = {
   'timer.showScramblePreview': true,
   'timer.splitMode': 'total',
   'ui.theme': 'system',
+  'ui.font': 'sans',
+  'ui.textSize': 'medium',
+  'ui.clockSize': 'medium',
   'ui.twistyMode': '2D',
   'ui.cubeSkin': 'classic',
   'trainer.twoLookDefault': false,
@@ -66,7 +75,7 @@ export const SETTING_DEFAULTS: SettingValues = {
 
 export type SettingKey = keyof SettingValues;
 
-const DEVICE_LOCAL_PREFIXES = ['audio.', 'ui.theme'];
+const DEVICE_LOCAL_PREFIXES = ['audio.', 'ui.theme', 'ui.textSize', 'ui.clockSize'];
 
 function isDeviceLocal(key: string): Flag {
   return DEVICE_LOCAL_PREFIXES.some((prefix) => key.startsWith(prefix)) ? 1 : 0;

@@ -135,6 +135,20 @@ kromě PB, které je globální per `puzzle`.
   Náhledy případů jsou obrázky, na které CSS nedosáhne, takže skin má `muted`
   (nálepky, na kterých případ nezáleží) zvlášť pro každé téma — na bílé kartě
   by tmavý odstín byl blok inkoustu
+- **písmo**: Inter (text) a JetBrains Mono (tahy, časy) jsou **v buildu**
+  (`src/fonts/`, variabilní, latin + latin-ext, OFL) — nic se nesmí tahat ze
+  sítě a systémový stack vypadá na každém zařízení jinak. Volba `ui.font`
+  přepíná mezi zabaleným sans, zabaleným mono a systémovým písmem; scramble a
+  algoritmy jsou monospace vždycky. Písma musí být i v precache service workeru
+  (`globPatterns` ve `vite.config.ts`), jinak by je aplikace měla jen při prvním
+  spuštění
+- **velikosti**: `ui.textSize` je jeden násobitel na kořenové velikosti písma —
+  všechny rozměry ve stylopisu jsou v `rem`, takže roste i rozestup, ne jen
+  písmena. `ui.clockSize` mění zvlášť běžící čas (`--clock-size`), který se čte
+  z větší dálky než zbytek. Obojí je device-local: je to o obrazovce, která je
+  před uživatelem, ne o tom, co má kdo rád. Vstupní pole mají
+  `font-size: max(1rem, 16px)` — pod 16 px si telefon při zaostření stránku
+  přiblíží, a škála tuhle hranici nesmí podlézt
 - **triggery**: pojmenované sekvence (sexy move, sledgehammer, …) se v algoritmu
   zvýrazňují; matchuje se nejdelší shoda zleva. Zabudované jdou vypnout, přepsat
   (tím přechází na uživatele) i smazat; vlastní se přidávají. Tabulka `triggers`.
@@ -574,6 +588,9 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `timer.showScramblePreview` | 0 | `true` |
 | `timer.splitMode` | 0 | `'total'` |
 | `ui.theme` | 1 | `'system'` |
+| `ui.font` | 0 | `'sans'` |
+| `ui.textSize` | **1** | `'medium'` |
+| `ui.clockSize` | **1** | `'medium'` |
 | `ui.twistyMode` | 0 | `'2D'` |
 | `ui.cubeSkin` | 0 | `'classic'` |
 | `trainer.twoLookDefault` | 0 | `false` |

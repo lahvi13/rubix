@@ -39,6 +39,7 @@ src/
   components/     # sdílené hloupé UI (Button, Modal, Sheet, EmptyState)
   hooks/          # sdílené hooky (use-media-query, use-keyboard)
   lib/            # obaly nad cizím světem: scramble-client.ts, beep.ts, format.ts, uuid.ts, clock.ts
+  fonts/          # Inter + JetBrains Mono jako woff2 v buildu (fonts/README.md)
   workers/        # audio onset processor (scrambles run in cubing.js's own worker)
   types/          # deklarace pro cizí custom elementy (twisty-player)
   test/           # setup.ts pro vitest
@@ -175,4 +176,10 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   `Emulation.setDeviceMetricsOverride`, `mobile: true`) — desktop je až druhý.
   Řádek s několika ovládacími prvky vedle sebe se tam smrskne na nulu, takže
   seznamy jsou karty a rozšiřují se až v `@media (min-width: …)`. Vstupní pole
-  mají `font-size: 1rem` a víc, jinak stránku klávesnice zvětší.
+  mají `font-size: max(1rem, 16px)`, jinak stránku klávesnice zvětší — v pixelech,
+  protože nastavení velikosti textu (`ui.textSize`) škáluje kořenový `rem`.
+- **barvy a velikosti se nepíšou do pravidel.** Paleta, typová škála i rodiny
+  písem jsou proměnné v `:root` (`--text-*`, `--font-sans|mono|ui`, `--clock-size`)
+  a téma se přepíná přes `light-dark()`; pravidlo si nikdy nepíše vlastní hex ani
+  vlastní `rem`. Co CSS nedosáhne (diagramy kostky jsou `<img>`), dostane téma
+  přes `useResolvedTheme()`.

@@ -7,7 +7,7 @@ import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
 import { DrillScreen, TrainerScreen } from '../features/trainer';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
-import { useTheme } from '../hooks/use-theme';
+import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
 import { ErrorBanner } from './ErrorBanner';
@@ -20,7 +20,7 @@ export function App() {
   // key mounts it again once the database is back.
   const generation = useDatabaseGeneration();
   // Applied here because this is the one component that is always mounted.
-  useTheme();
+  useAppearance();
 
   // While the menu is open the keyboard belongs to it: the timer listens on
   // the window, and a Space meant for a menu item must not start a solve

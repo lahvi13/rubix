@@ -1,4 +1,51 @@
 /*
+ * Two typefaces, in the build. Nothing here may be fetched at runtime, and a
+ * system stack looks different on every device — see fonts/README.md. Both are
+ * variable on the weight axis, so one file per subset covers every weight.
+ */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/inter-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/inter-latin-ext.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('./fonts/jetbrains-mono-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('./fonts/jetbrains-mono-latin-ext.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+/*
  * One palette, two themes. `light-dark()` picks a side from the element's
  * colour scheme, so the system preference is honoured with no JavaScript at
  * all and an explicit choice is one attribute on <html> (see lib/theme.ts).
@@ -44,9 +91,40 @@
   --phase-mid-3: light-dark(#2359ad, #2f6fd0);
   --phase-mid-4: light-dark(#b32f2f, #d63a3a);
 
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /*
+   * One type scale, in sixteenths of a rem so every step lands on a whole
+   * pixel at the default size. A rule picks a step; nothing writes its own
+   * size, which is what kept twenty of them in here.
+   */
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.875rem;
+  --text-lg: 0.9375rem;
+  --text-xl: 1rem;
+  --text-2xl: 1.125rem;
+  --text-3xl: 1.3125rem;
+  --text-4xl: 2rem;
+
+  /* The clock is read from further away than anything else on the screen. */
+  --clock-size: clamp(3.5rem, 18vw, 9rem);
+
+  /*
+   * Which face the app is set in. The bundled pair is the default; 'system'
+   * hands both slots back to the device, for a reader who wants the phone's
+   * own typeface. Moves and times are always monospaced — a scramble is read
+   * symbol by symbol.
+   */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+  --font-ui: var(--font-sans);
+
+  font-family: var(--font-ui);
   background: var(--bg);
   color: var(--text);
+  /* Nearly every number in here is a time, and a time that changes width as it
+     counts is a time that is hard to read. */
+  font-variant-numeric: tabular-nums;
 }
 
 /* An explicit choice overrides the system preference; 'system' sets neither. */
@@ -56,6 +134,38 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
+}
+
+/* The face the reader chose; 'sans' is the default and needs no rule. */
+:root[data-font='mono'] {
+  --font-ui: var(--font-mono);
+}
+
+:root[data-font='system'] {
+  --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', monospace;
+}
+
+/*
+ * Text size is one multiplier on the root. Every size and gap in here is in
+ * rem, so the layout grows with the letters instead of leaving them to collide
+ * with the padding around them.
+ */
+:root[data-text-size='small'] {
+  font-size: 93.75%;
+}
+
+:root[data-text-size='large'] {
+  font-size: 112.5%;
+}
+
+/* The clock is set apart from the rest: it is read with a cube in both hands. */
+:root[data-clock-size='small'] {
+  --clock-size: clamp(2.6rem, 13vw, 6.5rem);
+}
+
+:root[data-clock-size='large'] {
+  --clock-size: clamp(4.4rem, 23vw, 11.5rem);
 }
 
 * {
@@ -88,7 +198,7 @@ body {
   gap: 0.5rem;
   margin: 0;
   margin-inline-end: auto;
-  font-size: 1rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -101,7 +211,7 @@ body {
 }
 
 .app__version {
-  font-size: 0.65rem;
+  font-size: var(--text-2xs);
   font-weight: 400;
   letter-spacing: 0.02em;
   text-transform: none;
@@ -136,7 +246,7 @@ body {
   max-width: 40ch;
   text-align: center;
   font-size: clamp(1rem, 3.5vw, 1.4rem);
-  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-family: var(--font-mono);
   line-height: 1.5;
   user-select: text;
 }
@@ -167,7 +277,7 @@ body {
   border-radius: 0.4rem;
   color: var(--muted);
   padding: 0.25rem 0.7rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   cursor: pointer;
 }
 
@@ -222,9 +332,8 @@ body {
 }
 
 .timer__value {
-  font-size: clamp(3.5rem, 18vw, 9rem);
+  font-size: var(--clock-size);
   font-weight: 300;
-  font-variant-numeric: tabular-nums;
   line-height: 1;
   letter-spacing: -0.02em;
 }
@@ -232,7 +341,7 @@ body {
 .timer__hint {
   margin: 0;
   min-height: 1.25rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--muted);
 }
 
@@ -263,7 +372,7 @@ body {
 
 .solves-panel__title {
   margin: 0 0 0.5rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -281,7 +390,7 @@ body {
 
 .solves__empty {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: var(--text-lg);
   margin: 0;
 }
 
@@ -298,12 +407,11 @@ body {
 .solves__index,
 .solves__meta {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
 }
 
 .solves__time {
-  font-variant-numeric: tabular-nums;
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
 }
 
 .solves__actions {
@@ -317,7 +425,7 @@ body {
   border-radius: 0.375rem;
   color: var(--muted);
   padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   cursor: pointer;
 }
 
@@ -339,7 +447,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   background: var(--surface);
-  font-size: 0.9rem;
+  font-size: var(--text-lg);
 }
 
 .update-prompt button {
@@ -365,7 +473,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--text-xl);
   line-height: 1;
   padding: 0.4rem 0.6rem;
   cursor: pointer;
@@ -402,7 +510,7 @@ body {
   border: 1px solid transparent;
   border-radius: 0.5rem;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: var(--text-lg);
   padding: 0.6rem 0.7rem;
   text-align: start;
   cursor: pointer;
@@ -434,7 +542,7 @@ body {
   border-radius: 999px;
   color: var(--muted);
   padding: 0.25rem 0.7rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   cursor: pointer;
 }
 
@@ -450,7 +558,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   margin: 0 0 0.5rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
@@ -488,12 +596,11 @@ body {
 }
 
 .history__time {
-  font-variant-numeric: tabular-nums;
 }
 
 .history__meta {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
 }
 
 .history__tags {
@@ -556,19 +663,18 @@ body {
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 1.1rem;
+  font-size: var(--text-2xl);
   cursor: pointer;
 }
 
 .detail__result {
-  font-size: 2rem;
-  font-variant-numeric: tabular-nums;
+  font-size: var(--text-4xl);
 }
 
 .detail__scramble {
   margin: 0;
-  font-family: ui-monospace, monospace;
-  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
   color: var(--muted);
   user-select: text;
 }
@@ -577,7 +683,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--muted);
 }
 
@@ -604,7 +710,7 @@ body {
 
 .detail__error {
   color: var(--danger);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
 }
 
 .detail__row--buttons button,
@@ -634,7 +740,7 @@ body {
   border-radius: 999px;
   color: var(--muted);
   padding: 0.2rem 0.6rem;
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   cursor: pointer;
 }
 
@@ -662,7 +768,7 @@ body {
 }
 
 .detail__meta {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 
@@ -672,7 +778,7 @@ button.is-danger {
   border-radius: 0.4rem;
   color: var(--danger);
   padding: 0.3rem 0.7rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   cursor: pointer;
 }
 
@@ -742,14 +848,14 @@ button.is-danger {
 }
 
 .session__badge {
-  font-size: 0.65rem;
+  font-size: var(--text-2xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--accent);
 }
 
 .session__meta {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 
@@ -764,7 +870,7 @@ button.is-danger {
   border-radius: 0.4rem;
   color: var(--muted);
   padding: 0.25rem 0.6rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   cursor: pointer;
 }
 
@@ -772,7 +878,7 @@ button.is-danger {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
@@ -818,7 +924,7 @@ button.is-danger {
 }
 
 .stat-card__label {
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -826,8 +932,7 @@ button.is-danger {
 }
 
 .stat-card__value {
-  font-size: 1.3rem;
-  font-variant-numeric: tabular-nums;
+  font-size: var(--text-3xl);
 }
 
 .stat-card--highlight .stat-card__value {
@@ -836,7 +941,7 @@ button.is-danger {
 
 .stats__section-title {
   margin: 0 0 0.5rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -846,7 +951,6 @@ button.is-danger {
 .averages-table {
   width: 100%;
   border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
 }
 
 .averages-table th,
@@ -863,7 +967,7 @@ button.is-danger {
 }
 
 .averages-table thead th {
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -882,7 +986,7 @@ button.is-danger {
   display: flex;
   gap: 1.25rem;
   margin: 0 0 0.6rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .mini-stats__item {
@@ -896,7 +1000,6 @@ button.is-danger {
 
 .mini-stats__item dd {
   margin: 0;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Trainer */
@@ -921,7 +1024,7 @@ button.is-danger {
   border-radius: 0.5rem;
   color: var(--muted);
   padding: 0.35rem 0.8rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   cursor: pointer;
 }
 
@@ -943,7 +1046,7 @@ button.is-danger {
   border: 1px solid var(--border);
   color: var(--muted);
   padding: 0.3rem 0.75rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   cursor: pointer;
 }
 
@@ -963,7 +1066,7 @@ button.is-danger {
 /* The case count sits quietly beside the name of the route. */
 .trainer__looks span {
   opacity: 0.6;
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
 }
 
 .trainer__group {
@@ -974,7 +1077,7 @@ button.is-danger {
 
 .trainer__group-title {
   margin: 0 0 0.5rem;
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   /* Reading the group names is half of finding a case; --muted is too quiet. */
@@ -1020,7 +1123,7 @@ button.is-danger {
 }
 
 .case-card__alg {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 700;
   color: var(--text);
   line-height: 1.35;
@@ -1029,7 +1132,7 @@ button.is-danger {
 }
 
 .case-card__name {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: var(--text);
 }
 
@@ -1062,7 +1165,7 @@ button.is-danger {
   color: var(--muted);
   padding: 0.35rem 0.8rem;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   min-height: 2.5rem;
   cursor: pointer;
 }
@@ -1088,7 +1191,7 @@ button.is-danger {
   color: var(--text);
   padding: 0.35rem 0.9rem;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   min-height: 2.5rem;
   cursor: pointer;
 }
@@ -1108,7 +1211,7 @@ button.is-danger {
   min-height: 2.75rem;
   padding: 0 0.4rem;
   border-radius: 0.5rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   cursor: pointer;
 }
 
@@ -1127,14 +1230,14 @@ button.is-danger {
   max-width: 30ch;
   text-align: center;
   font-size: clamp(1.4rem, 6vw, 2.1rem);
-  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-family: var(--font-mono);
   line-height: 1.5;
   user-select: text;
 }
 
 .drill__hint {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
   text-align: center;
 }
@@ -1149,7 +1252,7 @@ button.is-danger {
 
 .drill__case-name {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-2xl);
 }
 
 .drill__diagram {
@@ -1202,8 +1305,8 @@ button.is-danger {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  font-family: ui-monospace, 'Cascadia Code', monospace;
-  font-size: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
   color: var(--muted);
   text-align: center;
 }
@@ -1217,7 +1320,7 @@ button.is-danger {
   color: var(--accent);
   padding: 0.5rem 1rem;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   min-height: 2.75rem;
   cursor: pointer;
 }
@@ -1245,15 +1348,14 @@ button.is-danger {
 }
 
 .set-summary--empty {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
 .set-summary__counts {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .set-summary__slowest {
@@ -1273,14 +1375,13 @@ button.is-danger {
   color: var(--text);
   padding: 0.35rem 0.7rem;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   min-height: 2.5rem;
   cursor: pointer;
 }
 
 .set-summary__chip span {
   color: var(--warn);
-  font-variant-numeric: tabular-nums;
 }
 
 /* Drill attempts, as a list you can correct */
@@ -1305,11 +1406,10 @@ button.is-danger {
 }
 
 .attempts__time {
-  font-variant-numeric: tabular-nums;
 }
 
 .attempts__when {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 
@@ -1321,7 +1421,7 @@ button.is-danger {
   color: var(--muted);
   padding: 0.4rem 0.8rem;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   min-height: 2.5rem;
   cursor: pointer;
 }
@@ -1357,7 +1457,7 @@ button.is-danger {
 
 .case-player__loading {
   margin: auto;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
@@ -1373,7 +1473,7 @@ button.is-danger {
   border-radius: 0.4rem;
   color: var(--text);
   padding: 0.35rem 0.8rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   cursor: pointer;
 }
 
@@ -1389,7 +1489,7 @@ button.is-danger {
 
 .case-detail__section {
   margin: 0.5rem 0 0;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -1435,7 +1535,7 @@ button.is-danger {
 }
 
 .alg__label {
-  font-size: 0.66rem;
+  font-size: var(--text-2xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1461,7 +1561,7 @@ button.is-danger {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .variants__pick {
@@ -1478,7 +1578,7 @@ button.is-danger {
 }
 
 .variants__source {
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   color: var(--muted);
 }
 
@@ -1488,7 +1588,7 @@ button.is-danger {
   border-radius: 0.35rem;
   color: var(--muted);
   padding: 0.15rem 0.5rem;
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   cursor: pointer;
 }
 
@@ -1516,7 +1616,7 @@ button.is-danger {
 
 .notation__hint {
   margin: 0 0 0.75rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
@@ -1531,7 +1631,7 @@ button.is-danger {
 .notation__item {
   margin: 0;
   text-align: center;
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   font-weight: 600;
 }
 
@@ -1584,18 +1684,15 @@ button.is-danger {
 
 .trigger__moves {
   width: 100%;
-  font-variant-numeric: tabular-nums;
   letter-spacing: 0.03em;
 }
 
-/* 1rem is the phone-keyboard threshold: anything smaller zooms the page. */
 .triggers input {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 0.4rem;
   color: var(--text);
   font: inherit;
-  font-size: 1rem;
   padding: 0.55rem 0.6rem;
 }
 
@@ -1610,7 +1707,7 @@ button.is-danger {
   border-radius: 0.4rem;
   color: var(--muted);
   padding: 0.55rem 0.9rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   cursor: pointer;
   flex: 0 0 auto;
 }
@@ -1686,7 +1783,7 @@ button.is-danger {
   border: 1px solid var(--border);
   border-radius: 0.6rem;
   padding: 0.5rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--muted);
   cursor: pointer;
 }
@@ -1714,7 +1811,7 @@ button.is-danger {
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .settings-row__choices {
@@ -1728,7 +1825,7 @@ button.is-danger {
   border-radius: 0.4rem;
   color: var(--muted);
   padding: 0.3rem 0.7rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   cursor: pointer;
 }
 
@@ -1750,7 +1847,7 @@ button.is-danger {
   border: 1px solid var(--accent);
   border-radius: 0.6rem;
   background: var(--surface);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .notice__body {
@@ -1793,12 +1890,12 @@ button.is-danger {
 
 .data-section__title {
   margin: 0 0 0.35rem;
-  font-size: 0.95rem;
+  font-size: var(--text-lg);
 }
 
 .data-section__subtitle {
   margin: 1rem 0 0.4rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -1806,20 +1903,20 @@ button.is-danger {
 
 .data-section__hint {
   margin: 0 0 0.75rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   line-height: 1.45;
   color: var(--muted);
 }
 
 .data-section__error {
   margin: 0.75rem 0 0;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--danger);
 }
 
 .data-section__warning {
   margin: 0 0 0.75rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   line-height: 1.45;
   color: var(--danger);
 }
@@ -1855,7 +1952,7 @@ button.is-danger {
 
 .data-section input[type='file'] {
   font: inherit;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
   max-width: 100%;
 }
@@ -1871,7 +1968,7 @@ button.is-danger {
 }
 
 .import-modes legend {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -1887,15 +1984,14 @@ button.is-danger {
 
 .import-modes__hint {
   grid-column: 2;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 
 .preview-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
-  font-variant-numeric: tabular-nums;
+  font-size: var(--text-md);
 }
 
 .preview-table th,
@@ -1924,7 +2020,7 @@ button.is-danger {
 
 .import-result {
   margin-top: 0.75rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .import-totals {
@@ -1944,7 +2040,6 @@ button.is-danger {
 
 .import-totals__item dd {
   margin: 0;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Crash screen (error boundary) */
@@ -1988,7 +2083,7 @@ button.is-danger {
   border-radius: 0.6rem;
   background: var(--surface);
   color: var(--danger);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   z-index: 10;
 }
 
@@ -2015,7 +2110,7 @@ button.is-danger {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: var(--text-2xl);
 }
 
 .filters button,
@@ -2030,7 +2125,20 @@ button.is-danger {
 .import-preview__actions button {
   min-height: 2.5rem;
   padding-inline: 0.9rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
+}
+
+/* A field under 16px makes the phone zoom the page when it is focused, which
+   moves the whole layout under the reader's thumb. The floor is in real pixels
+   because the text-size setting must not be able to push a field below it. */
+.detail input,
+.detail textarea,
+.session-form input,
+.session input,
+.triggers input,
+.triggers__add input,
+.variants__add input {
+  font-size: max(1rem, 16px);
 }
 
 /* A checkbox at the browser's default 13px is the smallest thing on any
@@ -2064,7 +2172,7 @@ input[type='radio'] {
 
 .diagnostics__state {
   margin: 0 0 0.6rem;
-  font-size: 0.9rem;
+  font-size: var(--text-lg);
   color: var(--accent);
 }
 
@@ -2079,20 +2187,20 @@ input[type='radio'] {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
   word-break: break-word;
 }
 
 .diagnostics__when {
   display: block;
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   opacity: 0.75;
 }
 
 .scramble__loading {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--muted);
 }
 
@@ -2101,7 +2209,7 @@ input[type='radio'] {
 /* The guided run says which phase it is on; that is all it adds to the clock. */
 .timer__phase {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2161,12 +2269,11 @@ input[type='radio'] {
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: 0.85rem;
-  font-variant-numeric: tabular-nums;
+  font-size: var(--text-md);
 }
 
 .phase-bar__name {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -2214,7 +2321,7 @@ input[type='radio'] {
   display: grid;
   grid-template-columns: 0.6rem 1fr auto 5.5rem 2.25rem;
   gap: 0.5rem;
-  font-size: 0.65rem;
+  font-size: var(--text-2xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2233,26 +2340,24 @@ input[type='radio'] {
 
 .splits__name {
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .splits__duration {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.95rem;
+  font-size: var(--text-lg);
   color: var(--text);
 }
 
 .detail .splits__at {
   width: 100%;
   text-align: right;
-  font-variant-numeric: tabular-nums;
   /* Below 1rem the phone zooms the page the moment this gets focus. */
-  font-size: 1rem;
+  font-size: var(--text-xl);
   padding: 0.35rem 0.45rem;
 }
 
 .splits__at--empty {
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   text-align: right;
   white-space: nowrap;
   color: var(--muted);
@@ -2265,7 +2370,7 @@ input[type='radio'] {
   border: 1px solid var(--border);
   border-radius: 0.4rem;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: var(--text-xl);
 }
 
 .detail span.splits__action {
@@ -2280,12 +2385,12 @@ input[type='radio'] {
   color: var(--muted);
   padding: 0.45rem 0.7rem;
   min-height: 2.75rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .detail__hint {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
@@ -2295,7 +2400,7 @@ input[type='radio'] {
 }
 
 .averages-table--phases {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .averages-table--phases th,

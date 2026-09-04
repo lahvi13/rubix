@@ -10,7 +10,7 @@
  */
 
 import type { Face } from '../domain/cube/notation';
-import type { ResolvedTheme } from './theme';
+import type { ResolvedTheme } from './appearance';
 
 export interface CubeSkin {
   id: string;

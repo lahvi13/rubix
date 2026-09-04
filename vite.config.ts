@@ -42,7 +42,9 @@ export default defineConfig({
       },
       workbox: {
         // cubing.js pulls in wasm and lazy chunks; all of it has to be offline.
-        globPatterns: ['**/*.{js,css,html,svg,png,wasm}'],
+        // The fonts too: a face that only arrives over the network is a face
+        // the app has on the first run and never again.
+        globPatterns: ['**/*.{js,css,html,svg,png,wasm,woff2}'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
       },
     }),
