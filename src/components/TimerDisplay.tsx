@@ -58,7 +58,6 @@ export function TimerDisplay({
         className="timer__clock"
         style={isInspecting ? { color: inspectionColour(inspectionMs, inspectionCues) } : undefined}
       >
-        {isInspecting ? <InspectionRing elapsedMs={inspectionMs} /> : null}
         {/* The role is what a clock is, and it is how a test asks what it reads;
             announcements stay off, or every frame would be read out. */}
         <div className="timer__value" role="timer">
@@ -68,6 +67,7 @@ export function TimerDisplay({
             <Time ms={displayMs ?? 0} />
           )}
         </div>
+        {isInspecting ? <InspectionBar elapsedMs={inspectionMs} /> : null}
       </div>
       <p className="timer__hint">
         {resultShown ? '' : hintFor(state, armed, finishArmed, byPhase, inspectionEnabled)}
@@ -84,35 +84,26 @@ function inspectionColour(elapsedMs: number, cues: readonly number[]): string {
   return 'var(--accent)';
 }
 
-const RING_RADIUS = 46;
-const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
-
 /**
- * Inspection, as a ring that empties. The number says how many seconds are
- * left; the ring says it without being read, which is the point while a cube
- * is being turned over in both hands.
+ * Inspection, as a bar that empties under the number. The number says how many
+ * seconds are left; the bar says it without being read, which is the point
+ * while a cube is being turned over in both hands.
  *
- * The colour comes from the clock around it, which changes on the cues — the
+ * A bar rather than a ring around the digits: the clock can be set in a
+ * seven-segment face half again as wide, at any of three sizes, and a ring
+ * that fits one of those combinations runs into the rest.
+ *
+ * The colour comes from the clock above it, which changes on the cues — the
  * same thresholds the beeps use — so nothing on screen disagrees about how
  * much trouble the reader is in.
  */
-function InspectionRing({ elapsedMs }: { elapsedMs: number }) {
+function InspectionBar({ elapsedMs }: { elapsedMs: number }) {
   const left = Math.min(Math.max(1 - elapsedMs / INSPECTION_LIMIT_MS, 0), 1);
 
   return (
-    <svg className="timer__ring" viewBox="0 0 100 100" aria-hidden="true">
-      <circle className="timer__ring-track" cx="50" cy="50" r={RING_RADIUS} />
-      <circle
-        className="timer__ring-left"
-        cx="50"
-        cy="50"
-        r={RING_RADIUS}
-        style={{
-          strokeDasharray: RING_LENGTH,
-          strokeDashoffset: RING_LENGTH * (1 - left),
-        }}
-      />
-    </svg>
+    <div className="timer__countdown" aria-hidden="true">
+      <span className="timer__countdown-left" style={{ transform: `scaleX(${left})` }} />
+    </div>
   );
 }
 

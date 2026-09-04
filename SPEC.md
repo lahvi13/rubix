@@ -45,9 +45,11 @@ dostávají hotová data z domény.
 - hold-to-start: podržet mezerník / dotyk na ploše po dobu `holdThresholdMs` (default 300),
   vizuální stav *armed*, uvolnění spouští čas
 - WCA inspekce 15 s, vypnutelná přepínačem přímo na obrazovce timeru; zvukové cue
-  na 8 s a 12 s (jen lokální beep, žádný TTS). Zbývající čas kreslí i **kruh
-  kolem čísla**, který ubývá — s cubem v obou rukou se to čte bez čtení. Kruh
-  i číslo mění barvu na stejných cue jako pípání, aby si nikdy neodporovaly
+  na 8 s a 12 s (jen lokální beep, žádný TTS). Zbývající čas kreslí i **pruh pod
+  číslem**, který ubývá — s cubem v obou rukou se to čte bez čtení. Pruh, ne kruh
+  kolem číslic: hodiny můžou být v sedmisegmentovém písmu o polovinu širším a ve
+  třech velikostech, a kruh, který sedne jedné kombinaci, leze do ostatních.
+  Pruh i číslo mění barvu na stejných cue jako pípání, aby si neodporovaly
 - automatická penalizace z inspekce: 15–17 s → `plus2`, > 17 s → `dnf`,
   vždy s `penaltySource: 'auto'`
 - ruční penalizace `+2` / `DNF` bezprostředně po solvu i kdykoliv později z historie
@@ -656,8 +658,10 @@ formátů žije v `src/db/migrations/import/`.
 | 10 | **Data** | export, import (preview + merge/replace), smazání všech dat, troubleshooting |
 
 Navigace: **hamburger menu** v hlavičce se všemi routami; hlavička ukazuje název
-aktuální obrazovky a **roluje se stránkou** (dlouhá obrazovka se posouvá celá, ne
-uvnitř rámu pod přišpendlenou lištou). Menu visí na hlavičce, takže se otevírá
+aktuální obrazovky. Je **přišpendlená k hornímu okraji** — cesta ze stránky musí
+zůstat po ruce, jakkoli hluboko je člověk dole — a jakmile se stránka posune,
+zúží se (na telefonu je ten pruh cennější pro obsah než pro titulek). Stránka
+roluje celá, ne uvnitř rámu pod lištou; menu visí na hlavičce, takže se otevírá
 tam, kde je tlačítko, které ho otevřelo. Timer je výchozí route. (Původně tu byl dolní tab bar na
 mobilu — obrazovek je ale víc, než se do něj vejde, a s trenažérem a nastavením
 jich bude ještě víc.) Dokud je menu otevřené, klávesy patří jemu, ne timeru.

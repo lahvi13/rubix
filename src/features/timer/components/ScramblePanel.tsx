@@ -78,32 +78,40 @@ export const ScramblePanel = memo(function ScramblePanel({
             <ScrambleMoves scramble={scramble} playingMove={playingMove} />
           )}
           {scramble === null || !isPreviewShown ? null : (
-            <>
-              {/* One box for both cubes, so watching the scramble does not
-                  resize the screen under the reader's thumb. */}
-              <div className="scramble__stage">
+            /* The cube is the button. A label under it needed a line of its
+               own on a screen that has none to spare, and it sat under the
+               picture it belonged to. Both cubes share this box, so watching
+               the scramble does not resize the screen under the thumb. */
+            <button
+              type="button"
+              className="scramble__stage"
+              aria-label={isWatching ? strings.scramble.showPicture : strings.scramble.replay}
+              onClick={() => setWatched(isWatching ? null : scramble)}
+            >
+              {isWatching ? (
+                <SpatialPreview
+                  scramble={scramble}
+                  onMove={setPlayingMove}
+                  /* Until the player is ready the still cube stays up: there
+                     is nothing to animate yet, and a "loading" line in its
+                     place is a flash of empty screen. */
+                  placeholder={picture}
+                />
+              ) : (
+                picture
+              )}
+              <span className="scramble__play" aria-hidden="true">
                 {isWatching ? (
-                  <SpatialPreview
-                    scramble={scramble}
-                    onMove={setPlayingMove}
-                    onDone={() => setWatched(null)}
-                    /* Until the player is ready, the still cube stays up:
-                       there is nothing to animate yet and a "loading" line in
-                       its place is a flash of empty screen. */
-                    placeholder={picture}
-                  />
+                  <svg viewBox="0 0 24 24">
+                    <rect x="7" y="7" width="10" height="10" rx="1.5" />
+                  </svg>
                 ) : (
-                  picture
+                  <svg viewBox="0 0 24 24">
+                    <path d="M9 6.5v11l9-5.5z" />
+                  </svg>
                 )}
-              </div>
-              <button
-                type="button"
-                className="scramble__replay"
-                onClick={() => (isWatching ? setWatched(null) : setWatched(scramble))}
-              >
-                {isWatching ? strings.scramble.showPicture : strings.scramble.replay}
-              </button>
-            </>
+              </span>
+            </button>
           )}
         </>
       )}
@@ -156,7 +164,6 @@ function SpatialPreview({
 }: {
   scramble: string;
   onMove: (index: number | null) => void;
-  onDone: () => void;
   placeholder: ReactNode;
 }) {
   const player = useRef<TwistyPlayerElement | null>(null);

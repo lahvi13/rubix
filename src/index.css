@@ -153,9 +153,7 @@
   --font-ui: var(--font-sans);
   /* The clock has a face of its own, the way a stopwatch does. */
   --font-clock: var(--font-ui);
-  /* The inspection ring, in the clock's own em. Wide enough for two digits
-     and the room they need inside it. */
-  --ring-size: 1.9em;
+
 
   font-family: var(--font-ui);
   background: var(--bg);
@@ -217,8 +215,6 @@
 :root[data-clock-face='digital'] {
   --font-clock: 'DSEG7 Classic', var(--font-mono);
   --clock-scale: 0.72;
-  /* Seven-segment digits are half again as wide as proportional ones. */
-  --ring-size: 2.7em;
 }
 
 /* The clock is set apart from the rest: it is read with a cube in both hands. */
@@ -325,14 +321,29 @@ button[disabled] {
 }
 
 /*
- * The header scrolls away with the page. It was pinned above a scrolling box,
- * which meant a long screen scrolled inside a frame instead of scrolling, and
- * cost a strip of a phone screen the whole time.
+ * Pinned to the top: the way out of a screen has to stay reachable however far
+ * down the reader is. It gives back some of its height once the page has moved
+ * — on a phone that strip is worth more to the content than to the title.
  */
 .app__header {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
   padding: var(--space-2) var(--space-5);
   border-bottom: 1px solid var(--border);
+}
+
+.app__header--compact {
+  padding-block: 0;
+}
+
+.app__header--compact .app__menu-toggle {
+  min-height: 2.25rem;
+}
+
+.app__header--compact .app__title {
+  font-size: var(--text-sm);
 }
 
 .app__title {
@@ -367,7 +378,7 @@ button[disabled] {
   min-height: 0;
   /* The scramble takes what it needs; the clock and the list share the rest,
      with the list given the larger half — it is the part that is read. */
-  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1.8fr);
+  grid-template-rows: auto minmax(0, 0.9fr) minmax(0, 2.2fr);
   flex: 1;
   gap: var(--space-6);
   padding: var(--space-6);
@@ -437,10 +448,42 @@ button[disabled] {
  * one for the other used to resize the screen under the reader's thumb.
  */
 .scramble__stage {
+  position: relative;
   display: grid;
   place-items: center;
   width: min(260px, 70vw);
   height: min(220px, 60vw);
+  padding: 0;
+  border: none;
+  background: none;
+  min-height: 0;
+}
+
+/*
+ * Says the picture can be played, without spending a line on saying it. Under
+ * the cube rather than off in the corner of the box: the box is the size of
+ * the widest of the two cubes, and a badge in its corner looks like it belongs
+ * to nothing.
+ */
+.scramble__play {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.scramble__play svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: currentColor;
 }
 
 /* A short phone has no room for a big cube and a list of solves both. */
@@ -453,14 +496,18 @@ button[disabled] {
 
 /* The flat preview is an unfolded cube: four faces across, three down. */
 .scramble__preview {
-  width: 100%;
-  max-width: min(260px, 70vw);
+  width: auto;
   height: auto;
+  /* Never larger than the box it shares with the animated cube — it used to
+     spill out of it and over the control below. */
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .scramble__preview--3d {
-  width: min(220px, 60vw);
-  height: min(220px, 60vw);
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* Timer */
@@ -523,24 +570,23 @@ button[disabled] {
   font-size: calc(var(--clock-size) * var(--clock-scale, 1) * 1.22);
 }
 
-.timer__ring {
-  position: absolute;
-  width: var(--ring-size);
-  height: var(--ring-size);
-  /* Empties from twelve o'clock, the way a stopwatch hand goes round. */
-  transform: rotate(-90deg);
-  fill: none;
-  stroke-width: 4;
-  stroke-linecap: round;
+/* The inspection countdown, under the number it belongs to. */
+.timer__countdown {
+  width: min(15rem, 62vw);
+  height: 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--tint);
+  overflow: hidden;
 }
 
-.timer__ring-track {
-  stroke: var(--border);
-}
-
-.timer__ring-left {
-  /* The number and the ring are one signal; the colour is set on the pair. */
-  stroke: currentColor;
+.timer__countdown-left {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  /* The number and the bar are one signal; the colour is set on the pair. */
+  background: currentColor;
+  transform-origin: left;
 }
 
 .timer__value {
@@ -574,11 +620,8 @@ button[disabled] {
   color: var(--accent);
 }
 
-/* The box is the ring while it is drawn, so nothing under the clock is
-   reached by it and the number sits in the middle of it. */
 .timer--inspecting .timer__clock {
-  min-width: var(--ring-size);
-  min-height: var(--ring-size);
+  gap: var(--space-4);
 }
 
 /* Solves */
@@ -596,7 +639,7 @@ button[disabled] {
 }
 
 .solves-panel__title {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-2);
   font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
