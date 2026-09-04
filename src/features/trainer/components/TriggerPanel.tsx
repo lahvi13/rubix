@@ -4,6 +4,7 @@ import { parseAlg } from '../../../domain/cube/notation';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { useTriggers } from '../hooks/use-triggers';
+import { triggerStyle } from './trigger-colour';
 
 /**
  * The triggers highlighting works from. Built-in ones can be switched off or
@@ -51,7 +52,7 @@ export function TriggerPanel() {
                 }}
                 aria-label={strings.trainer.triggerName}
                 // Shown in its own colour, so the palette below needs no legend.
-                style={{ color: trigger.colour ?? TRIGGER_COLOURS[0] }}
+                style={triggerStyle(trigger.colour ?? TRIGGER_COLOURS[0])}
               />
               <button
                 type="button"

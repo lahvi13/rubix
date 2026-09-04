@@ -50,7 +50,11 @@ export const ScramblePanel = memo(function ScramblePanel({
         </button>
       ) : (
         <>
-          <p className="scramble__text">{scramble ?? strings.scramble.loading}</p>
+          {scramble === null ? (
+            <p className="scramble__text">{strings.scramble.loading}</p>
+          ) : (
+            <ScrambleMoves scramble={scramble} />
+          )}
           {scramble === null || !isPreviewShown ? null : mode === '3D' ? (
             <SpatialPreview scramble={scramble} />
           ) : isWatching ? (
@@ -80,6 +84,22 @@ export const ScramblePanel = memo(function ScramblePanel({
     </div>
   );
 });
+
+/**
+ * The scramble, one move per column. Turns are read a few at a time with a
+ * cube already in hand, and a wall of proportional text loses the reader's
+ * place; a grid keeps every move under the one above it. The space inside each
+ * cell is there so that copying the scramble still gives back a scramble.
+ */
+function ScrambleMoves({ scramble }: { scramble: string }) {
+  return (
+    <p className="scramble__text scramble__moves">
+      {scramble.split(' ').map((move, index) => (
+        <span key={index + move}>{move + ' '}</span>
+      ))}
+    </p>
+  );
+}
 
 function stateAfter(scramble: string) {
   const parsed = parseAlg(scramble);

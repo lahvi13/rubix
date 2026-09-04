@@ -7,9 +7,22 @@ import { TimerScreen } from './TimerScreen';
 // The real client spins up a module worker, which jsdom cannot run, and
 // cubing/twisty is a custom element that needs a real browser.
 vi.mock('../../../lib/scramble-client', () => ({
-  requestScramble: () => Promise.resolve("R U R' U' F2"),
+  requestScramble: () => Promise.resolve(SCRAMBLE),
 }));
 vi.mock('cubing/twisty', () => ({}));
+
+const SCRAMBLE = "R U R' U' F2";
+
+/**
+ * The scramble is laid out one move per cell, so no single node holds the whole
+ * of it; the paragraph around them does.
+ */
+function findScramble(): Promise<HTMLElement> {
+  return screen.findByText(
+    (_, element) =>
+      element?.tagName === 'P' && element.textContent?.replace(/s+/g, ' ').trim() === SCRAMBLE,
+  );
+}
 
 /** The phase toggle needs a method to take its phases from. */
 async function seedCfop(): Promise<void> {
@@ -36,7 +49,7 @@ describe('TimerScreen', () => {
   it('shows a scramble, a zeroed timer and an empty session', async () => {
     render(<TimerScreen />);
 
-    expect(await screen.findByText("R U R' U' F2")).toBeInTheDocument();
+    expect(await findScramble()).toBeInTheDocument();
     expect(screen.getByText('0.00')).toBeInTheDocument();
     expect(screen.getByText(/no solves yet/i)).toBeInTheDocument();
   });
@@ -44,7 +57,7 @@ describe('TimerScreen', () => {
   it('still reacts to the space bar when a button holds focus', async () => {
     const user = userEvent.setup();
     render(<TimerScreen />);
-    await screen.findByText("R U R' U' F2");
+    await findScramble();
 
     // Tapping the nav or any control leaves focus on a button; the timer must
     // not go deaf because of it.
@@ -62,7 +75,7 @@ describe('TimerScreen', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
 
     render(<TimerScreen />);
-    await screen.findByText("R U R' U' F2");
+    await findScramble();
 
     // Tap to start inspection.
     await user.keyboard('[Space>]');
@@ -92,7 +105,7 @@ describe('TimerScreen', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
 
     render(<TimerScreen />);
-    await screen.findByText("R U R' U' F2");
+    await findScramble();
 
     await user.keyboard('[Space>]');
     clock += 50;
@@ -118,7 +131,7 @@ describe('TimerScreen', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
 
     render(<TimerScreen />);
-    await screen.findByText("R U R' U' F2");
+    await findScramble();
 
     await user.keyboard('[Space>]');
     clock += 50;
@@ -132,12 +145,12 @@ describe('TimerScreen', () => {
     await user.keyboard('[/Space]');
 
     const next = await screen.findByRole('button', { name: 'Next scramble' });
-    expect(screen.getByText("R U R' U' F2").closest('.scramble')).toHaveClass(
+    expect((await findScramble()).closest('.scramble')).toHaveClass(
       'scramble--hidden',
     );
 
     await user.click(next);
-    expect(screen.getByText("R U R' U' F2").closest('.scramble')).not.toHaveClass(
+    expect((await findScramble()).closest('.scramble')).not.toHaveClass(
       'scramble--hidden',
     );
     expect(screen.queryByRole('button', { name: 'Next scramble' })).not.toBeInTheDocument();
@@ -150,7 +163,7 @@ describe('TimerScreen', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
 
     render(<TimerScreen />);
-    await screen.findByText("R U R' U' F2");
+    await findScramble();
     const phaseToggle = await screen.findByRole('checkbox', { name: 'Phases' });
     // The toggle stays disabled until the method's phases have been read.
     await waitFor(() => expect(phaseToggle).toBeEnabled());
@@ -193,7 +206,7 @@ describe('TimerScreen', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
 
     render(<TimerScreen />);
-    await screen.findByText("R U R' U' F2");
+    await findScramble();
     const phaseToggle = await screen.findByRole('checkbox', { name: 'Phases' });
     // The toggle stays disabled until the method's phases have been read.
     await waitFor(() => expect(phaseToggle).toBeEnabled());
@@ -233,7 +246,7 @@ describe('TimerScreen', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
 
     render(<TimerScreen />);
-    await screen.findByText("R U R' U' F2");
+    await findScramble();
     const phaseToggle = await screen.findByRole('checkbox', { name: 'Phases' });
     await waitFor(() => expect(phaseToggle).toBeEnabled());
     await user.click(phaseToggle);
