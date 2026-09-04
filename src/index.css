@@ -725,11 +725,15 @@ button[disabled] {
   gap: var(--space-2);
 }
 
-@media (max-width: 26rem) {
-  .solves__actions {
-    grid-column: 1 / -1;
-    justify-content: flex-end;
-  }
+/*
+ * Smaller than a button standing on its own: three of these share a row with
+ * the time they belong to, and at the largest text size they were wrapping to
+ * a line of their own.
+ */
+.solves__actions button {
+  min-height: 2.25rem;
+  padding-inline: var(--space-4);
+  font-size: var(--text-sm);
 }
 
 .solves__actions button.is-active {

@@ -199,7 +199,7 @@ export function TimerScreen() {
             onClick={() => setBrowsing((open) => !open)}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d={showBrowsing ? 'M7 14l5-5 5 5' : 'M7 10l5 5 5-5'} />
+              <path d={showBrowsing ? 'M7 10l5 5 5-5' : 'M7 14l5-5 5 5'} />
             </svg>
           </button>
           <span className="solves-panel__toggles">
