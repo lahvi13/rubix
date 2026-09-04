@@ -450,11 +450,20 @@ button[disabled] {
  * one for the other used to resize the screen under the reader's thumb.
  */
 .scramble__stage {
+  /*
+   * The box both cubes are drawn in, as two lengths rather than percentages of
+   * it: a percentage height inside here resolves against the picture, not the
+   * box, and the square cube came out taller than its box and lost its bottom
+   * corner to the clipping.
+   */
+  --stage-width: min(260px, 70vw);
+  --stage-height: min(220px, 60vw);
+
   position: relative;
   display: grid;
   place-items: center;
-  width: min(260px, 70vw);
-  height: min(220px, 60vw);
+  width: var(--stage-width);
+  height: var(--stage-height);
   padding: 0;
   border: none;
   background: none;
@@ -471,8 +480,8 @@ button[disabled] {
 .scramble__player {
   /* Enough to make up for the player's own margin without the cube growing
      into the edges of the box, which clips it. */
-  width: 135%;
-  height: 135%;
+  width: calc(var(--stage-width) * 1.35);
+  height: calc(var(--stage-height) * 1.35);
 }
 
 /*
@@ -504,25 +513,23 @@ button[disabled] {
 /* A short phone has no room for a big cube and a list of solves both. */
 @media (max-height: 900px) {
   .scramble__stage {
-    width: min(210px, 58vw);
-    height: min(170px, 47vw);
+    --stage-width: min(210px, 58vw);
+    --stage-height: min(170px, 47vw);
   }
 }
 
-/* The flat preview is an unfolded cube: four faces across, three down. */
+/*
+ * The flat preview is an unfolded cube: four faces across, three down. The
+ * cube seen from a corner is square. Both are sized by the box they share
+ * rather than by a width of their own: 'height: 100%' on a centred grid item
+ * resolves to the picture's own height, not the box's, and the square one came
+ * out taller than the box and had its bottom clipped off.
+ */
 .scramble__preview {
   width: auto;
   height: auto;
-  /* Never larger than the box it shares with the animated cube — it used to
-     spill out of it and over the control below. */
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.scramble__preview--3d {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  max-width: var(--stage-width);
+  max-height: var(--stage-height);
 }
 
 /* Timer */

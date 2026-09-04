@@ -102,6 +102,8 @@ export function TimerScreen() {
     [changePenalty],
   );
   const handleDelete = useCallback((id: string) => void remove(id), [remove]);
+  // Stable, or the memo on SolveList is defeated.
+  const handleListScrolled = useCallback(() => setBrowsing(true), []);
 
   return (
     <main
@@ -224,6 +226,7 @@ export function TimerScreen() {
         <SolveList
           solves={solves}
           phases={methodPhases}
+          onScrolled={handleListScrolled}
           onChangePenalty={handleChangePenalty}
           onDelete={handleDelete}
         />

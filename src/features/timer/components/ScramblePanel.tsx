@@ -52,9 +52,7 @@ export const ScramblePanel = memo(function ScramblePanel({
   const picture =
     scramble === null ? null : (
       <CubeDiagram
-        className={
-          mode === '3D' ? 'scramble__preview scramble__preview--3d' : 'scramble__preview'
-        }
+        className="scramble__preview"
         state={stateAfter(scramble)}
         view={mode === '3D' ? 'isometric' : 'net'}
         // A scramble is defined from white on top and green in front; the

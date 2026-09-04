@@ -9,6 +9,16 @@ import { strings } from '../../../lib/strings';
 
 interface SolveListProps {
   solves: Solve[];
+  /**
+   * Told when the list has been scrolled off its top, so the screen can hand
+   * it more room. Reading further is the reason anyone scrolls a list of four
+   * rows, and it should not have to be asked for twice.
+   *
+   * Only ever true: growing the list can leave its contents fitting, and a
+   * scroll position that falls back to zero on its own would put the list
+   * straight back where it was.
+   */
+  onScrolled: () => void;
   /** The session's method, so a timed solve can show the shape of its phases. */
   phases: readonly MethodPhase[];
   onChangePenalty: (id: string, penalty: Penalty) => void;
@@ -24,6 +34,7 @@ interface SolveListProps {
 export const SolveList = memo(function SolveList({
   solves,
   phases,
+  onScrolled,
   onChangePenalty,
   onDelete,
 }: SolveListProps) {
@@ -35,7 +46,12 @@ export const SolveList = memo(function SolveList({
   const at = now();
 
   return (
-    <ol className="solves">
+    <ol
+      className="solves"
+      onScroll={(event) => {
+        if (event.currentTarget.scrollTop > 8) onScrolled();
+      }}
+    >
       {solves.map((solve, index) => (
         <li key={solve.id} className="solves__row">
           <span className="solves__index">{solves.length - index}.</span>
