@@ -214,6 +214,71 @@ body {
   user-select: none;
 }
 
+/*
+ * Buttons.
+ *
+ * One shape for every one of them: a quiet outline, a muted label, a thumb's
+ * worth of height. A component says how a button is laid out — never what it
+ * looks like — and a state says what it means: the choice that is on, the
+ * action a panel is for, the one there is no undo for.
+ *
+ * Anything that is a tapped surface rather than a button (a case card, the
+ * scrim behind the menu, a colour swatch) paints itself over this.
+ */
+button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-md);
+  padding: var(--space-3) var(--space-5);
+  /* The phone is the main device and a finger is not a pointer. */
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+/* The button a panel is there for reads at full strength, not as an aside.
+   Wrapped in :where() so that a state — active, primary, dangerous — still
+   wins over it without having to be written more specifically. */
+:where(.update-prompt, .session-form, .drill__picker-actions, .case-detail__controls, .data-section)
+  button {
+  color: var(--text);
+}
+
+/* The choice that is on, and the action its panel exists for. */
+button.is-active,
+button.is-primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+button.is-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+button[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Hover is a desktop idea; on a phone it fires on tap and then sticks. */
+@media (hover: hover) {
+  button:hover:not([disabled]) {
+    color: var(--text);
+  }
+}
+
+/*
+ * One focus ring for everything that takes focus. The browser's own is drawn
+ * for a white page and disappears on a dark one.
+ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .app {
   display: flex;
   flex-direction: column;
@@ -312,12 +377,8 @@ body {
 }
 
 .scramble__error {
-  background: none;
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-md);
+  border-color: var(--danger);
   color: var(--danger);
-  padding: var(--space-4) var(--space-6);
-  cursor: pointer;
 }
 
 /* The flat preview is an unfolded cube: four faces across, three down. */
@@ -329,16 +390,6 @@ body {
 .scramble__preview--3d {
   width: min(220px, 60vw);
   height: min(220px, 60vw);
-}
-
-.scramble__replay {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  padding: var(--space-2) var(--space-5);
-  font-size: var(--text-xs);
-  cursor: pointer;
 }
 
 /* Timer */
@@ -356,13 +407,9 @@ body {
 }
 
 .result-bar__next {
-  background: none;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-md);
+  border-color: var(--accent);
   color: var(--accent);
-  padding: var(--space-4) var(--space-7);
-  font: inherit;
-  cursor: pointer;
+  padding-inline: var(--space-7);
 }
 
 /* Invisible full-screen surface: while the clock runs, any tap stops it. */
@@ -479,16 +526,6 @@ body {
   gap: var(--space-2);
 }
 
-.solves__actions button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
-  cursor: pointer;
-}
-
 .solves__actions button.is-active {
   border-color: var(--warn);
   color: var(--warn);
@@ -510,15 +547,6 @@ body {
   font-size: var(--text-lg);
 }
 
-.update-prompt button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  padding: var(--space-2) var(--space-5);
-  cursor: pointer;
-}
-
 /* Navigation */
 
 .app__header {
@@ -529,14 +557,8 @@ body {
 }
 
 .app__menu-toggle {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
   color: var(--text);
-  font-size: var(--text-xl);
   line-height: 1;
-  padding: var(--space-3) var(--space-4);
-  cursor: pointer;
 }
 
 /* Covers everything below the header so any tap outside closes the menu. */
@@ -566,14 +588,10 @@ body {
 }
 
 .app__menu button {
-  background: none;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  color: var(--muted);
+  border-color: transparent;
   font-size: var(--text-lg);
   padding: var(--space-4) var(--space-5);
   text-align: start;
-  cursor: pointer;
 }
 
 .app__menu button.is-active {
@@ -597,16 +615,12 @@ body {
 }
 
 .filters button {
-  background: none;
-  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  color: var(--muted);
-  padding: var(--space-2) var(--space-5);
-  font-size: var(--text-sm);
-  cursor: pointer;
 }
 
+/* A filter is on or off, not right or wrong; it fills instead of colouring. */
 .filters button.is-active {
+  border-color: var(--border);
   color: var(--text);
   background: var(--surface);
 }
@@ -674,15 +688,11 @@ body {
   border-radius: 50%;
 }
 
+/* Dashed, because it is the edge of the list rather than an action on it. */
 .load-more {
   margin-top: var(--space-5);
   width: 100%;
-  background: none;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
-  color: var(--muted);
-  padding: var(--space-4);
-  cursor: pointer;
+  border-style: dashed;
 }
 
 /* Solve detail */
@@ -720,11 +730,9 @@ body {
 }
 
 .detail__header button {
-  background: none;
   border: none;
-  color: var(--muted);
+  padding: 0;
   font-size: var(--text-2xl);
-  cursor: pointer;
 }
 
 .detail__result {
@@ -771,16 +779,6 @@ body {
 .detail__error {
   color: var(--danger);
   font-size: var(--text-xs);
-}
-
-.detail__row--buttons button,
-.detail__tag-add button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  padding: var(--space-3) var(--space-5);
-  cursor: pointer;
 }
 
 .detail__row--buttons button.is-active {
@@ -832,16 +830,6 @@ body {
   color: var(--muted);
 }
 
-button.is-danger {
-  background: none;
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-sm);
-  color: var(--danger);
-  padding: var(--space-2) var(--space-5);
-  font-size: var(--text-sm);
-  cursor: pointer;
-}
-
 /* Sessions */
 
 .session-form {
@@ -852,15 +840,6 @@ button.is-danger {
 
 .session-form input {
   flex: 1;
-}
-
-.session-form button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  padding: var(--space-4) var(--space-6);
-  cursor: pointer;
 }
 
 .sessions {
@@ -924,16 +903,6 @@ button.is-danger {
   gap: var(--space-2);
 }
 
-.session__actions button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
-  cursor: pointer;
-}
-
 .toggle {
   display: flex;
   align-items: center;
@@ -950,11 +919,6 @@ button.is-danger {
   font: inherit;
   padding: 0;
   cursor: pointer;
-}
-
-.session__actions button.is-primary {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 /* Stats */
@@ -1078,21 +1042,6 @@ button.is-danger {
   flex: 1;
 }
 
-.trainer__sets button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--muted);
-  padding: var(--space-3) var(--space-5);
-  font-size: var(--text-md);
-  cursor: pointer;
-}
-
-.trainer__sets button.is-active {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
 .trainer__looks {
   display: flex;
   gap: var(--space-2);
@@ -1101,13 +1050,10 @@ button.is-danger {
   width: 100%;
 }
 
+/* Two halves of one switch, so they are joined rather than spaced. */
 .trainer__looks button {
   background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  padding: var(--space-2) var(--space-5);
-  font-size: var(--text-sm);
-  cursor: pointer;
+  border-radius: 0;
 }
 
 .trainer__looks button:first-child {
@@ -1119,7 +1065,6 @@ button.is-danger {
 }
 
 .trainer__looks button.is-active {
-  border-color: var(--accent);
   color: var(--text);
 }
 
@@ -1218,18 +1163,6 @@ button.is-danger {
   width: 100%;
 }
 
-.drill__pool-toggle {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--muted);
-  padding: var(--space-3) var(--space-5);
-  font: inherit;
-  font-size: var(--text-md);
-  min-height: 2.5rem;
-  cursor: pointer;
-}
-
 .drill__picker {
   margin-top: var(--space-4);
   padding: var(--space-5);
@@ -1242,18 +1175,6 @@ button.is-danger {
   display: flex;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
-}
-
-.drill__picker-actions button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  padding: var(--space-3) var(--space-6);
-  font: inherit;
-  font-size: var(--text-md);
-  min-height: 2.5rem;
-  cursor: pointer;
 }
 
 .drill__chips {
@@ -1345,6 +1266,8 @@ button.is-danger {
 .drill__front {
   width: 2.4rem;
   height: 2.4rem;
+  /* Its size is its own; the family's thumb-height floor would stretch it. */
+  min-height: 0;
   border: 2px solid transparent;
   border-radius: var(--radius-md);
   padding: 0;
@@ -1374,26 +1297,14 @@ button.is-danger {
 .drill__picker-done {
   width: 100%;
   margin-top: var(--space-4);
-  background: none;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-md);
+  border-color: var(--accent);
   color: var(--accent);
-  padding: var(--space-4) var(--space-6);
-  font: inherit;
-  font-size: var(--text-md);
   min-height: 2.75rem;
-  cursor: pointer;
 }
 
 .drill__give-up {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--muted);
-  padding: var(--space-4) var(--space-7);
-  font: inherit;
+  padding-inline: var(--space-7);
   min-height: 2.75rem;
-  cursor: pointer;
 }
 
 /* What a set has cost so far, and where to start next */
@@ -1430,14 +1341,7 @@ button.is-danger {
   align-items: baseline;
   gap: var(--space-3);
   background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
   color: var(--text);
-  padding: var(--space-3) var(--space-5);
-  font: inherit;
-  font-size: var(--text-md);
-  min-height: 2.5rem;
-  cursor: pointer;
 }
 
 .set-summary__chip span {
@@ -1475,15 +1379,7 @@ button.is-danger {
 
 .attempts__wipe {
   align-self: flex-start;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--muted);
-  padding: var(--space-3) var(--space-5);
-  font: inherit;
   font-size: var(--text-sm);
-  min-height: 2.5rem;
-  cursor: pointer;
 }
 
 .attempts__wipe.is-armed {
@@ -1525,26 +1421,6 @@ button.is-danger {
   display: flex;
   justify-content: center;
   gap: var(--space-3);
-}
-
-.case-detail__controls button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  padding: var(--space-3) var(--space-5);
-  font-size: var(--text-md);
-  cursor: pointer;
-}
-
-.case-detail__controls button.is-primary {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.case-detail__controls button.is-active {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 .case-detail__section {
@@ -1642,14 +1518,11 @@ button.is-danger {
   color: var(--muted);
 }
 
+/* One per variant, in a list of them: the quietest button in the app. */
 .variants__item button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
+  min-height: 0;
   padding: var(--space-1) var(--space-4);
   font-size: var(--text-2xs);
-  cursor: pointer;
 }
 
 .variants__add {
@@ -1766,13 +1639,7 @@ button.is-danger {
 
 .trigger__delete,
 .triggers__add button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
   padding: var(--space-4) var(--space-6);
-  font-size: var(--text-md);
-  cursor: pointer;
   flex: 0 0 auto;
 }
 
@@ -1785,6 +1652,7 @@ button.is-danger {
 .trigger__colour {
   width: 1.9rem;
   height: 1.9rem;
+  min-height: 0;
   padding: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
@@ -1863,6 +1731,12 @@ button.is-danger {
   pointer-events: none;
 }
 
+/* The radio is hidden inside the card, so the card wears the focus ring. */
+.skin:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .skin__preview {
   width: 100%;
   height: auto;
@@ -1881,21 +1755,6 @@ button.is-danger {
 .settings-row__choices {
   display: flex;
   gap: var(--space-2);
-}
-
-.settings-row__choices button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  padding: var(--space-2) var(--space-5);
-  font-size: var(--text-sm);
-  cursor: pointer;
-}
-
-.settings-row__choices button.is-active {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 /* Notice — an action said it happened */
@@ -1929,12 +1788,6 @@ button.is-danger {
 
 .notice button {
   flex: none;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  padding: var(--space-2) var(--space-4);
-  cursor: pointer;
 }
 
 /* Data — export, import, wipe */
@@ -1985,33 +1838,9 @@ button.is-danger {
   color: var(--danger);
 }
 
-.data-section button[disabled] {
-  opacity: 0.5;
-  cursor: default;
-}
-
 .data-section__row {
   display: flex;
   gap: var(--space-3);
-}
-
-.data-section button {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  padding: var(--space-4) var(--space-6);
-  cursor: pointer;
-}
-
-.data-section button.is-primary {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.data-section button.is-danger {
-  font-size: inherit;
-  padding: var(--space-4) var(--space-6);
 }
 
 .data-section input[type='file'] {
@@ -2125,13 +1954,9 @@ button.is-danger {
 }
 
 .crash__reload {
-  background: none;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-md);
+  border-color: var(--accent);
   color: var(--accent);
-  padding: var(--space-4) var(--space-7);
-  font: inherit;
-  cursor: pointer;
+  padding-inline: var(--space-7);
 }
 
 .error-banner {
@@ -2152,12 +1977,8 @@ button.is-danger {
 }
 
 .error-banner button {
-  background: none;
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-sm);
+  border-color: var(--danger);
   color: var(--danger);
-  padding: var(--space-2) var(--space-4);
-  cursor: pointer;
 }
 
 /* Tap targets
@@ -2175,21 +1996,6 @@ button.is-danger {
   align-items: center;
   justify-content: center;
   font-size: var(--text-2xl);
-}
-
-.filters button,
-.scramble__replay,
-.session__actions button,
-.trainer__sets button,
-.trainer__looks button,
-.settings-row__choices button,
-.case-detail__controls button,
-.solves__actions button,
-.data-section button,
-.import-preview__actions button {
-  min-height: 2.5rem;
-  padding-inline: var(--space-6);
-  font-size: var(--text-md);
 }
 
 /* A field under 16px makes the phone zoom the page when it is focused, which
@@ -2443,13 +2249,7 @@ input[type='radio'] {
 
 .detail .splits__clear {
   align-self: flex-start;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  padding: var(--space-4) var(--space-5);
   min-height: 2.75rem;
-  font-size: var(--text-md);
 }
 
 .detail__hint {

@@ -183,3 +183,9 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   a téma se přepíná přes `light-dark()`; pravidlo si nikdy nepíše vlastní hex ani
   vlastní `rem`. Co CSS nedosáhne (diagramy kostky jsou `<img>`), dostane téma
   přes `useResolvedTheme()`.
+- **tlačítka se nepřekreslují.** Vzhled je jeden (`button` v `index.css`): tichý
+  obrys, ztlumený popisek, výška pro palec. Komponenta smí říct rozložení nebo
+  velikost, ne vzhled; význam říká stav — `is-active` (zvolená volba),
+  `is-primary` (akce, pro kterou panel je), `is-danger` (bez návratu). Co je
+  plocha na ťuknutí, ne tlačítko (karta případu, scrim, barevný terčík), se
+  přes rodinu přemaluje samo a musí si pohlídat i `min-height`.
