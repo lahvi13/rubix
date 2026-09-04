@@ -60,16 +60,21 @@ export const ScramblePanel = memo(function ScramblePanel({
           ) : (
             <ScrambleMoves scramble={scramble} playingMove={playingMove} />
           )}
-          {scramble === null || !isPreviewShown ? null : mode === '3D' ? (
-            <SpatialPreview scramble={scramble} onMove={setPlayingMove} />
-          ) : isWatching ? (
-            <SpatialPreview scramble={scramble} onMove={setPlayingMove} onDone={() => setWatched(null)} />
+          {scramble === null || !isPreviewShown ? null : isWatching ? (
+            <SpatialPreview
+              scramble={scramble}
+              onMove={setPlayingMove}
+              onDone={() => setWatched(null)}
+            />
           ) : (
             <>
+              {/* Drawn here in the reader's own colours, flat or from a corner.
+                  The animated cube paints its own, so it is only fetched when
+                  someone actually asks to watch the scramble. */}
               <CubeDiagram
-                className="scramble__preview"
+                className={mode === '3D' ? 'scramble__preview scramble__preview--3d' : 'scramble__preview'}
                 state={stateAfter(scramble)}
-                view="net"
+                view={mode === '3D' ? 'isometric' : 'net'}
                 // A scramble is defined from white on top and green in front;
                 // the trainer's yellow-top view would be a different cube.
                 skin={withWhiteTop(skin)}
@@ -120,15 +125,13 @@ function stateAfter(scramble: string) {
 }
 
 /**
- * The cube in 3D. It has two jobs, and they differ only in where the animation
- * starts: as the preview it shows the scrambled cube and offers to replay the
- * scramble, and as the answer to "watch it" it plays straight away and hands
- * the flat picture back afterwards.
+ * The scramble being performed, on a cube that turns. It plays as soon as it
+ * is here — this is the answer to "watch it" — and hands the still picture
+ * back when it is done.
  *
- * These are cubing.js's colours either way — the player cannot be given a
- * skin — which is why the flat mode never falls back to it on its own.
- *
- * cubing/twisty is a heavy chunk; it loads after the first paint.
+ * These are cubing.js's colours, not the reader's: the player cannot be given
+ * a skin. That is the whole reason the still picture is drawn by us and this
+ * only appears once someone asks for it, along with the weight of the chunk.
  */
 function SpatialPreview({
   scramble,
@@ -137,11 +140,10 @@ function SpatialPreview({
 }: {
   scramble: string;
   onMove: (index: number | null) => void;
-  onDone?: () => void;
+  onDone: () => void;
 }) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
-  const isWatching = onDone !== undefined;
 
   usePlayingMove(player, isReady, onMove);
 
@@ -159,18 +161,9 @@ function SpatialPreview({
     if (!isReady) return;
     const element = player.current;
     if (!element) return;
-    if (!isWatching) {
-      element.jumpToEnd();
-      return;
-    }
     element.jumpToStart();
     element.play();
-  }, [isReady, isWatching, scramble]);
-
-  const replay = (): void => {
-    player.current?.jumpToStart();
-    player.current?.play();
-  };
+  }, [isReady, scramble]);
 
   if (!isReady) return <p className="scramble__loading">{strings.trainer.loadingPlayer}</p>;
 
@@ -187,8 +180,8 @@ function SpatialPreview({
         control-panel="none"
         hint-facelets="none"
       />
-      <button type="button" className="scramble__replay" onClick={onDone ?? replay}>
-        {isWatching ? strings.scramble.showPicture : strings.scramble.replay}
+      <button type="button" className="scramble__replay" onClick={onDone}>
+        {strings.scramble.showPicture}
       </button>
     </>
   );

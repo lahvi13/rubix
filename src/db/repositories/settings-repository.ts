@@ -1,7 +1,7 @@
 import { db } from '../schema';
 import type { Flag } from '../types';
 import { now } from '../../lib/clock';
-import type { Font, Size, Theme } from '../../lib/appearance';
+import type { ClockFace, Font, Size, Theme } from '../../lib/appearance';
 
 /**
  * Key-value settings. Device-local entries (mic calibration, chosen audio
@@ -26,6 +26,8 @@ export interface SettingValues {
    * the reader, not about what they like. */
   'ui.textSize': Size;
   'ui.clockSize': Size;
+  /** Taste, not fit, so it travels with a backup like the cube skin does. */
+  'ui.clockFace': ClockFace;
   'ui.twistyMode': '2D' | '3D';
   'ui.cubeSkin': string;
   /** Which route through the last layer the trainer opens on. */
@@ -62,6 +64,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.font': 'sans',
   'ui.textSize': 'medium',
   'ui.clockSize': 'medium',
+  'ui.clockFace': 'match',
   'ui.twistyMode': '2D',
   'ui.cubeSkin': 'classic',
   'trainer.twoLookDefault': false,

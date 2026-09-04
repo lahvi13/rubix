@@ -1,7 +1,16 @@
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
-import { FONTS, SIZES, THEMES, type Font, type Size, type Theme } from '../../../lib/appearance';
+import {
+  CLOCK_FACES,
+  FONTS,
+  SIZES,
+  THEMES,
+  type ClockFace,
+  type Font,
+  type Size,
+  type Theme,
+} from '../../../lib/appearance';
 import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
 import { useSetting } from '../../../hooks/use-setting';
@@ -28,6 +37,12 @@ const SIZE_LABELS: Record<Size, string> = {
   large: strings.settings.sizeLarge,
 };
 
+const CLOCK_FACE_LABELS: Record<ClockFace, string> = {
+  match: strings.settings.clockFaceMatch,
+  mono: strings.settings.clockFaceMono,
+  digital: strings.settings.clockFaceDigital,
+};
+
 const HOLD_THRESHOLDS = [0, 200, 300, 500] as const;
 
 export function SettingsScreen() {
@@ -35,6 +50,7 @@ export function SettingsScreen() {
   const [font, setFont] = useSetting('ui.font');
   const [textSize, setTextSize] = useSetting('ui.textSize');
   const [clockSize, setClockSize] = useSetting('ui.clockSize');
+  const [clockFace, setClockFace] = useSetting('ui.clockFace');
   const resolved = useResolvedTheme();
   const [skinId, setSkinId] = useSetting('ui.cubeSkin');
   const [twistyMode, setTwistyMode] = useSetting('ui.twistyMode');
@@ -87,6 +103,15 @@ export function SettingsScreen() {
           onChange={setClockSize}
         />
         <p className="data-section__hint">{strings.settings.clockSizeHint}</p>
+
+        <ChoiceRow
+          label={strings.settings.clockFace}
+          options={CLOCK_FACES}
+          labels={CLOCK_FACE_LABELS}
+          value={clockFace}
+          onChange={setClockFace}
+        />
+        <p className="data-section__hint">{strings.settings.clockFaceHint}</p>
 
         <p className="data-section__hint">{strings.settings.skinHint}</p>
 

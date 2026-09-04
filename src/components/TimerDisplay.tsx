@@ -1,7 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { TimerState } from '../domain/timer/timer-machine';
 import { INSPECTION_LIMIT_MS } from '../domain/solve/penalty';
-import { formatInspection, formatMs } from '../lib/format';
+import { formatInspection, formatMsParts } from '../lib/format';
 import { strings } from '../lib/strings';
 
 interface TimerDisplayProps {
@@ -41,10 +41,14 @@ export function TimerDisplay({
       aria-live="off"
       {...touchHandlers}
     >
-      <div className="timer__value">
-        {isInspecting
-          ? formatInspection(inspectionMs, INSPECTION_LIMIT_MS)
-          : formatMs(displayMs ?? 0)}
+      {/* The role is what a clock is, and it is how a test asks what it reads;
+          announcements stay off, or every frame would be read out. */}
+      <div className="timer__value" role="timer">
+        {isInspecting ? (
+          formatInspection(inspectionMs, INSPECTION_LIMIT_MS)
+        ) : (
+          <Time ms={displayMs ?? 0} />
+        )}
       </div>
       {/* The phase name is the whole point of the guided run: without it the
           taps have to be counted in your head. It is the only thing the run
@@ -56,6 +60,20 @@ export function TimerDisplay({
       ) : null}
       <p className="timer__hint">{hintFor(state, armed, finishArmed, phase !== null, inspectionEnabled)}</p>
     </div>
+  );
+}
+
+/**
+ * The seconds are read while the cube is still in hand; the hundredths are
+ * read afterwards, so they are quieter and take less room.
+ */
+function Time({ ms }: { ms: number }) {
+  const { seconds, hundredths } = formatMsParts(ms);
+  return (
+    <>
+      {seconds}
+      <span className="timer__hundredths">.{hundredths}</span>
+    </>
   );
 }
 

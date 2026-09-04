@@ -8,10 +8,12 @@
 export const THEMES = ['system', 'light', 'dark'] as const;
 export const FONTS = ['sans', 'mono', 'system'] as const;
 export const SIZES = ['small', 'medium', 'large'] as const;
+export const CLOCK_FACES = ['match', 'mono', 'digital'] as const;
 
 export type Theme = (typeof THEMES)[number];
 export type Font = (typeof FONTS)[number];
 export type Size = (typeof SIZES)[number];
+export type ClockFace = (typeof CLOCK_FACES)[number];
 
 export type ResolvedTheme = 'light' | 'dark';
 
@@ -22,6 +24,8 @@ export interface Appearance {
   textSize: Size;
   /** The clock alone, which is read from further away than the rest. */
   clockSize: Size;
+  /** What the clock is set in: the app's face, monospace, or seven segments. */
+  clockFace: ClockFace;
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
@@ -29,6 +33,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   font: 'sans',
   textSize: 'medium',
   clockSize: 'medium',
+  clockFace: 'match',
 };
 
 /** Must match --bg in index.css: this is the same surface, painted by the browser. */
@@ -53,6 +58,10 @@ export function isSize(value: unknown): value is Size {
   return SIZES.includes(value as Size);
 }
 
+export function isClockFace(value: unknown): value is ClockFace {
+  return CLOCK_FACES.includes(value as ClockFace);
+}
+
 export function resolveTheme(theme: Theme, prefersDark: boolean): ResolvedTheme {
   if (theme === 'system') return prefersDark ? 'dark' : 'light';
   return theme;
@@ -73,7 +82,7 @@ export function watchSystemTheme(onChange: (prefersDark: boolean) => void): () =
 export function applyAppearance(appearance: Appearance): void {
   // A value written by a newer version can be anything, and it would end up on
   // the document either way; the defaults are the only shape we know.
-  const { theme, font, textSize, clockSize } = sanitised(appearance);
+  const { theme, font, textSize, clockSize, clockFace } = sanitised(appearance);
   const root = document.documentElement;
 
   // The default of each is what the stylesheet already says, and leaving the
@@ -82,6 +91,7 @@ export function applyAppearance(appearance: Appearance): void {
   set(root, 'font', font, 'sans');
   set(root, 'textSize', textSize, 'medium');
   set(root, 'clockSize', clockSize, 'medium');
+  set(root, 'clockFace', clockFace, 'match');
 
   const meta = document.querySelector('meta[name="theme-color"]');
   meta?.setAttribute('content', CHROME_COLOUR[resolveTheme(theme, prefersDark())]);
@@ -123,5 +133,6 @@ function sanitised(value: unknown): Appearance {
     font: isFont(stored.font) ? stored.font : DEFAULT_APPEARANCE.font,
     textSize: isSize(stored.textSize) ? stored.textSize : DEFAULT_APPEARANCE.textSize,
     clockSize: isSize(stored.clockSize) ? stored.clockSize : DEFAULT_APPEARANCE.clockSize,
+    clockFace: isClockFace(stored.clockFace) ? stored.clockFace : DEFAULT_APPEARANCE.clockFace,
   };
 }

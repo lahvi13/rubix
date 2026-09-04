@@ -201,7 +201,7 @@ describe('DrillScreen', () => {
     // The answer belonged to that attempt, and so did the time on the clock.
     expect(screen.queryByRole('heading', { name: 'T' })).not.toBeInTheDocument();
     expect(screen.queryByText('3.21')).not.toBeInTheDocument();
-    expect(screen.getByText('0.00')).toBeInTheDocument();
+    expect(screen.getByRole('timer')).toHaveTextContent('0.00');
   });
 
   it('does not carry the answer over to another set', async () => {
@@ -218,7 +218,7 @@ describe('DrillScreen', () => {
       expect(screen.queryByRole('heading', { name: 'T' })).not.toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: 'Show me' })).toBeInTheDocument();
-    expect(screen.getByText('0.00')).toBeInTheDocument();
+    expect(screen.getByRole('timer')).toHaveTextContent('0.00');
   });
 
   it('closes the case picker without scrolling back to the top', async () => {

@@ -50,7 +50,7 @@ describe('TimerScreen', () => {
     render(<TimerScreen />);
 
     expect(await findScramble()).toBeInTheDocument();
-    expect(screen.getByText('0.00')).toBeInTheDocument();
+    expect(screen.getByRole('timer')).toHaveTextContent('0.00');
     expect(screen.getByText(/no solves yet/i)).toBeInTheDocument();
   });
 

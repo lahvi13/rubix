@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatInspection, formatIsoDate, formatMs, formatTime } from './format';
+import { formatInspection, formatIsoDate, formatMs, formatMsParts, formatTime } from './format';
 
 describe('formatMs', () => {
   it.each<[number, string]>([
@@ -42,5 +42,16 @@ describe('formatInspection', () => {
   it('shows the penalty once the limit is gone', () => {
     expect(formatInspection(15_000, 15_000)).toBe('+2');
     expect(formatInspection(16_000, 15_000)).toBe('+2');
+  });
+});
+
+describe('formatMsParts', () => {
+  it.each([
+    [0, '0', '00'],
+    [1234, '1', '23'],
+    [12999, '12', '99'],
+    [61050, '1:01', '05'],
+  ])('splits %i into %s and %s', (ms, seconds, hundredths) => {
+    expect(formatMsParts(ms)).toEqual({ seconds, hundredths });
   });
 });

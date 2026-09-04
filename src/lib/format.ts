@@ -18,6 +18,15 @@ export function formatMs(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}.${fraction}`;
 }
 
+/**
+ * The same time, split where the eye splits it: the seconds are what is read
+ * at a glance and the hundredths are what is noted afterwards.
+ */
+export function formatMsParts(ms: number): { seconds: string; hundredths: string } {
+  const [seconds = '0', hundredths = '00'] = formatMs(ms).split('.');
+  return { seconds, hundredths };
+}
+
 /** null means DNF everywhere in the app. */
 export function formatTime(ms: number | null): string {
   return ms === null ? 'DNF' : formatMs(ms);

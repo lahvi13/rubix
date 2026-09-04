@@ -35,6 +35,14 @@
 }
 
 @font-face {
+  font-family: 'DSEG7 Classic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/dseg7-classic.woff2') format('woff2');
+}
+
+@font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
@@ -143,6 +151,8 @@
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
   --font-ui: var(--font-sans);
+  /* The clock has a face of its own, the way a stopwatch does. */
+  --font-clock: var(--font-ui);
 
   font-family: var(--font-ui);
   background: var(--bg);
@@ -190,6 +200,20 @@
 
 :root[data-text-size='large'] {
   font-size: 112.5%;
+}
+
+:root[data-clock-face='mono'] {
+  --font-clock: var(--font-mono);
+}
+
+/*
+ * Seven segments, as on a stopwatch. The face is much wider than a proportional
+ * one, so the same clock size has to be worth fewer pixels here or a minute-long
+ * solve runs off a phone.
+ */
+:root[data-clock-face='digital'] {
+  --font-clock: 'DSEG7 Classic', var(--font-mono);
+  --clock-scale: 0.72;
 }
 
 /* The clock is set apart from the rest: it is read with a cube in both hands. */
@@ -343,7 +367,9 @@ button[disabled] {
   margin: 0;
   max-width: 40ch;
   text-align: center;
-  font-size: clamp(1rem, 3.5vw, 1.4rem);
+  /* The scramble is read at arm's length with a cube in both hands. */
+  font-size: clamp(1.15rem, 4.4vw, 1.6rem);
+  font-weight: 600;
   font-family: var(--font-mono);
   line-height: 1.5;
   user-select: text;
@@ -439,10 +465,19 @@ button[disabled] {
 }
 
 .timer__value {
-  font-size: var(--clock-size);
-  font-weight: 300;
+  font-family: var(--font-clock);
+  font-size: calc(var(--clock-size) * var(--clock-scale, 1));
+  font-weight: 500;
   line-height: 1;
   letter-spacing: -0.02em;
+}
+
+/* Quieter and smaller, but the same colour: the clock goes green when it is
+   armed and red while it is held, and the hundredths belong to it. */
+.timer__hundredths {
+  font-size: 0.62em;
+  font-weight: 600;
+  opacity: 0.55;
 }
 
 .timer__hint {
