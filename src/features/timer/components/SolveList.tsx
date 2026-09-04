@@ -19,6 +19,8 @@ interface SolveListProps {
    * straight back where it was.
    */
   onScrolled: () => void;
+  /** A solve in the list is a way into it, the same as one in the history. */
+  onOpen: (id: string) => void;
   /** The session's method, so a timed solve can show the shape of its phases. */
   phases: readonly MethodPhase[];
   onChangePenalty: (id: string, penalty: Penalty) => void;
@@ -35,6 +37,7 @@ export const SolveList = memo(function SolveList({
   solves,
   phases,
   onScrolled,
+  onOpen,
   onChangePenalty,
   onDelete,
 }: SolveListProps) {
@@ -54,13 +57,15 @@ export const SolveList = memo(function SolveList({
     >
       {solves.map((solve, index) => (
         <li key={solve.id} className="solves__row">
-          <span className="solves__index">{solves.length - index}.</span>
-          <span className="solves__time">{formatTime(finalMs(solve))}</span>
-          <span className="solves__meta">
-            {solve.penalty !== 'none' && solve.penaltySource === 'auto'
-              ? strings.solve.autoPenalty
-              : formatWhen(solve.createdAt, at)}
-          </span>
+          <button type="button" className="solves__open" onClick={() => onOpen(solve.id)}>
+            <span className="solves__index">{solves.length - index}.</span>
+            <span className="solves__time">{formatTime(finalMs(solve))}</span>
+            <span className="solves__meta">
+              {solve.penalty !== 'none' && solve.penaltySource === 'auto'
+                ? strings.solve.autoPenalty
+                : formatWhen(solve.createdAt, at)}
+            </span>
+          </button>
           {index === 0 ? (
             <span className="solves__actions">
               <button

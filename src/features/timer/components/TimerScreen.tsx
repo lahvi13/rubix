@@ -5,6 +5,7 @@ import { now } from '../../../lib/clock';
 import { strings } from '../../../lib/strings';
 import { navigate } from '../../../app/router';
 import { reportError } from '../../../lib/errors';
+import { SolveDetailSheet } from '../../history';
 import { useActiveSession } from '../../sessions';
 import { PhaseBar, PhaseRun, usePhases } from '../../splits';
 import { MiniStats } from '../../stats';
@@ -85,6 +86,8 @@ export function TimerScreen() {
   // The list, pulled up over the cube to be read. Any touch of the timer ends
   // it, so there is no way to be browsing and solving at once.
   const [isBrowsing, setBrowsing] = useState(false);
+  // Which solve is open in the detail sheet, if any.
+  const [openSolveId, setOpenSolveId] = useState<string | null>(null);
   const showBrowsing = isBrowsing && status === 'idle';
 
   // Derived, not synchronized: the result stays up only while the machine is
@@ -227,10 +230,19 @@ export function TimerScreen() {
           solves={solves}
           phases={methodPhases}
           onScrolled={handleListScrolled}
+          onOpen={setOpenSolveId}
           onChangePenalty={handleChangePenalty}
           onDelete={handleDelete}
         />
       </section>
+
+      {openSolveId === null ? null : (
+        <SolveDetailSheet
+          solveId={openSolveId}
+          phases={methodPhases}
+          onClose={() => setOpenSolveId(null)}
+        />
+      )}
     </main>
   );
 }

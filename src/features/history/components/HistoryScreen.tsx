@@ -8,7 +8,7 @@ import { useActiveSession } from '../../sessions';
 import { PhaseBar, usePhases } from '../../splits';
 import { useHistory } from '../hooks/use-history';
 import { useTags } from '../hooks/use-tags';
-import { SolveDetail } from './SolveDetail';
+import { SolveDetailSheet } from './SolveDetailSheet';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
@@ -124,21 +124,7 @@ export function HistoryScreen() {
       ) : null}
 
       {open ? (
-        // Keyed by solve id so opening another solve starts with fresh drafts
-        // instead of syncing state in an effect.
-        <SolveDetail
-          key={open.id}
-          solve={open}
-          phases={phases}
-          tags={tags.tags}
-          onEdit={(id, patch) => void history.edit(id, patch)}
-          onCreateTag={tags.create}
-          onDelete={(id) => {
-            void history.removeMany([id]);
-            setOpenId(null);
-          }}
-          onClose={() => setOpenId(null)}
-        />
+        <SolveDetailSheet solveId={open.id} phases={phases} onClose={() => setOpenId(null)} />
       ) : null}
     </main>
   );

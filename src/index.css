@@ -701,13 +701,27 @@ button[disabled] {
 }
 
 .solves__row {
-  display: grid;
-  grid-template-columns: 2.5rem 5rem 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background: var(--surface);
+}
+
+/* The time is the way into the solve, the same as in the history. */
+.solves__open {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 2.5rem 5rem 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: 0;
+  border: none;
+  color: inherit;
+  text-align: start;
 }
 
 .solves__index,

@@ -49,8 +49,11 @@ describe('HistoryScreen', () => {
     await waitFor(async () => {
       expect((await db.solves.get(solve.id))?.penalty).toBe('plus2');
     });
-    // Shown twice: in the row and in the drawer header.
-    expect(await screen.findAllByText('14.34')).toHaveLength(2);
+    // Shown twice: in the row and in the drawer header. They are two live
+    // queries, so one lands a tick after the other.
+    await waitFor(() => {
+      expect(screen.getAllByText('14.34')).toHaveLength(2);
+    });
   });
 
   it('filters out solves that do not match', async () => {
