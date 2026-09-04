@@ -9,6 +9,23 @@ export interface TwistyPlayerElement extends HTMLElement {
   pause(): void;
   jumpToStart(options?: { flash?: boolean }): void;
   jumpToEnd(options?: { flash?: boolean }): void;
+  /** The player's own state — only the part we listen to. */
+  experimentalModel: {
+    currentMoveInfo: {
+      addFreshListener(listener: (info: TwistyCurrentMoveInfo) => void): void;
+      removeFreshListener(listener: (info: TwistyCurrentMoveInfo) => void): void;
+    };
+  };
+}
+
+/**
+ * What the player is animating right now. `patternIndex` counts the moves of
+ * the algorithm, so it is also the index of the move on screen — but only
+ * while something is actually turning, which is what `currentMoves` says.
+ */
+export interface TwistyCurrentMoveInfo {
+  patternIndex: number;
+  currentMoves: readonly unknown[];
 }
 
 interface TwistyPlayerAttributes

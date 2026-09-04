@@ -39,6 +39,8 @@ export function CaseDetail({
     useCaseDetail(caseId);
   const [replayToken, setReplayToken] = useState(0);
   const [isPlaying, setPlaying] = useState(false);
+  // Which move the player is turning, so the written algorithm can follow along.
+  const [playingMove, setPlayingMove] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
   const [previewMode] = useSetting('ui.twistyMode');
   const [showRotationAlgs] = useSetting('trainer.showRotationAlgs');
@@ -84,6 +86,7 @@ export function CaseDetail({
             alg={formatAlg(moves)}
             stickering={playerStickering}
             replayToken={replayToken}
+            onMove={setPlayingMove}
           />
         ) : (
           <CubeDiagram
@@ -113,6 +116,7 @@ export function CaseDetail({
         moves={moves}
         triggers={triggers}
         onPlay={canPlay ? play : undefined}
+        playingMove={isPlaying ? playingMove : null}
         playLabel={strings.trainer.play}
       />
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { TwistyPlayerElement } from '../../../types/twisty';
+import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { strings } from '../../../lib/strings';
 
 interface CasePlayerProps {
@@ -14,6 +15,8 @@ interface CasePlayerProps {
   stickering: string;
   /** Bumped by the caller to replay the same algorithm again. */
   replayToken: number;
+  /** Which move is turning, so the written algorithm can say where the cube is. */
+  onMove: (index: number | null) => void;
 }
 
 /**
@@ -21,7 +24,7 @@ interface CasePlayerProps {
  * weight — a still picture is drawn far more cheaply by CubeDiagram, but
  * nothing else shows what the moves do to the cube.
  */
-export function CasePlayer({ setupAlg, alg, stickering, replayToken }: CasePlayerProps) {
+export function CasePlayer({ setupAlg, alg, stickering, replayToken, onMove }: CasePlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
@@ -36,6 +39,8 @@ export function CasePlayer({ setupAlg, alg, stickering, replayToken }: CasePlaye
       cancelled = true;
     };
   }, []);
+
+  usePlayingMove(player, isReady, onMove);
 
   useEffect(() => {
     if (!isReady) return;

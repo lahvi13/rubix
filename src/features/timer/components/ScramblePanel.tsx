@@ -4,6 +4,7 @@ import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
+import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { withWhiteTop } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
 import type { TwistyPlayerElement } from '../../../types/twisty';
@@ -40,6 +41,8 @@ export const ScramblePanel = memo(function ScramblePanel({
   // Which scramble is being watched, rather than a flag: a new scramble means
   // a new cube to look at, not the previous animation still running.
   const [watched, setWatched] = useState<string | null>(null);
+  // Which move the cube is turning while the scramble is played back.
+  const [playingMove, setPlayingMove] = useState<number | null>(null);
   const isWatching = watched !== null && watched === scramble;
 
   return (
@@ -53,12 +56,12 @@ export const ScramblePanel = memo(function ScramblePanel({
           {scramble === null ? (
             <p className="scramble__text">{strings.scramble.loading}</p>
           ) : (
-            <ScrambleMoves scramble={scramble} />
+            <ScrambleMoves scramble={scramble} playingMove={isWatching ? playingMove : null} />
           )}
           {scramble === null || !isPreviewShown ? null : mode === '3D' ? (
-            <SpatialPreview scramble={scramble} />
+            <SpatialPreview scramble={scramble} onMove={setPlayingMove} />
           ) : isWatching ? (
-            <SpatialPreview scramble={scramble} onDone={() => setWatched(null)} />
+            <SpatialPreview scramble={scramble} onMove={setPlayingMove} onDone={() => setWatched(null)} />
           ) : (
             <>
               <CubeDiagram
@@ -91,11 +94,19 @@ export const ScramblePanel = memo(function ScramblePanel({
  * place; a grid keeps every move under the one above it. The space inside each
  * cell is there so that copying the scramble still gives back a scramble.
  */
-function ScrambleMoves({ scramble }: { scramble: string }) {
+function ScrambleMoves({
+  scramble,
+  playingMove,
+}: {
+  scramble: string;
+  playingMove: number | null;
+}) {
   return (
     <p className="scramble__text scramble__moves">
       {scramble.split(' ').map((move, index) => (
-        <span key={index + move}>{move + ' '}</span>
+        <span key={index + move} aria-current={index === playingMove ? 'step' : undefined}>
+          {move + ' '}
+        </span>
       ))}
     </p>
   );
@@ -117,10 +128,20 @@ function stateAfter(scramble: string) {
  *
  * cubing/twisty is a heavy chunk; it loads after the first paint.
  */
-function SpatialPreview({ scramble, onDone }: { scramble: string; onDone?: () => void }) {
+function SpatialPreview({
+  scramble,
+  onMove,
+  onDone,
+}: {
+  scramble: string;
+  onMove: (index: number | null) => void;
+  onDone?: () => void;
+}) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
   const isWatching = onDone !== undefined;
+
+  usePlayingMove(player, isReady, onMove);
 
   useEffect(() => {
     let cancelled = false;

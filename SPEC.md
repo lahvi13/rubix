@@ -127,6 +127,11 @@ kromě PB, které je globální per `puzzle`.
   žlutá/šedá), F2L isometricky s obarveným jen řešeným párem
 - u permutačních případů se kreslí **šipky, kam který kus patří** (výměna =
   jedna obousměrná šipka); bez nich se v PLL nedá orientovat
+- **kde je přehrávání, je vidět i krok**: při přehrání scramblu (timer) i
+  algoritmu (detail případu) dostane právě otáčený tah tečku pod sebou.
+  Index se bere z twisty modelu (`experimentalModel.currentMoveInfo`,
+  `patternIndex`) — vlastní hodiny by se od kostky na obrazovce během pár tahů
+  rozešly. V DOM je to `aria-current="step"`, takže to není jen barva
 - **skiny**: barevná schémata nálepek (`lib/cube-skins.ts`, nastavení `ui.cubeSkin`);
   proto vlastní vykreslování — twisty si barvy určuje sám
 - **téma**: světlé / tmavé / podle systému (`ui.theme`, device-local). Paleta je
