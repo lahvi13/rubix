@@ -41,7 +41,9 @@ export const ScramblePanel = memo(function ScramblePanel({
   // Which scramble is being watched, rather than a flag: a new scramble means
   // a new cube to look at, not the previous animation still running.
   const [watched, setWatched] = useState<string | null>(null);
-  // Which move the cube is turning while the scramble is played back.
+  // Which move the cube is turning while the scramble is played back. Null
+  // whenever nothing is turning, which is the only gate it needs: the 3D
+  // preview replays without going through `watched` at all.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const isWatching = watched !== null && watched === scramble;
 
@@ -56,7 +58,7 @@ export const ScramblePanel = memo(function ScramblePanel({
           {scramble === null ? (
             <p className="scramble__text">{strings.scramble.loading}</p>
           ) : (
-            <ScrambleMoves scramble={scramble} playingMove={isWatching ? playingMove : null} />
+            <ScrambleMoves scramble={scramble} playingMove={playingMove} />
           )}
           {scramble === null || !isPreviewShown ? null : mode === '3D' ? (
             <SpatialPreview scramble={scramble} onMove={setPlayingMove} />
