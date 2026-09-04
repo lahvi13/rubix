@@ -478,10 +478,21 @@ button[disabled] {
  * blur it.
  */
 .scramble__player {
-  /* Enough to make up for the player's own margin without the cube growing
-     into the edges of the box, which clips it. */
-  width: calc(var(--stage-width) * 1.35);
-  height: calc(var(--stage-height) * 1.35);
+  /* Enough to make up for the player's own margin, with room left for the
+     layer that is turning: mid-move the cube is wider than it is at rest, and
+     the box clips. */
+  width: calc(var(--stage-width) * 1.25);
+  height: calc(var(--stage-height) * 1.25);
+  /*
+   * Centred by hand: a grid item that overflows its area is aligned to the
+   * start instead of the centre — the browser would rather push content off
+   * one edge than off two — and the cube ended up hanging out of the bottom
+   * right corner.
+   */
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /*
@@ -2394,21 +2405,30 @@ input[type='radio'] {
   overflow: hidden;
 }
 
-/* The chevron that pulls the list up, and puts it back. */
+/*
+ * The control that pulls the list up and puts it back. Drawn as a button
+ * rather than as a bare chevron: in a row of words a hairline arrow is not
+ * something anyone finds.
+ */
 .solves-panel__more {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
   min-height: 0;
-  padding: 0 var(--space-2);
-  border: none;
-  color: var(--muted);
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: var(--tint);
+  color: var(--text);
 }
 
 .solves-panel__more svg {
   display: block;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.15rem;
+  height: 1.15rem;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
