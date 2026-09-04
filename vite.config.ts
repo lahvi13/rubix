@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
@@ -8,11 +9,25 @@ const { version } = JSON.parse(readFileSync(new URL('./package.json', import.met
   version: string;
 };
 
+/**
+ * Which build this is. The version in package.json changes when it is bumped
+ * by hand, which is never often enough to answer "is the phone running what I
+ * just deployed?" — the commit does.
+ */
+const commit = ((): string => {
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    // A build from a tarball, or without git. The version alone will do.
+    return 'local';
+  }
+})();
+
 export default defineConfig({
   // Shown in the header so anyone can tell at a glance which build they run —
   // service worker updates are otherwise invisible.
   define: {
-    __APP_VERSION__: JSON.stringify(version),
+    __APP_VERSION__: JSON.stringify(`${version}·${commit}`),
   },
   plugins: [
     react(),

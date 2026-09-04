@@ -328,7 +328,9 @@ button[disabled] {
 .app__header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  /* Above the timer's press surface: with a solve under way the rest of the
+     screen belongs to the clock, but the way out must not. */
+  z-index: 40;
   background: var(--bg);
   padding: var(--space-2) var(--space-5);
   border-bottom: 1px solid var(--border);
@@ -467,8 +469,10 @@ button[disabled] {
  * blur it.
  */
 .scramble__player {
-  width: 155%;
-  height: 155%;
+  /* Enough to make up for the player's own margin without the cube growing
+     into the edges of the box, which clips it. */
+  width: 135%;
+  height: 135%;
 }
 
 /*

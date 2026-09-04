@@ -169,9 +169,10 @@ export function TimerScreen() {
         ) : null}
       </div>
 
-      {/* Mid-solve nobody aims for the numbers: any tap must stop the clock,
-          and the release after it is swallowed here too. */}
-      {status === 'running' || status === 'stopped' ? (
+      {/* Nobody aims for the numbers with a cube in both hands: from the first
+          touch, the whole screen is the button — it starts the inspection's
+          hold, starts the solve, and stops it. */}
+      {isEngaged || status === 'stopped' ? (
         <div className="timer-overlay" aria-hidden="true" {...timer.touchHandlers} />
       ) : null}
 
