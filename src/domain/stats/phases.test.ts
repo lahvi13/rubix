@@ -140,19 +140,27 @@ describe('phaseTrend', () => {
     );
   }
 
-  it('says nothing until the rolling window is full', () => {
-    expect(phaseTrend(improving(4), PHASES, 100)).toEqual([]);
-    expect(phaseTrend(improving(5), PHASES, 100)).toHaveLength(1);
+  it('gives every phase-timed solve a point, from the first one', () => {
+    expect(phaseTrend(improving(4), PHASES, 100)).toHaveLength(4);
+    expect(phaseTrend(improving(4), PHASES, 100).map((p) => p.index)).toEqual([1, 2, 3, 4]);
   });
 
-  it('averages each phase over the last five solves', () => {
-    const [point] = phaseTrend(improving(5), PHASES, 100);
+  it('carries what each phase took on that solve', () => {
+    const [first] = phaseTrend(improving(5), PHASES, 100);
+    expect(first?.phases).toEqual([2000, 8000, 4000, 6000]);
+  });
+
+  it('has no mean until the rolling window is full', () => {
+    const points = phaseTrend(improving(5), PHASES, 100);
+    expect(points.slice(0, 4).map((p) => p.mean)).toEqual([null, null, null, null]);
     // Cross runs 2..6s, so the mean is 4s; the other phases never move.
-    expect(point).toEqual({ index: 5, phases: [4000, 8000, 4000, 6000] });
+    expect(points[4]?.mean).toEqual([4000, 8000, 4000, 6000]);
   });
 
   it('numbers the points by position, so the axis reads as solve count', () => {
-    expect(phaseTrend(improving(7), PHASES, 100).map((p) => p.index)).toEqual([5, 6, 7]);
+    expect(phaseTrend(improving(7), PHASES, 100).map((p) => p.index)).toEqual([
+      1, 2, 3, 4, 5, 6, 7,
+    ]);
   });
 
   it('keeps only the last points the chart window asks for', () => {
@@ -165,13 +173,13 @@ describe('phaseTrend', () => {
       const sum = point.phases.reduce((total, ms) => total + ms, 0);
       expect(sum).toBeGreaterThan(0);
     }
-    // Ten complete solves, so six windows — the incomplete one is not one of them.
-    expect(phaseTrend(mixed, PHASES, 100)).toHaveLength(6);
+    // Ten complete solves; the incomplete one is not one of them.
+    expect(phaseTrend(mixed, PHASES, 100)).toHaveLength(10);
   });
 
   it('skips a DNF, whose phases describe a solve that did not work', () => {
     const withDnf = [...improving(5), solve(20_000, [2000, 10_000, 14_000], 'dnf')];
-    expect(phaseTrend(withDnf, PHASES, 100)).toHaveLength(1);
+    expect(phaseTrend(withDnf, PHASES, 100)).toHaveLength(5);
   });
 
   it('draws nothing for a method with no phases', () => {

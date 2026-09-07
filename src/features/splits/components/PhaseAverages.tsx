@@ -16,6 +16,8 @@ interface PhaseAveragesProps {
   phases: readonly MethodPhase[];
   /** Solves behind the table — the ones that were timed by phase. */
   measuredCount: number;
+  /** Solves in the session, so the heading can say why the two differ. */
+  solveCount: number;
 }
 
 /**
@@ -23,7 +25,7 @@ interface PhaseAveragesProps {
  * columns average the same solves the trim keeps, so with every boundary
  * recorded they add up to the total on the right.
  */
-export function PhaseAverages({ rows, phases, measuredCount }: PhaseAveragesProps) {
+export function PhaseAverages({ rows, phases, measuredCount, solveCount }: PhaseAveragesProps) {
   if (measuredCount === 0 || phases.length === 0) return null;
 
   return (
@@ -31,6 +33,11 @@ export function PhaseAverages({ rows, phases, measuredCount }: PhaseAveragesProp
       <h2 className="stats__section-title">
         {strings.splits.phaseAverages} · {measuredCount}
       </h2>
+      {/* "· 19" under a session of 20 read as an error until it said which
+          nineteen it meant. */}
+      <p className="chart-note chart-note--above">
+        {strings.splits.measuredNote(measuredCount, solveCount)}
+      </p>
       <div className="table-scroll">
         <table className="averages-table averages-table--phases">
           <thead>

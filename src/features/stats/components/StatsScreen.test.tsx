@@ -60,10 +60,21 @@ describe('StatsScreen', () => {
     expect(screen.getByText('13.00')).toBeInTheDocument();
     // Not enough solves for ao12 yet.
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
-    // One DNF out of six solves.
-    expect(screen.getByText('17%')).toBeInTheDocument();
+    // One DNF out of six solves, on the card that carries both rates.
+    expect(screen.getByText('17% DNF')).toBeInTheDocument();
+    expect(screen.getByText('0% +2')).toBeInTheDocument();
 
     expect(await screen.findByTestId('histogram-chart')).toBeInTheDocument();
+    // Six solves have no ao12, so the rolling chart has nothing to draw and
+    // is left out rather than shown as an empty pair of axes.
+    expect(screen.queryByTestId('trend-chart')).not.toBeInTheDocument();
+  });
+
+  it('draws the rolling ao12 once the window has filled', async () => {
+    for (let i = 0; i < 12; i += 1) await seedSolve(sessionId, 10_000 + i * 100);
+
+    render(<StatsScreen />);
+
     expect(await screen.findByTestId('trend-chart')).toBeInTheDocument();
   });
 });

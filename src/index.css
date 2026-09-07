@@ -147,6 +147,13 @@
   --clock-size: clamp(3.5rem, 18vw, 9rem);
 
   /*
+   * What the pinned header takes off the top of the page. Written from the
+   * same tokens the header is built from, so a scroll target that has to clear
+   * it grows with the text size the way the bar itself does.
+   */
+  --header-height: calc(var(--text-xl) * 1.5 + var(--space-2) * 2 + 1px);
+
+  /*
    * Which face the app is set in. The bundled pair is the default; 'system'
    * hands both slots back to the device, for a reader who wants the phone's
    * own typeface. Moves and times are always monospaced — a scramble is read
@@ -1253,9 +1260,15 @@ button[disabled] {
   width: 100%;
 }
 
+/*
+ * Six cards, so the grid comes out even at two, three or six across and no
+ * card is ever left alone on the last row. `auto-fit` rather than `auto-fill`:
+ * an empty track at the end stretches the cards that exist instead of leaving
+ * a gap where a seventh used to be.
+ */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
   gap: var(--space-4);
 }
 
@@ -1280,12 +1293,20 @@ button[disabled] {
   font-size: var(--text-3xl);
 }
 
+/* The card's second figure, when one card carries two of the same kind. */
+.stat-card__detail {
+  font-size: var(--text-lg);
+  color: var(--muted);
+}
+
 .stat-card--highlight .stat-card__value {
   color: var(--accent);
 }
 
 .stats__section-title {
   margin: 0 0 var(--space-4);
+  /* The header is pinned, so anything scrolled to has to stop below it. */
+  scroll-margin-top: var(--header-height);
   font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
@@ -1323,6 +1344,141 @@ button[disabled] {
   background: var(--surface);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  scroll-margin-top: var(--header-height);
+}
+
+/*
+ * What the chart cannot say for itself: which colour is which, and what the
+ * numbers along the bottom count. A chart in a card with a table above it
+ * still has to be readable on its own — the table is not always on screen.
+ */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-2xs);
+  color: var(--muted);
+}
+
+.chart-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.chart-legend__swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--radius-sm);
+  flex: none;
+}
+
+/* A series drawn as a mark to beat rather than as data reads as a rule, not
+   a block — the same dashes the reference line is drawn with. */
+.chart-legend__swatch.is-reference {
+  height: 0;
+  border-top-width: 2px;
+  border-top-style: dashed;
+  border-radius: 0;
+}
+
+.chart-note {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-2xs);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.chart-note--above {
+  margin: calc(var(--space-4) * -1) 0 var(--space-4);
+}
+
+/* How the phase trend is being read, above the chart it changes. */
+.chart-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.chart-modes button {
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  padding: var(--space-3) var(--space-5);
+  min-height: 2rem;
+}
+
+.chart-modes button.is-active {
+  border-color: var(--border);
+  color: var(--text);
+  background: var(--surface-raised);
+}
+
+/*
+ * The readout. Recharts pins it inside the plot area (see chart-theme.ts), so
+ * the only thing left to guarantee is that it is narrow enough to fit there —
+ * a wide box would be clamped to the left edge and cover the chart.
+ */
+.chart-tooltip {
+  max-width: 12rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-2xs);
+  line-height: 1.4;
+  color: var(--text);
+  box-shadow: 0 2px 8px var(--scrim);
+}
+
+.chart-tooltip__title {
+  margin: 0 0 var(--space-2);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.chart-tooltip__rows {
+  margin: 0;
+}
+
+.chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.chart-tooltip__row dt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--muted);
+}
+
+.chart-tooltip__row dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip__row.is-summary {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.chart-tooltip__swatch {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-sm);
+  flex: none;
+}
+
+.chart-tooltip__note {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
 }
 
 /* Mini stats on the timer screen */

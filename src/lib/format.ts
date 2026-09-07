@@ -19,6 +19,25 @@ export function formatMs(ms: number): string {
 }
 
 /**
+ * A time as a tick on an axis. Hundredths are noise at axis density, and the
+ * shape is decided once per axis by its largest value rather than per tick —
+ * an axis that reads "40.00, 50.00, 1:00.00" makes the reader work out twice
+ * which of those is bigger.
+ *
+ * Over a minute the whole axis is `m:ss`; under it, seconds with one decimal
+ * only when the steps need one.
+ */
+export function formatAxisMs(ms: number, axisMaxMs: number): string {
+  if (axisMaxMs >= MS_PER_MINUTE) {
+    const totalSeconds = Math.round(ms / MS_PER_SECOND);
+    const minutes = Math.floor(totalSeconds / 60);
+    return `${minutes}:${String(totalSeconds % 60).padStart(2, '0')}`;
+  }
+  const seconds = ms / MS_PER_SECOND;
+  return Number.isInteger(seconds) ? String(seconds) : seconds.toFixed(1);
+}
+
+/**
  * The same time, split where the eye splits it: the seconds are what is read
  * at a glance and the hundredths are what is noted afterwards.
  */

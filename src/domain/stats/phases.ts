@@ -195,19 +195,27 @@ export function bestPhasesIn(
 }
 
 /**
- * How long each phase takes as the session goes on. Rolling mean rather than
- * the raw times: one solve says nothing about whether the cross got faster.
- *
- * The window is 5, not the trend chart's 12 — phase-timed solves are rarer
- * than plain ones, so the smallest standard window is the one that fills.
+ * The smoothing window. 5, not the trend chart's 12 — phase-timed solves are
+ * rarer than plain ones, so the smallest standard window is the one that fills.
  */
 export const PHASE_TREND_WINDOW = 5;
 
 export interface PhaseTrendPoint {
-  /** 1-based position among the solves this trend is drawn over. */
+  /**
+   * 1-based position among the phase-timed solves, which is what the chart
+   * counts along its x axis. It is not the solve's number in the session:
+   * solves timed as a whole are not on this chart at all.
+   */
   index: number;
-  /** Rolling mean of each phase, in method order. */
+  /** What each phase actually took on this solve, in method order. */
   phases: number[];
+  /**
+   * Rolling mean of each phase over the window ending here, in method order;
+   * null until the window has filled. The raw series answers "what happened",
+   * this one answers "is the cross getting faster" — the chart draws whichever
+   * the reader asked for, which is why both are carried.
+   */
+  mean: number[] | null;
 }
 
 /**
@@ -231,6 +239,15 @@ export function fullyMeasuredSolves(
   return complete;
 }
 
+/**
+ * How long each phase takes as the session goes on — one point per phase-timed
+ * solve, carrying both the raw lengths and the rolling mean.
+ *
+ * The index counts every such solve from 1, including the first few that have
+ * no mean yet: an axis that started at 5 said nothing about the four solves
+ * before it, and the reader had no way to tell that from a session whose first
+ * four solves were missing.
+ */
 export function phaseTrend(
   solves: readonly Solve[],
   phaseKeys: readonly string[],
@@ -240,15 +257,22 @@ export function phaseTrend(
   if (phaseKeys.length === 0) return [];
   const complete = fullyMeasuredSolves(solves, phaseKeys);
 
-  const points: PhaseTrendPoint[] = [];
-  for (let end = window; end <= complete.length; end += 1) {
-    const slice = complete.slice(end - window, end);
-    points.push({
+  const points: PhaseTrendPoint[] = complete.map((entry, position) => {
+    const end = position + 1;
+    const slice = complete.slice(Math.max(0, end - window), end);
+    return {
       index: end,
-      phases: phaseKeys.map((_, phase) =>
-        Math.round(slice.reduce((sum, entry) => sum + (entry.lengths[phase] ?? 0), 0) / window),
-      ),
-    });
-  }
+      phases: phaseKeys.map((_, phase) => entry.lengths[phase] ?? 0),
+      mean:
+        slice.length < window
+          ? null
+          : phaseKeys.map((_, phase) =>
+              Math.round(
+                slice.reduce((sum, member) => sum + (member.lengths[phase] ?? 0), 0) / window,
+              ),
+            ),
+    };
+  });
+
   return points.slice(Math.max(0, points.length - limit));
 }

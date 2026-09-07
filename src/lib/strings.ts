@@ -53,6 +53,20 @@ export const strings = {
     removeSplit: 'Remove',
     clear: 'Clear phase times',
     none: 'This solve was timed as a whole.',
+    /** Both counts, because the two differ and the difference is the point. */
+    measuredNote: (measured: number, total: number) =>
+      `${measured} of ${total} solves were timed by phase; the rest were timed as a whole.`,
+    trendAxes: (count: number) =>
+      `Along the bottom: the ${count} phase-timed solves of this session, oldest first.`,
+    smoothing: 'Mean of 5',
+    smoothingOn: 'Rolling mean over the last five solves.',
+    smoothingOff: 'Each solve as it was timed.',
+    modeStacked: 'Stacked',
+    modeSeparate: 'Separate',
+    modeShare: 'Share',
+    modeStackedNote: 'Phases stacked, so the height is the whole solve.',
+    modeSeparateNote: 'Each phase from zero, so one phase can be followed on its own.',
+    modeShareNote: 'Each phase as a percentage of the solve, whatever the total was.',
   },
   solve: {
     expandList: 'More solves',
@@ -93,6 +107,16 @@ export const strings = {
     trendSeries: 'ao12',
     histogramSeries: 'Solves',
     loadingCharts: 'Loading charts…',
+    penalties: 'Penalties',
+    dnfShort: 'DNF',
+    plusTwoShort: '+2',
+    solveIndex: 'Solve',
+    /** Axis captions, so a chart can be read without the table above it. */
+    distributionAxes: 'Each bar is a range of solve times; height is how many solves fell in it.',
+    trendAxes: 'Average of the twelve solves ending at each point, along the session.',
+    andUp: 'and up',
+    bestAo12: 'Best ao12',
+    containsCurrent: 'Current ao12 falls here',
   },
   history: {
     empty: 'Nothing matches these filters.',

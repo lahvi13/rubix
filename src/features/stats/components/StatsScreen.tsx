@@ -1,4 +1,9 @@
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useMemo, type ReactNode } from 'react';
+import {
+  PHASE_TREND_MODES,
+  type PhaseTrendMode,
+} from '../../../db/repositories/settings-repository';
+import { useSetting } from '../../../hooks/use-setting';
 import { formatAverage, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useActiveSession } from '../../sessions';
@@ -24,22 +29,39 @@ interface StatCardProps {
   label: string;
   value: string;
   highlight?: boolean;
+  /** A second, smaller line — two rates that belong together in one card. */
+  detail?: ReactNode;
 }
 
-function StatCard({ label, value, highlight = false }: StatCardProps) {
+function StatCard({ label, value, highlight = false, detail }: StatCardProps) {
   return (
     <div className={highlight ? 'stat-card stat-card--highlight' : 'stat-card'}>
       <span className="stat-card__label">{label}</span>
       <span className="stat-card__value">{value}</span>
+      {detail === undefined ? null : <span className="stat-card__detail">{detail}</span>}
     </div>
   );
 }
+
+const MODE_LABEL: Record<PhaseTrendMode, string> = {
+  stacked: strings.splits.modeStacked,
+  separate: strings.splits.modeSeparate,
+  share: strings.splits.modeShare,
+};
+
+const MODE_NOTE: Record<PhaseTrendMode, string> = {
+  stacked: strings.splits.modeStackedNote,
+  separate: strings.splits.modeSeparateNote,
+  share: strings.splits.modeShareNote,
+};
 
 export function StatsScreen() {
   const session = useActiveSession(PUZZLE, MODE);
   const phases = usePhases(session?.methodId ?? null);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   const stats = useSessionStats(session?.id ?? null, PUZZLE, phaseKeys);
+  const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
+  const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
 
   if (stats === null) return <main className="screen screen--scroll" />;
 
@@ -67,8 +89,13 @@ export function StatsScreen() {
               <StatCard label={strings.stats.mean} value={formatAverage(stats.meanMs)} />
               <StatCard label={strings.stats.median} value={formatAverage(stats.medianMs)} />
               <StatCard label={strings.stats.stdDev} value={formatAverage(stats.stdDevMs)} />
-              <StatCard label={strings.stats.dnfRate} value={formatRate(stats.dnfRate)} />
-              <StatCard label={strings.stats.plusTwoRate} value={formatRate(stats.plusTwoRate)} />
+              {/* Two rates, one card: on a phone the grid is two columns wide,
+                  and a seventh card sat alone on a row of its own. */}
+              <StatCard
+                label={strings.stats.penalties}
+                value={`${formatRate(stats.dnfRate)} ${strings.stats.dnfShort}`}
+                detail={`${formatRate(stats.plusTwoRate)} ${strings.stats.plusTwoShort}`}
+              />
             </div>
 
             <section>
@@ -97,30 +124,64 @@ export function StatsScreen() {
               rows={stats.phaseRows}
               phases={phases}
               measuredCount={stats.measuredCount}
+              solveCount={stats.solveCount}
             />
 
             {stats.phaseTrend.length > 0 ? (
               <section className="chart-card">
                 <h2 className="stats__section-title">{strings.splits.phaseTrend}</h2>
+                <div className="chart-modes">
+                  {PHASE_TREND_MODES.map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      className={mode === trendMode ? 'is-active' : undefined}
+                      onClick={() => setTrendMode(mode)}
+                    >
+                      {MODE_LABEL[mode]}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className={isSmoothed ? 'is-active' : undefined}
+                    onClick={() => setSmoothed(!isSmoothed)}
+                  >
+                    {strings.splits.smoothing}
+                  </button>
+                </div>
                 <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
-                  <PhaseTrendChart points={stats.phaseTrend} phases={phases} />
+                  <PhaseTrendChart
+                    points={stats.phaseTrend}
+                    phases={phases}
+                    mode={trendMode}
+                    isSmoothed={isSmoothed}
+                  />
                 </Suspense>
+                <p className="chart-note">
+                  {MODE_NOTE[trendMode]}{' '}
+                  {isSmoothed ? strings.splits.smoothingOn : strings.splits.smoothingOff}{' '}
+                  {strings.splits.trendAxes(stats.phaseTrend.length)}
+                </p>
               </section>
             ) : null}
 
             <section className="chart-card">
               <h2 className="stats__section-title">{strings.stats.distribution}</h2>
               <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
-                <HistogramChart bins={stats.histogramBins} />
+                <HistogramChart bins={stats.histogramBins} currentAoMs={stats.currentAo12Ms} />
               </Suspense>
             </section>
 
-            <section className="chart-card">
-              <h2 className="stats__section-title">{strings.stats.trend}</h2>
-              <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
-                <TrendChart points={stats.trend} />
-              </Suspense>
-            </section>
+            {/* Without a filled window there is no line and no axis worth
+                drawing; the averages table above already says so. */}
+            {stats.trend.length > 0 ? (
+              <section className="chart-card">
+                <h2 className="stats__section-title">{strings.stats.trend}</h2>
+                <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
+                  <TrendChart points={stats.trend} bestMs={stats.bestAo12Ms} />
+                </Suspense>
+              </section>
+            ) : null}
           </>
         )}
       </div>

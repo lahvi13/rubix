@@ -52,7 +52,22 @@ export interface SettingValues {
    */
   'trainer.crossFront': string;
   'stats.chartWindow': number;
+  /**
+   * How the phase trend is drawn. Stacked shows the whole solve, separate puts
+   * every phase on its own baseline (the only way to see F2L alone come down),
+   * share drops the total and keeps the proportions.
+   */
+  'stats.phaseTrendMode': PhaseTrendMode;
+  /**
+   * Draw the 5-solve rolling mean instead of the raw times. Off by default:
+   * smoothing costs the first four solves, and a chart whose axis starts at 5
+   * has to be asked for rather than arrived at.
+   */
+  'stats.phaseTrendSmoothed': boolean;
 }
+
+export const PHASE_TREND_MODES = ['stacked', 'separate', 'share'] as const;
+export type PhaseTrendMode = (typeof PHASE_TREND_MODES)[number];
 
 export const SETTING_DEFAULTS: SettingValues = {
   'timer.holdThresholdMs': 300,
@@ -74,6 +89,8 @@ export const SETTING_DEFAULTS: SettingValues = {
   'trainer.drillCaseIds': [],
   'trainer.crossFront': 'F',
   'stats.chartWindow': 100,
+  'stats.phaseTrendMode': 'stacked',
+  'stats.phaseTrendSmoothed': false,
 };
 
 export type SettingKey = keyof SettingValues;

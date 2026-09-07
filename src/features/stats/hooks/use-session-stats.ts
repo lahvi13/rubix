@@ -59,12 +59,20 @@ export interface SessionStats {
   dnfRate: number | null;
   plusTwoRate: number | null;
   histogramBins: HistogramBin[];
+  /**
+   * Rolling ao12, from the first solve that has one. The empty run before the
+   * window fills is not carried: it is half a chart saying nothing, and the
+   * index on each point already says which solve it belongs to.
+   */
   trend: TrendPoint[];
+  /** The two ao12 marks the charts point at: where the session is, and its record. */
+  currentAo12Ms: number | null;
+  bestAo12Ms: number | null;
   /** Average length of each phase, per window. Empty without a method to name them. */
   phaseRows: PhaseAverageRow[];
   /** How many of the solves were timed by phase — the sample behind phaseRows. */
   measuredCount: number;
-  /** Rolling mean of each phase over the session, for the stacked trend. */
+  /** One point per phase-timed solve — raw lengths plus the rolling mean. */
   phaseTrend: PhaseTrendPoint[];
 }
 
@@ -89,10 +97,18 @@ export function useSessionStats(
 
     const finals = solves.map(finalMs);
     const rolling = rollingAverage(finals, TREND_WINDOW);
-    const trendStart = Math.max(
-      0,
-      finals.length - (chartWindow ?? SETTING_DEFAULTS['stats.chartWindow']),
-    );
+    const window = chartWindow ?? SETTING_DEFAULTS['stats.chartWindow'];
+    // Two cuts, in this order: the recent window the reader asked for, then
+    // the run of solves at the start that have no ao12 yet.
+    const trendStart = Math.max(0, finals.length - window);
+    const windowed = rolling
+      .slice(trendStart)
+      .map((aoMs, offset) => ({ index: trendStart + offset + 1, aoMs }));
+    const firstWithAverage = windowed.findIndex((point) => point.aoMs !== null);
+    const trend = firstWithAverage < 0 ? [] : windowed.slice(firstWithAverage);
+
+    const currentAo12 = currentAverage(finals, TREND_WINDOW);
+    const bestAo12 = bestAverage(finals, TREND_WINDOW);
 
     return {
       solveCount: solves.length,
@@ -109,16 +125,13 @@ export function useSessionStats(
       dnfRate: penaltyRate(solves, 'dnf'),
       plusTwoRate: penaltyRate(solves, 'plus2'),
       histogramBins: histogram(finals),
-      trend: rolling
-        .slice(trendStart)
-        .map((aoMs, offset) => ({ index: trendStart + offset + 1, aoMs })),
+      trend,
+      // 'dnf' is not a place on a time axis; both marks simply go unmarked.
+      currentAo12Ms: typeof currentAo12 === 'number' ? currentAo12 : null,
+      bestAo12Ms: typeof bestAo12 === 'number' ? bestAo12 : null,
       phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(solves, phaseKeys),
       measuredCount: measuredSolves(solves).length,
-      phaseTrend: phaseTrend(
-        solves,
-        phaseKeys,
-        chartWindow ?? SETTING_DEFAULTS['stats.chartWindow'],
-      ),
+      phaseTrend: phaseTrend(solves, phaseKeys, window),
     };
   }, [solves, globalPbMs, chartWindow, phaseKeys]);
 }

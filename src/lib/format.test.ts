@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatAxisMs,
   formatClock,
   formatInspection,
   formatIsoDate,
@@ -81,5 +82,28 @@ describe('formatWhen', () => {
   it('adds the year once the solve is from another one', () => {
     const lastYear = new Date(2025, 8, 4, 9, 5).getTime();
     expect(formatWhen(lastYear, noon)).toContain('2025');
+  });
+});
+
+describe('formatAxisMs', () => {
+  it.each<[number, number, string]>([
+    // Under a minute the axis reads in seconds; a whole step keeps no decimal.
+    [40_000, 55_000, '40'],
+    [12_500, 20_000, '12.5'],
+    [0, 20_000, '0'],
+    // Once anything on the axis passes a minute, every tick is m:ss — this is
+    // the mix the axes used to show: "40.00" next to "1:00.00".
+    [40_000, 66_000, '0:40'],
+    [60_000, 66_000, '1:00'],
+    [66_000, 66_000, '1:06'],
+    [125_000, 130_000, '2:05'],
+  ])('formats %ims on an axis reaching %ims as %s', (ms, axisMaxMs, expected) => {
+    expect(formatAxisMs(ms, axisMaxMs)).toBe(expected);
+  });
+
+  it('uses one shape for every tick of an axis', () => {
+    const ticks = [40_000, 50_000, 60_000, 70_000];
+    const shapes = ticks.map((tick) => formatAxisMs(tick, 70_000).includes(':'));
+    expect(new Set(shapes).size).toBe(1);
   });
 });
