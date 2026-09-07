@@ -132,17 +132,6 @@ export function CaseDetail({
         playLabel={strings.trainer.play}
       />
 
-      <h3 className="case-detail__section">{strings.trainer.caseStats}</h3>
-      <CaseStatsRow stats={stats} />
-      <AttemptList
-        attempts={attempts.attempts}
-        onJudge={(id, penalty) =>
-          watchWrite(() => attempts.changePenalty(id, penalty), strings.drill.judging)
-        }
-        onDelete={(id) => watchWrite(() => attempts.remove(id), strings.drill.discarding)}
-        onDeleteAll={() => watchWrite(attempts.removeAll, strings.drill.discarding)}
-      />
-
       <h3 className="case-detail__section">{strings.trainer.variants}</h3>
       <ul className="variants">
         {shownAlgorithms.map((algorithm) => (
@@ -194,6 +183,17 @@ export function CaseDetail({
         </button>
       </form>
       {draftError ? <p className="detail__error">{strings.trainer.invalidAlg}</p> : null}
+
+      <h3 className="case-detail__section">{strings.trainer.caseStats}</h3>
+      <CaseStatsRow stats={stats} />
+      <AttemptList
+        attempts={attempts.attempts}
+        onJudge={(id, penalty) =>
+          watchWrite(() => attempts.changePenalty(id, penalty), strings.drill.judging)
+        }
+        onDelete={(id) => watchWrite(() => attempts.remove(id), strings.drill.discarding)}
+        onDeleteAll={() => watchWrite(attempts.removeAll, strings.drill.discarding)}
+      />
     </div>
   );
 }
