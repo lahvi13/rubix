@@ -317,6 +317,47 @@ export const strings = {
     deletedAll: 'All data deleted.',
     deleteFailed: 'Could not delete the data',
   },
+  cstimer: {
+    title: 'From csTimer',
+    hint: 'Takes a csTimer export: the JSON from Export/Import (csTimer names it .txt) or one session exported as CSV. Every csTimer session arrives as a session of its own — nothing is mixed into the one you are timing into.',
+    chooseFile: 'Choose a csTimer file',
+    reading: 'Reading the file…',
+    /** A CSV holds neither of these, so the import has to decide them. */
+    csvNote: (name: string) =>
+      `A CSV says neither which puzzle nor which session it came from, so it arrives as a 3×3 session called “${name}”. Its times are rounded to hundredths and a +2 is already in them; the JSON export keeps the milliseconds.`,
+    found: (solves: number, sessions: number) =>
+      `${solves} ${solves === 1 ? 'solve' : 'solves'} in ${sessions} ${sessions === 1 ? 'session' : 'sessions'}`,
+    withPhases: (count: number) => `${count} with phase times`,
+    duplicates: (count: number) => `${count} already here`,
+    skippedRows: (count: number) => `${count} ${count === 1 ? 'row' : 'rows'} skipped`,
+    nothingNew: 'Every solve in this file is already here.',
+    unsupportedTitle: 'Sessions this app has no puzzle for',
+    unsupported: (name: string, type: string, solves: number) =>
+      `${name} — csTimer calls it ${type}, ${solves} ${solves === 1 ? 'solve' : 'solves'}`,
+    session: 'Session',
+    puzzle: 'Puzzle',
+    newSolves: 'New',
+    confirm: 'Import from csTimer',
+    importing: (written: number, total: number) => `Importing… ${written} / ${total}`,
+    imported: (count: number) =>
+      `Imported ${count} ${count === 1 ? 'solve' : 'solves'} from csTimer.`,
+    whereToFind: 'Imported sessions are on the Sessions screen — switch to one to see it in the history and the stats.',
+    skippedTitle: 'Rows that were skipped',
+    reasons: {
+      malformed: 'not a solve csTimer would write',
+      unreadableTime: 'the time could not be read',
+      unreadablePenalty: 'a penalty this app has no name for',
+      unreadableDate: 'the date could not be read',
+    },
+    problems: {
+      notJson: 'That file is neither csTimer JSON nor csTimer CSV.',
+      notCsTimer: 'That file is JSON, but not a csTimer export.',
+      notCsv: 'That file is not a csTimer CSV export.',
+      empty: 'There are no solves in that file.',
+    },
+    failed: 'Could not import the csTimer file',
+    importedSession: 'csTimer',
+  },
   errors: {
     saveSolve: 'Could not save the solve',
     noSession: 'No active session',

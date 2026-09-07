@@ -2401,6 +2401,20 @@ button[disabled] {
   gap: var(--space-3);
 }
 
+/* What an import could not take, said plainly rather than as a table. */
+.data-section__list {
+  margin: 0 0 var(--space-5);
+  padding-inline-start: var(--space-6);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.data-section__list li {
+  margin-bottom: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
 .data-section input[type='file'] {
   font: inherit;
   font-size: var(--text-sm);

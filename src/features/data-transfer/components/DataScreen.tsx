@@ -6,12 +6,14 @@ import {
   type ImportCounts,
   type ImportMode,
 } from '../../../domain/transfer/merge';
+import type { SkipReason, SkippedRow } from '../../../domain/transfer/cstimer';
 import { TRANSFER_TABLES } from '../../../domain/transfer/types';
 import type { ImportProblem } from '../../../domain/transfer/validate';
 import { useDatabaseHealth } from '../../../hooks/use-database-health';
 import { formatDateTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useConfirmDelay } from '../hooks/use-confirm-delay';
+import { useCsTimerImport, type CsTimerState } from '../hooks/use-cstimer-import';
 import { useDataTransfer, type TransferNotice } from '../hooks/use-data-transfer';
 
 const IMPORT_MODES: readonly ImportMode[] = ['merge', 'replace'];
@@ -134,6 +136,8 @@ export function DataScreen() {
         ) : null}
       </section>
 
+      <CsTimerSection />
+
       <section className="data-section data-section--danger">
         <h2 className="data-section__title">{strings.data.dangerTitle}</h2>
         <p className="data-section__hint">{strings.data.dangerHint}</p>
@@ -170,6 +174,173 @@ export function DataScreen() {
     </main>
   );
 }
+
+/**
+ * Bringing a history over from csTimer. Kept apart from the app's own restore:
+ * it reads a foreign file, it can only ever add, and what it cannot take —
+ * a 6×6 session, a row csTimer wrote in a way this app cannot read — has to be
+ * said out loud rather than silently dropped.
+ */
+function CsTimerSection() {
+  const { state, outcome, loadFile, confirmImport, cancel } = useCsTimerImport();
+
+  return (
+    <section className="data-section">
+      <h2 className="data-section__title">{strings.cstimer.title}</h2>
+      <p className="data-section__hint">{strings.cstimer.hint}</p>
+
+      <input
+        type="file"
+        accept=".txt,.json,.csv,text/plain,text/csv,application/json"
+        aria-label={strings.cstimer.chooseFile}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (file) void loadFile(file);
+        }}
+      />
+
+      {state.status === 'reading' ? (
+        <p className="data-section__hint">{strings.cstimer.reading}</p>
+      ) : null}
+
+      {state.status === 'failed' ? (
+        <p className="data-section__error">{strings.cstimer.problems[state.problem]}</p>
+      ) : null}
+
+      {state.status === 'importing' ? (
+        <p className="data-section__hint">
+          {strings.cstimer.importing(state.progress.written, state.progress.total)}
+        </p>
+      ) : null}
+
+      {state.status === 'preview' ? <CsTimerPreview state={state} /> : null}
+
+      {state.status === 'preview' ? (
+        <div className="import-preview__actions">
+          <button
+            type="button"
+            className="is-primary"
+            disabled={state.plan.newSolves === 0}
+            onClick={() => void confirmImport()}
+          >
+            {strings.cstimer.confirm}
+          </button>
+          <button type="button" onClick={cancel}>
+            {strings.data.cancel}
+          </button>
+        </div>
+      ) : null}
+
+      {outcome ? (
+        <>
+          <p className="data-section__hint">
+            {strings.cstimer.imported(outcome.imported)}{' '}
+            {outcome.imported > 0 ? strings.cstimer.whereToFind : ''}
+          </p>
+          <SkippedRows rows={outcome.skipped} />
+        </>
+      ) : null}
+    </section>
+  );
+}
+
+function CsTimerPreview({ state }: { state: Extract<CsTimerState, { status: 'preview' }> }) {
+  const { plan } = state;
+
+  return (
+    <div className="import-preview">
+      <p className="data-section__hint">
+        {strings.cstimer.found(plan.newSolves, plan.sessions.length)} ·{' '}
+        {strings.cstimer.withPhases(plan.withPhases)}
+        {plan.duplicates > 0 ? ` · ${strings.cstimer.duplicates(plan.duplicates)}` : ''}
+        {plan.skipped.length > 0 ? ` · ${strings.cstimer.skippedRows(plan.skipped.length)}` : ''}
+      </p>
+
+      {state.isCsv ? (
+        <p className="data-section__hint">
+          {strings.cstimer.csvNote(plan.sessions[0]?.name ?? state.filename)}
+        </p>
+      ) : null}
+
+      {plan.newSolves === 0 ? (
+        <p className="data-section__hint">{strings.cstimer.nothingNew}</p>
+      ) : (
+        <table className="preview-table">
+          <thead>
+            <tr>
+              <th scope="col">{strings.cstimer.session}</th>
+              <th scope="col">{strings.cstimer.puzzle}</th>
+              <th scope="col">{strings.cstimer.newSolves}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {plan.sessions.map((session) => (
+              <tr key={`${session.name}-${session.puzzle}`}>
+                <th scope="row">{session.name}</th>
+                <td>{session.puzzle}</td>
+                <td>{session.solves.length}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {plan.unsupported.length > 0 ? (
+        <>
+          <h3 className="data-section__subtitle">{strings.cstimer.unsupportedTitle}</h3>
+          <ul className="data-section__list">
+            {plan.unsupported.map((session) => (
+              <li key={session.name}>
+                {strings.cstimer.unsupported(
+                  session.name,
+                  session.scrambleType,
+                  session.solves,
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
+      <SkippedRows rows={plan.skipped} />
+    </div>
+  );
+}
+
+/** Grouped by what was wrong with them — a list of two thousand would say less. */
+function SkippedRows({ rows }: { rows: readonly SkippedRow[] }) {
+  if (rows.length === 0) return null;
+
+  const byReason = new Map<SkipReason, SkippedRow[]>();
+  for (const row of rows) {
+    const group = byReason.get(row.reason) ?? [];
+    group.push(row);
+    byReason.set(row.reason, group);
+  }
+
+  return (
+    <>
+      <h3 className="data-section__subtitle">{strings.cstimer.skippedTitle}</h3>
+      <ul className="data-section__list">
+        {[...byReason].map(([reason, group]) => (
+          <li key={reason}>
+            {strings.cstimer.reasons[reason]} — {group.length}
+            {': '}
+            {group
+              .slice(0, SHOWN_SKIPPED)
+              .map((row) => `${row.session} #${row.index}`)
+              .join(', ')}
+            {group.length > SHOWN_SKIPPED ? '…' : ''}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** Enough to find them in csTimer; the count says how many more there are. */
+const SHOWN_SKIPPED = 5;
 
 /**
  * The way out of a database that stopped answering, and the record of what

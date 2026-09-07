@@ -374,10 +374,63 @@ dopočítat délky fází, obráceně to při chybějící fázi nejde) a celý 
   **neexportuje** a import ho nikdy nepřepíše — ani v režimu replace
 - „smazat všechna data“ je jediné mazání **bez** tombstonů: jinak by po něm
   nešel naimportovat vlastní starší export
+- **import z csTimeru** je jednosměrný a jen přidává (viz 3.8)
 - **CSV export solvů** je bonus pro tabulkové procesory, ne záloha: jeden řádek
   na solve (čas, penalta, scramble, poznámka, tagy, délky fází ve sloupcích),
   jde jen ven a nikdy se nečte zpátky. Datum je `YYYY-MM-DD HH:MM:SS` v místním
   čase, soubor začíná BOM (jinak Excel rozbije diakritiku v poznámce)
+
+### 3.8 Import z csTimeru
+
+Jednosměrná cesta dovnitř pro člověka, který přichází z csTimeru. Umí obě jeho
+varianty exportu: **JSON** z Export/Import → *Export to file* (csTimer mu dává
+příponu `.txt`, takže se formát pozná podle obsahu, ne podle jména) a **CSV**
+jedné session.
+
+**Formát je odečtený ze zdrojáku csTimeru** (`src/js/stats/stats.js`,
+`src/js/timer.js`), ne odhadnutý — jeden solve je
+
+```
+[[penalta, konec fáze N, konec fáze N-1, …, konec fáze 1], scramble, komentář, unix sekundy, rozšíření?]
+```
+
+a rozhodují dvě věci: `penalta` je `0` / `2000` (+2) / `-1` (DNF) a index 1 je
+**surový** čas — csTimer zobrazuje `penalta + čas`, takže uložené číslo je čas
+před penaltou, přesně jako `rawMs` tady. Hranice fází jdou od indexu 2
+**pozpátku** (ťuknutí, které ukončilo první fázi, se zapisuje jako poslední),
+jsou kumulativní od startu, a obrácené dávají naše pořadí.
+
+**Co se mapuje:** čas → `rawMs`, penalta → `penalty` (vždy `penaltySource:
+'manual'` — naše inspekce ji nenastavila), scramble, komentář → `note`,
+timestamp → `startedAt` i `createdAt` (solve patří do doby, kdy se stal),
+název session z `properties.sessionData`, typ scramblu → `puzzle` podle
+prefixu (`333*`, `222*`, `444*`, `555*`, `pyr*`, `skb*`, `sq1/sqr*`, `clk*`,
+`mgm*`). Inspekci csTimer neexportuje, takže `inspectionMs: null`.
+
+**Pravidla, na kterých import stojí:**
+
+- **fáze jen při shodném počtu.** Solve měřený na tolik fází, kolik jich má naše
+  metoda (CFOP = 4), dostane splity; jakýkoli jiný počet se naimportuje **bez
+  fází** — hranice mezi fázemi, které neumíme pojmenovat, by se musela hádat
+- **nikdy se nemíchá do stávající session.** Každá csTimer session je nová
+  session pod svým jménem a **žádná se nestane aktivní** (import nesmí odsunout
+  session, do které člověk zrovna měří)
+- **opakovaný import nic nepřidá.** Duplicita = stejný `startedAt` a stejný
+  `rawMs`; klíč se staví i ze souboru samotného, takže dvakrát zapsaný solve
+  přijde jednou. Session, ze které by nezbylo nic nového, se **vůbec nezaloží**
+  — jinak by každý další import nechával prázdné session
+- **co neumíme, se řekne.** Session na 6×6 nebo na cokoli, pro co tu není
+  puzzle, se vypíše v náhledu; rozbitý řádek se přeskočí a na konci je soupis
+  s důvody (nečitelný čas, penalta, datum, rozbitý řádek) — celý import na
+  jednom řádku nespadne
+- **náhled napřed, zápis až po potvrzení**, jako u vlastního importu
+- **zápis po dávkách** (250 řádků) s ukazatelem průběhu; 3000 solvů je běžná
+  velikost a jedna transakce přes všechny by blokovala hlavní vlákno (a je to
+  přesně ten druh dlouhé Dexie transakce, co commituje moc brzo)
+
+**CSV umí míň a říká to:** nese formátované časy (setiny, +2 už v čase),
+žádný název session a žádné puzzle. Jde tedy dovnitř jako 3×3 pod jménem
+souboru a náhled na to upozorní — bezztrátový je JSON.
 
 ## 4. Datový model
 
@@ -677,7 +730,7 @@ formátů žije v `src/db/migrations/import/`.
 | 7 | **Trenažér — případ** | `<twisty-player>`, varianty algoritmů, statistiky případu |
 | 8 | **Drill** | timer nad náhodným případem z vybrané podmnožiny |
 | 9 | **Nastavení** | timer, vzhled, kalibrace mikrofonu s live meterem |
-| 10 | **Data** | export (JSON záloha + CSV solvů), import (preview + merge/replace), smazání všech dat, troubleshooting |
+| 10 | **Data** | export (JSON záloha + CSV solvů), import (preview + merge/replace), import z csTimeru, smazání všech dat, troubleshooting |
 
 Navigace: **hamburger menu** v hlavičce se všemi routami; hlavička ukazuje název
 aktuální obrazovky. Je **přišpendlená k hornímu okraji** — cesta ze stránky musí

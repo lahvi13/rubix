@@ -5,6 +5,7 @@ import { db } from '../../../db/schema';
 import { createSession } from '../../../db/repositories/session-repository';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { buildExportFile, clearAllData } from '../../../db/repositories/transfer-repository';
+import { seedPacks } from '../../../db/seed/seed';
 import { DataScreen } from './DataScreen';
 
 async function exportedFile(): Promise<File> {
@@ -118,4 +119,76 @@ describe('DataScreen', () => {
     });
     expect(screen.getByText('All data deleted.')).toBeInTheDocument();
   }, 15_000);
+});
+
+/**
+ * A real csTimer export, byte for byte — csTimer writes its JSON with a .txt
+ * name, which is exactly the case that would trip a screen that trusted the
+ * extension.
+ */
+const CSTIMER_EXPORT =
+  '{"session1":[[[0,2056],"D\' R F2 B2 L F\' R U2 B\' U2 B2 R2 B2 U2 R2 D\' L2 F2 R2","",1788509385]],' +
+  '"session2":[],"properties":{"sessionData":"{\\"1\\":{\\"name\\":1,\\"opt\\":{},\\"rank\\":1}}"}}';
+
+describe('DataScreen, importing from csTimer', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    await seedPacks();
+  });
+
+  it('previews the file, then writes it into a session of its own', async () => {
+    const user = userEvent.setup();
+    const file = new File([CSTIMER_EXPORT], 'cstimer_20260907_171755.txt', {
+      type: 'text/plain',
+    });
+
+    render(<DataScreen />);
+    await user.upload(screen.getByLabelText('Choose a csTimer file'), file);
+
+    expect(await screen.findByText(/1 solve in 1 session/)).toBeInTheDocument();
+    expect(await db.solves.count()).toBe(0);
+
+    await user.click(screen.getByRole('button', { name: 'Import from csTimer' }));
+
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+    const solve = await db.solves.toCollection().first();
+    expect(solve?.rawMs).toBe(2056);
+    expect(screen.getByText(/Imported 1 solve from csTimer./)).toBeInTheDocument();
+  });
+
+  it('says a second import of the same file has nothing to add', async () => {
+    const user = userEvent.setup();
+    const file = () =>
+      new File([CSTIMER_EXPORT], 'cstimer.txt', { type: 'text/plain' });
+
+    render(<DataScreen />);
+    const input = screen.getByLabelText('Choose a csTimer file');
+
+    await user.upload(input, file());
+    await user.click(await screen.findByRole('button', { name: 'Import from csTimer' }));
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+
+    await user.upload(input, file());
+
+    expect(await screen.findByText('Every solve in this file is already here.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Import from csTimer' })).toBeDisabled();
+  });
+
+  it('refuses a file that is not a csTimer export', async () => {
+    const user = userEvent.setup();
+
+    render(<DataScreen />);
+    await user.upload(
+      screen.getByLabelText('Choose a csTimer file'),
+      new File(['{"format":"rubix-export"}'], 'backup.json', { type: 'application/json' }),
+    );
+
+    expect(
+      await screen.findByText('That file is JSON, but not a csTimer export.'),
+    ).toBeInTheDocument();
+  });
 });
