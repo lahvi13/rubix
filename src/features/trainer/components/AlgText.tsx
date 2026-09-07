@@ -15,6 +15,12 @@ interface AlgTextProps {
    * place.
    */
   playingMove?: number | null;
+  /**
+   * The list version: the blocks in their colours, without the names above
+   * them. A case card is a thumb wide — there is no room for a word over every
+   * trigger — and the colour is what the name was learned as.
+   */
+  compact?: boolean;
 }
 
 /**
@@ -22,7 +28,14 @@ interface AlgTextProps {
  * one move become one labelled block, which is how the algorithm is actually
  * remembered.
  */
-export function AlgText({ moves, triggers, onPlay, playLabel, playingMove }: AlgTextProps) {
+export function AlgText({
+  moves,
+  triggers,
+  onPlay,
+  playLabel,
+  playingMove,
+  compact = false,
+}: AlgTextProps) {
   const segments = segmentAlg(moves, triggers);
 
   // The player counts moves through the whole algorithm, so each segment has to
@@ -39,7 +52,9 @@ export function AlgText({ moves, triggers, onPlay, playLabel, playingMove }: Alg
         className={segment.trigger ? 'alg__part alg__part--trigger' : 'alg__part'}
         style={triggerStyle(segment.trigger?.colour)}
       >
-        {segment.trigger ? <span className="alg__label">{segment.trigger.name}</span> : null}
+        {segment.trigger && !compact ? (
+          <span className="alg__label">{segment.trigger.name}</span>
+        ) : null}
         <span className="alg__moves">
           {segment.moves.map((move, position) => (
             <Fragment key={offset + position}>
@@ -57,10 +72,12 @@ export function AlgText({ moves, triggers, onPlay, playLabel, playingMove }: Alg
     );
   });
 
-  if (!onPlay) return <span className="alg">{content}</span>;
+  const className = compact ? 'alg alg--compact' : 'alg';
+
+  if (!onPlay) return <span className={className}>{content}</span>;
 
   return (
-    <button type="button" className="alg alg--play" onClick={onPlay} title={playLabel}>
+    <button type="button" className={`${className} alg--play`} onClick={onPlay} title={playLabel}>
       {content}
     </button>
   );

@@ -3,11 +3,14 @@ import { CubeDiagram } from '../../../components/CubeDiagram';
 import { strings } from '../../../lib/strings';
 import { CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { navigate } from '../../../app/router';
+import { parseAlg } from '../../../domain/cube/notation';
+import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { diagramFor, type Diagram } from '../case-view';
 import { useAlgSets, useSetCases, type CaseGroup, type TrainerCase } from '../hooks/use-alg-cases';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { useTriggers } from '../hooks/use-triggers';
+import { AlgText } from './AlgText';
 import { CaseDetail } from './CaseDetail';
 import { NotationReference } from './NotationReference';
 import { SetSummary } from './SetSummary';
@@ -140,6 +143,7 @@ export function TrainerScreen() {
                 diagram={diagramFor(setId ?? '', group.name)}
                 skin={skin}
                 showAlg={showAlgs}
+                triggers={definitions}
                 onOpen={() => setOpenCase({ id: entry.algCase.id, group: group.name })}
               />
             ))}
@@ -173,12 +177,18 @@ interface CaseCardProps {
   diagram: Diagram;
   skin: ReturnType<typeof useCubeSkin>;
   showAlg: boolean;
+  triggers: readonly TriggerDefinition[];
   onOpen: () => void;
 }
 
-function CaseCard({ entry, diagram, skin, showAlg, onOpen }: CaseCardProps) {
+function CaseCard({ entry, diagram, skin, showAlg, triggers, onOpen }: CaseCardProps) {
+  // Read top down, the same way the case sheet reads: which case this is, the
+  // cube it is, and how it is solved.
+  const parsed = showAlg && entry.algorithm ? parseAlg(entry.algorithm.moves) : null;
+
   return (
     <button type="button" className="case-card" onClick={onOpen}>
+      <span className="case-card__name">{entry.algCase.name}</span>
       <CubeDiagram
         className="case-card__diagram"
         state={entry.state}
@@ -187,10 +197,7 @@ function CaseCard({ entry, diagram, skin, showAlg, onOpen }: CaseCardProps) {
         skin={skin}
         label={null}
       />
-      <span className="case-card__name">{entry.algCase.name}</span>
-      {showAlg && entry.algorithm ? (
-        <span className="case-card__alg">{entry.algorithm.moves}</span>
-      ) : null}
+      {parsed?.ok ? <AlgText moves={parsed.moves} triggers={triggers} compact /> : null}
     </button>
   );
 }

@@ -1402,15 +1402,7 @@ button[disabled] {
   aspect-ratio: 1;
 }
 
-.case-card__alg {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.35;
-  letter-spacing: 0.01em;
-  overflow-wrap: anywhere;
-}
-
+/* Above the cube, the way the case sheet names it. */
 .case-card__name {
   font-size: var(--text-xs);
   color: var(--text);
@@ -1773,6 +1765,27 @@ button[disabled] {
   padding: var(--space-1) var(--space-3);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+}
+
+/*
+ * The same algorithm on a case card, which is a thumb wide: the blocks keep
+ * their colours and lose their names — there is no room for a word over every
+ * trigger, and by the list the reader knows the colours.
+ */
+.alg--compact {
+  width: 100%;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.alg--compact .alg__part {
+  margin: var(--space-1) calc(var(--space-2) / 2) 0;
+}
+
+.alg--compact .alg__part--trigger .alg__moves {
+  padding: 0 var(--space-2);
 }
 
 .alg__label {
