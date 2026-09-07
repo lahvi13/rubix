@@ -4,7 +4,8 @@
  *
  * `null` means "this sticker does not matter for the case" — an OLL diagram is
  * yellow and grey, not a full colour picture of a cube nobody has to solve,
- * and an F2L diagram shows the pair being solved and little else.
+ * and an F2L diagram shows the two layers the pair goes into, not the layer
+ * it is coming from.
  */
 
 import type { Face } from './notation';
@@ -21,8 +22,12 @@ export type Stickering =
   | 'corners'
   /** Colours of the edges only, to read the edge permutation. */
   | 'edges'
-  /** Only the pieces of the front-right pair. */
-  | 'pair';
+  /**
+   * The first two layers as they stand, and the pair being solved wherever it
+   * has got to. An F2L case is about a slot, and a slot only reads as a hole
+   * when the layers around it are there to be seen.
+   */
+  | 'firstTwoLayers';
 
 export type Cell = Face | null;
 
@@ -82,6 +87,11 @@ function isPairSticker(state: CubeState, index: number): boolean {
   return PAIR_PIECES.includes(colours);
 }
 
+/** A piece of the last layer is one wearing the last layer's colour. */
+function isLastLayerPiece(state: CubeState, index: number): boolean {
+  return siblingsOf(index).some((sibling) => colourAt(state, sibling) === 'U');
+}
+
 /** A piece is told apart by how many stickers it has: 3, 2 or 1. */
 function pieceSize(index: number): number {
   return siblingsOf(index).length;
@@ -106,8 +116,11 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       return pieceSize(index) === 3 ? colour : null;
     case 'edges':
       return pieceSize(index) === 2 ? colour : null;
-    case 'pair':
-      return isPairSticker(state, index) ? colour : null;
+    case 'firstTwoLayers':
+      // By piece rather than by place: a last-layer piece that has dropped
+      // into the slot is what makes the slot a hole, and painting it in its
+      // colours would say the slot was filled.
+      return isPairSticker(state, index) || !isLastLayerPiece(state, index) ? colour : null;
   }
 }
 

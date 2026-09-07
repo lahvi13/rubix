@@ -75,21 +75,27 @@ describe('lastLayerView', () => {
   });
 });
 
-describe('pair stickering', () => {
-  it('shows the front-right pair and nothing else', () => {
-    // Pair still in the slot: five stickers belong to it, the corner's three
-    // and the edge's two.
-    const view = isometricView(solvedState(), 'pair');
-    const shown = [...view.top, ...view.front, ...view.right].filter((cell) => cell !== null);
+describe('first two layers stickering', () => {
+  it('shows the two layers the pair goes into, and none of the layer above', () => {
+    const view = isometricView(solvedState(), 'firstTwoLayers');
 
-    // Two of the corner's stickers and one of the edge's face the viewer.
-    expect(shown).toEqual(['F', 'F', 'R', 'R']);
+    // Nothing of the last layer: on a solved cube the pair is already in its
+    // slot, so the top face has nothing of its own to show.
+    expect(view.top).toEqual(new Array(9).fill(null));
+    // Both faces keep their lower two rows, which is where the slots are.
+    expect(view.front).toEqual([null, null, null, 'F', 'F', 'F', 'F', 'F', 'F']);
+    expect(view.right).toEqual([null, null, null, 'R', 'R', 'R', 'R', 'R', 'R']);
   });
 
   it('follows the pair when the algorithm takes it out of the slot', () => {
-    const view = isometricView(after("R U R'"), 'pair');
+    const view = isometricView(after("R U R'"), 'firstTwoLayers');
 
+    // The pair is up in the last layer now, and it is the one thing shown
+    // there.
     expect(view.top.some((cell) => cell !== null)).toBe(true);
+    // Its slot reads as a hole: the last-layer pieces that dropped into it
+    // are drawn as nothing, not as pieces that belong there.
+    expect(view.front.slice(3).filter((cell) => cell === null).length).toBeGreaterThan(0);
   });
 });
 

@@ -40,7 +40,7 @@ describe('cube diagrams as text', () => {
   });
 
   it('is a url an <img> can load', () => {
-    const url = diagramUrl(tPerm, 'isometric', 'pair', defaultSkin('dark'));
+    const url = diagramUrl(tPerm, 'isometric', 'firstTwoLayers', defaultSkin('dark'));
 
     expect(url.startsWith('data:image/svg+xml,')).toBe(true);
     expect(decodeURIComponent(url.slice('data:image/svg+xml,'.length))).toContain('<polygon');

@@ -50,7 +50,7 @@ export function diagramFor(setId: string, group: string): Diagram {
   // The one set where dimming earns its cost: an F2L case is two pieces in a
   // whole cube, and without the rest going quiet there is nothing to look at.
   if (setId === 'f2l') {
-    return { view: 'isometric', stickering: 'pair', playerStickering: 'firstTwoLayers' };
+    return { view: 'isometric', stickering: 'firstTwoLayers', playerStickering: 'firstTwoLayers' };
   }
   return { view: 'lastLayer', stickering: 'full', playerStickering: 'full' };
 }
