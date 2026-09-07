@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Penalty, Solve, Split } from '../../db/types';
-import { bestsOf, measuredSolves, phaseAverageTable, phaseTrend } from './phases';
+import {
+  bestPhasesIn,
+  bestsOf,
+  measuredSolves,
+  phaseAverageTable,
+  phaseTrend,
+} from './phases';
 
 const PHASES = ['cross', 'f2l', 'oll', 'pll'];
 
@@ -220,5 +226,34 @@ describe('bestsOf', () => {
 
   it('reports nothing at all for an empty set', () => {
     expect(bestsOf([], PHASES)).toEqual({ totalMs: null, phaseMs: [null, null, null, null] });
+  });
+});
+
+describe('bestPhasesIn', () => {
+  const fast = solve(20_000, [2000, 10_000, 14_000]); // cross 2.0, f2l 8.0, oll 4.0, pll 6.0
+  const slow = solve(18_000, [3000, 9000, 15_000]); //  cross 3.0, f2l 6.0, oll 6.0, pll 3.0
+  const bests = bestsOf([fast, slow], PHASES);
+
+  it('names the phases of this solve that are the best of the set', () => {
+    expect(bestPhasesIn(fast, PHASES, bests)).toEqual(['cross', 'oll']);
+    expect(bestPhasesIn(slow, PHASES, bests)).toEqual(['f2l', 'pll']);
+  });
+
+  it('names both when two solves tie on a phase', () => {
+    const twin = solve(30_000, [2000, 20_000, 26_000]); // cross 2.0, same as fast
+    const tied = bestsOf([fast, twin], PHASES);
+    expect(bestPhasesIn(twin, PHASES, tied)).toContain('cross');
+    expect(bestPhasesIn(fast, PHASES, tied)).toContain('cross');
+  });
+
+  it('names nothing for a DNF, whose phases describe a solve that did not work', () => {
+    const dnf = solve(5000, [500, 2000, 3000], 'dnf');
+    expect(bestPhasesIn(dnf, PHASES, bestsOf([fast, dnf], PHASES))).toEqual([]);
+  });
+
+  it('skips a phase whose boundary was never recorded, having no length to compare', () => {
+    // Only the cross was tapped, so f2l onwards is one unknown stretch.
+    const partial = solve(20_000, [2000]);
+    expect(bestPhasesIn(partial, PHASES, bestsOf([fast, partial], PHASES))).toEqual(['cross']);
   });
 });

@@ -175,6 +175,26 @@ export function bestsOf(solves: readonly Solve[], phaseKeys: readonly string[]):
 }
 
 /**
+ * Which phases of one solve are the fastest that phase has been in the set —
+ * the rule the bar marks a block by, and the rule the row asks whether it
+ * holds anything worth coming back to. One function, so the mark on the row
+ * and the mark on the block can never disagree.
+ *
+ * A phase whose boundary was never recorded has no length to compare, and a
+ * DNF's phases describe a solve that did not work.
+ */
+export function bestPhasesIn(
+  solve: Solve,
+  phaseKeys: readonly string[],
+  bests: Bests,
+): string[] {
+  if (isDnf(solve)) return [];
+  return phaseDurations(solve.splits, phaseKeys, solve.rawMs)
+    .filter((duration, index) => duration.ms !== null && duration.ms === bests.phaseMs[index])
+    .map((duration) => duration.phase);
+}
+
+/**
  * How long each phase takes as the session goes on. Rolling mean rather than
  * the raw times: one solve says nothing about whether the cross got faster.
  *

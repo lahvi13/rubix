@@ -5,8 +5,8 @@ interface SolvePhasesProps {
   solve: Solve;
   phases: readonly MethodPhase[];
   detail: PhaseBarDetail;
-  /** Fastest each phase has been in the list this row belongs to, in method order. */
-  bestMs?: readonly (number | null)[];
+  /** Phases of this solve that are the fastest that phase has been in the list. */
+  bestPhases?: readonly string[];
 }
 
 /**
@@ -15,7 +15,7 @@ interface SolvePhasesProps {
  * timed as a whole. The timer's list and the history's list want the same
  * thing here, so they ask for it in the same place.
  */
-export function SolvePhases({ solve, phases, detail, bestMs }: SolvePhasesProps) {
+export function SolvePhases({ solve, phases, detail, bestPhases }: SolvePhasesProps) {
   if (solve.splits.length === 0) return null;
 
   return (
@@ -25,7 +25,7 @@ export function SolvePhases({ solve, phases, detail, bestMs }: SolvePhasesProps)
         phases={phases}
         rawMs={solve.rawMs}
         detail={detail}
-        bestMs={bestMs}
+        bestPhases={bestPhases}
       />
     </span>
   );

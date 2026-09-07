@@ -34,8 +34,22 @@ describe('HistoryScreen', () => {
 
     render(<HistoryScreen />);
 
-    const times = await screen.findAllByText(/^\d+\.\d{2}$/);
-    expect(times.map((node) => node.textContent)).toEqual(['9.99', '12.34']);
+    const times = await screen.findAllByText(/^\d+\.\d{2}/);
+    // The fastest of them wears the mark that says so; the order is the point here.
+    expect(times.map((node) => node.textContent?.replace('★', ''))).toEqual(['9.99', '12.34']);
+  });
+
+  it('marks the row holding a best, and lights it', async () => {
+    await seedSolve(sessionId, 12_340);
+    await seedSolve(sessionId, 9990);
+
+    render(<HistoryScreen />);
+
+    const marks = await screen.findAllByLabelText('Holds a best of this view');
+    expect(marks).toHaveLength(1);
+    const row = marks[0]?.closest('.history__row');
+    expect(row).toHaveClass('is-notable');
+    expect(row?.textContent).toContain('9.99');
   });
 
   it('applies a penalty from the detail drawer and shows the new result', async () => {

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
-import type { Bests } from '../../../domain/stats/phases';
+import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { now } from '../../../lib/clock';
 import { formatTime, formatWhen } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -110,6 +110,7 @@ export function HistoryScreen() {
               key={solve.id}
               solve={solve}
               phases={phases}
+              phaseKeys={phaseKeys}
               bests={history.bests}
               tagColors={solve.tagIds.map((id) => tags.byId.get(id)?.color ?? '#555')}
               isSelected={selected.has(solve.id)}
@@ -136,6 +137,7 @@ export function HistoryScreen() {
 interface HistoryRowProps {
   solve: Solve;
   phases: readonly MethodPhase[];
+  phaseKeys: readonly string[];
   bests: Bests;
   tagColors: string[];
   isSelected: boolean;
@@ -146,6 +148,7 @@ interface HistoryRowProps {
 function HistoryRow({
   solve,
   phases,
+  phaseKeys,
   bests,
   tagColors,
   isSelected,
@@ -156,9 +159,14 @@ function HistoryRow({
   const resultMs = finalMs(solve);
   // A DNF has no result, so it cannot be the best one however small its rawMs.
   const isBest = resultMs !== null && resultMs === bests.totalMs;
+  const bestPhases = bestPhasesIn(solve, phaseKeys, bests);
+  // Worth coming back to: it holds the best result, or the fastest one of its
+  // phases has been. The whole row is lit rather than only the number, so the
+  // ones to look at can be found without reading any of them.
+  const holdsBest = isBest || bestPhases.length > 0;
 
   return (
-    <li className="history__row">
+    <li className={holdsBest ? 'history__row is-notable' : 'history__row'}>
       <input
         type="checkbox"
         checked={isSelected}
@@ -168,6 +176,11 @@ function HistoryRow({
       <button type="button" className="history__open" onClick={onOpen}>
         <span className={isBest ? 'history__time is-best' : 'history__time'}>
           {formatTime(resultMs)}
+          {holdsBest ? (
+            <span className="history__best" role="img" aria-label={strings.history.holdsBest}>
+              ★
+            </span>
+          ) : null}
         </span>
         <span className="history__meta">
           {formatWhen(solve.createdAt, at)}
@@ -181,7 +194,7 @@ function HistoryRow({
         </span>
         {/* Which phase the solve went in, and how much of it each one took —
             the question the history is read with. */}
-        <SolvePhases solve={solve} phases={phases} detail="shares" bestMs={bests.phaseMs} />
+        <SolvePhases solve={solve} phases={phases} detail="shares" bestPhases={bestPhases} />
       </button>
     </li>
   );

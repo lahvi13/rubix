@@ -102,6 +102,8 @@ export const strings = {
     rawTime: 'Time',
     invalidTime: 'Use 12.34 or 1:23.45',
     star: '★',
+    /** The mark on a row that holds a best — not the same star as a starred solve. */
+    holdsBest: 'Holds a best of this view',
     tags: 'Tags',
     newTag: 'New tag',
     note: 'Note',

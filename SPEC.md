@@ -319,7 +319,10 @@ od kostky.
   — vždycky nad tím, co filtry pustí, ne nad celou session, a bez DNF i bez
   vynechaných fází (skip je případ, který nepřišel, ne rychle složené OLL; jinak by
   jediný skip zůstal nejlepším OLL napořád). Nejlepší čas
-  je barvou, nejlepší fáze prstencem kolem svého bloku. Historie proto čte celý
+  je barvou, nejlepší fáze prstencem kolem svého bloku. **Řádek, který drží
+  aspoň jedno z toho, se celý rozsvítí** (vyzvednutý podklad + accent hrana) a dostane
+  hvězdičku k času — ta je v accentu a nadepsaná, aby se nepletla se ztlumenou
+  hvězdičkou „mám ho v oblíbených" v meta řádku. Historie proto čte celý
   vyfiltrovaný výběr a stránkuje ho až při vykreslení: nejlepší čas, který se zlepší
   tím, že uživatel odroluje níž, není nejlepší čas
 - statistiky: průměrné časy fází nad session, po oknech ao5 / ao12 / ao50 / ao100 / ALL.

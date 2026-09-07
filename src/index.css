@@ -930,6 +930,33 @@ button[disabled] {
   font-weight: 600;
 }
 
+/*
+ * The row holds a best — the result, or the fastest one of its phases has
+ * been. Lit as a whole, because the point of the mark is to be found while
+ * scrolling past, and a number in a colour is not something anyone catches at
+ * that speed. Raised rather than tinted: the row already carries the phase
+ * colours, and a wash behind them would fight with every one of them.
+ */
+.history__row.is-notable {
+  background: var(--surface-raised);
+  box-shadow: inset 2px 0 0 var(--accent);
+  /* The ring around a best block breaks the block off its ground, so the
+     ground it is told about has to be this row's, not the list's. */
+  --bar-ground: var(--surface-raised);
+}
+
+/*
+ * Attached to the time rather than set in the meta line, where the star that
+ * means "I starred this" already lives. Accent, small and superscript, so the
+ * two are never read as the same mark.
+ */
+.history__best {
+  margin-left: 0.3em;
+  font-size: 0.62em;
+  vertical-align: super;
+  color: var(--accent);
+}
+
 .history__meta {
   color: var(--muted);
   font-size: var(--text-sm);
@@ -2644,7 +2671,7 @@ input[type='radio'] {
  */
 .phase-bar__segment.is-best {
   box-shadow:
-    0 0 0 1.5px var(--surface),
+    0 0 0 1.5px var(--bar-ground, var(--surface)),
     0 0 0 3px var(--phase);
 }
 

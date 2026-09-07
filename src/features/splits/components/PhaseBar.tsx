@@ -22,11 +22,11 @@ interface PhaseBarProps {
   rawMs: number;
   detail?: PhaseBarDetail;
   /**
-   * Fastest each phase has been over the set the solve is being read in, in
-   * method order. A block matching its entry is marked; leaving this out is
-   * how a bar says it has nothing to compare against.
+   * Phases of this solve that are the fastest that phase has been over the set
+   * it is being read in — `bestPhasesIn`. Leaving it out is how a bar says it
+   * has nothing to compare against.
    */
-  bestMs?: readonly (number | null)[];
+  bestPhases?: readonly string[];
 }
 
 /** React's style type does not know about custom properties; this one does. */
@@ -51,7 +51,7 @@ export const PhaseBar = memo(function PhaseBar({
   phases,
   rawMs,
   detail = 'labels',
-  bestMs,
+  bestPhases,
 }: PhaseBarProps) {
   const keys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   const segments = useMemo(() => phaseSegments(splits, keys, rawMs), [splits, keys, rawMs]);
@@ -63,11 +63,10 @@ export const PhaseBar = memo(function PhaseBar({
 
   // A block covering two phases has no single length to beat: only the sum of
   // the pair is known, and the pair is not what any best was measured over.
-  const isBest = (segment: { phases: string[]; ms: number }) => {
-    if (bestMs === undefined || segment.phases.length !== 1) return false;
-    const index = keys.indexOf(segment.phases[0] ?? '');
-    return index >= 0 && bestMs[index] === segment.ms;
-  };
+  const isBest = (segment: { phases: string[] }) =>
+    bestPhases !== undefined &&
+    segment.phases.length === 1 &&
+    bestPhases.includes(segment.phases[0] ?? '');
 
   const colourOf = (segment: { phases: string[] }) =>
     segment.phases.length === 1
