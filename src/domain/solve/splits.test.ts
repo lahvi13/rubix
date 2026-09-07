@@ -7,6 +7,7 @@ import {
   normaliseSplits,
   phaseDurations,
   phaseSegments,
+  phaseShares,
   removeSplit,
   splitBounds,
 } from './splits';
@@ -216,5 +217,51 @@ describe('phaseSegments', () => {
 
   it('draws nothing for a solve that was not timed by phase', () => {
     expect(phaseSegments([], PHASES, 9000)).toEqual([]);
+  });
+});
+
+describe('phaseShares', () => {
+  const sharesOf = (splits: Split[], rawMs: number) =>
+    phaseShares(phaseSegments(splits, PHASES, rawMs), rawMs);
+
+  it.each<[string, Split[], number, number[]]>([
+    [
+      'a quarter each',
+      [at('cross', 5000), at('f2l', 10_000), at('oll', 15_000)],
+      20_000,
+      [25, 25, 25, 25],
+    ],
+    // Three equal thirds tie on the remainder, and the spare percent goes to
+    // the earliest of them.
+    ['thirds still add up to a hundred', [at('cross', 10_000), at('f2l', 20_000)], 30_000, [34, 33, 33]],
+    [
+      'a skipped phase is worth nothing',
+      [at('cross', 2000), at('f2l', 10_000), at('oll', 10_000)],
+      20_000,
+      [10, 40, 0, 50],
+    ],
+    [
+      'a merged pair is one share, not two',
+      [at('cross', 2000), at('oll', 14_000)],
+      20_000,
+      [10, 60, 30],
+    ],
+    [
+      'the shares of a solve that ended early are of the whole solve',
+      [at('cross', 2000)],
+      10_000,
+      [20, 80],
+    ],
+    // Not a solve anyone can perform, but a share of nothing must not be NaN.
+    ['a solve of no length is nought per cent all the way along', [at('cross', 0)], 0, [0, 0]],
+  ])('%s', (_name, splits, rawMs, expected) => {
+    expect(sharesOf(splits, rawMs)).toEqual(expected);
+  });
+
+  it('is measured against the raw time, so a +2 takes nothing off any phase', () => {
+    // Same splits, same rawMs: the caller never hands the penalty in, which is
+    // what keeps a +2 out of the numbers.
+    const splits = [at('cross', 2000), at('f2l', 10_000), at('oll', 14_000)];
+    expect(sharesOf(splits, 20_000)).toEqual([10, 40, 20, 30]);
   });
 });

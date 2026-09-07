@@ -306,8 +306,22 @@ od kostky.
   čas, o kterém se uživatel nedozvěděl
 - **oprava `rawMs` zahodí hranice, které se do zkráceného solvu nevejdou** — split
   za koncem solvu není split
-- **v historii nese řádek tenký pruh fází bez čísel** — jinak se fázově měřený solve
-  nedá od obyčejného odlišit jinak než tím, že se otevře
+- **pruh je jedna komponenta ve třech hustotách** (`PhaseBar`, prop `detail`), ne kus
+  kódu na obrazovku: `shape` = jen proužek (seznam pod běžícím timerem, kde jde vidět
+  akorát tvar), `shares` = procentní podíl každé fáze napsaný do jejího bloku
+  (historie a detail solvu), `labels` = jména a časy pod pruhem (dokončený solve pod
+  hodinami)
+- **podíly se počítají z `rawMs`** — z času, který se doopravdy točil. Inspekce v něm
+  není a `+2` nepatří do žádné fáze; kdyby se počítalo z výsledného času, každý podíl
+  by se o stejný vymyšlený kus zmenšil. Zaokrouhluje se metodou největšího zbytku,
+  aby čísla pod jedním pruhem dala 100
+- **v historii je zvýrazněný nejlepší výsledek a nejlepší dosažená délka každé fáze**
+  — vždycky nad tím, co filtry pustí, ne nad celou session, a bez DNF i bez
+  vynechaných fází (skip je případ, který nepřišel, ne rychle složené OLL; jinak by
+  jediný skip zůstal nejlepším OLL napořád). Nejlepší čas
+  je barvou, nejlepší fáze prstencem kolem svého bloku. Historie proto čte celý
+  vyfiltrovaný výběr a stránkuje ho až při vykreslení: nejlepší čas, který se zlepší
+  tím, že uživatel odroluje níž, není nejlepší čas
 - statistiky: průměrné časy fází nad session, po oknech ao5 / ao12 / ao50 / ao100 / ALL.
   Sloupce fází se počítají nad **týmiž solvy, které projdou trimem** daného průměru,
   takže se při kompletně zaznamenaných hranicích sečtou na celkový čas vpravo
@@ -647,7 +661,7 @@ formátů žije v `src/db/migrations/import/`.
 | # | Obrazovka | Obsah |
 |---|---|---|
 | 1 | **Timer** | scramble v mřížce (tah na buňku) + náhled, velký čas (setiny tišeji), inspekce s ubývajícím kruhem, přepínač „po fázích“, pruh běžících i dokončených fází, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12/session mean). Během solvu je na obrazovce jen hodiny — vycentrované na viewport a o kus větší |
-| 2 | **Historie** | seznam solvů session s pruhem fází u měřených, filtry (tag, penalta, hvězdička), hromadné akce. Čas u solvu je hodina; u staršího než dnešek i den (a rok, pokud je z jiného) — stejně jako v seznamu na timeru |
+| 2 | **Historie** | seznam solvů session s pruhem fází u měřených (s procentním podílem v každém bloku), zvýrazněný nejlepší výsledek i nejlepší délka každé fáze ve vyfiltrovaném výběru, filtry (tag, penalta, hvězdička), hromadné akce. Čas u solvu je hodina; u staršího než dnešek i den (a rok, pokud je z jiného) — stejně jako v seznamu na timeru |
 | 3 | **Detail solvu** | modal/drawer: čas, scramble + náhled, splity, tagy, poznámka, editace |
 | 4 | **Sessiony** | seznam, založení, přejmenování, archivace, přepnutí aktivní |
 | 5 | **Statistiky** | karty s ao/PB/mean/SD/DNF rate, průměrné a nejlepší časy fází po oknech, stohovaný trend fází, histogram, trend rolling ao12 |

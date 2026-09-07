@@ -1,4 +1,4 @@
-import Dexie from 'dexie';
+import Dexie, { type Collection } from 'dexie';
 import { db } from '../schema';
 import { SPLITS_SCHEMA_VERSION, type Penalty, type Puzzle, type Solve, type Split } from '../types';
 import { finalMs } from '../../domain/solve/final-time';
@@ -87,6 +87,22 @@ export async function listSolves(
   limit: number,
   filters: SolveFilters = {},
 ): Promise<Solve[]> {
+  return matchingSolves(sessionId, filters).limit(limit).toArray();
+}
+
+/**
+ * Every solve the filters match, newest first. The history's list is paged,
+ * but "the best of these" cannot be: a best that improves as more rows are
+ * loaded is not a best, it is a reading of how far somebody has scrolled.
+ */
+export async function listMatchingSolves(
+  sessionId: string,
+  filters: SolveFilters = {},
+): Promise<Solve[]> {
+  return matchingSolves(sessionId, filters).toArray();
+}
+
+function matchingSolves(sessionId: string, filters: SolveFilters): Collection<Solve, string> {
   let collection = db.solves
     .where('[sessionId+createdAt]')
     .between([sessionId, Dexie.minKey], [sessionId, Dexie.maxKey])
@@ -104,7 +120,7 @@ export async function listSolves(
     collection = collection.filter((solve) => solve.tagIds.includes(tagId));
   }
 
-  return collection.limit(limit).toArray();
+  return collection;
 }
 
 /** Oldest first — the order every rolling statistic is defined over. */

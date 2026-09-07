@@ -42,7 +42,7 @@ export function SplitEditor({ solve, phases, onChange }: SplitEditorProps) {
 
   return (
     <div className="splits">
-      <PhaseBar splits={solve.splits} phases={phases} rawMs={solve.rawMs} showLabels={false} />
+      <PhaseBar splits={solve.splits} phases={phases} rawMs={solve.rawMs} detail="shares" />
 
       {/* Two times per row read as one number twice over unless the columns
           say which is which — the first phase makes them equal. */}

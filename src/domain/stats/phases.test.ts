@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Penalty, Solve, Split } from '../../db/types';
-import { measuredSolves, phaseAverageTable, phaseTrend } from './phases';
+import { bestsOf, measuredSolves, phaseAverageTable, phaseTrend } from './phases';
 
 const PHASES = ['cross', 'f2l', 'oll', 'pll'];
 
@@ -170,5 +170,55 @@ describe('phaseTrend', () => {
 
   it('draws nothing for a method with no phases', () => {
     expect(phaseTrend(improving(10), [], 100)).toEqual([]);
+  });
+});
+
+describe('bestsOf', () => {
+  it('finds the fastest result and the fastest each phase has been', () => {
+    const solves = [
+      solve(20_000, [2000, 10_000, 14_000]), // cross 2.0, f2l 8.0, oll 4.0, pll 6.0
+      solve(18_000, [3000, 9000, 15_000]), //  cross 3.0, f2l 6.0, oll 6.0, pll 3.0
+    ];
+    expect(bestsOf(solves, PHASES)).toEqual({
+      totalMs: 18_000,
+      phaseMs: [2000, 6000, 4000, 3000],
+    });
+  });
+
+  it('counts a +2 towards the result, because that is the result', () => {
+    const solves = [solve(20_000, []), solve(19_000, [], 'plus2')];
+    expect(bestsOf(solves, PHASES).totalMs).toBe(20_000);
+  });
+
+  it('leaves a DNF out of both, however fast it was', () => {
+    const solves = [
+      solve(20_000, [2000, 10_000, 14_000]),
+      solve(5000, [500, 2000, 3000], 'dnf'),
+    ];
+    expect(bestsOf(solves, PHASES)).toEqual({
+      totalMs: 20_000,
+      phaseMs: [2000, 8000, 4000, 6000],
+    });
+  });
+
+  it('leaves a skipped phase out, because a skip is not a phase anyone solved', () => {
+    const solves = [
+      solve(20_000, [2000, 10_000, 14_000]), // oll 4.0
+      solve(18_000, [2000, 12_000, 12_000]), // oll skipped
+    ];
+    expect(bestsOf(solves, PHASES).phaseMs[2]).toBe(4000);
+  });
+
+  it('reports nothing for a phase every solve skipped', () => {
+    expect(bestsOf([solve(18_000, [2000, 12_000, 12_000])], PHASES).phaseMs[2]).toBeNull();
+  });
+
+  it('reports nothing for a phase no solve measured', () => {
+    // Only the cross boundary was tapped, so f2l and oll are one unknown pair.
+    expect(bestsOf([solve(20_000, [2000])], PHASES).phaseMs).toEqual([2000, 18_000, null, null]);
+  });
+
+  it('reports nothing at all for an empty set', () => {
+    expect(bestsOf([], PHASES)).toEqual({ totalMs: null, phaseMs: [null, null, null, null] });
   });
 });

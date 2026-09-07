@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
-import { PhaseBar } from '../../splits';
+import { SolvePhases } from '../../splits';
 import { finalMs } from '../../../domain/solve/final-time';
 import { togglePenalty } from '../../../domain/solve/penalty';
 import { now } from '../../../lib/clock';
@@ -88,17 +88,8 @@ export const SolveList = memo(function SolveList({
             </span>
           ) : null}
           {/* Which of them were timed by phase, without opening any. No
-              numbers: at this height only the shape can be read. */}
-          {solve.splits.length > 0 ? (
-            <span className="solves__phases">
-              <PhaseBar
-                splits={solve.splits}
-                phases={phases}
-                rawMs={solve.rawMs}
-                showLabels={false}
-              />
-            </span>
-          ) : null}
+              numbers: this list is a peek under a running timer. */}
+          <SolvePhases solve={solve} phases={phases} detail="shape" />
         </li>
       ))}
     </ol>

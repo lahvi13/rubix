@@ -142,6 +142,38 @@ function meanOf(values: readonly (number | null)[]): number | null {
   return Math.round(known.reduce((sum, value) => sum + value, 0) / known.length);
 }
 
+/** The fastest result and the fastest each phase has been, over one set of solves. */
+export interface Bests {
+  /** null when the set is empty or every solve in it is a DNF. */
+  totalMs: number | null;
+  /** In method order; null for a phase no solve in the set measured. */
+  phaseMs: (number | null)[];
+}
+
+/**
+ * The bests of whatever set is handed in — the history's filtered list, not
+ * the session — so that turning a filter on re-asks the question rather than
+ * keeping an answer about solves that are no longer on screen.
+ *
+ * DNFs take no part: the cross of a solve that was never finished is not the
+ * cross to beat, which is the same rule the 'best' row of the phase table
+ * plays by.
+ *
+ * Neither does a phase of zero length. A skip is a case that did not come up,
+ * not an OLL anyone solved quickly, and once one has happened it would be the
+ * best OLL of every session it is in — which leaves the mark saying nothing
+ * about the phase it is on.
+ */
+export function bestsOf(solves: readonly Solve[], phaseKeys: readonly string[]): Bests {
+  const kept = measuredSolves(solves).filter((solve) => !isDnf(solve));
+  return {
+    totalMs: leastOf(solves.map(finalMs)),
+    phaseMs: phaseKeys.map((phase) =>
+      leastOf(lengthsOfPhase(kept, phaseKeys, phase).filter((ms) => ms > 0)),
+    ),
+  };
+}
+
 /**
  * How long each phase takes as the session goes on. Rolling mean rather than
  * the raw times: one solve says nothing about whether the cross got faster.

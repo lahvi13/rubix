@@ -920,6 +920,16 @@ button[disabled] {
 .history__time {
 }
 
+/*
+ * The best result among the solves the filters match. Colour and weight only:
+ * a badge would have to fit in a row that is already three things wide, and
+ * there is exactly one of these on screen at a time.
+ */
+.history__time.is-best {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .history__meta {
   color: var(--muted);
   font-size: var(--text-sm);
@@ -2436,29 +2446,14 @@ input[type='radio'] {
 
 /* Phase splits */
 
-/* The guided run says which phase it is on; that is all it adds to the clock. */
-/* Spans the row's three columns, under the time it belongs to. */
-.history__phases {
-  grid-column: 1 / -1;
-  margin-top: var(--space-3);
-}
-
-/* Thinner than in the history: here it only says whether a solve had phases. */
-.solves__phases {
+/*
+ * The strip as a row of a list wears it: across the row's columns, under the
+ * time it belongs to. Both lists lay their rows out on a grid, so one rule
+ * covers the history and the peek under the timer alike.
+ */
+.solve-phases {
   grid-column: 1 / -1;
   margin-top: var(--space-2);
-}
-
-.solves__phases .phase-bar {
-  padding: 0;
-}
-
-.solves__phases .phase-bar__track {
-  height: 0.25rem;
-}
-
-.history__phases .phase-bar {
-  padding: 0;
 }
 
 /* The guided solve while it runs: a block per phase, the one in hand lit. */
@@ -2522,14 +2517,6 @@ input[type='radio'] {
 
 .phase-run__label.is-running .phase-run__time {
   color: inherit;
-}
-
-.phase-bar {
-  padding: 0;
-}
-
-.history__phases .phase-bar__track {
-  height: 0.3rem;
 }
 
 /*
@@ -2596,10 +2583,19 @@ input[type='radio'] {
   min-height: 0;
 }
 
+/*
+ * One bar, three densities — see PhaseBar's `detail`. The blocks and their
+ * colours are the same in all three; what changes is how much room the strip
+ * is given and whether it carries its own numbers.
+ */
 .phase-bar {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  padding: 0;
+}
+
+.phase-bar--labels {
   padding: 0 var(--space-2);
 }
 
@@ -2609,10 +2605,47 @@ input[type='radio'] {
   height: 0.5rem;
 }
 
+/* A hint, not a reading: in a list under a running timer only the shape counts. */
+.phase-bar--shape .phase-bar__track {
+  height: 0.25rem;
+}
+
+/* Tall enough to hold a line of text, because it does. */
+.phase-bar--shares .phase-bar__track {
+  height: 1.05rem;
+}
+
 .phase-bar__segment {
   flex-basis: 0;
   min-width: 3px;
   border-radius: var(--radius-pill);
+  background: var(--phase);
+}
+
+/*
+ * The share is written on top of the phase's own colour, so the text takes
+ * the page's background rather than its foreground: the phase colours are
+ * light in the dark theme and dark in the light one, and this way the
+ * contrast follows them without a second palette.
+ */
+.phase-bar--shares .phase-bar__segment {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  color: var(--bg);
+}
+
+/*
+ * The fastest that phase has been in what is on screen. A ring rather than a
+ * brighter fill: the fill already means "this phase", and a block that only
+ * changes shade would read as a different phase.
+ */
+.phase-bar__segment.is-best {
+  box-shadow:
+    0 0 0 1.5px var(--surface),
+    0 0 0 3px var(--phase);
 }
 
 .phase-bar__labels {

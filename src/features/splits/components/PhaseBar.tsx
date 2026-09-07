@@ -1,16 +1,45 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, type CSSProperties } from 'react';
 import type { MethodPhase, Split } from '../../../db/types';
-import { phaseSegments } from '../../../domain/solve/splits';
+import { phaseSegments, phaseShares } from '../../../domain/solve/splits';
 import { formatMs } from '../../../lib/format';
 import { phaseColour } from '../../../lib/phase-colours';
+
+/**
+ * How much of the solve the bar spells out. One component with three
+ * densities rather than one per screen: the timer's list and the history's
+ * list were drawing the same strip through two sets of rules, and every
+ * change to it had to be made twice.
+ *
+ * - `shape` — the strip alone, which is all that can be read at row height
+ * - `shares` — each phase's percentage of the solve, written into its block
+ * - `labels` — names and times under the bar, for a solve on its own
+ */
+export type PhaseBarDetail = 'shape' | 'shares' | 'labels';
 
 interface PhaseBarProps {
   splits: readonly Split[];
   phases: readonly MethodPhase[];
   rawMs: number;
-  /** Names and times under the bar. Off where the bar is only a hint of shape. */
-  showLabels?: boolean;
+  detail?: PhaseBarDetail;
+  /**
+   * Fastest each phase has been over the set the solve is being read in, in
+   * method order. A block matching its entry is marked; leaving this out is
+   * how a bar says it has nothing to compare against.
+   */
+  bestMs?: readonly (number | null)[];
 }
+
+/** React's style type does not know about custom properties; this one does. */
+interface SegmentStyle extends CSSProperties {
+  '--phase': string;
+}
+
+/**
+ * A share below this is a block too narrow to hold its own number at the
+ * largest text size, and half a digit reads as a different number. The block
+ * keeps its colour and its width; only the text goes.
+ */
+const SHARE_LEGIBLE_PERCENT = 12;
 
 /**
  * The solve as a strip: one block per phase, as wide as the phase was long.
@@ -21,47 +50,61 @@ export const PhaseBar = memo(function PhaseBar({
   splits,
   phases,
   rawMs,
-  showLabels = true,
+  detail = 'labels',
+  bestMs,
 }: PhaseBarProps) {
   const keys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   const segments = useMemo(() => phaseSegments(splits, keys, rawMs), [splits, keys, rawMs]);
+  const shares = useMemo(() => phaseShares(segments, rawMs), [segments, rawMs]);
   if (segments.length === 0) return null;
 
   const labelOf = (key: string) => phases.find((phase) => phase.key === key)?.label ?? key;
+  const namesOf = (segment: { phases: string[] }) => segment.phases.map(labelOf).join(' + ');
+
+  // A block covering two phases has no single length to beat: only the sum of
+  // the pair is known, and the pair is not what any best was measured over.
+  const isBest = (segment: { phases: string[]; ms: number }) => {
+    if (bestMs === undefined || segment.phases.length !== 1) return false;
+    const index = keys.indexOf(segment.phases[0] ?? '');
+    return index >= 0 && bestMs[index] === segment.ms;
+  };
+
+  const colourOf = (segment: { phases: string[] }) =>
+    segment.phases.length === 1
+      ? phaseColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
+      : 'var(--muted)';
 
   return (
-    <div className="phase-bar">
+    <div className={`phase-bar phase-bar--${detail}`}>
       <div className="phase-bar__track">
-        {segments.map((segment) => (
-          <span
-            key={segment.startMs}
-            className="phase-bar__segment"
-            style={{
-              // A zero-length phase (a skip) would otherwise vanish; the flex
-              // basis keeps a sliver of it visible.
-              flexGrow: Math.max(segment.ms, 1),
-              background:
-                segment.phases.length === 1
-                  ? phaseColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
-                  : 'var(--muted)',
-            }}
-          />
-        ))}
+        {segments.map((segment, index) => {
+          const style: SegmentStyle = {
+            // A zero-length phase (a skip) would otherwise vanish; the flex
+            // basis keeps a sliver of it visible.
+            flexGrow: Math.max(segment.ms, 1),
+            '--phase': colourOf(segment),
+          };
+          const share = shares[index] ?? 0;
+          return (
+            <span
+              key={segment.startMs}
+              className={isBest(segment) ? 'phase-bar__segment is-best' : 'phase-bar__segment'}
+              style={style}
+              // The share alone does not say which phase it belongs to, and
+              // the names do not fit next to it at this height.
+              title={`${namesOf(segment)} ${formatMs(segment.ms)}`}
+            >
+              {detail === 'shares' && share >= SHARE_LEGIBLE_PERCENT ? `${share}%` : null}
+            </span>
+          );
+        })}
       </div>
-      {showLabels ? (
+      {detail === 'labels' ? (
         <ul className="phase-bar__labels">
           {segments.map((segment) => (
             <li key={segment.startMs} className="phase-bar__label">
-              <span
-                className="phase-bar__name"
-                style={{
-                  color:
-                    segment.phases.length === 1
-                      ? phaseColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
-                      : 'var(--muted)',
-                }}
-              >
-                {segment.phases.map(labelOf).join(' + ')}
+              <span className="phase-bar__name" style={{ color: colourOf(segment) }}>
+                {namesOf(segment)}
               </span>{' '}
               <span className="phase-bar__time">{formatMs(segment.ms)}</span>
             </li>

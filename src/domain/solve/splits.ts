@@ -122,6 +122,39 @@ export function phaseSegments(
 }
 
 /**
+ * What share of the solve each segment took, in whole percent.
+ *
+ * Measured against rawMs — the time actually spent turning. Inspection is not
+ * part of it to begin with, and a +2 belongs to no phase: counting it would
+ * shrink every share by the same invented amount and the numbers would no
+ * longer describe the solve that was performed.
+ *
+ * Rounded by largest remainder rather than each on its own, because the
+ * numbers are read as a group: three shares that come to 99 are a bar that
+ * looks like it lost a percent somewhere. Segments that tie on the remainder
+ * are settled by order, so the same solve always reads the same way.
+ */
+export function phaseShares(segments: readonly PhaseSegment[], rawMs: number): number[] {
+  if (rawMs <= 0) return segments.map(() => 0);
+
+  const exact = segments.map((segment) => (segment.ms / rawMs) * 100);
+  const shares = exact.map((value) => Math.floor(value));
+  const spare =
+    Math.round(exact.reduce((sum, value) => sum + value, 0)) -
+    shares.reduce((sum, value) => sum + value, 0);
+
+  const byRemainder = exact
+    .map((value, index) => ({ remainder: value - Math.floor(value), index }))
+    .sort((a, b) => b.remainder - a.remainder);
+
+  for (let given = 0; given < spare && given < byRemainder.length; given += 1) {
+    const index = byRemainder[given]?.index;
+    if (index !== undefined) shares[index] = (shares[index] ?? 0) + 1;
+  }
+  return shares;
+}
+
+/**
  * Splits sorted into method order and stripped of anything that cannot be
  * read back: phases the method does not have, boundaries at or past the end
  * of the solve, and times that would run backwards.

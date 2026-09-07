@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
+import type { Bests } from '../../../domain/stats/phases';
 import { now } from '../../../lib/clock';
 import { formatTime, formatWhen } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useActiveSession } from '../../sessions';
-import { PhaseBar, usePhases } from '../../splits';
+import { SolvePhases, usePhases } from '../../splits';
 import { useHistory } from '../hooks/use-history';
 import { useTags } from '../hooks/use-tags';
 import { SolveDetailSheet } from './SolveDetailSheet';
@@ -16,8 +17,9 @@ const PENALTY_FILTERS: Penalty[] = ['plus2', 'dnf'];
 
 export function HistoryScreen() {
   const session = useActiveSession(PUZZLE, MODE);
-  const history = useHistory(session?.id ?? null);
   const phases = usePhases(session?.methodId ?? null);
+  const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
+  const history = useHistory(session?.id ?? null, phaseKeys);
   const tags = useTags();
   const [openId, setOpenId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -108,6 +110,7 @@ export function HistoryScreen() {
               key={solve.id}
               solve={solve}
               phases={phases}
+              bests={history.bests}
               tagColors={solve.tagIds.map((id) => tags.byId.get(id)?.color ?? '#555')}
               isSelected={selected.has(solve.id)}
               onToggleSelected={() => toggleSelected(solve.id)}
@@ -133,6 +136,7 @@ export function HistoryScreen() {
 interface HistoryRowProps {
   solve: Solve;
   phases: readonly MethodPhase[];
+  bests: Bests;
   tagColors: string[];
   isSelected: boolean;
   onToggleSelected: () => void;
@@ -142,12 +146,16 @@ interface HistoryRowProps {
 function HistoryRow({
   solve,
   phases,
+  bests,
   tagColors,
   isSelected,
   onToggleSelected,
   onOpen,
 }: HistoryRowProps) {
   const at = now();
+  const resultMs = finalMs(solve);
+  // A DNF has no result, so it cannot be the best one however small its rawMs.
+  const isBest = resultMs !== null && resultMs === bests.totalMs;
 
   return (
     <li className="history__row">
@@ -158,7 +166,9 @@ function HistoryRow({
         aria-label={strings.history.select}
       />
       <button type="button" className="history__open" onClick={onOpen}>
-        <span className="history__time">{formatTime(finalMs(solve))}</span>
+        <span className={isBest ? 'history__time is-best' : 'history__time'}>
+          {formatTime(resultMs)}
+        </span>
         <span className="history__meta">
           {formatWhen(solve.createdAt, at)}
           {solve.starred === 1 ? ' ★' : ''}
@@ -169,18 +179,9 @@ function HistoryRow({
             <span key={index} className="history__dot" style={{ background: color }} />
           ))}
         </span>
-        {/* Which solves were timed by phase, without opening every one of
-            them. No numbers — at this size only the shape is readable. */}
-        {solve.splits.length > 0 ? (
-          <span className="history__phases">
-            <PhaseBar
-              splits={solve.splits}
-              phases={phases}
-              rawMs={solve.rawMs}
-              showLabels={false}
-            />
-          </span>
-        ) : null}
+        {/* Which phase the solve went in, and how much of it each one took —
+            the question the history is read with. */}
+        <SolvePhases solve={solve} phases={phases} detail="shares" bestMs={bests.phaseMs} />
       </button>
     </li>
   );
