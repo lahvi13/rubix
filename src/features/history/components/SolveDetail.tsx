@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CloseIcon } from '../../../components/Icons';
 import type { MethodPhase, Solve, Tag } from '../../../db/types';
 import type { SolvePatch } from '../../../db/repositories/solve-repository';
 import { finalMs } from '../../../domain/solve/final-time';
@@ -62,8 +63,13 @@ export function SolveDetail({
     <aside className="detail" role="dialog" aria-label={strings.history.detailTitle}>
       <header className="detail__header">
         <span className="detail__result">{formatTime(finalMs(solve))}</span>
-        <button type="button" onClick={onClose} aria-label={strings.history.close}>
-          ✕
+        <button
+          type="button"
+          className="detail__close"
+          onClick={onClose}
+          aria-label={strings.history.close}
+        >
+          <CloseIcon />
         </button>
       </header>
 

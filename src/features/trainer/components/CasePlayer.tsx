@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { strings } from '../../../lib/strings';
+import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-camera';
 
 interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
@@ -64,6 +65,8 @@ export function CasePlayer({ setupAlg, alg, stickering, replayToken, onMove }: C
       experimental-stickering={stickering}
       visualization="3D"
       background="none"
+      camera-latitude={CAMERA_LATITUDE}
+      camera-longitude={CAMERA_LONGITUDE}
       control-panel="none"
       hint-facelets="none"
     />

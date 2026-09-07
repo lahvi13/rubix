@@ -44,6 +44,9 @@ interface TwistyPlayerAttributes
   'experimental-setup-anchor'?: 'start' | 'end';
   'experimental-stickering'?: string;
   'tempo-scale'?: number;
+  /** Where the camera stands, in degrees; see lib/twisty-camera.ts. */
+  'camera-latitude'?: number;
+  'camera-longitude'?: number;
 }
 
 declare module 'react' {

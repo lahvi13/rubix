@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
+import { CloseIcon, PlayIcon, StopIcon } from '../../../components/Icons';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { Stickering } from '../../../domain/cube/views';
@@ -42,7 +43,6 @@ export function CaseDetail({
   // Which move the player is turning, so the written algorithm can follow along.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
-  const [previewMode] = useSetting('ui.twistyMode');
   const [showRotationAlgs] = useSetting('trainer.showRotationAlgs');
   const stats = useCaseStat(caseId);
   const attempts = useCaseAttempts(caseId);
@@ -52,13 +52,14 @@ export function CaseDetail({
   const setupMoves = parseAlg(algCase.setupAlg);
   const setup = setupMoves.ok ? setupMoves.moves : [];
   const state = applyAlg(solvedState(), setup);
-  const canPlay = previewMode === '3D';
   // Hiding a variant must never hide the one being drilled.
   const shownAlgorithms = algorithms.filter(
     (algorithm) =>
       showRotationAlgs || algorithm.isActive === 1 || !algorithm.id.endsWith('-pack-grip'),
   );
 
+  // Playing does not ask about the flat/3D setting: that one is about the
+  // still picture, and nothing but a turning cube shows what the moves do.
   const play = (): void => {
     setPlaying(true);
     setReplayToken((token) => token + 1);
@@ -68,15 +69,23 @@ export function CaseDetail({
 
   return (
     <div className="detail case-detail" role="dialog" aria-label={algCase.name}>
-      <div className="detail__header">
-        <h2>{algCase.name}</h2>
-        <button type="button" onClick={onClose}>
-          {strings.history.close}
+      <div className="detail__header detail__header--bare">
+        <button
+          type="button"
+          className="detail__close"
+          onClick={onClose}
+          aria-label={strings.history.close}
+        >
+          <CloseIcon />
         </button>
       </div>
 
+      {/* The name belongs to the picture under it, not to the panel: read
+          together they say which case this is. */}
+      <h2 className="case-detail__name">{algCase.name}</h2>
+
       <div className="case-detail__stage">
-        {isPlaying && canPlay ? (
+        {isPlaying ? (
           <CasePlayer
             // Performed exactly as written. The player paints white on top and
             // the diagrams draw the last layer yellow up, so the colours do not
@@ -101,21 +110,21 @@ export function CaseDetail({
       </div>
 
       <div className="case-detail__controls">
-        {canPlay ? (
-          <button
-            type="button"
-            className="is-primary"
-            onClick={isPlaying ? () => setPlaying(false) : play}
-          >
-            {isPlaying ? strings.trainer.stop : strings.trainer.play}
-          </button>
-        ) : null}
+        <button
+          type="button"
+          className="is-primary case-detail__play"
+          onClick={isPlaying ? () => setPlaying(false) : play}
+          aria-label={isPlaying ? strings.trainer.stop : strings.trainer.play}
+          title={isPlaying ? strings.trainer.stop : strings.trainer.play}
+        >
+          {isPlaying ? <StopIcon /> : <PlayIcon />}
+        </button>
       </div>
 
       <AlgText
         moves={moves}
         triggers={triggers}
-        onPlay={canPlay ? play : undefined}
+        onPlay={play}
         playingMove={isPlaying ? playingMove : null}
         playLabel={strings.trainer.play}
       />

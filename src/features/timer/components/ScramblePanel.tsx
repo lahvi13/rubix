@@ -1,11 +1,13 @@
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
+import { PlayIcon, StopIcon } from '../../../components/Icons';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { withWhiteTop } from '../../../lib/cube-skins';
+import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-camera';
 import { strings } from '../../../lib/strings';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 
@@ -99,15 +101,7 @@ export const ScramblePanel = memo(function ScramblePanel({
                 picture
               )}
               <span className="scramble__play" aria-hidden="true">
-                {isWatching ? (
-                  <svg viewBox="0 0 24 24">
-                    <rect x="7" y="7" width="10" height="10" rx="1.5" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24">
-                    <path d="M9 6.5v11l9-5.5z" />
-                  </svg>
-                )}
+                {isWatching ? <StopIcon /> : <PlayIcon />}
               </span>
             </button>
           )}
@@ -191,14 +185,16 @@ function SpatialPreview({
 
   return (
     <twisty-player
-        ref={player}
-        className="scramble__player"
-        puzzle="3x3x3"
-        alg={scramble}
-        experimental-setup-anchor="start"
-        visualization="3D"
-        background="none"
-        control-panel="none"
+      ref={player}
+      className="scramble__player"
+      puzzle="3x3x3"
+      alg={scramble}
+      experimental-setup-anchor="start"
+      visualization="3D"
+      background="none"
+      camera-latitude={CAMERA_LATITUDE}
+      camera-longitude={CAMERA_LONGITUDE}
+      control-panel="none"
       hint-facelets="none"
     />
   );

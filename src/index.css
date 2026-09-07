@@ -275,6 +275,26 @@ button {
   color: var(--text);
 }
 
+/*
+ * An icon stands in for a word: same size everywhere, and it takes the colour
+ * of the button around it, which is what says whether it is on or dangerous.
+ * The button keeps the label in aria-label, since nothing is written on it.
+ */
+.icon {
+  display: block;
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: currentColor;
+}
+
+/* Shapes that are strokes rather than areas: a cross, a chevron. */
+.icon--stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
 /* The choice that is on, and the action its panel exists for. */
 button.is-active,
 button.is-primary {
@@ -510,12 +530,6 @@ button[disabled] {
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--muted);
-}
-
-.scramble__play svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  fill: currentColor;
 }
 
 /* A short phone has no room for a big cube and a list of solves both. */
@@ -974,6 +988,22 @@ button[disabled] {
   border: none;
   padding: 0;
   font-size: var(--text-2xl);
+}
+
+/* A target for a thumb around a small cross. */
+.detail__close {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-height: 0;
+  margin-inline-end: calc(var(--space-2) * -1);
+  color: var(--muted);
+}
+
+/* Nothing but the close button: it keeps to its own end of the row. */
+.detail__header--bare {
+  justify-content: flex-end;
 }
 
 .detail__result {
@@ -1638,6 +1668,14 @@ button[disabled] {
   gap: var(--space-5);
 }
 
+/* The name and the picture are read as one thing, so they sit together
+   rather than a panel's width apart. */
+.case-detail__name {
+  margin: calc(var(--space-6) * -1) 0 calc(var(--space-5) * -1);
+  text-align: center;
+  font-size: var(--text-2xl);
+}
+
 .case-detail__stage {
   display: flex;
   justify-content: center;
@@ -1666,6 +1704,17 @@ button[disabled] {
   gap: var(--space-3);
 }
 
+/* Round, because it is a shape rather than a word — the same play the timer
+   puts on its scramble. */
+.case-detail__play {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: var(--radius-pill);
+}
+
 .case-detail__section {
   margin: var(--space-4) 0 0;
   font-size: var(--text-xs);
@@ -1676,13 +1725,17 @@ button[disabled] {
 
 /* Algorithm text with its triggers named */
 
+/*
+ * Laid out as text rather than as a row of boxes. Every part is an
+ * inline-block, so a long algorithm breaks between triggers before it breaks
+ * inside one — the reader never meets half a name — and a trigger too long for
+ * a line of its own breaks with box-decoration-break, which gives each of its
+ * lines its own padding and rounded ends instead of one rectangle cut in half.
+ */
 .alg {
   color: var(--text);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: center;
-  gap: var(--space-2) var(--space-4);
+  display: block;
+  text-align: center;
   font-size: clamp(1.8rem, 8.5vw, 2.6rem);
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -1701,9 +1754,16 @@ button[disabled] {
 }
 
 .alg__part {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: inline-block;
+  /* Never wider than the panel, so a long trigger wraps inside its own box
+     instead of pushing the algorithm off the screen. */
+  max-width: 100%;
+  margin: var(--space-2) calc(var(--space-4) / 2) 0;
+  text-align: center;
+  /* Parts on one line are hung by their feet: a trigger carries a name above
+     it and the loose moves beside it do not, and it is the moves that have to
+     line up. */
+  vertical-align: bottom;
 }
 
 .alg__part--trigger .alg__moves {
@@ -1711,9 +1771,12 @@ button[disabled] {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--trigger-colour, var(--accent)) 45%, transparent);
   border-radius: var(--radius-sm);
   padding: var(--space-1) var(--space-3);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .alg__label {
+  display: block;
   font-size: var(--text-2xs);
   font-weight: 600;
   letter-spacing: 0.04em;
