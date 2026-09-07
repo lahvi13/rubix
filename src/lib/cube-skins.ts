@@ -12,19 +12,40 @@
 import type { Face } from '../domain/cube/notation';
 import type { ResolvedTheme } from './appearance';
 
+/**
+ * How an arrow over a permutation case is painted. It is always one of the
+ * skin's two neutrals with the other laid round it as a band — never the dark
+ * one alone, because the stickers wear that colour as their outline and an
+ * arrow in it reads as a gap in the grid rather than a mark on the layer.
+ */
+export interface ArrowStyle {
+  fill: string;
+  band: string;
+  /**
+   * Which of the two the arrow itself is. The drawing code takes the arrow's
+   * proportions from this: ink covers a sticker more heavily than paper does,
+   * so the dark arrow is the slimmer of the two.
+   */
+  build: 'pale' | 'dark';
+}
+
 export interface CubeSkin {
   id: string;
   name: string;
   faces: Record<Face, string>;
   muted: string;
   outline: string;
-  /** Arrows drawn over the stickers of a permutation case. */
-  arrow: string;
+  arrow: ArrowStyle;
 }
 
-/** A skin as it is written down: muted still has both themes to choose from. */
-interface CubeSkinDefinition extends Omit<CubeSkin, 'muted'> {
+/**
+ * A skin as it is written down. Both the muted sticker and the arrow are still
+ * a choice at this point — the theme makes it, not the skin.
+ */
+interface CubeSkinDefinition extends Omit<CubeSkin, 'muted' | 'arrow'> {
   muted: Record<ResolvedTheme, string>;
+  /** The pale neutral of the pair; `outline` is the dark one. */
+  pale: string;
 }
 
 /*
@@ -48,7 +69,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
     },
     muted: { dark: '#525b70', light: '#c7cddb' },
     outline: '#0f1115',
-    arrow: '#f4f6fb',
+    pale: '#f4f6fb',
   },
   {
     id: 'contrast',
@@ -63,7 +84,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
     },
     muted: { dark: '#4b5468', light: '#bcc4d3' },
     outline: '#000000',
-    arrow: '#ffffff',
+    pale: '#ffffff',
   },
   {
     id: 'pastel',
@@ -78,7 +99,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
     },
     muted: { dark: '#5a6379', light: '#d2d8e3' },
     outline: '#1b1f28',
-    arrow: '#f2f4f8',
+    pale: '#f2f4f8',
   },
   {
     // Red and green are the pair most often confused; this swaps them for a
@@ -95,7 +116,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
     },
     muted: { dark: '#4f586d', light: '#c4cbd9' },
     outline: '#0f1115',
-    arrow: '#f8fafc',
+    pale: '#f8fafc',
   },
 ];
 
@@ -105,12 +126,30 @@ const FALLBACK: CubeSkinDefinition = {
   faces: { U: '#f2d024', D: '#f4f4f4', F: '#25b05a', B: '#2f6fd0', L: '#d63a3a', R: '#e8811c' },
   muted: { dark: '#525b70', light: '#c7cddb' },
   outline: '#0f1115',
-  arrow: '#f4f6fb',
+  pale: '#f4f6fb',
 };
+
+/**
+ * The arrow the theme asks for. A dark card wants the pale arrow and a light
+ * one the dark arrow — the same choice the muted sticker makes, for the same
+ * reason: whichever of the two the card is, the arrow has to be the other.
+ */
+function arrowFor(definition: CubeSkinDefinition, theme: ResolvedTheme): ArrowStyle {
+  return theme === 'dark'
+    ? { fill: definition.pale, band: definition.outline, build: 'pale' }
+    : { fill: definition.outline, band: definition.pale, build: 'dark' };
+}
 
 export function skinById(id: string, theme: ResolvedTheme): CubeSkin {
   const definition = CUBE_SKINS.find((skin) => skin.id === id) ?? CUBE_SKINS[0] ?? FALLBACK;
-  return { ...definition, muted: definition.muted[theme] };
+  return {
+    id: definition.id,
+    name: definition.name,
+    faces: definition.faces,
+    outline: definition.outline,
+    muted: definition.muted[theme],
+    arrow: arrowFor(definition, theme),
+  };
 }
 
 export function defaultSkin(theme: ResolvedTheme): CubeSkin {

@@ -26,8 +26,35 @@ describe('cube diagrams as text', () => {
     const withArrows = diagramSvg(tPerm, 'lastLayer', 'full', defaultSkin('dark'));
     const solved = diagramSvg(solvedState(), 'lastLayer', 'full', defaultSkin('dark'));
 
-    expect(withArrows).toContain('<line');
-    expect(solved).not.toContain('<line');
+    // A last-layer picture is stickers, which are rects; the arrows are the
+    // only polygons in it.
+    expect(withArrows).toContain('<polygon');
+    expect(solved).not.toContain('<polygon');
+  });
+
+  it('paints the arrows the way round the theme needs', () => {
+    const skins = { dark: defaultSkin('dark'), light: defaultSkin('light') };
+    const svgs = {
+      dark: diagramSvg(tPerm, 'lastLayer', 'full', skins.dark),
+      light: diagramSvg(tPerm, 'lastLayer', 'full', skins.light),
+    };
+
+    // A dark card takes the pale arrow and a light one the dark arrow. Neither
+    // may be the bare outline colour: the stickers wear that as their own
+    // outline, and an arrow in it would read as a gap in the grid.
+    expect(svgs.dark).toContain(`fill="${skins.dark.arrow.fill}"`);
+    expect(skins.dark.arrow.fill).not.toBe(skins.dark.outline);
+    expect(svgs.light).toContain(`fill="${skins.light.arrow.fill}"`);
+    expect(skins.light.arrow.fill).toBe(skins.light.outline);
+    expect(skins.light.arrow.band).not.toBe(skins.light.outline);
+    expect(svgs.dark).not.toBe(svgs.light);
+  });
+
+  it('keeps the two themes apart in the cache', () => {
+    const dark = diagramUrl(tPerm, 'lastLayer', 'full', defaultSkin('dark'));
+    const light = diagramUrl(tPerm, 'lastLayer', 'full', defaultSkin('light'));
+
+    expect(dark).not.toBe(light);
   });
 
   it('gives back the same picture for the same case, and a new one per skin', () => {

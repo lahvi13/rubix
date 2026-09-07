@@ -36,7 +36,9 @@ export function diagramUrl(
   stickering: Stickering,
   skin: CubeSkin,
 ): string {
-  const key = `${skin.id}|${skin.muted}|${view}|${stickering}|${stateKey(state)}`;
+  // Everything the theme changes about a skin belongs in the key, or a picture
+  // drawn before the theme flipped gets handed back after it.
+  const key = `${skin.id}|${skin.muted}|${skin.arrow.build}|${view}|${stickering}|${stateKey(state)}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
 
@@ -168,49 +170,85 @@ function cellCentre(cell: number): readonly [number, number] {
   return [OFFSET + ((cell % 3) + 0.5) * CELL, OFFSET + (Math.floor(cell / 3) + 0.5) * CELL];
 }
 
+interface ArrowShape {
+  /** Half the width of the body. */
+  shaftHalf: number;
+  headLength: number;
+  headHalf: number;
+  /** The band laid all round the arrow, outside it. */
+  band: number;
+}
+
+/**
+ * The two builds of the arrow, in the units of the picture — a sticker is 20.
+ * The dark one is the slimmer: ink covers a sticker more heavily than paper
+ * does at the same width, and it needs the wider band, because the stickers'
+ * own outline is that very colour.
+ */
+const ARROW_SHAPES: Record<CubeSkin['arrow']['build'], ArrowShape> = {
+  pale: { shaftHalf: 1.9, headLength: 8, headHalf: 4.6, band: 1.5 },
+  dark: { shaftHalf: 1.4, headLength: 8.5, headHalf: 3.9, band: 1.2 },
+};
+
 /**
  * Where a piece has to go. Drawn short of both cells so the arrow sits between
- * the stickers rather than on top of them, and double-headed for a swap.
+ * the stickers rather than on top of them, and pointed at both ends for a swap.
+ *
+ * Body and head are one closed outline rather than a line with a triangle laid
+ * on its end: a triangle wide enough to read has to be stroked to be seen over
+ * a yellow sticker, and a stroke round a short triangle is a blob, not a point.
  */
 function arrowSvg(arrow: PieceArrow, skin: CubeSkin): string {
+  const { shaftHalf, headLength, headHalf, band } = ARROW_SHAPES[skin.arrow.build];
   const [fromX, fromY] = cellCentre(arrow.from);
   const [toX, toY] = cellCentre(arrow.to);
   const length = Math.hypot(toX - fromX, toY - fromY);
   const unitX = (toX - fromX) / length;
   const unitY = (toY - fromY) / length;
 
-  const inset = CELL * 0.17;
+  const inset = CELL * 0.12;
   const startX = fromX + unitX * inset;
   const startY = fromY + unitY * inset;
-  const endX = toX - unitX * inset;
-  const endY = toY - unitY * inset;
+  const span = length - inset * 2;
 
-  const head = (x: number, y: number, towardsX: number, towardsY: number): string => {
-    const size = 5.6;
-    const wingX = -towardsY * size * 0.62;
-    const wingY = towardsX * size * 0.62;
-    return [
-      `${n(x)},${n(y)}`,
-      `${n(x - towardsX * size + wingX)},${n(y - towardsY * size + wingY)}`,
-      `${n(x - towardsX * size - wingX)},${n(y - towardsY * size - wingY)}`,
-    ].join(' ');
-  };
+  /** A corner of the outline: how far along the arrow, and how far across it. */
+  const at = (along: number, across: number): string =>
+    `${n(startX + unitX * along - unitY * across)},${n(startY + unitY * along + unitX * across)}`;
 
-  const shaft = (width: number, colour: string): string =>
-    `<line x1="${n(startX)}" y1="${n(startY)}" x2="${n(endX)}" y2="${n(endY)}"` +
-    ` stroke="${colour}" stroke-width="${n(width)}" stroke-linecap="round"/>`;
+  const shoulder = span - headLength;
+  const points = (
+    arrow.isSwap
+      ? [
+          at(0, 0),
+          at(headLength, headHalf),
+          at(headLength, shaftHalf),
+          at(shoulder, shaftHalf),
+          at(shoulder, headHalf),
+          at(span, 0),
+          at(shoulder, -headHalf),
+          at(shoulder, -shaftHalf),
+          at(headLength, -shaftHalf),
+          at(headLength, -headHalf),
+        ]
+      : [
+          at(0, shaftHalf),
+          at(shoulder, shaftHalf),
+          at(shoulder, headHalf),
+          at(span, 0),
+          at(shoulder, -headHalf),
+          at(shoulder, -shaftHalf),
+          at(0, -shaftHalf),
+        ]
+  ).join(' ');
 
-  const heads = (colour: string, outline: number): string =>
-    polygon(head(endX, endY, unitX, unitY), colour, colour, outline) +
-    (arrow.isSwap ? polygon(head(startX, startY, -unitX, -unitY), colour, colour, outline) : '');
-
-  // Drawn twice: a dark outline underneath, so the arrow stays visible over a
-  // yellow sticker as well as over a grey one.
+  // The band is a stroke on a copy underneath, so it grows outwards only and
+  // the arrow keeps the width it was drawn at. Mitred, or the point is rounded
+  // off into the blob this build exists to avoid; the limit is what stops the
+  // shoulders, where the head meets the body, spiking off on their own.
   return (
-    shaft(4.6, skin.outline) +
-    heads(skin.outline, 2.4) +
-    shaft(2.4, skin.arrow) +
-    heads(skin.arrow, 0)
+    `<polygon points="${points}" fill="${skin.arrow.band}" stroke="${skin.arrow.band}"` +
+    ` stroke-width="${n(band * 2)}" stroke-linejoin="miter" stroke-miterlimit="4"/>` +
+    `<polygon points="${points}" fill="${skin.arrow.fill}"/>`
   );
 }
 
