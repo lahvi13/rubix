@@ -82,7 +82,8 @@ dostávají hotová data z domény.
 - detail solvu: čas, penalta, scramble, náhled, splity, tagy, poznámka, časové razítko
 - dodatečná editace: penalta, tagy, poznámka, hvězdička, i samotný `rawMs` (překlep)
   — každá editace nastaví `editedAt`
-- mazání solvu (tombstone), hromadné mazání označených
+- mazání solvu (tombstone), hromadné mazání označených; každé mazání solvů
+  se dá ~5 s vzít zpět (viz 5, „Omyl a návrat")
 - sessiony: založení, přejmenování, archivace; právě jedna aktivní session
   na kombinaci `puzzle + mode`
 
@@ -685,6 +686,17 @@ jich bude ještě víc.) Dokud je menu otevřené, klávesy patří jemu, ne tim
 
 Každá akce, po které obrazovka vypadá stejně jako předtím (export, import,
 smazání dat), musí říct, že se stala — `components/Notice.tsx`.
+
+**Omyl a návrat.** Co jde vzít zpět, se bere zpět; co ne, se potvrzuje. Mazání
+solvů (jednoho, označených i všech pokusů na případu) smaže hned a na ~5 s
+nabídne návrat — lišta dole přes celou aplikaci (`app/UndoBar.tsx` nad kanálem
+v `lib/undo.ts`), protože smazaný solve se ruší odjinud, než kde se smazal.
+Dialog by u mazání solvu byl daň z každého překlepnutého času a proti reflexu
+stejně neochrání. Návrat vrací řádek přesně jak byl, **včetně smazání tombstonu**
+— jinak by ho příští import smazal znovu. Potvrzení zůstává tam, kde návrat není:
+„smazat všechna data" (odpočet, aby druhé tlačítko nebylo pokračováním prvního
+pohybu) a „delete all" u pokusů na případu (arm + druhé ťuknutí, aby se celá
+historie případu nesmazala jedním minutím).
 
 **Dotykové cíle**: co se na telefonu ťuká prstem, má aspoň ~44 px výšky. Zaškrtávátko
 se nezvětšuje samo o sobě — plochu nese `<label>` kolem něj. Pravidla jsou pohromadě

@@ -134,8 +134,10 @@ describe('drill repository', () => {
     await addDrillSolve(makeAttempt('pll-t', 2000));
     await addDrillSolve(makeAttempt('pll-y', 4000));
 
-    await deleteCaseAttempts('pll-t');
+    const removed = await deleteCaseAttempts('pll-t');
 
+    // Handed back so the screen can offer to put them back.
+    expect(removed.map((solve) => solve.rawMs)).toEqual([3000, 2000]);
     expect(await listCaseAttempts('pll-t')).toEqual([]);
     expect(await listCaseAttempts('pll-y')).toHaveLength(1);
     // Deleted rows leave tombstones, or an old export would bring them back.

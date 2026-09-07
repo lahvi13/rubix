@@ -11,6 +11,7 @@ import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
 import { ErrorBanner } from './ErrorBanner';
+import { UndoBar } from './UndoBar';
 import { UpdatePrompt } from './UpdatePrompt';
 
 export function App() {
@@ -100,6 +101,7 @@ export function App() {
       </Fragment>
 
       <ErrorBanner />
+      <UndoBar />
       <UpdatePrompt />
     </div>
   );

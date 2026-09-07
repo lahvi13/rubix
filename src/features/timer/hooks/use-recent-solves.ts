@@ -1,10 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { Penalty, Solve } from '../../../db/types';
-import {
-  deleteSolve,
-  listRecentSolves,
-  setPenalty,
-} from '../../../db/repositories/solve-repository';
+import { listRecentSolves, setPenalty } from '../../../db/repositories/solve-repository';
+import { useRemoveSolves } from '../../../hooks/use-remove-solves';
 
 const RECENT_LIMIT = 50;
 
@@ -17,6 +14,7 @@ export interface RecentSolves {
 
 /** Live list of the session's latest solves; re-renders itself on every write. */
 export function useRecentSolves(sessionId: string | null): RecentSolves {
+  const removeSolves = useRemoveSolves();
   const solves = useLiveQuery(
     async () => (sessionId ? listRecentSolves(sessionId, RECENT_LIMIT) : []),
     [sessionId],
@@ -26,6 +24,6 @@ export function useRecentSolves(sessionId: string | null): RecentSolves {
     solves: solves ?? [],
     isLoading: solves === undefined,
     changePenalty: setPenalty,
-    remove: deleteSolve,
+    remove: (id) => removeSolves([id]),
   };
 }

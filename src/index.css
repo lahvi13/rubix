@@ -2534,6 +2534,36 @@ button[disabled] {
   color: var(--danger);
 }
 
+/*
+ * The way back from a delete. At the bottom, where the thumb already is, and
+ * over everything: the screen underneath has usually moved on by the time it
+ * appears.
+ */
+.undo-bar {
+  position: fixed;
+  inset-inline: 1rem;
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-size: var(--text-md);
+  z-index: 11;
+}
+
+.undo-bar__message {
+  min-width: 0;
+  color: var(--text);
+}
+
+.undo-bar button {
+  flex: none;
+}
+
 /* Tap targets
  *
  * The phone is the main device, and a finger is not a mouse pointer: every

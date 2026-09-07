@@ -9,6 +9,7 @@ import {
   listRecentSolves,
   listSolves,
   listSolvesChronological,
+  restoreSolves,
   setPenalty,
   updateSolve,
 } from './solve-repository';
@@ -224,6 +225,41 @@ describe('solve editing', () => {
 
     expect(await db.solves.count()).toBe(1);
     expect(await db.tombstones.count()).toBe(0);
+  });
+
+  it('hands back the rows it deleted, so they can be put back', async () => {
+    const first = await addSolve(await makeSolve(sessionId, 1000));
+    const second = await addSolve(await makeSolve(sessionId, 2000));
+
+    const removed = await deleteSolves([first.id, second.id, 'never-existed']);
+
+    expect(removed.map((solve) => solve.rawMs)).toEqual([1000, 2000]);
+  });
+
+  it('restores a deleted solve exactly as it was, tombstone and all', async () => {
+    const solve = await addSolve(await makeSolve(sessionId, 12_345));
+    await updateSolve(solve.id, { note: 'bad F2L' });
+    const before = await db.solves.get(solve.id);
+
+    const removed = await deleteSolves([solve.id]);
+    await restoreSolves(removed);
+
+    expect(await db.solves.get(solve.id)).toEqual(before);
+    // The grave has to go too, or the next import deletes the row again.
+    expect(await db.tombstones.count()).toBe(0);
+  });
+
+  it('leaves another table’s tombstone alone when it restores a solve', async () => {
+    const solve = await addSolve(await makeSolve(sessionId, 12_345));
+    const removed = await deleteSolves([solve.id]);
+    // Pack ids are hand-written, so a collision with a solve id is possible.
+    await db.tombstones.put({ id: 'pll-t', table: 'algCases', deletedAt: 1 });
+
+    await restoreSolves(removed);
+
+    expect(await db.tombstones.toArray()).toEqual([
+      { id: 'pll-t', table: 'algCases', deletedAt: 1 },
+    ]);
   });
 });
 

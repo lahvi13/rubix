@@ -77,6 +77,11 @@ export const strings = {
     empty: 'No solves yet. Hold to start.',
     autoPenalty: 'from inspection',
   },
+  undo: {
+    action: 'Undo',
+    deleted: (count: number) => (count === 1 ? 'Solve deleted.' : `${count} solves deleted.`),
+    restoring: 'Putting the solves back',
+  },
   nav: {
     timer: 'Timer',
     history: 'History',

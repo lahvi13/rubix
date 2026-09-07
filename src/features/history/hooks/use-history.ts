@@ -3,13 +3,13 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import type { Solve } from '../../../db/types';
 import {
   countSolves,
-  deleteSolves,
   listMatchingSolves,
   updateSolve,
   type SolveFilters,
   type SolvePatch,
 } from '../../../db/repositories/solve-repository';
 import { bestsOf, type Bests } from '../../../domain/stats/phases';
+import { useRemoveSolves } from '../../../hooks/use-remove-solves';
 
 const PAGE_SIZE = 50;
 
@@ -26,7 +26,7 @@ export interface HistoryView {
   setFilters: (filters: SolveFilters) => void;
   loadMore: () => void;
   edit: (id: string, patch: SolvePatch) => Promise<void>;
-  removeMany: (ids: string[]) => Promise<void>;
+  removeMany: (ids: readonly string[]) => Promise<void>;
 }
 
 /**
@@ -39,6 +39,7 @@ export interface HistoryView {
  * solves are being talked about.
  */
 export function useHistory(sessionId: string | null, phaseKeys: readonly string[]): HistoryView {
+  const removeSolves = useRemoveSolves();
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [filters, setFilters] = useState<SolveFilters>({});
 
@@ -70,6 +71,6 @@ export function useHistory(sessionId: string | null, phaseKeys: readonly string[
     },
     loadMore: () => setLimit((current) => current + PAGE_SIZE),
     edit: updateSolve,
-    removeMany: deleteSolves,
+    removeMany: removeSolves,
   };
 }

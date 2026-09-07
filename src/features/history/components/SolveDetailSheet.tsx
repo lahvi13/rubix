@@ -1,11 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { MethodPhase } from '../../../db/types';
-import {
-  deleteSolves,
-  getSolve,
-  updateSolve,
-  type SolvePatch,
-} from '../../../db/repositories/solve-repository';
+import { getSolve, updateSolve, type SolvePatch } from '../../../db/repositories/solve-repository';
+import { useRemoveSolves } from '../../../hooks/use-remove-solves';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { useTags } from '../hooks/use-tags';
@@ -25,6 +21,7 @@ interface SolveDetailSheetProps {
 export function SolveDetailSheet({ solveId, phases, onClose }: SolveDetailSheetProps) {
   const solve = useLiveQuery(() => getSolve(solveId), [solveId]);
   const tags = useTags();
+  const removeSolves = useRemoveSolves();
 
   if (!solve) return null;
 
@@ -41,7 +38,7 @@ export function SolveDetailSheet({ solveId, phases, onClose }: SolveDetailSheetP
       }}
       onCreateTag={tags.create}
       onDelete={(id: string) => {
-        watchWrite(() => deleteSolves([id]), strings.solve.delete);
+        void removeSolves([id]);
         onClose();
       }}
       onClose={onClose}

@@ -1,7 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { Penalty, Solve } from '../../../db/types';
 import { deleteCaseAttempts, listCaseAttempts } from '../../../db/repositories/drill-repository';
-import { deleteSolve, setPenalty } from '../../../db/repositories/solve-repository';
+import { setPenalty } from '../../../db/repositories/solve-repository';
+import { useRemoveSolves, useUndoableDelete } from '../../../hooks/use-remove-solves';
 
 export interface CaseAttemptsView {
   /** Newest first — the one you would want to fix is the one you just did. */
@@ -18,6 +19,8 @@ export interface CaseAttemptsView {
  * cube rather than a solve, and starting the whole case again.
  */
 export function useCaseAttempts(caseId: string | null): CaseAttemptsView {
+  const removeSolves = useRemoveSolves();
+  const removeBy = useUndoableDelete();
   const attempts = useLiveQuery(
     async () => (caseId === null ? [] : (await listCaseAttempts(caseId)).reverse()),
     [caseId],
@@ -27,9 +30,9 @@ export function useCaseAttempts(caseId: string | null): CaseAttemptsView {
     attempts: attempts ?? [],
     isLoading: attempts === undefined,
     changePenalty: setPenalty,
-    remove: deleteSolve,
+    remove: (id) => removeSolves([id]),
     removeAll: async () => {
-      if (caseId !== null) await deleteCaseAttempts(caseId);
+      if (caseId !== null) await removeBy(() => deleteCaseAttempts(caseId));
     },
   };
 }

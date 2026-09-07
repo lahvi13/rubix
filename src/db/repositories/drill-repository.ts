@@ -105,9 +105,9 @@ export async function loadDrillPool(
  * a week when you did not know the algorithm yet, and you would rather start
  * again than wait for the average to forget.
  */
-export async function deleteCaseAttempts(caseId: string): Promise<void> {
+export async function deleteCaseAttempts(caseId: string): Promise<Solve[]> {
   const attempts = await listCaseAttempts(caseId);
-  await deleteSolves(attempts.map((solve) => solve.id));
+  return deleteSolves(attempts.map((solve) => solve.id));
 }
 
 /**

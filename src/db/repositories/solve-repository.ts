@@ -192,18 +192,47 @@ export async function updateSolve(id: string, patch: SolvePatch): Promise<void> 
 }
 
 /** Deleting always leaves a tombstone, otherwise a later import resurrects the row. */
-export async function deleteSolve(id: string): Promise<void> {
-  await deleteSolves([id]);
+export async function deleteSolve(id: string): Promise<Solve[]> {
+  return deleteSolves([id]);
 }
 
-export async function deleteSolves(ids: string[]): Promise<void> {
-  if (ids.length === 0) return;
+/**
+ * Returns the rows that were removed, so the caller can offer to put them
+ * back. Read inside the same transaction as the delete: a solve edited between
+ * the read and the delete would otherwise be restored as its older self.
+ */
+export async function deleteSolves(ids: string[]): Promise<Solve[]> {
+  if (ids.length === 0) return [];
   const deletedAt = now();
 
-  await db.transaction('rw', db.solves, db.tombstones, async () => {
+  return db.transaction('rw', db.solves, db.tombstones, async () => {
+    const removed = (await db.solves.bulkGet(ids)).filter((solve) => solve !== undefined);
     await db.solves.bulkDelete(ids);
     await db.tombstones.bulkPut(
       ids.map((id) => ({ id, table: 'solves', deletedAt })),
+    );
+    return removed;
+  });
+}
+
+/**
+ * Puts deleted solves back, tombstones included — a row that returns while its
+ * tombstone stays behind is a row the next import deletes again.
+ *
+ * The rows go back exactly as they were, `updatedAt` and all: an undo is the
+ * delete not having happened, not an edit.
+ */
+export async function restoreSolves(solves: readonly Solve[]): Promise<void> {
+  if (solves.length === 0) return;
+  const ids = solves.map((solve) => solve.id);
+
+  await db.transaction('rw', db.solves, db.tombstones, async () => {
+    await db.solves.bulkPut([...solves]);
+    // Only our own graves: a tombstone id is the entity id alone, and another
+    // table's row could in principle carry the same one.
+    const graves = await db.tombstones.bulkGet(ids);
+    await db.tombstones.bulkDelete(
+      graves.filter((grave) => grave?.table === 'solves').map((grave) => grave?.id ?? ''),
     );
   });
 }
