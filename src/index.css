@@ -138,6 +138,10 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-pill: 999px;
+  /* The corner a sticker wears in the cube diagrams — rx 2 on an 18-unit cell
+     in components/cube-diagram-svg.ts. A ratio rather than a length, so the
+     shape holds whatever size the square is drawn at. */
+  --radius-sticker: 11%;
 
   /* The clock is read from further away than anything else on the screen. */
   --clock-size: clamp(3.5rem, 18vw, 9rem);
@@ -322,8 +326,9 @@ button[disabled] {
 
 /*
  * Pinned to the top: the way out of a screen has to stay reachable however far
- * down the reader is. It gives back some of its height once the page has moved
- * — on a phone that strip is worth more to the content than to the title.
+ * down the reader is. One height, always — it used to shrink once the page had
+ * moved, which bought about ten pixels and paid for them with a jump partway
+ * through every scroll.
  */
 .app__header {
   position: sticky;
@@ -334,18 +339,6 @@ button[disabled] {
   background: var(--bg);
   padding: var(--space-2) var(--space-5);
   border-bottom: 1px solid var(--border);
-}
-
-.app__header--compact {
-  padding-block: 0;
-}
-
-.app__header--compact .app__menu-toggle {
-  min-height: 2.25rem;
-}
-
-.app__header--compact .app__title {
-  font-size: var(--text-sm);
 }
 
 .app__title {
@@ -379,8 +372,12 @@ button[disabled] {
   display: grid;
   min-height: 0;
   /* The scramble takes what it needs; the clock and the list share the rest,
-     with the list given the larger half — it is the part that is read. */
-  grid-template-rows: auto minmax(0, 0.9fr) minmax(0, 2.2fr);
+     with the list given the larger half — it is the part that is read.
+     The clock's share is a floor, not a ceiling: with the phases of a finished
+     solve written under it the row needs more than its share, and centred
+     content that overflows ends up beneath the list — whose top border then
+     draws a line straight through the phase labels. */
+  grid-template-rows: auto minmax(min-content, 0.9fr) minmax(0, 2.2fr);
   flex: 1;
   gap: var(--space-6);
   padding: var(--space-6);
@@ -571,11 +568,11 @@ button[disabled] {
   touch-action: none;
 }
 
+/* Abbreviated in the heading (see strings.ts), so they are set like one. */
 .solves-panel__toggle {
-  float: right;
-  text-transform: none;
-  letter-spacing: normal;
-  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
 }
 
 .timer {
@@ -700,11 +697,17 @@ button[disabled] {
   margin: 0;
 }
 
+/*
+ * The time on one side, the actions on the other, and the phase bar across
+ * both — never wrapped. Wrapping put the three buttons of the newest solve on
+ * a line of their own at the largest text size, which is a row twice as tall
+ * as every other one.
+ */
 .solves__row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-2) var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -712,11 +715,11 @@ button[disabled] {
 
 /* The time is the way into the solve, the same as in the history. */
 .solves__open {
-  flex: 1;
   display: grid;
-  grid-template-columns: 2.5rem 5rem 1fr;
-  align-items: center;
-  gap: var(--space-4);
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;
   min-height: 0;
   padding: 0;
   border: none;
@@ -730,6 +733,14 @@ button[disabled] {
   font-size: var(--text-sm);
 }
 
+/* Whatever room is left after the time and the buttons — it is the one part
+   of the row that may be cut short. */
+.solves__meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .solves__time {
   font-size: var(--text-xl);
 }
@@ -741,13 +752,13 @@ button[disabled] {
 
 /*
  * Smaller than a button standing on its own: three of these share a row with
- * the time they belong to, and at the largest text size they were wrapping to
- * a line of their own.
+ * the time they belong to, and at the largest text size the row is only wide
+ * enough for all of it once they stop being sized like buttons elsewhere.
  */
 .solves__actions button {
   min-height: 2.25rem;
-  padding-inline: var(--space-4);
-  font-size: var(--text-sm);
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
 }
 
 .solves__actions button.is-active {
@@ -1144,11 +1155,15 @@ button[disabled] {
 .solves-panel__session {
   background: none;
   border: none;
-  border-bottom: 1px dotted var(--muted);
   color: inherit;
   font: inherit;
   padding: 0;
   cursor: pointer;
+  /* Drawn under the word, not around the box. The tap target is a good deal
+     taller than the letters (see the tap-target rules), and a bottom border
+     ended up half a line below them, reading as a stray edge. */
+  text-decoration: underline dotted;
+  text-underline-offset: 0.25em;
 }
 
 /* Stats */
@@ -1871,26 +1886,38 @@ button[disabled] {
   flex: 0 0 auto;
 }
 
+/*
+ * One row, however many colours there are and however large the text is: at
+ * the largest size a wrapping row of fixed swatches dropped the last one onto
+ * a line by itself. Columns share what the card has instead.
+ */
 .trigger__colours {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  /* On a wide screen they stop growing and stay swatch-sized. */
+  max-width: 24rem;
 }
 
+/* A sticker off the cube, not a dot: the same square with the same corner the
+   diagrams draw, so a colour reads as a colour of the cube. */
 .trigger__colour {
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
   min-height: 0;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sticker);
   cursor: pointer;
 }
 
 .trigger__colour.is-active {
   border-color: var(--text);
   box-shadow: 0 0 0 2px var(--bg);
-  transform: scale(1.1);
+  /* Grown from the middle, so the row's columns stay where they are. */
+  transform: scale(1.12);
 }
 
 .triggers__add {

@@ -23,10 +23,18 @@ export const strings = {
     releaseToStart: 'Release to start',
     releaseToInspect: 'Release to inspect',
     inspectionHint: 'Tap to inspect',
-    inspectionToggle: 'Inspection',
+    /*
+     * Two switches share the panel's heading with the session name and the
+     * count, and at the largest text size the words push each other onto a
+     * line of their own. Abbreviated for the eye; the full word is what a
+     * screen reader is given.
+     */
+    inspectionToggle: 'Insp',
+    inspectionToggleLabel: 'Inspection',
     nextScramble: 'Next scramble',
     cancelled: 'Attempt discarded',
-    phaseToggle: 'Phases',
+    phaseToggle: 'Phase',
+    phaseToggleLabel: 'Phases',
     tapToEndPhase: 'Tap to end · hold to finish',
     releaseToFinish: 'Release to finish',
   },

@@ -211,6 +211,7 @@ export function TimerScreen() {
                 type="checkbox"
                 checked={timer.inspectionEnabled}
                 onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
+                aria-label={strings.timer.inspectionToggleLabel}
               />
               {strings.timer.inspectionToggle}
             </label>
@@ -220,6 +221,7 @@ export function TimerScreen() {
                 checked={splitMode === 'phases'}
                 disabled={methodPhases.length === 0}
                 onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
+                aria-label={strings.timer.phaseToggleLabel}
               />
               {strings.timer.phaseToggle}
             </label>

@@ -16,20 +16,11 @@ import { UpdatePrompt } from './UpdatePrompt';
 export function App() {
   const route = useRoute();
   const [isMenuOpen, setMenuOpen] = useState(false);
-  // Once the page has moved, the header gives back some of its height.
-  const [isScrolled, setScrolled] = useState(false);
   // A screen that lived through a lost connection holds dead live queries; the
   // key mounts it again once the database is back.
   const generation = useDatabaseGeneration();
   // Applied here because this is the one component that is always mounted.
   useAppearance();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   // While the menu is open the keyboard belongs to it: the timer listens on
   // the window, and a Space meant for a menu item must not start a solve
@@ -51,7 +42,7 @@ export function App() {
 
   return (
     <div className="app">
-      <header className={isScrolled ? 'app__header app__header--compact' : 'app__header'}>
+      <header className="app__header">
         <button
           type="button"
           className="app__menu-toggle"
