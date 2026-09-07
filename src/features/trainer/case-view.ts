@@ -1,11 +1,20 @@
 import type { DiagramView } from '../../components/CubeDiagram';
+import type { PlayerStickering } from './components/CasePlayer';
 import type { Stickering } from '../../domain/cube/views';
 
 export interface Diagram {
   view: DiagramView;
   stickering: Stickering;
-  /** What the animated player should dim, in cubing.js's own terms. */
-  playerStickering: string;
+  /**
+   * What the animated cube shows.
+   *
+   * Dimming costs a cube its colours — cubing.js darkens them rather than
+   * greying them, so blue turns to navy and yellow to olive — and that is only
+   * worth paying where half the cube would otherwise be noise. On the last
+   * layer it is not: the case is the layer being turned, and the eye finds it
+   * without help.
+   */
+  playerStickering: PlayerStickering;
 }
 
 /**
@@ -21,25 +30,27 @@ export function diagramFor(setId: string, group: string): Diagram {
     return {
       view: 'lastLayer',
       stickering: group.includes('Edges') ? 'edgeOrientation' : 'orientation',
-      playerStickering: 'OLL',
+      playerStickering: 'full',
     };
   }
   if (setId === '2look-pll') {
     return {
       view: 'lastLayer',
       stickering: group.includes('Corners') ? 'corners' : 'edges',
-      playerStickering: 'PLL',
+      playerStickering: 'full',
     };
   }
   if (setId === 'oll') {
     return {
       view: 'lastLayer',
       stickering: 'orientation',
-      playerStickering: 'OLL',
+      playerStickering: 'full',
     };
   }
+  // The one set where dimming earns its cost: an F2L case is two pieces in a
+  // whole cube, and without the rest going quiet there is nothing to look at.
   if (setId === 'f2l') {
-    return { view: 'isometric', stickering: 'pair', playerStickering: 'F2L' };
+    return { view: 'isometric', stickering: 'pair', playerStickering: 'firstTwoLayers' };
   }
-  return { view: 'lastLayer', stickering: 'full', playerStickering: 'PLL' };
+  return { view: 'lastLayer', stickering: 'full', playerStickering: 'full' };
 }

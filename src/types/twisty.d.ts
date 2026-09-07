@@ -1,4 +1,5 @@
 import type { DetailedHTMLProps, HTMLAttributes } from 'react';
+import type { StickeringMask } from '../lib/twisty-stickering';
 
 /**
  * <twisty-player> is a custom element from cubing.js, so JSX needs to be told
@@ -9,6 +10,12 @@ export interface TwistyPlayerElement extends HTMLElement {
   pause(): void;
   jumpToStart(options?: { flash?: boolean }): void;
   jumpToEnd(options?: { flash?: boolean }): void;
+  /**
+   * A stickering worked out by us rather than named — see
+   * lib/twisty-stickering.ts for why the names do not fit. Despite the name,
+   * it takes the whole mask, orbits and all.
+   */
+  experimentalStickeringMaskOrbits: StickeringMask;
   /** The player's own state — only the part we listen to. */
   experimentalModel: {
     currentMoveInfo: TwistyProp<TwistyCurrentMoveInfo>;

@@ -7,7 +7,7 @@ import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { withWhiteTop } from '../../../lib/cube-skins';
-import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-camera';
+import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-view';
 import { strings } from '../../../lib/strings';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 

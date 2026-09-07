@@ -27,6 +27,13 @@ interface CubeSkinDefinition extends Omit<CubeSkin, 'muted'> {
   muted: Record<ResolvedTheme, string>;
 }
 
+/*
+ * Every skin is one real cube, written down as it is held here: yellow up,
+ * green in front. That is a standard cube turned over — which also swaps its
+ * poles' neighbours, so red ends up on the left and orange on the right. Only
+ * a mirror image has it the other way round, and a cuber checking a case
+ * against the cube in their hands would find one.
+ */
 export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
   {
     id: 'classic',
@@ -36,8 +43,8 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       D: '#f4f4f4',
       F: '#25b05a',
       B: '#2f6fd0',
-      L: '#e8811c',
-      R: '#d63a3a',
+      L: '#d63a3a',
+      R: '#e8811c',
     },
     muted: { dark: '#525b70', light: '#c7cddb' },
     outline: '#0f1115',
@@ -51,8 +58,8 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       D: '#ffffff',
       F: '#00d26a',
       B: '#0084ff',
-      L: '#ff8a00',
-      R: '#ff2d2d',
+      L: '#ff2d2d',
+      R: '#ff8a00',
     },
     muted: { dark: '#4b5468', light: '#bcc4d3' },
     outline: '#000000',
@@ -66,8 +73,8 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       D: '#eef0f4',
       F: '#8fd3a6',
       B: '#93b6e8',
-      L: '#f0b681',
-      R: '#e79a9a',
+      L: '#e79a9a',
+      R: '#f0b681',
     },
     muted: { dark: '#5a6379', light: '#d2d8e3' },
     outline: '#1b1f28',
@@ -83,8 +90,8 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       D: '#ffffff',
       F: '#009e73',
       B: '#0072b2',
-      L: '#e69f00',
-      R: '#d55e00',
+      L: '#d55e00',
+      R: '#e69f00',
     },
     muted: { dark: '#4f586d', light: '#c4cbd9' },
     outline: '#0f1115',
@@ -95,7 +102,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
 const FALLBACK: CubeSkinDefinition = {
   id: 'classic',
   name: 'Classic',
-  faces: { U: '#f2d024', D: '#f4f4f4', F: '#25b05a', B: '#2f6fd0', L: '#e8811c', R: '#d63a3a' },
+  faces: { U: '#f2d024', D: '#f4f4f4', F: '#25b05a', B: '#2f6fd0', L: '#d63a3a', R: '#e8811c' },
   muted: { dark: '#525b70', light: '#c7cddb' },
   outline: '#0f1115',
   arrow: '#f4f6fb',
@@ -118,6 +125,15 @@ export function defaultSkin(theme: ResolvedTheme): CubeSkin {
 export function withWhiteTop(skin: CubeSkin): CubeSkin {
   return {
     ...skin,
-    faces: { ...skin.faces, U: skin.faces.D, D: skin.faces.U },
+    // Turned over, not painted over: swapping only the poles would leave a
+    // cube that cannot be bought — the left and right of a cube change places
+    // with its top and bottom.
+    faces: {
+      ...skin.faces,
+      U: skin.faces.D,
+      D: skin.faces.U,
+      L: skin.faces.R,
+      R: skin.faces.L,
+    },
   };
 }

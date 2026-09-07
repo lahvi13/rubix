@@ -15,13 +15,13 @@ import { useCaseAttempts } from '../hooks/use-case-attempts';
 import { AlgText } from './AlgText';
 import { AttemptList } from './AttemptList';
 import { CaseStatsRow } from './CaseStats';
-import { CasePlayer } from './CasePlayer';
+import { CasePlayer, type PlayerStickering } from './CasePlayer';
 
 interface CaseDetailProps {
   caseId: string;
   view: DiagramView;
   stickering: Stickering;
-  playerStickering: string;
+  playerStickering: PlayerStickering;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
   onClose: () => void;
@@ -91,10 +91,8 @@ export function CaseDetail({
       <div className="case-detail__stage">
         {isPlaying ? (
           <CasePlayer
-            // Performed exactly as written. The player paints white on top and
-            // the diagrams draw the last layer yellow up, so the colours do not
-            // match — but a cube that turns B where the algorithm says F is
-            // worse than a cube of the wrong colour.
+            // Performed exactly as written — the player is stood yellow up
+            // first, and a rotation moves the pieces, not the letters.
             setupAlg={formatAlg(setup)}
             alg={formatAlg(moves)}
             stickering={playerStickering}

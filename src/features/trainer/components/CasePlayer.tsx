@@ -2,18 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { strings } from '../../../lib/strings';
-import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-camera';
+import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
+import { maskHidingLayer } from '../../../lib/twisty-stickering';
+
+/**
+ * What the moving cube shows: everything, or only the two layers a case is
+ * built in, with the last layer greyed out the way the still picture greys it.
+ */
+export type PlayerStickering = 'full' | 'firstTwoLayers';
 
 interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
   setupAlg: string;
   alg: string;
-  /**
-   * Which pieces matter, in cubing.js's own vocabulary ("PLL", "OLL", "F2L").
-   * The player dims the rest, so the moving cube shows the same thing the
-   * still picture does instead of a full-colour cube nobody has to read.
-   */
-  stickering: string;
+  stickering: PlayerStickering;
   /** Bumped by the caller to replay the same algorithm again. */
   replayToken: number;
   /** Which move is turning, so the written algorithm can say where the cube is. */
@@ -55,6 +57,23 @@ export function CasePlayer({
 
   usePlayingMove(player, isReady, onMove, onFinished);
 
+  // Handed over rather than named: the cube stands yellow up, and cubing.js
+  // names its stickerings for a cube standing the other way.
+  useEffect(() => {
+    if (!isReady || stickering !== 'firstTwoLayers') return;
+
+    let cancelled = false;
+    void maskHidingLayer('D').then((mask) => {
+      const element = player.current;
+      if (cancelled || !element) return;
+      element.experimentalStickeringMaskOrbits = mask;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isReady, stickering]);
+
   useEffect(() => {
     if (!isReady) return;
     const element = player.current;
@@ -72,9 +91,8 @@ export function CasePlayer({
       className="case-player"
       puzzle="3x3x3"
       alg={alg}
-      experimental-setup-alg={setupAlg}
+      experimental-setup-alg={`${CUBE_ORIENTATION} ${setupAlg}`}
       experimental-setup-anchor="start"
-      experimental-stickering={stickering}
       visualization="3D"
       background="none"
       camera-latitude={CAMERA_LATITUDE}
