@@ -3,7 +3,7 @@ import type { TwistyCurrentMoveInfo, TwistyPlayerElement } from '../types/twisty
 
 /**
  * Reports which move of the algorithm the player is turning, and null when
- * nothing is.
+ * nothing is. `onFinished`, if given, says the player has reached the end.
  *
  * Listened to rather than timed: the player owns the tempo, and a clock of our
  * own would drift away from the cube on screen within a few turns.
@@ -12,13 +12,15 @@ import type { TwistyCurrentMoveInfo, TwistyPlayerElement } from '../types/twisty
  * algorithm stays the current move once the animation stops, so without this
  * the cube would come to rest with a move still lit.
  *
- * `onMove` has to keep its identity — a state setter does — or the listeners
- * are torn down and rebuilt on every render.
+ * The callbacks have to keep their identity — a state setter does, and
+ * anything else wants `useCallback` — or the listeners are torn down and
+ * rebuilt on every render.
  */
 export function usePlayingMove(
   player: RefObject<TwistyPlayerElement | null>,
   isReady: boolean,
   onMove: (index: number | null) => void,
+  onFinished?: () => void,
 ): void {
   useEffect(() => {
     if (!isReady) return;
@@ -26,13 +28,21 @@ export function usePlayingMove(
     if (!element) return;
 
     let isPlaying = false;
+    // The player says it is not playing before it starts, too. Only the stop
+    // that follows a start is the end of the algorithm.
+    let hasPlayed = false;
 
     const onMoveInfo = (info: TwistyCurrentMoveInfo) => {
       onMove(isPlaying && info.currentMoves.length > 0 ? info.patternIndex : null);
     };
     const onPlayingInfo = (info: { playing: boolean }) => {
       isPlaying = info.playing;
-      if (!isPlaying) onMove(null);
+      if (isPlaying) {
+        hasPlayed = true;
+        return;
+      }
+      onMove(null);
+      if (hasPlayed) onFinished?.();
     };
 
     const model = element.experimentalModel;
@@ -44,5 +54,5 @@ export function usePlayingMove(
       model.currentMoveInfo.removeFreshListener(onMoveInfo);
       onMove(null);
     };
-  }, [isReady, player, onMove]);
+  }, [isReady, player, onMove, onFinished]);
 }

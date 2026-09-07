@@ -18,6 +18,11 @@ interface CasePlayerProps {
   replayToken: number;
   /** Which move is turning, so the written algorithm can say where the cube is. */
   onMove: (index: number | null) => void;
+  /**
+   * The algorithm has been performed. The cube is solved by then — the case is
+   * over — so the still picture of the case is what belongs on screen again.
+   */
+  onFinished: () => void;
 }
 
 /**
@@ -25,7 +30,14 @@ interface CasePlayerProps {
  * weight — a still picture is drawn far more cheaply by CubeDiagram, but
  * nothing else shows what the moves do to the cube.
  */
-export function CasePlayer({ setupAlg, alg, stickering, replayToken, onMove }: CasePlayerProps) {
+export function CasePlayer({
+  setupAlg,
+  alg,
+  stickering,
+  replayToken,
+  onMove,
+  onFinished,
+}: CasePlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
@@ -41,7 +53,7 @@ export function CasePlayer({ setupAlg, alg, stickering, replayToken, onMove }: C
     };
   }, []);
 
-  usePlayingMove(player, isReady, onMove);
+  usePlayingMove(player, isReady, onMove, onFinished);
 
   useEffect(() => {
     if (!isReady) return;

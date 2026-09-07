@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
 import { CloseIcon, PlayIcon, StopIcon } from '../../../components/Icons';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
@@ -44,6 +44,10 @@ export function CaseDetail({
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
   const [showRotationAlgs] = useSetting('trainer.showRotationAlgs');
+  // The algorithm leaves the cube solved, which is the one thing on this
+  // screen nobody came to look at, so the case comes back by itself. Kept
+  // stable: the player subscribes to it.
+  const stopPlaying = useCallback(() => setPlaying(false), []);
   const stats = useCaseStat(caseId);
   const attempts = useCaseAttempts(caseId);
 
@@ -96,6 +100,7 @@ export function CaseDetail({
             stickering={playerStickering}
             replayToken={replayToken}
             onMove={setPlayingMove}
+            onFinished={stopPlaying}
           />
         ) : (
           <CubeDiagram
@@ -113,7 +118,7 @@ export function CaseDetail({
         <button
           type="button"
           className="is-primary case-detail__play"
-          onClick={isPlaying ? () => setPlaying(false) : play}
+          onClick={isPlaying ? stopPlaying : play}
           aria-label={isPlaying ? strings.trainer.stop : strings.trainer.play}
           title={isPlaying ? strings.trainer.stop : strings.trainer.play}
         >
