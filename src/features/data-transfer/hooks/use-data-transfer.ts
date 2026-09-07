@@ -12,11 +12,13 @@ import {
   type ImportMode,
   type ImportPlan,
 } from '../../../domain/transfer/merge';
+import { solvesToCsv } from '../../../domain/transfer/csv';
 import type { ExportData, ExportFile } from '../../../domain/transfer/types';
 import { parseExportFile, type ImportProblem } from '../../../domain/transfer/validate';
 import { downloadText } from '../../../lib/download';
 import { reportError } from '../../../lib/errors';
-import { formatIsoDate } from '../../../lib/format';
+import { now } from '../../../lib/clock';
+import { formatIsoDate, formatIsoDateTime, formatTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 
 export type TransferState =
@@ -28,6 +30,7 @@ export type TransferState =
 /** What just happened, so the screen can say so. */
 export type TransferNotice =
   | { kind: 'exported'; filename: string }
+  | { kind: 'exportedCsv'; filename: string }
   | { kind: 'imported'; counts: ImportCounts }
   | { kind: 'deleted' };
 
@@ -38,6 +41,7 @@ export interface DataTransferView {
   mode: ImportMode;
   setMode: (mode: ImportMode) => void;
   exportToFile: () => Promise<void>;
+  exportSolvesToCsv: () => Promise<void>;
   loadFile: (file: File) => Promise<void>;
   confirmImport: () => Promise<void>;
   cancel: () => void;
@@ -63,6 +67,27 @@ export function useDataTransfer(appVersion: string): DataTransferView {
       // roughly twice the size for the same content.
       downloadText(filename, JSON.stringify(file));
       setNotice({ kind: 'exported', filename });
+    } catch (cause) {
+      reportError(strings.data.exportFailed, cause);
+    }
+  };
+
+  /**
+   * The spreadsheet copy. Not a backup and never offered as one: it holds the
+   * solves and nothing else, and nothing reads it back.
+   */
+  const exportSolvesToCsv = async (): Promise<void> => {
+    setNotice(null);
+    try {
+      const data = await readSnapshot();
+      const filename = `rubix-solves-${formatIsoDate(now())}.csv`;
+      // A byte-order mark, or Excel opens a Czech note as mojibake.
+      downloadText(
+        filename,
+        `\uFEFF${solvesToCsv(data, { dateTime: formatIsoDateTime, time: formatTime })}`,
+        'text/csv;charset=utf-8',
+      );
+      setNotice({ kind: 'exportedCsv', filename });
     } catch (cause) {
       reportError(strings.data.exportFailed, cause);
     }
@@ -139,6 +164,7 @@ export function useDataTransfer(appVersion: string): DataTransferView {
     mode,
     setMode: changeMode,
     exportToFile,
+    exportSolvesToCsv,
     loadFile,
     confirmImport,
     cancel: () => setState({ status: 'idle' }),

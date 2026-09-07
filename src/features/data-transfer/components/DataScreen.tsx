@@ -27,6 +27,7 @@ export function DataScreen() {
     mode,
     setMode,
     exportToFile,
+    exportSolvesToCsv,
     loadFile,
     confirmImport,
     cancel,
@@ -45,9 +46,17 @@ export function DataScreen() {
       <section className="data-section">
         <h2 className="data-section__title">{strings.data.exportTitle}</h2>
         <p className="data-section__hint">{strings.data.exportHint}</p>
-        <button type="button" className="is-primary" onClick={() => void exportToFile()}>
-          {strings.data.exportAction}
-        </button>
+        <div className="data-section__row">
+          <button type="button" className="is-primary" onClick={() => void exportToFile()}>
+            {strings.data.exportAction}
+          </button>
+          <button type="button" onClick={() => void exportSolvesToCsv()}>
+            {strings.data.exportCsvAction}
+          </button>
+        </div>
+        <p className="data-section__hint data-section__hint--after">
+          {strings.data.exportCsvHint}
+        </p>
       </section>
 
       <section className="data-section">
@@ -223,10 +232,11 @@ function Troubleshooting() {
 }
 
 function NoticeBody({ notice }: { notice: TransferNotice }) {
-  if (notice.kind === 'exported') {
+  if (notice.kind === 'exported' || notice.kind === 'exportedCsv') {
     return (
       <span>
-        {strings.data.exported} <code>{notice.filename}</code>
+        {notice.kind === 'exported' ? strings.data.exported : strings.data.exportedCsv}{' '}
+        <code>{notice.filename}</code>
       </span>
     );
   }

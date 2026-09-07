@@ -123,4 +123,17 @@ export function formatIsoDate(timestamp: number): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
+/**
+ * Local date and time as `YYYY-MM-DD HH:MM:SS`, for a spreadsheet rather than
+ * a reader: it sorts as text, every locale reads it the same way, and it is
+ * the one format Excel and Sheets both parse without being asked.
+ */
+export function formatIsoDateTime(timestamp: number): string {
+  const date = new Date(timestamp);
+  const clock = [date.getHours(), date.getMinutes(), date.getSeconds()]
+    .map((part) => String(part).padStart(2, '0'))
+    .join(':');
+  return `${formatIsoDate(timestamp)} ${clock}`;
+}
+
 export { MS_PER_MINUTE, MS_PER_SECOND };

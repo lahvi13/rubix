@@ -2378,6 +2378,11 @@ button[disabled] {
   color: var(--muted);
 }
 
+/* A hint about the buttons above it, not about the section below. */
+.data-section__hint--after {
+  margin: var(--space-4) 0 0;
+}
+
 .data-section__error {
   margin: var(--space-5) 0 0;
   font-size: var(--text-md);

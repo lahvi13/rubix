@@ -374,6 +374,10 @@ dopočítat délky fází, obráceně to při chybějící fázi nejde) a celý 
   **neexportuje** a import ho nikdy nepřepíše — ani v režimu replace
 - „smazat všechna data“ je jediné mazání **bez** tombstonů: jinak by po něm
   nešel naimportovat vlastní starší export
+- **CSV export solvů** je bonus pro tabulkové procesory, ne záloha: jeden řádek
+  na solve (čas, penalta, scramble, poznámka, tagy, délky fází ve sloupcích),
+  jde jen ven a nikdy se nečte zpátky. Datum je `YYYY-MM-DD HH:MM:SS` v místním
+  čase, soubor začíná BOM (jinak Excel rozbije diakritiku v poznámce)
 
 ## 4. Datový model
 
@@ -673,7 +677,7 @@ formátů žije v `src/db/migrations/import/`.
 | 7 | **Trenažér — případ** | `<twisty-player>`, varianty algoritmů, statistiky případu |
 | 8 | **Drill** | timer nad náhodným případem z vybrané podmnožiny |
 | 9 | **Nastavení** | timer, vzhled, kalibrace mikrofonu s live meterem |
-| 10 | **Data** | export, import (preview + merge/replace), smazání všech dat, troubleshooting |
+| 10 | **Data** | export (JSON záloha + CSV solvů), import (preview + merge/replace), smazání všech dat, troubleshooting |
 
 Navigace: **hamburger menu** v hlavičce se všemi routami; hlavička ukazuje název
 aktuální obrazovky. Je **přišpendlená k hornímu okraji** — cesta ze stránky musí

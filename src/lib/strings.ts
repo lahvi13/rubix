@@ -264,7 +264,11 @@ export const strings = {
       'Writes every session, solve, tag and setting into one file. Settings that belong to this device, like microphone calibration, stay here.',
     exportAction: 'Export data',
     exportFailed: 'Could not export the data',
+    exportCsvAction: 'Solves as CSV',
+    exportCsvHint:
+      'One row per solve — time, penalty, scramble, phases — for a spreadsheet. Nothing reads it back, so it is a copy to look at, not a backup.',
     exported: 'Backup saved as',
+    exportedCsv: 'Solves saved as',
     importTitle: 'Restore',
     importHint: 'Pick an exported file. Nothing is written before you confirm the preview.',
     chooseFile: 'Choose a file',
