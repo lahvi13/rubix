@@ -2042,6 +2042,16 @@ button[disabled] {
     grid-column: 1 / -1;
   }
 
+  /*
+   * The swatches share a column that is sized by what is in it, and a row of
+   * fluid columns asks for nothing — which is exactly what it got: eight dots
+   * a few pixels wide. Here the row is given its width and the swatches divide
+   * it, the other way round from the phone.
+   */
+  .trigger__colours {
+    width: 18rem;
+  }
+
   .triggers__add button {
     flex: 0 0 auto;
   }
