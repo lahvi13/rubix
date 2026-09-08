@@ -3,7 +3,13 @@ import { db } from '../schema';
 import { applyCsTimerPlan, readSolveKeys } from './cstimer-repository';
 import { addSolve } from './solve-repository';
 import { getOrCreateActiveSession } from './session-repository';
-import { parseCsTimerJson, planCsTimerImport } from '../../domain/transfer/cstimer';
+import {
+  parseCsTimerCsv,
+  parseCsTimerJson,
+  planCsTimerImport,
+} from '../../domain/transfer/cstimer';
+import REAL_PHASES from '../../test/fixtures/cstimer-export-phases.txt?raw';
+import REAL_CSV from '../../test/fixtures/cstimer-export-session.csv?raw';
 
 const PHASES = ['cross', 'f2l', 'oll', 'pll'];
 
@@ -176,5 +182,46 @@ describe('csTimer import', () => {
     expect(plan.unsupported).toEqual([{ name: '6x6', scrambleType: '666wca', solves: 1 }]);
     expect(await db.solves.count()).toBe(0);
     expect(await db.sessions.count()).toBe(0);
+  });
+});
+
+describe('csTimer import, the same session exported both ways', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+  });
+
+  async function importCsv(text: string): Promise<number> {
+    const parsed = parseCsTimerCsv(text, 'Evening', '333');
+    if (!parsed.ok) throw new Error(`unreadable file: ${parsed.problem}`);
+    const plan = planCsTimerImport(parsed.file, await readSolveKeys(), PHASES.length);
+    return applyCsTimerPlan(plan, PHASES);
+  }
+
+  it('imports a session from the JSON and then finds the CSV has nothing to add', async () => {
+    expect(await importFile(REAL_PHASES)).toBe(5);
+    // Same five solves, exported the other way: the same time at the same
+    // moment is the same solve, whichever file it came out of.
+    expect(await importCsv(REAL_CSV)).toBe(0);
+
+    expect(await db.solves.count()).toBe(5);
+    expect(await db.sessions.count()).toBe(1);
+  });
+
+  it('works in the other direction too', async () => {
+    expect(await importCsv(REAL_CSV)).toBe(5);
+    expect(await importFile(REAL_PHASES)).toBe(0);
+
+    expect(await db.solves.count()).toBe(5);
+  });
+
+  it('keeps the phase times of the four-phase solves, whichever file it read', async () => {
+    await importCsv(REAL_CSV);
+    const solves = await db.solves.toArray();
+
+    expect(solves.filter((solve) => solve.splits.length > 0)).toHaveLength(2);
+    // The five-phase solve keeps its +2 and its time, without phases.
+    const withFive = solves.find((solve) => solve.rawMs === 32_706);
+    expect(withFive?.penalty).toBe('plus2');
+    expect(withFive?.splits).toEqual([]);
   });
 });

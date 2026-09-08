@@ -310,7 +310,7 @@ function localMs(year: number, month: number, day: number, h: number, m: number,
 }
 
 describe('parseCsTimerCsv', () => {
-  it('reads a real CSV export of a session', () => {
+  it('reads a real CSV export of a whole session', () => {
     // Times to the millisecond (csTimer's useMilli), a header with a column
     // for every phase the session ever used, and no newline at the end.
     const parsed = parseCsTimerCsv(REAL_CSV, 'Evening', '333');
@@ -318,28 +318,90 @@ describe('parseCsTimerCsv', () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     expect(parsed.file.skipped).toEqual([]);
-    expect(parsed.file.sessions[0]?.solves).toEqual([
-      {
-        rawMs: 29_248,
-        penalty: 'none',
-        scramble: "B L' D' F' L B U' R' L2 F2 U2 L2 F R2 B U2 R2 F L2 B2",
-        note: null,
-        startedAt: localMs(2026, 9, 8, 9, 41, 57),
-        // 7.303 + 5.121 + 6.023 = the three interior boundaries; the fourth
-        // phase is closed by the solve itself.
-        phaseEndsMs: [7303, 12_424, 18_447],
-        phaseCount: 4,
-      },
+    expect(
+      parsed.file.sessions[0]?.solves.map((solve) => [
+        solve.rawMs,
+        solve.penalty,
+        solve.phaseCount,
+        solve.note,
+      ]),
+    ).toEqual([
+      [2056, 'dnf', 1, 'comment test'],
+      [12_778, 'none', 1, null],
+      [29_496, 'none', 4, null],
+      [32_706, 'plus2', 5, null],
+      [29_248, 'none', 4, null],
     ]);
   });
 
-  it('ignores the phase columns a session never filled', () => {
-    // The header of a real export has a column for the longest solve of the
-    // session — five here — and a four-phase solve leaves the last one empty.
+  /**
+   * The same five solves, exported both ways. Reading them has to give the
+   * same answer or one of the two readers is wrong — which is the whole
+   * reason this file is kept next to the JSON.
+   */
+  it('agrees with the JSON export of the same session', () => {
+    const fromCsv = parseCsTimerCsv(REAL_CSV, 'Evening', '333');
+    const fromJson = parseCsTimerJson(REAL_PHASES);
+    if (!fromCsv.ok || !fromJson.ok) throw new Error('unreadable');
+
+    const shape = (parse: typeof fromCsv) =>
+      parse.ok
+        ? parse.file.sessions[0]?.solves.map((solve) => [
+            solve.rawMs,
+            solve.penalty,
+            solve.phaseCount,
+            solve.phaseEndsMs,
+            solve.startedAt,
+          ])
+        : null;
+
+    expect(shape(fromCsv)).toEqual(shape(fromJson));
+  });
+
+  it('does not mistake the whole time for a phase', () => {
+    // csTimer fills P.1 even for a solve it never timed by phase: with one
+    // phase the column is just the time again, and a boundary at the end of
+    // the solve is not a boundary.
     const parsed = parseCsTimerCsv(REAL_CSV, 'Evening', '333');
     if (!parsed.ok) throw new Error('unreadable');
 
-    expect(parsed.file.sessions[0]?.solves[0]?.phaseCount).toBe(4);
+    expect(parsed.file.sessions[0]?.solves[1]).toMatchObject({
+      rawMs: 12_778,
+      phaseCount: 1,
+      phaseEndsMs: [],
+    });
+  });
+
+  it('reads a +2 whose phases are of the time before the penalty', () => {
+    // csTimer shows 34.706+ and writes phases adding up to 32.706.
+    const parsed = parseCsTimerCsv(REAL_CSV, 'Evening', '333');
+    if (!parsed.ok) throw new Error('unreadable');
+    const solve = parsed.file.sessions[0]?.solves[3];
+
+    expect(solve?.rawMs).toBe(32_706);
+    expect(solve?.penalty).toBe('plus2');
+    expect(solve?.phaseEndsMs).toEqual([6216, 11_232, 18_561, 27_313]);
+  });
+
+  it('reads the date csTimer wrote in the device’s own time', () => {
+    const parsed = parseCsTimerCsv(REAL_CSV, 'Evening', '333');
+    if (!parsed.ok) throw new Error('unreadable');
+
+    expect(parsed.file.sessions[0]?.solves[0]?.startedAt).toBe(
+      localMs(2026, 9, 4, 10, 9, 45),
+    );
+  });
+
+  it('ignores the phase columns a solve never filled', () => {
+    // The header has a column for the longest solve of the session — five
+    // here — and a four-phase solve leaves the last one empty.
+    const parsed = parseCsTimerCsv(REAL_CSV, 'Evening', '333');
+    if (!parsed.ok) throw new Error('unreadable');
+
+    expect(parsed.file.sessions[0]?.solves[4]).toMatchObject({
+      phaseCount: 4,
+      phaseEndsMs: [7303, 12_424, 18_447],
+    });
   });
 
   it('reads a row into a solve', () => {
