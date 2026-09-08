@@ -1826,7 +1826,7 @@ button[disabled] {
 /* Big enough to read two side faces from arm's length, and no bigger: the
    cards under it are what the eye has to travel to and back. */
 .recognition__cube {
-  width: min(60vw, 12rem);
+  width: min(60vw, 26dvh, 12rem);
   height: auto;
   aspect-ratio: 1;
 }
@@ -1871,6 +1871,58 @@ button[disabled] {
    can fit, which is right for reading a whole set and wrong here — six cards
    in fours leaves a ragged second row, and each one is a cube to be compared
    against another cube, not an icon. */
+/* The controls, folded away. Full width so the line it leaves behind reads as
+   a header for the screen rather than as a stray button. */
+.recognition__setup {
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto var(--space-5);
+}
+
+.recognition__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+/* The algorithm, and in front of it the turn this particular angle asks for.
+   Set apart rather than run together: the AUF belongs to the question, the
+   algorithm belongs to the case. */
+.recognition__solution {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.recognition__auf {
+  font-family: var(--font-mono);
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+}
+
+/* Smaller than in the case sheet, where the algorithm is what you came for.
+   Here it is the footnote to an answer, and at the sheet's size it pushed the
+   cards — the thing that was just being compared — off the screen. */
+.recognition__solution .alg {
+  font-size: clamp(1rem, 4.5vw, 1.4rem);
+}
+
+/* The two things done to the cube itself, side by side under it. Moving on
+   used to sit under the cards, where on a short screen it was below the fold
+   and cost a scroll every round; here it is above them and never moves. */
+.recognition__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
 .recognition__options {
   width: 100%;
   grid-template-columns: repeat(3, 1fr);

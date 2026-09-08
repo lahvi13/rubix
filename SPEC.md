@@ -272,6 +272,19 @@ kromě PB, které je globální per `puzzle`.
     stejným způsobem jako drill. Per-case statistiky se počítají zvlášť (ao5
     rozpoznání ≠ ao5 řešení; jedno je vteřina, druhé pět) a v detailu případu
     jsou dvě sekce vedle sebe
+  - **po odpovědi se vypíše i algoritmus**, a to pro ten úhel, ve kterém byl případ
+    ukázaný: před ním stojí AUF, který k tomu patří. Nehledá se inverzí scramblu, ale
+    **zkusí se všechny čtyři** a vezme se ten, po kterém kostka opravdu složí — vlastní
+    algoritmus si AUF může nést sám a inverze scramblu by o něm nevěděla. AUF se kreslí
+    **odděleně** od algoritmu: patří k téhle otázce, ne k případu (`domain/recognition/angle.ts`)
+  - **celá otázka se musí vejít na obrazovku** — kostka a karty se porovnávají mezi
+    sebou a scrollovat mezi nimi znamená pamatovat si, co bylo nahoře. Čtyři řádky
+    ovládání (sada, 2-Look/Full, režim, výběr případů) stály 244 px z 915 a jsou to
+    volby na jednou za sezení, takže jsou **složené do jednoho řádku**, který říká, na
+    čem jsou (`OLL · Name it · 57 / 57`). Kostka má v šířce i `dvh` člen a „Next case"
+    se po odpovědi objeví **vedle „Turn round"** pod kostkou — obě věci, co se dělají
+    s kostkou, v jedné řadě, nad kartami a vždycky vidět. Pod kartami byl na nízkém
+    displeji pod okrajem a každé kolo stálo scroll
   - sada i zaškrtnuté případy jsou **společné s drillem** (`trainer.drillSetId`,
     `trainer.drillCaseIds`) — vybrat si desítku, co ti nejde, se nemá dělat dvakrát
   - **cross tenhle režim nemá** (není co poznávat) a pod dva případy v poolu taky ne

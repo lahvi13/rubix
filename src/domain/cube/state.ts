@@ -88,6 +88,24 @@ export function isSolved(state: CubeState): boolean {
   return FACELETS.every((sticker, index) => state[index] === sticker.face);
 }
 
+/**
+ * Solved, whichever way round the cube is being held. `isSolved` compares
+ * against the one canonical solved state, which is the right question for a
+ * scramble and the wrong one after a whole-cube rotation: a cube turned by y
+ * and then solved has every face in one colour and not one sticker where
+ * `isSolved` wants it.
+ */
+export function isSolvedIgnoringOrientation(state: CubeState): boolean {
+  const wanted = new Map<Face, Face | undefined>();
+  return FACELETS.every((sticker, index) => {
+    if (!wanted.has(sticker.face)) {
+      wanted.set(sticker.face, state[index]);
+      return true;
+    }
+    return state[index] === wanted.get(sticker.face);
+  });
+}
+
 export function statesEqual(a: CubeState, b: CubeState): boolean {
   return a.length === b.length && a.every((colour, index) => colour === b[index]);
 }

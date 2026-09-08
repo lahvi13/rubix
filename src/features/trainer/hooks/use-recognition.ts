@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { AlgCase } from '../../../db/types';
+import type { AlgCase, Algorithm } from '../../../db/types';
 import { listCasesWithAlgs, type CaseWithAlg } from '../../../db/repositories/alg-repository';
 import { loadDrillPool } from '../../../db/repositories/drill-repository';
 import { addRecognitionAttempt } from '../../../db/repositories/recognition-repository';
 import { CROSS_SET_ID } from '../../../db/seed/packs';
+import { parseAlg, type Move } from '../../../domain/cube/notation';
 import type { CubeState } from '../../../domain/cube/state';
+import { aufForAngle } from '../../../domain/recognition/angle';
 import { drillScramble } from '../../../domain/drill/scramble';
 import { fromOtherCorner } from '../../../domain/recognition/corner';
 import { buildRound, MIN_POOL } from '../../../domain/recognition/round';
@@ -25,6 +27,14 @@ export interface RecognitionOption {
 
 export interface RecognitionQuestion {
   answer: AlgCase;
+  /** How the case is solved, once it is no longer a secret. */
+  algorithm: Move[];
+  /**
+   * The turn to make before it, for the angle this question was met at. Empty
+   * when none is needed; null when the algorithm does not solve the case at
+   * all, which is what somebody's half-typed variant looks like.
+   */
+  auf: Move[] | null;
   /** The cube as it is met — the setup, turned and AUF'd at random. */
   state: CubeState;
   /** The same cube from the back-left corner, for when two sides do not say. */
@@ -89,7 +99,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   }, [setId, selectionKey]);
 
   const cases = data?.cases;
-  const pool = useMemo(() => data?.pool.map((entry) => entry.algCase), [data]);
+  const pool = useMemo(() => data?.pool, [data]);
 
   const [round, setRound] = useState<Round | null>(null);
   const [isTurned, setTurned] = useState(false);
@@ -98,7 +108,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   // Which pool the question was drawn from. A different set, or a different
   // tick in the picker, and it has to be drawn again — adjusted during render
   // rather than in an effect, or the previous set's case is painted first.
-  const poolKey = pool === undefined ? null : pool.map((algCase) => algCase.id).join(',');
+  const poolKey = pool === undefined ? null : pool.map((entry) => entry.algCase.id).join(',');
   const [drawnFor, setDrawnFor] = useState<string | null>(null);
   if (poolKey !== null && poolKey !== drawnFor) {
     setDrawnFor(poolKey);
@@ -110,19 +120,27 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   const question = useMemo<RecognitionQuestion | null>(() => {
     if (round === null || pool === undefined) return null;
 
-    const byId = new Map(pool.map((algCase) => [algCase.id, algCase]));
+    const byId = new Map(pool.map((entry) => [entry.algCase.id, entry]));
     const answer = byId.get(round.answerId);
     if (answer === undefined) return null;
 
     const options: RecognitionOption[] = [];
     for (const id of round.optionIds) {
-      const algCase = byId.get(id);
+      const entry = byId.get(id);
       // A case that has gone since the round was drawn is simply not offered.
-      if (algCase !== undefined) options.push({ algCase, state: stateOf(algCase.setupAlg) });
+      if (entry !== undefined) {
+        options.push({ algCase: entry.algCase, state: stateOf(entry.algCase.setupAlg) });
+      }
     }
 
+    const algorithm = movesOf(answer.active);
     return {
-      answer,
+      answer: answer.algCase,
+      algorithm,
+      // Worked out for this angle rather than for the case: the same algorithm
+      // wants a different turn in front of it depending on where the case was
+      // met, and that turn is half of what a solver does after recognising it.
+      auf: aufForAngle(round.state, algorithm),
       state: round.state,
       turnedState: fromOtherCorner(round.state),
       scramble: round.scramble,
@@ -183,7 +201,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   };
 }
 
-function problemOf(isCross: boolean, pool: AlgCase[] | undefined): RecognitionProblem | null {
+function problemOf(isCross: boolean, pool: CaseWithAlg[] | undefined): RecognitionProblem | null {
   if (isCross) return 'cross';
   if (pool === undefined) return 'loading';
   if (pool.length === 0) return 'empty';
@@ -191,12 +209,25 @@ function problemOf(isCross: boolean, pool: AlgCase[] | undefined): RecognitionPr
   return null;
 }
 
+/** The algorithm a case is drilled with, or nothing to show. */
+function movesOf(algorithm: Algorithm | null): Move[] {
+  if (algorithm === null) return [];
+  const parsed = parseAlg(algorithm.moves);
+  // Text that does not parse is a variant somebody typed and the app kept as
+  // written; there is nothing to print as moves.
+  return parsed.ok ? parsed.moves : [];
+}
+
 /** One round: which case, which cards, and the cube the reader is shown. */
-function drawRound(pool: readonly AlgCase[], previousId: string | null): Round | null {
-  const round = buildRound(pool, previousId, systemRandom);
+function drawRound(pool: readonly CaseWithAlg[], previousId: string | null): Round | null {
+  const round = buildRound(
+    pool.map((entry) => ({ id: entry.algCase.id, group: entry.algCase.group })),
+    previousId,
+    systemRandom,
+  );
   if (round === null) return null;
 
-  const answer = pool.find((algCase) => algCase.id === round.answerId);
+  const answer = pool.find((entry) => entry.algCase.id === round.answerId)?.algCase;
   if (answer === undefined) return null;
 
   // A setup that does not parse belongs to a case somebody typed in: the case

@@ -238,7 +238,8 @@ export const strings = {
     saving: 'Saving the attempt',
     forgetting: 'Clearing the recognition attempts',
     forget: 'Clear',
-    hint: 'You see what you would see mid-solve: the top and two sides. Turn the cube round if that is not enough.',
+    hint: 'The top and two sides, as you would see them mid-solve.',
+    aufHint: 'The turn this angle needs before the algorithm — not part of it.',
   },
   settings: {
     appearance: 'Appearance',

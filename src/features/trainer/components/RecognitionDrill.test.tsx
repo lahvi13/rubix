@@ -101,6 +101,40 @@ describe('RecognitionDrill', () => {
     await waitFor(async () => expect(await db.solves.count()).toBe(1));
   });
 
+  it('keeps the algorithm back until the question is over, then writes it for this angle', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText('Which case is this?');
+
+    // Nothing to read off the screen while it is still a question.
+    expect(document.querySelector('.recognition__solution')).toBeNull();
+
+    await user.click(firstCard());
+    await screen.findByRole('status');
+
+    const solution = document.querySelector('.recognition__solution');
+    expect(solution).not.toBeNull();
+
+    // The algorithm shown is the one the answered case is drilled with.
+    const solve = await db.solves.toCollection().first();
+    const active = await db.algorithms
+      .where('caseId')
+      .equals(solve?.caseId ?? '')
+      .filter((row) => row.isActive === 1)
+      .first();
+    // The moves only: AlgText writes the name of each trigger over it, and
+    // those words sit in the same element's text.
+    const written = [...(solution?.querySelectorAll('.alg .alg__move') ?? [])]
+      .map((node) => node.textContent)
+      .join(' ');
+    expect(written).toBe(active?.moves);
+
+    // The turn in front, when there is one, is a U turn and stands apart from
+    // the algorithm rather than inside it.
+    const auf = solution?.querySelector('.recognition__auf')?.textContent ?? '';
+    expect(["", 'U', 'U2', "U'"]).toContain(auf);
+  });
+
   it('turns the cube round without ending the question', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
@@ -154,11 +188,17 @@ describe('RecognitionDrill', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
-  it('keeps the switch back to solving', async () => {
+  it('keeps the set, the pool and the way back behind one line', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
     await screen.findByText('Which case is this?');
 
+    // Folded away by default: the cube and the cards have to share one screen.
+    expect(screen.queryByRole('button', { name: 'Solve it' })).not.toBeInTheDocument();
+    const summary = screen.getByRole('button', { name: /Name it/ });
+    expect(summary).toHaveTextContent('PLL · Name it · 2 / 21');
+
+    await user.click(summary);
     await user.click(screen.getByRole('button', { name: 'Solve it' }));
 
     // The solve drill hands you something to perform instead.

@@ -1,12 +1,17 @@
 import { CubeDiagram } from '../../../components/CubeDiagram';
+import type { ReactNode } from 'react';
+import type { AlgSet } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { caseTitle } from '../../../domain/alg/case-name';
+import { formatAlg, type Move } from '../../../domain/cube/notation';
+import { useState } from 'react';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { formatTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
 import { useAlgSets } from '../hooks/use-alg-cases';
+import { useTriggers } from '../hooks/use-triggers';
 import { useRecognitionStats } from '../hooks/use-case-stats';
 import {
   useRecognition,
@@ -14,6 +19,7 @@ import {
   type RecognitionOutcome,
   type RecognitionProblem,
 } from '../hooks/use-recognition';
+import { AlgText } from './AlgText';
 import { CasePool } from './CasePool';
 import { CaseStatsRow } from './CaseStats';
 import { DrillModes, DrillSets } from './DrillControls';
@@ -39,6 +45,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
   const [selectedIds, setSelectedIds] = useSetting('trainer.drillCaseIds');
   const recognition = useRecognition(setId, selectedIds);
   const skin = useCubeSkin();
+  const { definitions } = useTriggers();
 
   const caseIds = (recognition.cases ?? []).map((entry) => entry.algCase.id);
   const stats = useRecognitionStats(caseIds);
@@ -50,7 +57,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
 
   return (
     <main className="screen screen--scroll">
-      <div className="drill__setup">
+      <Setup summary={summaryOf(sets ?? [], setId, caseIds, selectedIds)}>
         <DrillSets sets={sets ?? []} setId={setId} onSet={setSetId} />
         <DrillModes mode={mode} onMode={onMode} />
         {recognition.problem === 'cross' ? null : (
@@ -61,7 +68,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
             onSelect={setSelectedIds}
           />
         )}
-      </div>
+      </Setup>
 
       {question === null || chart === null ? (
         <p className="drill__hint">{problemText(recognition.problem)}</p>
@@ -78,13 +85,25 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
             label={strings.recognition.question}
           />
 
-          <button
-            type="button"
-            className={recognition.isTurned ? 'is-active recognition__turn' : 'recognition__turn'}
-            onClick={recognition.turn}
-          >
-            {recognition.isTurned ? strings.recognition.turnBack : strings.recognition.turn}
-          </button>
+          {/* Both of the things you do to a cube on this screen, in one row
+              under it: turn it round while the question is open, and move on
+              once it is answered. Fixed where the hand already goes, rather
+              than at the far end of the cards — those are what you were just
+              reading, and the answer is read from the top down. */}
+          <div className="recognition__actions">
+            <button
+              type="button"
+              className={recognition.isTurned ? 'is-active recognition__turn' : 'recognition__turn'}
+              onClick={recognition.turn}
+            >
+              {recognition.isTurned ? strings.recognition.turnBack : strings.recognition.turn}
+            </button>
+            {outcome === null ? null : (
+              <button type="button" className="is-primary" onClick={recognition.next}>
+                {strings.recognition.next}
+              </button>
+            )}
+          </div>
 
           {outcome === null ? (
             <p className="recognition__prompt">{strings.recognition.question}</p>
@@ -98,6 +117,14 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
                 ? strings.recognition.hint
                 : (question.answer.group ?? '')}
           </p>
+
+          {outcome === null ? null : (
+            <Solution
+              moves={question.algorithm}
+              auf={question.auf}
+              triggers={definitions}
+            />
+          )}
 
           <div className="case-grid recognition__options">
             {question.options.map((option) => (
@@ -113,21 +140,52 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
             ))}
           </div>
 
-          {/* Straight under the cards, because that is where the hand already
-              is: it just tapped one of them. The case's numbers go below it —
-              worth a look, but not worth a scroll every round. */}
-          {outcome === null ? null : (
-            <>
-              <button type="button" className="result-bar__next" onClick={recognition.next}>
-                {strings.recognition.next}
-              </button>
-              <CaseStatsRow stats={stats?.get(question.answer.id)} />
-            </>
-          )}
+          {outcome === null ? null : <CaseStatsRow stats={stats?.get(question.answer.id)} />}
         </section>
       )}
     </main>
   );
+}
+
+/**
+ * The four rows of controls, folded into the one line that says what they are
+ * set to.
+ *
+ * They are worth a quarter of a phone screen and are touched once a session,
+ * while the two things this screen is actually for — the cube and the cards —
+ * have to be taken in together, in one look, without scrolling between them.
+ * So they are shut by default and the line names the choices, which is also
+ * what makes it obvious there is something behind it.
+ */
+function Setup({ summary, children }: { summary: string; children: ReactNode }) {
+  const [isOpen, setOpen] = useState(false);
+
+  return (
+    <div className="recognition__setup">
+      <button
+        type="button"
+        className="drill__pool-toggle"
+        aria-expanded={isOpen}
+        onClick={() => setOpen((open) => !open)}
+      >
+        {summary}
+      </button>
+      {isOpen ? <div className="recognition__panel">{children}</div> : null}
+    </div>
+  );
+}
+
+/** What the controls are set to: the set, and how much of it is being drilled. */
+function summaryOf(
+  sets: readonly AlgSet[],
+  setId: string,
+  caseIds: readonly string[],
+  selectedIds: readonly string[],
+): string {
+  const name = sets.find((set) => set.id === setId)?.name ?? setId;
+  const ticked = caseIds.filter((id) => selectedIds.includes(id));
+  const count = ticked.length === 0 ? caseIds.length : ticked.length;
+  return `${name} · ${strings.drill.modeRecognise} · ${count} / ${caseIds.length}`;
 }
 
 function problemText(problem: RecognitionProblem | null): string {
@@ -167,6 +225,36 @@ function Verdict({ outcome, title }: VerdictProps) {
       <span className="recognition__answer">{title}</span>{' '}
       <span className="recognition__time">{formatTime(outcome.elapsedMs)}</span>
     </p>
+  );
+}
+
+interface SolutionProps {
+  moves: Move[];
+  auf: Move[] | null;
+  triggers: ReturnType<typeof useTriggers>['definitions'];
+}
+
+/**
+ * How the case is solved — from where it was just shown, not from where the
+ * chart draws it.
+ *
+ * The turn in front is kept apart from the algorithm rather than run together
+ * with it. It belongs to this one question: the same case a quarter turn round
+ * wants a different one, and an algorithm learned with somebody's AUF welded
+ * on is an algorithm that only works from one angle.
+ */
+function Solution({ moves, auf, triggers }: SolutionProps) {
+  if (moves.length === 0) return null;
+
+  return (
+    <div className="recognition__solution">
+      {auf === null || auf.length === 0 ? null : (
+        <span className="recognition__auf" title={strings.recognition.aufHint}>
+          {formatAlg(auf)}
+        </span>
+      )}
+      <AlgText moves={moves} triggers={triggers} />
+    </div>
   );
 }
 
