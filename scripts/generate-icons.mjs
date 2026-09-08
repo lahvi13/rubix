@@ -1,5 +1,7 @@
 /**
- * Generates the PWA icons: a cube face on the app background.
+ * Generates the app's icons — the PWA ones and the favicon — as one cube face
+ * on the app background. One generator for both, because a browser tab and an
+ * installed icon showing two different marks is how a tab stops being findable.
  *
  * Written by hand with zlib instead of pulling in an image library — the
  * shapes are axis-aligned rectangles, so it is just pixel arithmetic, and the
@@ -94,6 +96,40 @@ function cubeFace(size, padRatio) {
   };
 }
 
+const hex = ([r, g, b]) =>
+  `#${[r, g, b].map((value) => value.toString(16).padStart(2, '0')).join('')}`;
+
+/**
+ * The same face as an SVG, for the browser tab.
+ *
+ * Drawn on its own dark tile rather than transparent: a tab strip is light in
+ * one browser and dark in the next, and the mark has to be found in both. Its
+ * margin is thinner than the home-screen icons' because a tab draws this at
+ * sixteen pixels, where every pixel spent on margin comes off a sticker — but
+ * not thinner still, or the tile stops being a tile against a dark strip. The
+ * numbers divide evenly into 64 so nothing lands on a half pixel.
+ */
+function faceSvg() {
+  const size = 64;
+  const pad = 5;
+  const gap = 3;
+  const cell = 16;
+
+  const cells = FACE.map((sticker, index) => {
+    const x = pad + (index % 3) * (cell + gap);
+    const y = pad + Math.floor(index / 3) * (cell + gap);
+    return `  <rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2.5" fill="${hex(STICKERS[sticker])}"/>`;
+  });
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">`,
+    `  <rect width="${size}" height="${size}" rx="10" fill="${hex(BACKGROUND)}"/>`,
+    ...cells,
+    '</svg>',
+    '',
+  ].join('\n');
+}
+
 const publicDir = join(process.cwd(), 'public');
 const icons = [
   ['icon-192.png', 192, 0.1],
@@ -118,3 +154,6 @@ for (const [name, size, padRatio] of icons) {
   writeFileSync(join(publicDir, name), encodePng(size, cubeFace(size, padRatio)));
   console.log(`wrote public/${name}`);
 }
+
+writeFileSync(join(publicDir, 'favicon.svg'), faceSvg());
+console.log('wrote public/favicon.svg');
