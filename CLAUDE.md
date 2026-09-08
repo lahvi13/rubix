@@ -178,6 +178,10 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
 - změnu, kterou uvidí prohlížeč, ověřit **v prohlížeči**, ne jen testy: `npm run build &&
   npm run preview` a projít reálný scénář (dobře posloužil headless Chrome přes CDP).
   Chyby v hranicích worker / chunking / service worker jednotkové testy z principu nechytí.
+- **iOS se odsud ověřit nedá.** Co je na iPhonu potřeba proklikat ručně, proč je
+  statusbar nastavený tak, jak je, a co Safari se smazáním dat zaručit nejde:
+  [IOS-CHECKLIST.md](IOS-CHECKLIST.md). Je tam i verzová podlaha appky (iOS 17.5
+  kvůli `light-dark()`) — vědomá, ne opomenutí.
 - **hlavní zařízení je telefon.** UI se ověřuje v šířce 412 px (CDP
   `Emulation.setDeviceMetricsOverride`, `mobile: true`) — desktop je až druhý.
   Řádek s několika ovládacími prvky vedle sebe se tam smrskne na nulu, takže
