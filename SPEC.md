@@ -485,6 +485,30 @@ prefixu (`333*`, `222*`, `444*`, `555*`, `pyr*`, `skb*`, `sq1/sqr*`, `clk*`,
 žádný název session a žádné puzzle. Jde tedy dovnitř jako 3×3 pod jménem
 souboru a náhled na to upozorní — bezztrátový je JSON.
 
+### 3.9 Průvodce metodou pro začátečníky
+
+Samostatná obrazovka (**Learn**) se sedmi kroky jednoho celého složení: kříž,
+rohy spodní vrstvy, hrany prostřední vrstvy, kříž poslední vrstvy, celá horní
+stěna, rohy na místo, hrany na místo.
+
+- **není to obrázková stránka**: každý případ na ní je skutečný případ z
+  existující sady, kreslený stejným kódem jako v trenažéru, otevíratelný do
+  stejného listu případu a přehratelný. „Drill this step“ pošle drill přesně na
+  případy toho kroku (`trainer.drillCaseIds`), ne na celou sadu, ze které jsou
+- **kroky 4–7 mají dvě úrovně**: ve výchozím stavu **jeden** algoritmus, který
+  ten krok zvládne celý opakováním, a pod ním přepínač na všechny případy kroku
+  po jednom algoritmu. Sedm rohových OLL naráz je přesně to, po čem začátečník
+  kostku odloží; schovat je ale nesmí znamenat zahodit — je to úroveň, ne trik
+- **kroky 2 a 3 mají vlastní sadu** (`beginner`, 5 případů): tahle metoda staví
+  první dvě vrstvy po jednom kousku, což F2L nedělá. V trenažéru se sada
+  nenabízí — vedle F2L by četla jako druhý způsob téhož — ale drillovat jde
+- **krok 1 nemá případ**, protože kříž se neskládá z algoritmů. Místo něj je
+  obrázek hotového kříže (`stickering: 'cross'`: kříž a všechny středy barevně,
+  zbytek šedě — bez středů není proti čemu shodu barev číst) a křížový drill
+- **skrytelné v nastavení** (`ui.showLearn`): kdo kostku skládá, tuhle obrazovku
+  nepotřebuje. Mizí jen z menu — `#/learn` funguje dál, protože záložka na ni je
+  člověk, který ji chce
+
 ## 4. Datový model
 
 Nejdůležitější část specifikace. Platí:
@@ -731,6 +755,7 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `ui.clockSize` | **1** | `'medium'` |
 | `ui.twistyMode` | 0 | `'2D'` |
 | `ui.cubeSkin` | 0 | `'classic'` |
+| `ui.showLearn` | 0 | `true` |
 | `trainer.twoLookDefault` | 0 | `false` |
 | `trainer.showAlgs` | 0 | `false` |
 | `trainer.showRotationAlgs` | 0 | `true` |
@@ -786,6 +811,7 @@ formátů žije v `src/db/migrations/import/`.
 | 8 | **Drill** | timer nad náhodným případem z vybrané podmnožiny |
 | 9 | **Nastavení** | timer, vzhled, kalibrace mikrofonu s live meterem |
 | 10 | **Data** | export (JSON záloha + CSV solvů), import (preview + merge/replace), import z csTimeru, smazání všech dat, troubleshooting |
+| 11 | **Learn** | průvodce metodou pro začátečníky: sedm kroků jednoho složení, každý s jedním algoritmem a přepínačem na všechny případy kroku; skrytelná v nastavení |
 
 Navigace: **hamburger menu** v hlavičce se všemi routami; hlavička ukazuje název
 aktuální obrazovky. Je **přišpendlená k hornímu okraji** — cesta ze stránky musí

@@ -58,6 +58,7 @@ export function SettingsScreen() {
   const [twoLookDefault, setTwoLookDefault] = useSetting('trainer.twoLookDefault');
   const [showAlgs, setShowAlgs] = useSetting('trainer.showAlgs');
   const [showRotationAlgs, setShowRotationAlgs] = useSetting('trainer.showRotationAlgs');
+  const [showLearn, setShowLearn] = useSetting('ui.showLearn');
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
   const [isPreviewShown, setPreviewShown] = useSetting('timer.showScramblePreview');
@@ -193,6 +194,16 @@ export function SettingsScreen() {
           {strings.settings.showRotationAlgs}
         </label>
         <p className="data-section__hint">{strings.settings.showRotationAlgsHint}</p>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={showLearn}
+            onChange={(event) => setShowLearn(event.target.checked)}
+          />
+          {strings.settings.showLearn}
+        </label>
+        <p className="data-section__hint">{strings.settings.showLearnHint}</p>
       </section>
 
       <section className="data-section">

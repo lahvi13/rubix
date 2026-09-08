@@ -85,9 +85,9 @@ describe('aufForAngle', () => {
       }
     }
 
-    // 135 cases, four rotations, four AUFs — a guard against the loop quietly
+    // 140 cases, four rotations, four AUFs — a guard against the loop quietly
     // running over nothing.
-    expect(checked).toBe(135 * 16);
+    expect(checked).toBe(140 * 16);
   });
 
   it('takes an algorithm that carries its own AUF as it is', () => {

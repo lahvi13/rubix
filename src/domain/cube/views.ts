@@ -27,7 +27,14 @@ export type Stickering =
    * has got to. An F2L case is about a slot, and a slot only reads as a hole
    * when the layers around it are there to be seen.
    */
-  | 'firstTwoLayers';
+  | 'firstTwoLayers'
+  /**
+   * The first step of every solve: the four edges of the bottom face and the
+   * centres. The centres are what makes it readable — a cross is only right
+   * when each edge matches the face it sits under, and with the centres grey
+   * there is nothing to match it against.
+   */
+  | 'cross';
 
 export type Cell = Face | null;
 
@@ -92,6 +99,12 @@ function isLastLayerPiece(state: CubeState, index: number): boolean {
   return siblingsOf(index).some((sibling) => colourAt(state, sibling) === 'U');
 }
 
+/** An edge wearing the bottom colour — a corner showing D is not cross. */
+function isCrossEdge(state: CubeState, index: number): boolean {
+  const stickers = siblingsOf(index);
+  return stickers.length === 2 && stickers.some((sibling) => colourAt(state, sibling) === 'D');
+}
+
 /** A piece is told apart by how many stickers it has: 3, 2 or 1. */
 function pieceSize(index: number): number {
   return siblingsOf(index).length;
@@ -116,6 +129,8 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       return pieceSize(index) === 3 ? colour : null;
     case 'edges':
       return pieceSize(index) === 2 ? colour : null;
+    case 'cross':
+      return pieceSize(index) === 1 || isCrossEdge(state, index) ? colour : null;
     case 'firstTwoLayers':
       // By piece rather than by place: a last-layer piece that has dropped
       // into the slot is what makes the slot a hole, and painting it in its

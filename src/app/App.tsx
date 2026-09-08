@@ -1,12 +1,14 @@
 import { Fragment, useEffect, useState } from 'react';
 import { DataScreen } from '../features/data-transfer';
 import { HistoryScreen } from '../features/history';
+import { LearnScreen } from '../features/learn';
 import { SessionsScreen } from '../features/sessions';
 import { SettingsScreen } from '../features/settings';
 import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
 import { DrillScreen, TrainerScreen } from '../features/trainer';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
+import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
@@ -20,6 +22,10 @@ export function App() {
   // A screen that lived through a lost connection holds dead live queries; the
   // key mounts it again once the database is back.
   const generation = useDatabaseGeneration();
+  const [showLearn] = useSetting('ui.showLearn');
+  // Hidden from the menu, not switched off: a bookmark on #/learn is somebody
+  // who wants the guide, and hiding it is about a shorter menu, not a lock.
+  const menu = ROUTES.filter((target) => target !== 'learn' || showLearn);
   // Applied here because this is the one component that is always mounted.
   useAppearance();
 
@@ -70,7 +76,7 @@ export function App() {
               onClick={() => setMenuOpen(false)}
             />
             <nav id="app-menu" className="app__menu">
-              {ROUTES.map((target) => (
+              {menu.map((target) => (
                 <button
                   key={target}
                   type="button"
@@ -91,6 +97,7 @@ export function App() {
 
       <Fragment key={generation}>
         {route === 'timer' ? <TimerScreen /> : null}
+        {route === 'learn' ? <LearnScreen /> : null}
         {route === 'history' ? <HistoryScreen /> : null}
         {route === 'stats' ? <StatsScreen /> : null}
         {route === 'sessions' ? <SessionsScreen /> : null}

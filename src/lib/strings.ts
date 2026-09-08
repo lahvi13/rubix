@@ -86,6 +86,7 @@ export const strings = {
     timer: 'Timer',
     history: 'History',
     stats: 'Stats',
+    learn: 'Learn',
     trainer: 'Trainer',
     drill: 'Drill',
     sessions: 'Sessions',
@@ -154,6 +155,47 @@ export const strings = {
     restore: 'Restore',
     showArchived: 'Show archived',
     namePlaceholder: 'New session name',
+  },
+  learn: {
+    intro:
+      'Seven steps from a scrambled cube to a solved one. Nothing here is quick, and none of it is wasted: a faster method replaces the last four steps and keeps the first three. The pictures stand the cube the way the trainer does — the cross goes on the bottom, and the layer left over is the one on top.',
+    drillStep: 'Drill this step',
+    keyHint:
+      'One algorithm is enough for the whole step: hold the cube as the words above say, run it, look again, run it again. The picture is the case it finishes in one go.',
+    showCases: 'Every case, one algorithm each',
+    hideCases: 'Back to the one algorithm',
+    loading: 'Loading the cases…',
+    crossCaption: 'A finished cross: an edge under every centre whose colour it shares.',
+    steps: {
+      cross: {
+        title: 'Cross',
+        text: 'Four edges of the bottom colour, each one under the centre it matches. There is nothing to learn by heart here and no algorithm that helps: bring an edge to the top layer, turn the top until it is over its own centre, and drop it in with two turns of that face. It is worth doing slowly and wrongly a few dozen times before going on — every later step assumes the cross is already there.',
+      },
+      corners: {
+        title: 'Bottom layer corners',
+        text: 'A corner belongs between the three centres whose colours it wears. Turn the top until the corner sits directly above its gap, then use the algorithm that matches which way the cross colour is pointing. A corner already down in the bottom layer but the wrong way round is dealt with the same way: any of these three lifts it back to the top, and then it goes in properly.',
+      },
+      middle: {
+        title: 'Middle layer edges',
+        text: 'Any top-layer edge without the last-layer colour on it belongs in the middle. Turn the top until the edge’s side colour matches the centre it faces — the piece and the centre make a short column — and its upward colour then says which way it goes: left or right. An edge sitting in the middle the wrong way round is sent up by either algorithm and put back with the right one.',
+      },
+      edgeOrientation: {
+        title: 'Last layer cross',
+        text: 'Now the top face, edges first. Only the top colour matters here; where the pieces belong is a later problem. A dot, an L or a line all become a cross with the same algorithm, held as the picture shows it — the dot needs it twice, the L and the line once each.',
+      },
+      cornerOrientation: {
+        title: 'Last layer face',
+        text: 'The whole top face in one colour. You can do this with a single algorithm repeated: hold the cube so that a corner already showing the top colour is at the front left, run it, look again, run it again. With two corners already done, turn the top so that the top-colour sticker of the front-left corner faces you; with none done, so that it faces left. Two or three goes and the face is one colour. The seven cases behind the button below each end it in a single go, for when you want them.',
+      },
+      cornerPermutation: {
+        title: 'Corners home',
+        text: 'The face is done and the pieces are still in the wrong places. Corners go first. Turn the top and look along each side for headlights — two corners of the same colour with a stranger between them. One algorithm covers it: run it, look again, run it again, and the corners are never more than two goes away. It shuffles the edges about on the way, which costs nothing, because the edges are the next step.',
+      },
+      edgePermutation: {
+        title: 'Edges home',
+        text: 'Only the edges are left, and one algorithm does all of them. Turn the top until one side is a solid block of colour: that side is finished and the other three edges go round in a cycle. If no side matches, run it from any angle anyway — whatever it leaves you with, one more go finishes it. A wrong guess here costs a few seconds, not the solve.',
+      },
+    },
   },
   trainer: {
     empty: 'No algorithm sets yet.',
@@ -282,6 +324,9 @@ export const strings = {
     twoLookDefault: 'Open OLL and PLL on',
     showAlgs: 'Show algorithms on the case list',
     showRotationAlgs: 'Offer variants that turn the cube',
+    showLearn: "Show the beginner's guide",
+    showLearnHint:
+      'A walk through one whole solve, in the menu as Learn. Hiding it changes nothing else — the sets it points at stay where they are.',
     showRotationAlgsHint:
       'A second built-in algorithm for some cases: turn the cube first, then solve with the right hand alone.',
   },

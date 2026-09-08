@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseAlg, type Move } from './notation';
 import { applyAlg, solvedState } from './state';
-import { isometricView, lastLayerView, permutationArrows } from './views';
+import { isometricView, lastLayerView, netView, permutationArrows } from './views';
 
 function alg(text: string): Move[] {
   const parsed = parseAlg(text);
@@ -188,5 +188,27 @@ describe('isometricView', () => {
 
     expect(view.front.every((sticker) => sticker === 'F')).toBe(true);
     expect(view.right.every((sticker) => sticker === 'R')).toBe(true);
+  });
+});
+
+describe('the cross stickering', () => {
+  it('shows the four bottom edges and every centre, and nothing else', () => {
+    const view = netView(solvedState(), 'cross');
+
+    // Down: the cross itself — centre and edges in colour, corners grey.
+    expect(view.down).toEqual(['.', 'D', '.', 'D', 'D', 'D', '.', 'D', '.'].map(dotToNull));
+    // A side face: its centre, so the edge under it has something to match,
+    // and the one cross sticker reaching up onto it.
+    expect(view.front).toEqual(['.', '.', '.', '.', 'F', '.', '.', 'F', '.'].map(dotToNull));
+    expect(view.up).toEqual(['.', '.', '.', '.', 'U', '.', '.', '.', '.'].map(dotToNull));
+  });
+
+  it('follows an edge out of the cross', () => {
+    // The front edge lifted out of the cross and left in the top layer: it is
+    // still drawn, and the hole it left is not.
+    const view = netView(after("F2"), 'cross');
+
+    expect(view.down[1]).toBeNull();
+    expect(view.up[7]).toBe('D');
   });
 });

@@ -1,4 +1,5 @@
 import type { DiagramView } from '../../components/CubeDiagram';
+import { BEGINNER_SET_ID } from '../../db/seed/packs';
 import type { PlayerStickering } from './components/CasePlayer';
 import type { Stickering } from '../../domain/cube/views';
 
@@ -47,9 +48,10 @@ export function diagramFor(setId: string, group: string): Diagram {
       playerStickering: 'full',
     };
   }
-  // The one set where dimming earns its cost: an F2L case is two pieces in a
-  // whole cube, and without the rest going quiet there is nothing to look at.
-  if (setId === 'f2l') {
+  // The sets where dimming earns its cost: a case down here is a piece or two
+  // in a whole cube, and without the rest going quiet there is nothing to look
+  // at.
+  if (setId === 'f2l' || setId === BEGINNER_SET_ID) {
     return { view: 'isometric', stickering: 'firstTwoLayers', playerStickering: 'firstTwoLayers' };
   }
   return { view: 'lastLayer', stickering: 'full', playerStickering: 'full' };

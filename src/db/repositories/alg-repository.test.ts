@@ -24,6 +24,8 @@ describe('alg repository', () => {
     expect(sets.map((set) => set.id).sort()).toEqual([
       '2look-oll',
       '2look-pll',
+      // The first two layers as the beginner's guide builds them.
+      'beginner',
       // A set to drill rather than to read, but a set all the same.
       'cross',
       'f2l',
@@ -39,6 +41,7 @@ describe('alg repository', () => {
   it('offers the sets in solving order, not alphabetical order', async () => {
     expect((await listSets()).map((set) => set.id)).toEqual([
       'cross',
+      'beginner',
       'f2l',
       '2look-oll',
       'oll',

@@ -4,6 +4,7 @@
  * plane, which is where it gets used.
  */
 
+import beginner from './beginner.json';
 import f2l from './f2l.json';
 import oll from './oll.json';
 import pll from './pll.json';
@@ -38,7 +39,7 @@ export interface AlgPack {
 export const PACK_PUZZLE = '333';
 export const PACK_METHOD_ID = 'cfop';
 
-export const PACKS: readonly AlgPack[] = [pll, oll, f2l, twoLookOll, twoLookPll];
+export const PACKS: readonly AlgPack[] = [pll, oll, f2l, twoLookOll, twoLookPll, beginner];
 
 /**
  * The shorter route through the same step. Two-look OLL and PLL are sets of
@@ -64,12 +65,20 @@ export const FULL_SETS: Readonly<Record<string, string>> = {
  */
 export const SET_ORDER: readonly string[] = [
   'cross',
+  'beginner',
   'f2l',
   '2look-oll',
   'oll',
   '2look-pll',
   'pll',
 ];
+
+/**
+ * The first two layers the way the beginner's guide teaches them: a corner at
+ * a time, then an edge at a time. Kept apart from F2L, which solves both at
+ * once and is a different skill, not a better version of this one.
+ */
+export const BEGINNER_SET_ID = 'beginner';
 
 export const CROSS_SET_ID = 'cross';
 export const CROSS_CASE_ID = 'cross';

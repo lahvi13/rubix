@@ -30,6 +30,13 @@ type CubeStateOf = ReturnType<typeof solvedState>;
 
 const solved = solvedState();
 
+/** The stickers of each cubie, so a piece can be found by the colours it wears. */
+const CUBIES = new Map<string, number[]>();
+for (const [index, sticker] of FACELETS.entries()) {
+  const key = sticker.position.join(',');
+  CUBIES.set(key, [...(CUBIES.get(key) ?? []), index]);
+}
+
 const isTopLayer = (index: number): boolean => FACELETS[index]?.position[1] === 1;
 
 /** Pieces of the front-right slot, the one every F2L case is drilled in. */
@@ -278,5 +285,75 @@ describe('F2L', () => {
     const keys = f2l.cases.map((entry) => aufKey(caseState(entry), fullKey));
 
     expect(new Set(keys).size).toBe(41);
+  });
+});
+
+describe('beginner', () => {
+  const pack = packById('beginner');
+  const corners = pack.cases.filter((entry) => entry.group === 'Bottom layer corners');
+  const edges = pack.cases.filter((entry) => entry.group === 'Middle layer edges');
+
+  /** Where the piece wearing these colours has got to. */
+  function pieceAt(state: CubeStateOf, colours: string): readonly number[] {
+    const wanted = [...colours].sort().join('');
+    for (const [, indices] of CUBIES) {
+      const worn = indices
+        .map((index) => state[index] ?? '')
+        .sort()
+        .join('');
+      if (worn === wanted) return FACELETS[indices[0] ?? 0]?.position ?? [];
+    }
+    throw new Error(`no piece wearing ${colours}`);
+  }
+
+  const inSlot = (x: number, z: number) => (index: number) => {
+    const position = FACELETS[index]?.position;
+    if (!position) return false;
+    return position[0] === x && position[2] === z && position[1] !== 1;
+  };
+
+  it('is the three corners and the two edges the guide teaches', () => {
+    expect(corners).toHaveLength(3);
+    expect(edges).toHaveLength(2);
+  });
+
+  it.each(corners.map((entry) => [entry.name, entry] as const))(
+    '%s waits in the top layer above the slot it drops into',
+    (_name, entry) => {
+      const state = caseState(entry);
+
+      // Every corner of this step goes into the front-right slot, and gets
+      // there from the top: it is the one place a beginner can see it.
+      expect(pieceAt(state, 'DFR')).toEqual([1, 1, 1]);
+      // Below the top layer only that slot is open. The middle layer is not
+      // built yet at this step, so its edge is allowed to be anywhere.
+      expect(wrongOutside(state, (index) => isTopLayer(index) || isFrontRightSlot(index))).toBe(0);
+    },
+  );
+
+  it('teaches the same corner three ways round, not three corners', () => {
+    // The three cases differ only in which way the cross colour points, which
+    // is the whole of the recognition: right, front, or up.
+    const facings = corners.map((entry) => {
+      const state = caseState(entry);
+      const corner = FACELETS.flatMap((sticker, index) =>
+        sticker.position.join(',') === '1,1,1' && state[index] === 'D' ? [sticker.face] : [],
+      );
+      return corner[0];
+    });
+
+    expect(new Set(facings).size).toBe(3);
+  });
+
+  it.each([
+    ['beg-edge-right', 'FR', inSlot(1, 1)],
+    ['beg-edge-left', 'FL', inSlot(-1, 1)],
+  ] as const)('%s brings an edge down from the top into its own slot', (id, colours, slot) => {
+    const entry = pack.cases.find((candidate) => candidate.id === id);
+    if (!entry) throw new Error(`missing case: ${id}`);
+    const state = caseState(entry);
+
+    expect(pieceAt(state, colours)[1]).toBe(1);
+    expect(wrongOutside(state, (index) => isTopLayer(index) || slot(index))).toBe(0);
   });
 });

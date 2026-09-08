@@ -3224,3 +3224,117 @@ input[type='radio'] {
 .averages-table__total {
   font-weight: 600;
 }
+
+/* The beginner's guide */
+
+.learn {
+  padding-bottom: var(--space-7);
+}
+
+.learn__intro,
+.learn__step {
+  max-width: 40rem;
+  margin: 0 auto var(--space-6);
+}
+
+.learn__intro {
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.learn__step {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+/* The number is the step; the words are what it is called. */
+.learn__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.learn__number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--surface-raised);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.learn__text {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--text);
+  opacity: 0.86;
+}
+
+.learn__figure {
+  margin: 0 0 var(--space-5);
+}
+
+/* Wide enough to read the matching sides on, and no wider. */
+.learn__net {
+  display: block;
+  width: 100%;
+  max-width: 15rem;
+  margin: 0 auto var(--space-3);
+}
+
+.learn__caption {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
+}
+
+.learn__actions {
+  display: flex;
+  margin-top: var(--space-5);
+}
+
+/*
+ * The one algorithm of a step, laid out sideways: the picture is a thumbnail,
+ * the algorithm is the thing being read, and it gets the width for it.
+ */
+.learn__key {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-4);
+  text-align: left;
+}
+
+.learn__key-diagram {
+  flex: none;
+  width: 4.5rem;
+}
+
+.learn__key-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.learn__caption--left {
+  text-align: left;
+  margin-top: var(--space-3);
+}
+
+.learn__more {
+  margin-top: var(--space-4);
+}

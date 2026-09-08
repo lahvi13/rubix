@@ -1,0 +1,36 @@
+{
+  "packVersion": 1,
+  "set": { "id": "beginner", "name": "Beginner" },
+  "cases": [
+    {
+      "id": "beg-corner-right",
+      "name": "Cross colour right",
+      "group": "Bottom layer corners",
+      "alg": "R U R'"
+    },
+    {
+      "id": "beg-corner-front",
+      "name": "Cross colour front",
+      "group": "Bottom layer corners",
+      "alg": "F' U' F"
+    },
+    {
+      "id": "beg-corner-up",
+      "name": "Cross colour up",
+      "group": "Bottom layer corners",
+      "alg": "R U2 R' U' R U R'"
+    },
+    {
+      "id": "beg-edge-right",
+      "name": "Edge to the right",
+      "group": "Middle layer edges",
+      "alg": "U R U' R' U' F' U F"
+    },
+    {
+      "id": "beg-edge-left",
+      "name": "Edge to the left",
+      "group": "Middle layer edges",
+      "alg": "U' L' U L U F U' F'"
+    }
+  ]
+}

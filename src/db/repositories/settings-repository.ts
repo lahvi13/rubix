@@ -30,6 +30,12 @@ export interface SettingValues {
   'ui.clockFace': ClockFace;
   'ui.twistyMode': '2D' | '3D';
   'ui.cubeSkin': string;
+  /**
+   * Whether the beginner's guide is offered in the menu. Somebody who solves
+   * the cube already has no use for it, and a screen they will never open is
+   * one more thing between them and the timer.
+   */
+  'ui.showLearn': boolean;
   /** Which route through the last layer the trainer opens on. */
   'trainer.twoLookDefault': boolean;
   /** Print the algorithm on every card, not just in the case sheet. */
@@ -91,6 +97,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.clockFace': 'match',
   'ui.twistyMode': '2D',
   'ui.cubeSkin': 'classic',
+  'ui.showLearn': true,
   'trainer.twoLookDefault': false,
   'trainer.showAlgs': false,
   'trainer.showRotationAlgs': true,

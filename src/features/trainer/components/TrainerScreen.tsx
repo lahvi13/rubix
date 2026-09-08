@@ -1,17 +1,13 @@
 import { useState } from 'react';
-import { CubeDiagram } from '../../../components/CubeDiagram';
 import { strings } from '../../../lib/strings';
-import { CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
+import { BEGINNER_SET_ID, CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { navigate } from '../../../app/router';
-import { parseAlg } from '../../../domain/cube/notation';
-import { caseTitle } from '../../../domain/alg/case-name';
-import type { TriggerDefinition } from '../../../domain/alg/triggers';
-import { diagramFor, type Diagram } from '../case-view';
-import { useAlgSets, useSetCases, type CaseGroup, type TrainerCase } from '../hooks/use-alg-cases';
+import { diagramFor } from '../case-view';
+import { useAlgSets, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { useTriggers } from '../hooks/use-triggers';
-import { AlgText } from './AlgText';
+import { CaseCard } from './CaseCard';
 import { CaseDetail } from './CaseDetail';
 import { NotationReference } from './NotationReference';
 import { SetSummary } from './SetSummary';
@@ -23,9 +19,15 @@ export function TrainerScreen() {
   const sets = useAlgSets();
   // Two-look sets hang off their full set rather than standing beside it, and
   // the cross is a set only in the sense that it can be drilled — there is no
-  // case to look at and no algorithm to read.
+  // case to look at and no algorithm to read. The beginner set is left out for
+  // a different reason: it belongs to a walk through one solve, and offering
+  // it here beside F2L would read as a choice between two ways of doing the
+  // same step, which is not what it is.
   const fullSets = (sets ?? []).filter(
-    (set) => !Object.hasOwn(FULL_SETS, set.id) && set.id !== CROSS_SET_ID,
+    (set) =>
+      !Object.hasOwn(FULL_SETS, set.id) &&
+      set.id !== CROSS_SET_ID &&
+      set.id !== BEGINNER_SET_ID,
   );
   const [chosenSetId, setChosenSetId] = useState<string | null>(null);
   const [, setDrillSetId] = useSetting('trainer.drillSetId');
@@ -173,35 +175,5 @@ export function TrainerScreen() {
         </>
       ) : null}
     </main>
-  );
-}
-
-interface CaseCardProps {
-  entry: TrainerCase;
-  diagram: Diagram;
-  skin: ReturnType<typeof useCubeSkin>;
-  showAlg: boolean;
-  triggers: readonly TriggerDefinition[];
-  onOpen: () => void;
-}
-
-function CaseCard({ entry, diagram, skin, showAlg, triggers, onOpen }: CaseCardProps) {
-  // Read top down, the same way the case sheet reads: which case this is, the
-  // cube it is, and how it is solved.
-  const parsed = showAlg && entry.algorithm ? parseAlg(entry.algorithm.moves) : null;
-
-  return (
-    <button type="button" className="case-card" onClick={onOpen}>
-      <span className="case-card__name">{caseTitle(entry.algCase)}</span>
-      <CubeDiagram
-        className="case-card__diagram"
-        state={entry.state}
-        view={diagram.view}
-        stickering={diagram.stickering}
-        skin={skin}
-        label={null}
-      />
-      {parsed?.ok ? <AlgText moves={parsed.moves} triggers={triggers} compact /> : null}
-    </button>
   );
 }
