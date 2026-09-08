@@ -10,8 +10,20 @@
       "group": "Corners only",
       "alg": "R2 U R' U' y R U R' U' R U R' U' R U R' y' R U' R2"
     },
-    { "id": "pll-ua", "name": "Ua", "group": "Edges only", "alg": "M2 U M U2 M' U M2" },
-    { "id": "pll-ub", "name": "Ub", "group": "Edges only", "alg": "M2 U' M U2 M' U' M2" },
+    {
+      "id": "pll-ua",
+      "name": "Ua",
+      "group": "Edges only",
+      "alg": "M2 U M U2 M' U M2",
+      "others": ["R U' R U R U R U' R' U' R2"]
+    },
+    {
+      "id": "pll-ub",
+      "name": "Ub",
+      "group": "Edges only",
+      "alg": "M2 U' M U2 M' U' M2",
+      "others": ["R2 U R U R' U' R' U' R' U R'"]
+    },
     { "id": "pll-z", "name": "Z", "group": "Edges only", "alg": "M2 U M2 U M' U2 M2 U2 M' U2" },
     { "id": "pll-h", "name": "H", "group": "Edges only", "alg": "M2 U M2 U2 M2 U M2" },
     {

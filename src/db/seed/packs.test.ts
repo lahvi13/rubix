@@ -135,6 +135,19 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
     expect(entry.alt).not.toBe(entry.alg);
   });
 
+  it.each(
+    pack.cases.flatMap((entry) =>
+      (entry.others ?? []).map(
+        (moves, index) => [`${entry.name} #${index + 1}`, entry, moves] as const,
+      ),
+    ),
+  )('%s is another way through the same case', (_name, entry, moves) => {
+    // The point of an extra is that it is a different solution, not a differently
+    // written one — and that it really does solve the case it is offered on.
+    expect(isSolved(applyAlg(caseState(entry), movesOf(moves)))).toBe(true);
+    expect(moves).not.toBe(entry.alg);
+  });
+
   it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
     '%s leaves the cube upright',
     (_name, entry) => {

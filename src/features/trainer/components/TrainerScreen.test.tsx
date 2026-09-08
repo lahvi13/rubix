@@ -79,6 +79,28 @@ describe('TrainerScreen', () => {
     });
   });
 
+  it('offers a second built-in algorithm where the pack has one, and says why', async () => {
+    const user = userEvent.setup();
+    render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'PLL' }));
+    await user.click(await screen.findByRole('button', { name: /^Ua/ }));
+
+    const detail = await screen.findByRole('dialog', { name: 'Ua' });
+    // Both are built in, and the list has to say which is which: one is the
+    // pack's answer, the other a different solution offered beside it.
+    expect(within(detail).getByText('built in')).toBeInTheDocument();
+    expect(within(detail).getByText('built in · another way')).toBeInTheDocument();
+
+    // It is not hidden by the setting that hides the rotation variants, and
+    // picking it makes it the one that gets drilled.
+    await user.click(within(detail).getByRole('radio', { name: "R U' R U R U R U' R' U' R2" }));
+
+    await waitFor(async () => {
+      expect((await getActiveAlgorithm('pll-ua'))?.id).toBe('pll-ua-pack-other-1');
+    });
+  });
+
   it('refuses an algorithm it cannot read', async () => {
     const user = userEvent.setup();
     render(<TrainerScreen />);

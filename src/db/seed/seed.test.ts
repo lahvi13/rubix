@@ -7,10 +7,14 @@ import { seedPacks } from './seed';
 
 const totalCases = PACKS.reduce((count, pack) => count + pack.cases.length, 0);
 
-/** Cases with a rotation variant ship a second built-in algorithm. */
+/** A case ships its own algorithm, plus every extra offered beside it. */
 const totalAlgorithms = PACKS.reduce(
   (count, pack) =>
-    count + pack.cases.length + pack.cases.filter((entry) => entry.alt !== undefined).length,
+    count +
+    pack.cases.reduce(
+      (own, entry) => own + 1 + (entry.alt === undefined ? 0 : 1) + (entry.others?.length ?? 0),
+      0,
+    ),
   0,
 );
 

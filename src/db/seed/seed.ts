@@ -7,6 +7,7 @@ import {
   PACKS,
   PACK_METHOD_ID,
   PACK_PUZZLE,
+  packAlgId,
   type AlgPack,
   type PackCase,
 } from './packs';
@@ -132,13 +133,23 @@ function planSeed(current: CurrentState): SeedChanges {
       const algorithm = buildAlgorithm(entry, existingAlgorithm, current.userChoice.has(entry.id));
       if (hasChanged(existingAlgorithm, algorithm)) changes.algorithms.push(algorithm);
 
-      // Some cases also ship the version done with the cube turned round.
-      const altId = `${entry.id}-pack-grip`;
-      if (entry.alt === undefined || current.buried.has(altId)) continue;
+      // Beside the pack's own answer: the same solution with the cube turned
+      // round, and any different solution the pack offers for the same case.
+      const extras: [string, string][] = [
+        ...(entry.alt === undefined ? [] : [[packAlgId(entry.id, 'grip'), entry.alt]]),
+        ...(entry.others ?? []).map((moves, position) => [
+          packAlgId(entry.id, 'other', position),
+          moves,
+        ]),
+      ] as [string, string][];
 
-      const existingAlt = current.algorithms.get(altId);
-      const alt = buildAltAlgorithm(entry.id, entry.alt, existingAlt);
-      if (hasChanged(existingAlt, alt)) changes.algorithms.push(alt);
+      for (const [extraId, moves] of extras) {
+        if (current.buried.has(extraId)) continue;
+
+        const existingExtra = current.algorithms.get(extraId);
+        const extra = buildExtraAlgorithm(extraId, entry.id, moves, existingExtra);
+        if (hasChanged(existingExtra, extra)) changes.algorithms.push(extra);
+      }
     }
   }
 
@@ -251,14 +262,15 @@ function buildAlgorithm(
   };
 }
 
-/** The rotation variant never takes over on its own; the user picks it. */
-function buildAltAlgorithm(
+/** An extra algorithm never takes over on its own; the user picks it. */
+function buildExtraAlgorithm(
+  id: string,
   caseId: string,
   moves: string,
   existing: Algorithm | undefined,
 ): Algorithm {
   return {
-    id: `${caseId}-pack-grip`,
+    id,
     caseId,
     moves,
     isActive: existing?.isActive ?? 0,

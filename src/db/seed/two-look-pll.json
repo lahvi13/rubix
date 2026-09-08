@@ -14,8 +14,20 @@
       "group": "1 / Corners",
       "alg": "F R U' R' U' R U R' F' R U R' U' R' F R F'"
     },
-    { "id": "2pll-ua", "name": "Ua", "group": "2 / Edges", "alg": "M2 U M U2 M' U M2" },
-    { "id": "2pll-ub", "name": "Ub", "group": "2 / Edges", "alg": "M2 U' M U2 M' U' M2" },
+    {
+      "id": "2pll-ua",
+      "name": "Ua",
+      "group": "2 / Edges",
+      "alg": "M2 U M U2 M' U M2",
+      "others": ["R U' R U R U R U' R' U' R2"]
+    },
+    {
+      "id": "2pll-ub",
+      "name": "Ub",
+      "group": "2 / Edges",
+      "alg": "M2 U' M U2 M' U' M2",
+      "others": ["R2 U R U R' U' R' U' R' U R'"]
+    },
     { "id": "2pll-h", "name": "H", "group": "2 / Edges", "alg": "M2 U M2 U2 M2 U M2" },
     { "id": "2pll-z", "name": "Z", "group": "2 / Edges", "alg": "M2 U M2 U M' U2 M2 U2 M' U2" }
   ]

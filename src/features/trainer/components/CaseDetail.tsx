@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
+import { packAlgKind, type PackAlgKind } from '../../../db/seed/packs';
 import { CloseIcon, PlayIcon, StopIcon } from '../../../components/Icons';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
@@ -17,6 +18,13 @@ import { AlgText } from './AlgText';
 import { AttemptList } from './AttemptList';
 import { CaseStatsRow } from './CaseStats';
 import { CasePlayer, type PlayerStickering } from './CasePlayer';
+
+/** Why this algorithm is on offer, since more than one of them is built in. */
+const PACK_LABELS: Record<PackAlgKind, string> = {
+  main: strings.trainer.packAlg,
+  grip: strings.trainer.packAlgGrip,
+  other: strings.trainer.packAlgOther,
+};
 
 interface CaseDetailProps {
   caseId: string;
@@ -69,10 +77,12 @@ export function CaseDetail({
   const setupMoves = parseAlg(algCase.setupAlg);
   const setup = setupMoves.ok ? setupMoves.moves : [];
   const state = applyAlg(solvedState(), setup);
-  // Hiding a variant must never hide the one being drilled.
+  // Hiding a variant must never hide the one being drilled. Only the grips are
+  // hidden: an algorithm offered because it is a different solution is exactly
+  // what this list is for.
   const shownAlgorithms = algorithms.filter(
     (algorithm) =>
-      showRotationAlgs || algorithm.isActive === 1 || !algorithm.id.endsWith('-pack-grip'),
+      showRotationAlgs || algorithm.isActive === 1 || packAlgKind(algorithm.id) !== 'grip',
   );
 
   // Playing does not ask about the flat/3D setting: that one is about the
@@ -162,7 +172,9 @@ export function CaseDetail({
               <span className="variants__moves">{algorithm.moves}</span>
             </label>
             <span className="variants__source">
-              {algorithm.source === 'pack' ? strings.trainer.packAlg : strings.trainer.ownAlg}
+              {algorithm.source === 'pack'
+                ? PACK_LABELS[packAlgKind(algorithm.id)]
+                : strings.trainer.ownAlg}
             </span>
             {algorithm.source === 'user' ? (
               <button

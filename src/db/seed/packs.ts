@@ -27,6 +27,13 @@ export interface PackCase {
    * Only where such a solution exists.
    */
   alt?: string;
+  /**
+   * Different solutions to the same case, offered beside the pack's own answer.
+   * Not better ones and not rotations of it: another way through, for hands the
+   * first one does not suit — a U perm without a slice turn, say, for somebody
+   * who has not learned to push the middle layer yet.
+   */
+  others?: readonly string[];
 }
 
 export interface AlgPack {
@@ -38,6 +45,34 @@ export interface AlgPack {
 /** Every pack is a 3x3x3 CFOP set; nothing else exists yet. */
 export const PACK_PUZZLE = '333';
 export const PACK_METHOD_ID = 'cfop';
+
+/**
+ * Which of a case's built-in algorithms a row is. The seed writes these ids and
+ * the trainer reads them back to say what it is offering, so the shape of them
+ * is named here rather than spelled out at both ends.
+ */
+export type PackAlgKind = 'main' | 'grip' | 'other';
+
+const KIND_SUFFIX: Record<PackAlgKind, string> = {
+  main: '-pack',
+  grip: '-pack-grip',
+  other: '-pack-other',
+};
+
+export function packAlgId(caseId: string, kind: PackAlgKind, index = 0): string {
+  // Numbered from one, and only where there can be more than one: an id is
+  // read by people often enough for that to be worth the branch.
+  return kind === 'other'
+    ? `${caseId}${KIND_SUFFIX.other}-${index + 1}`
+    : `${caseId}${KIND_SUFFIX[kind]}`;
+}
+
+/** What kind of built-in algorithm this is. Meaningless for a user's own. */
+export function packAlgKind(algorithmId: string): PackAlgKind {
+  if (algorithmId.endsWith(KIND_SUFFIX.grip)) return 'grip';
+  if (algorithmId.includes(KIND_SUFFIX.other)) return 'other';
+  return 'main';
+}
 
 export const PACKS: readonly AlgPack[] = [pll, oll, f2l, twoLookOll, twoLookPll, beginner];
 

@@ -218,6 +218,8 @@ export const strings = {
     loadingPlayer: 'Loading the cube…',
     variants: 'Algorithms',
     packAlg: 'built in',
+    packAlgGrip: 'built in · turned',
+    packAlgOther: 'built in · another way',
     ownAlg: 'yours',
     ownAlgPlaceholder: "Your own algorithm, e.g. R U R' U'",
     addAlg: 'Add',
