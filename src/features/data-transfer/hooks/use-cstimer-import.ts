@@ -14,7 +14,7 @@ import {
   type CsTimerProblem,
   type SkippedRow,
 } from '../../../domain/transfer/cstimer';
-import { reportError } from '../../../lib/errors';
+import { logQuietly, reportError } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { usePhases } from '../../splits';
 
@@ -56,7 +56,17 @@ export function useCsTimerImport(): CsTimerImportView {
     setOutcome(null);
     setState({ status: 'reading' });
 
-    const text = await input.text();
+    // A file can stop being readable between being picked and being read —
+    // moved, or a permission withdrawn. Without this the screen would sit on
+    // 'reading' for ever and the only sign would be an unhandled rejection.
+    let text: string;
+    try {
+      text = await input.text();
+    } catch (cause) {
+      logQuietly(strings.cstimer.failed, cause);
+      setState({ status: 'failed', problem: 'unreadable' });
+      return;
+    }
     const name = sessionNameOf(input.name);
     const isCsv = looksLikeCsv(text);
     const parsed: CsTimerParse = isCsv

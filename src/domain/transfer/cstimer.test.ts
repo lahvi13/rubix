@@ -1,17 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { parseCsTimerCsv, parseCsTimerJson, parseCsvTime } from './cstimer';
+import {
+  csTimerSolveKey,
+  parseCsTimerCsv,
+  parseCsTimerJson,
+  parseCsvTime,
+  planCsTimerImport,
+} from './cstimer';
 
 /**
- * A real export, byte for byte, from csTimer's Export/Import → "Export to
+ * Real exports, byte for byte, from csTimer's Export/Import → "Export to
  * file". Everything else in here is built to the shape csTimer's own source
- * writes, but this one is the ground truth the parser was written against.
+ * writes; these two are the ground truth the parser was written against.
  */
-const REAL_EXPORT =
-  '{"session1":[[[0,2056],"D\' R F2 B2 L F\' R U2 B\' U2 B2 R2 B2 U2 R2 D\' L2 F2 R2","",1788509385]],' +
-  '"session2":[],"session3":[],"session4":[],"session5":[],"session6":[],"session7":[],"session8":[],' +
-  '"session9":[],"session10":[],"session11":[],"session12":[],"session13":[],"session14":[],"session15":[],' +
-  '"properties":{"sessionData":"{\\"1\\":{\\"name\\":1,\\"opt\\":{},\\"rank\\":1,\\"stat\\":[1,0,2050],' +
-  '\\"date\\":[1788509385,1788509385]},\\"2\\":{\\"name\\":2,\\"opt\\":{},\\"rank\\":2}}"}}';
+import REAL_EXPORT from '../../test/fixtures/cstimer-export-one-solve.txt?raw';
+import REAL_PHASES from '../../test/fixtures/cstimer-export-phases.txt?raw';
+import REAL_CSV from '../../test/fixtures/cstimer-export-session.csv?raw';
 
 function json(sessions: Record<string, unknown>, sessionData?: Record<string, unknown>): string {
   return JSON.stringify({
@@ -64,6 +67,41 @@ describe('parseCsTimerJson', () => {
       phaseCount: 1,
     });
     expect(parsed.file.skipped).toEqual([]);
+  });
+
+  it('reads a real export of a session that was timed by phase', () => {
+    const parsed = parseCsTimerJson(REAL_PHASES);
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.file.skipped).toEqual([]);
+
+    const solves = parsed.file.sessions[0]?.solves ?? [];
+    expect(
+      solves.map((solve) => [solve.rawMs, solve.penalty, solve.phaseCount, solve.note]),
+    ).toEqual([
+      // A DNF keeps the time it was, and the comment with it.
+      [2056, 'dnf', 1, 'comment test'],
+      [12_778, 'none', 1, null],
+      [29_496, 'none', 4, null],
+      // Deliberately timed in five phases; csTimer allows up to ten.
+      [32_706, 'plus2', 5, null],
+      [29_248, 'none', 4, null],
+    ]);
+  });
+
+  it('turns a real four-phase solve into boundaries that add up', () => {
+    const parsed = parseCsTimerJson(REAL_PHASES);
+    if (!parsed.ok) throw new Error('unreadable');
+    const solve = parsed.file.sessions[0]?.solves[2];
+
+    // csTimer stored [29496, 23081, 16416, 6320]: the last tap first.
+    expect(solve?.phaseEndsMs).toEqual([6320, 16_416, 23_081]);
+    // Which is a 6.32s cross, 10.10s F2L, 6.67s OLL and a 6.42s PLL.
+    const lengths = [...(solve?.phaseEndsMs ?? []), solve?.rawMs ?? 0].map(
+      (end, index, all) => end - (index === 0 ? 0 : (all[index - 1] ?? 0)),
+    );
+    expect(lengths).toEqual([6320, 10_096, 6665, 6415]);
   });
 
   it('keeps the name and the puzzle csTimer gave the session', () => {
@@ -211,6 +249,47 @@ describe('parseCsTimerJson', () => {
   });
 });
 
+describe('planCsTimerImport', () => {
+  function planOf(text: string, known: string[] = []) {
+    const parsed = parseCsTimerJson(text);
+    if (!parsed.ok) throw new Error(`unreadable file: ${parsed.problem}`);
+    return planCsTimerImport(parsed.file, new Set(known), 4);
+  }
+
+  it('counts what a real export would bring in, phases included', () => {
+    const plan = planOf(REAL_PHASES);
+
+    expect(plan.newSolves).toBe(5);
+    // Two solves were timed in four phases; the one timed in five keeps its
+    // time and loses its phases, and the preview has to say so.
+    expect(plan.withPhases).toBe(2);
+    expect(plan.phasesDropped).toBe(1);
+    expect(plan.duplicates).toBe(0);
+  });
+
+  it('does not count a solve timed as a whole as one that lost its phases', () => {
+    const plan = planOf(json({ session1: [record([0, 9000]), record([0, 8000, 4000])] }));
+
+    expect(plan.withPhases).toBe(0);
+    expect(plan.phasesDropped).toBe(1);
+  });
+
+  it('counts a solve it already has as a duplicate instead of importing it', () => {
+    const plan = planOf(REAL_PHASES, [csTimerSolveKey(12_778, 1_788_852_912_000)]);
+
+    expect(plan.newSolves).toBe(4);
+    expect(plan.duplicates).toBe(1);
+  });
+
+  it('brings a solve in once even when the file lists it twice', () => {
+    const twice = record([0, 9000], { at: 1_788_509_385 });
+    const plan = planOf(json({ session1: [twice, twice] }));
+
+    expect(plan.newSolves).toBe(1);
+    expect(plan.duplicates).toBe(1);
+  });
+});
+
 /* The CSV export of a single session. */
 
 const CSV_HEAD = 'No.;Time;Comment;Scramble;Date;P.1;P.2;P.3;P.4';
@@ -231,6 +310,38 @@ function localMs(year: number, month: number, day: number, h: number, m: number,
 }
 
 describe('parseCsTimerCsv', () => {
+  it('reads a real CSV export of a session', () => {
+    // Times to the millisecond (csTimer's useMilli), a header with a column
+    // for every phase the session ever used, and no newline at the end.
+    const parsed = parseCsTimerCsv(REAL_CSV, 'Evening', '333');
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.file.skipped).toEqual([]);
+    expect(parsed.file.sessions[0]?.solves).toEqual([
+      {
+        rawMs: 29_248,
+        penalty: 'none',
+        scramble: "B L' D' F' L B U' R' L2 F2 U2 L2 F R2 B U2 R2 F L2 B2",
+        note: null,
+        startedAt: localMs(2026, 9, 8, 9, 41, 57),
+        // 7.303 + 5.121 + 6.023 = the three interior boundaries; the fourth
+        // phase is closed by the solve itself.
+        phaseEndsMs: [7303, 12_424, 18_447],
+        phaseCount: 4,
+      },
+    ]);
+  });
+
+  it('ignores the phase columns a session never filled', () => {
+    // The header of a real export has a column for the longest solve of the
+    // session — five here — and a four-phase solve leaves the last one empty.
+    const parsed = parseCsTimerCsv(REAL_CSV, 'Evening', '333');
+    if (!parsed.ok) throw new Error('unreadable');
+
+    expect(parsed.file.sessions[0]?.solves[0]?.phaseCount).toBe(4);
+  });
+
   it('reads a row into a solve', () => {
     const { solves } = csvSolves(csv('1;2.05;;R U R\' U\';2026-09-07 17:09:45;;;;'));
 

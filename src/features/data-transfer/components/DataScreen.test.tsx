@@ -192,3 +192,26 @@ describe('DataScreen, importing from csTimer', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('DataScreen, a csTimer file that cannot be read', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+  });
+
+  it('says so instead of sitting on “reading”', async () => {
+    const user = userEvent.setup();
+    const file = new File(['whatever'], 'cstimer.txt', { type: 'text/plain' });
+    // A file can stop being readable between being picked and being read.
+    vi.spyOn(file, 'text').mockRejectedValue(
+      new DOMException('gone', 'NotReadableError'),
+    );
+
+    render(<DataScreen />);
+    await user.upload(screen.getByLabelText('Choose a csTimer file'), file);
+
+    expect(
+      await screen.findByText('That file could not be read. Pick it again.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Reading the file…')).not.toBeInTheDocument();
+  });
+});

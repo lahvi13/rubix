@@ -143,7 +143,8 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
 9. **Nepoužívat `Date.now()` / `Math.random()` v `domain/`** a pro měření času nikdy
    `Date.now()`, vždy `performance.now()`.
 10. **Žádné floaty pro čas.** Vše celé milisekundy; zaokrouhlení až při formátování.
-11. **Neměnit stack** ani nepřidávat backend, účty, telemetrii nebo cloud sync —
+11. **Neměnit stack** ani nepřidávat backend, účty, další telemetrii (nad rámec
+    výjimky v bodě 1) nebo cloud sync —
     to jsou vědomé non-goals, ne opomenutí.
 12. **Nekomentovat samozřejmosti.** Komentář vysvětluje *proč* (např. proč je práh
     detekce adaptivní), ne *co* řádek dělá.

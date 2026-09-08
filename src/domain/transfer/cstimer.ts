@@ -74,7 +74,7 @@ export interface CsTimerFile {
   skipped: SkippedRow[];
 }
 
-export type CsTimerProblem = 'notJson' | 'notCsTimer' | 'notCsv' | 'empty';
+export type CsTimerProblem = 'notJson' | 'notCsTimer' | 'notCsv' | 'empty' | 'unreadable';
 
 export type CsTimerParse =
   | { ok: true; file: CsTimerFile }
@@ -89,6 +89,12 @@ export interface PlannedSession {
   solves: CsTimerSolve[];
   /** How many of them carry phase times this app can read. */
   withPhases: number;
+  /**
+   * Timed by phase, but in some other number of phases than the method has.
+   * Those arrive without them, and it is counted so the preview can say so
+   * instead of letting the phase times go quietly missing.
+   */
+  phasesDropped: number;
   /** Already in the database, from an earlier import of the same file. */
   duplicates: number;
 }
@@ -107,6 +113,7 @@ export interface CsTimerPlan {
   newSolves: number;
   duplicates: number;
   withPhases: number;
+  phasesDropped: number;
 }
 
 /**
@@ -143,6 +150,7 @@ export function planCsTimerImport(
     const solves: CsTimerSolve[] = [];
     let duplicates = 0;
     let withPhases = 0;
+    let phasesDropped = 0;
 
     for (const solve of session.solves) {
       const key = csTimerSolveKey(solve.rawMs, solve.startedAt);
@@ -153,6 +161,7 @@ export function planCsTimerImport(
       seen.add(key);
       solves.push(solve);
       if (solve.phaseCount === phaseCount) withPhases += 1;
+      else if (solve.phaseCount > 1) phasesDropped += 1;
     }
 
     if (solves.length === 0 && duplicates === 0) continue;
@@ -161,6 +170,7 @@ export function planCsTimerImport(
       puzzle: session.puzzle,
       solves,
       withPhases,
+      phasesDropped,
       duplicates,
     });
   }
@@ -172,6 +182,7 @@ export function planCsTimerImport(
     newSolves: sessions.reduce((sum, session) => sum + session.solves.length, 0),
     duplicates: sessions.reduce((sum, session) => sum + session.duplicates, 0),
     withPhases: sessions.reduce((sum, session) => sum + session.withPhases, 0),
+    phasesDropped: sessions.reduce((sum, session) => sum + session.phasesDropped, 0),
   };
 }
 

@@ -10,7 +10,10 @@ Používá autor a pár známých, distribuce přes URL na Cloudflare.
 **Non-goals (platí pro celý projekt):**
 
 - žádný backend, žádné API, žádná autentizace, žádné uživatelské účty
-- žádná telemetrie, analytics, crash reporting ani jiný odchozí síťový provoz za běhu
+- žádná telemetrie o uživateli, crash reporting ani jiný odchozí síťový provoz za běhu.
+  Jediná výjimka je **Cloudflare Web Analytics** (počet zobrazení stránky, žádná data
+  o solvech, žádné id zařízení) — podmínky, za kterých tam smí být, jsou v CLAUDE.md,
+  „Co se nikdy nedělá", bod 1
 - žádný Play Store / app store balíček
 - žádná synchronizace přes cloud — přenos dat výhradně přes ruční export/import JSON
 - žádná multi-user logika v datovém modelu (jedno zařízení = jedna sada dat)
@@ -247,8 +250,42 @@ kromě PB, které je globální per `puzzle`.
 - vlastní případy (`isCustom: 1`) — vlastní název, setup alg, sada.
   **Vědomě odložené, ne opomenuté** (viz fáze 5)
 
-Drilly se ukládají do stejné tabulky `solves` s `mode: 'drill'` a `caseId`.
-Do hlavních statistik a PB **nevstupují** (filtr `mode === 'freestyle'`).
+- **režim „poznej případ"** (přepínač *Solve it / Name it* na drill obrazovce): ukáže
+  kostku a ptá se, který případ to je. Nic se neprovádí, kostka není potřeba —
+  je to jediný trénink, který jde dělat cestou v tramvaji
+  - **vidíš jen to, co bys viděl při solvu**: horní stěna a dvě boční
+    (izometrický pohled, stickering podle sady — u OLL žlutá/šedá, u PLL barvy).
+    Plný LL diagram se čtyřmi bočními pruhy se tu **nepoužívá**, protože ten
+    kostka v ruce nikdy neukáže. Šipky u PLL taky ne — prozradily by odpověď
+  - **zbylé dvě strany jsou na jedno ťuknutí** („Turn round" = pohled z druhého
+    rohu, `y2`). Neplatí se za to DNF, platí se **časem** — přesně jako když
+    otočíš kostku u stolu. U části OLL případů to jinak z jednoho rohu nejde
+  - **odpovídá se ťuknutím na kartu, ne psaním ani výběrem ze jmen**: šest karet
+    s diagramem toho případu, jak ho kreslí trenažér. Rozptylovači se berou
+    **nejdřív ze stejné tvarové rodiny** (`group`) — šest náhodných z 57 by šlo
+    poznat bez dívání
+  - měří se `performance.now()` od vykreslení otázky (v efektu, tedy po
+    vykreslení) do ťuknutí. Špatná odpověď = **DNF**; případ se pojmenuje tak
+    jako tak, protože „poznal jsem to a nevím, jak se to jmenuje" je přesně ten
+    stav, ze kterého má režim dostat ven
+  - ukládá se do `solves` s `mode: 'recognition'`, do vlastní aktivní session,
+    stejným způsobem jako drill. Per-case statistiky se počítají zvlášť (ao5
+    rozpoznání ≠ ao5 řešení; jedno je vteřina, druhé pět) a v detailu případu
+    jsou dvě sekce vedle sebe
+  - sada i zaškrtnuté případy jsou **společné s drillem** (`trainer.drillSetId`,
+    `trainer.drillCaseIds`) — vybrat si desítku, co ti nejde, se nemá dělat dvakrát
+  - **cross tenhle režim nemá** (není co poznávat) a pod dva případy v poolu taky ne
+- **vlastní název případu** (`AlgCase.label`): OLL se jmenuje „OLL 43" a nikdo při
+  solvu nemyslí „čtyřicet tři". Uživatel si případ pojmenuje v jeho detailu; prázdné
+  pole vrací název packu. Je to **nové pole, ne přepsané `name`** — seed přepisuje
+  `name` při každém startu, takže přejmenování by vydrželo do dalšího spuštění;
+  `label` se přenáší přes seed stejně jako barva triggeru (`existing?.label ?? null`).
+  Název packu zůstává vidět pod tím vlastním, protože to je jméno, které používají
+  všechny tabulky a videa venku
+
+Drilly se ukládají do stejné tabulky `solves` s `mode: 'drill'` a `caseId`,
+pokusy o rozpoznání s `mode: 'recognition'`. Do hlavních statistik a PB
+**nevstupují** ani jedny (filtr `mode === 'freestyle'`).
 
 ### 3.6 Fázové splity
 
@@ -412,6 +449,9 @@ prefixu (`333*`, `222*`, `444*`, `555*`, `pyr*`, `skb*`, `sq1/sqr*`, `clk*`,
 - **fáze jen při shodném počtu.** Solve měřený na tolik fází, kolik jich má naše
   metoda (CFOP = 4), dostane splity; jakýkoli jiný počet se naimportuje **bez
   fází** — hranice mezi fázemi, které neumíme pojmenovat, by se musela hádat
+  (csTimer umí až 10 fází a počet se bere per solve, ne z nastavení session —
+  ty dvě věci se rozejdou, jakmile si člověk počet fází přenastaví). **Kolik
+  solvů takhle o fáze přijde, říká náhled** — tichý úbytek by vypadal jako chyba
 - **nikdy se nemíchá do stávající session.** Každá csTimer session je nová
   session pod svým jménem a **žádná se nestane aktivní** (import nesmí odsunout
   session, do které člověk zrovna měří)
@@ -449,7 +489,7 @@ Nejdůležitější část specifikace. Platí:
 
 ```ts
 type Puzzle = '333' | '222' | '444' | '555' | 'pyram' | 'skewb' | 'sq1' | 'clock' | 'minx';
-type SolveMode = 'freestyle' | 'drill';
+type SolveMode = 'freestyle' | 'drill' | 'recognition';
 type Penalty = 'none' | 'plus2' | 'dnf';
 type PenaltySource = 'auto' | 'manual';
 type SplitSource = 'mic' | 'smartcube' | 'manual';
@@ -467,7 +507,7 @@ interface Solve {
   sessionId: string;
   puzzle: Puzzle;         // denormalizováno ze session — kvůli globálnímu PB indexu
   mode: SolveMode;
-  caseId: string | null;  // vazba na AlgCase, jen pro mode === 'drill'
+  caseId: string | null;  // vazba na AlgCase, jen pro drill a recognition
 
   scramble: string;
   rawMs: number;          // naměřený čas bez penalty, integer
@@ -531,7 +571,8 @@ interface AlgSet {
 interface AlgCase {
   id: string;             // 'pll-t', 'oll-27', ...
   setId: string;
-  name: string;
+  name: string;           // packu; seed ho přepisuje při každém startu
+  label: string | null;   // jak tomu říká uživatel; pack na něj nikdy nesáhne
   group: string | null;   // 'corners only', 'dot', ...
   setupAlg: string;       // aplikuje se v <twisty-player>
   order: number;
@@ -681,6 +722,7 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `trainer.showAlgs` | 0 | `false` |
 | `trainer.showRotationAlgs` | 0 | `true` |
 | `trainer.drillSetId` | 0 | `'pll'` |
+| `trainer.drillMode` | 0 | `'solve'` |
 | `trainer.drillCaseIds` | 0 | `[]` |
 | `trainer.crossFront` | 0 | `'F'` |
 | `stats.chartWindow` | 0 | 100 |

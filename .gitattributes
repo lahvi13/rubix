@@ -1,3 +1,7 @@
 * text=auto eol=lf
 *.png binary
 *.svg text eol=lf
+
+# The csTimer exports are evidence, not source: they are what csTimer wrote,
+# and a line ending rewritten on checkout would make them something else.
+src/test/fixtures/* -text

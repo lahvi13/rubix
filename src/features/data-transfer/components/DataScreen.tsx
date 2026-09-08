@@ -253,6 +253,9 @@ function CsTimerPreview({ state }: { state: Extract<CsTimerState, { status: 'pre
       <p className="data-section__hint">
         {strings.cstimer.found(plan.newSolves, plan.sessions.length)} ·{' '}
         {strings.cstimer.withPhases(plan.withPhases)}
+        {plan.phasesDropped > 0
+          ? ` · ${strings.cstimer.phasesDropped(plan.phasesDropped)}`
+          : ''}
         {plan.duplicates > 0 ? ` · ${strings.cstimer.duplicates(plan.duplicates)}` : ''}
         {plan.skipped.length > 0 ? ` · ${strings.cstimer.skippedRows(plan.skipped.length)}` : ''}
       </p>

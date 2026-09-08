@@ -324,10 +324,13 @@ export const strings = {
     reading: 'Reading the file…',
     /** A CSV holds neither of these, so the import has to decide them. */
     csvNote: (name: string) =>
-      `A CSV says neither which puzzle nor which session it came from, so it arrives as a 3×3 session called “${name}”. Its times are rounded to hundredths and a +2 is already in them; the JSON export keeps the milliseconds.`,
+      `A CSV says neither which puzzle nor which session it came from, so it arrives as a 3×3 session called “${name}”. Its times are only as precise as csTimer displayed them and a +2 is already added into them; the JSON export is the exact one.`,
     found: (solves: number, sessions: number) =>
       `${solves} ${solves === 1 ? 'solve' : 'solves'} in ${sessions} ${sessions === 1 ? 'session' : 'sessions'}`,
     withPhases: (count: number) => `${count} with phase times`,
+    /** csTimer allows up to ten phases; this app's method has four. */
+    phasesDropped: (count: number) =>
+      `${count} timed in another number of phases, so those arrive without them`,
     duplicates: (count: number) => `${count} already here`,
     skippedRows: (count: number) => `${count} ${count === 1 ? 'row' : 'rows'} skipped`,
     nothingNew: 'Every solve in this file is already here.',
@@ -354,6 +357,7 @@ export const strings = {
       notCsTimer: 'That file is JSON, but not a csTimer export.',
       notCsv: 'That file is not a csTimer CSV export.',
       empty: 'There are no solves in that file.',
+      unreadable: 'That file could not be read. Pick it again.',
     },
     failed: 'Could not import the csTimer file',
     importedSession: 'csTimer',
