@@ -215,6 +215,10 @@ function buildCase(
     id: entry.id,
     setId: pack.set.id,
     name: entry.name,
+    // The pack names cases; it does not name them for the user. Carried over
+    // the same way a trigger's colour is, so an update never takes back a
+    // name somebody chose.
+    label: existing?.label ?? null,
     group: entry.group,
     setupAlg: setupFor(entry),
     order: index,

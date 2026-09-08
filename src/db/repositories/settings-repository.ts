@@ -39,6 +39,12 @@ export interface SettingValues {
   /** Which set the drill draws its cases from. */
   'trainer.drillSetId': string;
   /**
+   * Which half of the drill screen is open: solving the case against the
+   * clock, or only telling which case it is. Both draw from the same set and
+   * the same ticked cases — it is the same practice, timed differently.
+   */
+  'trainer.drillMode': DrillMode;
+  /**
    * Cases ticked for drilling. One flat list across every set — case ids are
    * unique, so the drill simply keeps the ones belonging to the set it is on,
    * and a subset picked for PLL survives a detour through OLL.
@@ -66,6 +72,9 @@ export interface SettingValues {
   'stats.phaseTrendSmoothed': boolean;
 }
 
+export const DRILL_MODES = ['solve', 'recognise'] as const;
+export type DrillMode = (typeof DRILL_MODES)[number];
+
 export const PHASE_TREND_MODES = ['stacked', 'separate', 'share'] as const;
 export type PhaseTrendMode = (typeof PHASE_TREND_MODES)[number];
 
@@ -86,6 +95,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'trainer.showAlgs': false,
   'trainer.showRotationAlgs': true,
   'trainer.drillSetId': 'pll',
+  'trainer.drillMode': 'solve',
   'trainer.drillCaseIds': [],
   'trainer.crossFront': 'F',
   'stats.chartWindow': 100,

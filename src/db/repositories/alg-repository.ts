@@ -62,6 +62,16 @@ export async function listCasesWithAlgs(setId: string): Promise<CaseWithAlg[]> {
   return cases.map((algCase) => ({ algCase, active: activeByCase.get(algCase.id) ?? null }));
 }
 
+/**
+ * Renames a case, for the reader only. Blank puts the pack's own name back
+ * rather than storing an empty string, so "no label" has one representation
+ * and the seed's `existing?.label ?? null` keeps working.
+ */
+export async function setCaseLabel(caseId: string, label: string): Promise<void> {
+  const trimmed = label.trim();
+  await db.algCases.update(caseId, { label: trimmed === '' ? null : trimmed, updatedAt: now() });
+}
+
 export async function listAlgorithms(caseId: string): Promise<Algorithm[]> {
   const algorithms = await db.algorithms.where('caseId').equals(caseId).toArray();
   // Pack first, then the user's own in the order they were added.

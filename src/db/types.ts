@@ -4,7 +4,7 @@
  */
 
 export type Puzzle = '333' | '222' | '444' | '555' | 'pyram' | 'skewb' | 'sq1' | 'clock' | 'minx';
-export type SolveMode = 'freestyle' | 'drill';
+export type SolveMode = 'freestyle' | 'drill' | 'recognition';
 export type Penalty = 'none' | 'plus2' | 'dnf';
 export type PenaltySource = 'auto' | 'manual';
 export type SplitSource = 'mic' | 'smartcube' | 'manual';
@@ -31,7 +31,7 @@ export interface Solve {
   /** Denormalised from the session so global PB can be indexed. */
   puzzle: Puzzle;
   mode: SolveMode;
-  /** Set only for mode === 'drill'. */
+  /** Set for mode === 'drill' and mode === 'recognition'. */
   caseId: string | null;
 
   scramble: string;
@@ -106,7 +106,15 @@ export interface AlgSet {
 export interface AlgCase {
   id: string;
   setId: string;
+  /** What the pack calls the case. The pack owns it; the user cannot edit it. */
   name: string;
+  /**
+   * What the user calls the case, or null while they have not said. Separate
+   * from `name` because the seed rewrites every pack field on every start —
+   * a renamed `name` would last until the next launch — and because "OLL 43"
+   * is still the id everyone else's charts use.
+   */
+  label: string | null;
   group: string | null;
   setupAlg: string;
   order: number;

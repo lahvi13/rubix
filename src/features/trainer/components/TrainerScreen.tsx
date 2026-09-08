@@ -4,6 +4,7 @@ import { strings } from '../../../lib/strings';
 import { CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { navigate } from '../../../app/router';
 import { parseAlg } from '../../../domain/cube/notation';
+import { caseTitle } from '../../../domain/alg/case-name';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { diagramFor, type Diagram } from '../case-view';
 import { useAlgSets, useSetCases, type CaseGroup, type TrainerCase } from '../hooks/use-alg-cases';
@@ -160,6 +161,9 @@ export function TrainerScreen() {
             onClick={() => setOpenCase(null)}
           />
           <CaseDetail
+            // A fresh sheet per case: the rename box is seeded from the case
+            // it belongs to, and nothing carries over between two of them.
+            key={openCase.id}
             caseId={openCase.id}
             {...diagramFor(setId ?? '', openCase.group)}
             skin={skin}
@@ -188,7 +192,7 @@ function CaseCard({ entry, diagram, skin, showAlg, triggers, onOpen }: CaseCardP
 
   return (
     <button type="button" className="case-card" onClick={onOpen}>
-      <span className="case-card__name">{entry.algCase.name}</span>
+      <span className="case-card__name">{caseTitle(entry.algCase)}</span>
       <CubeDiagram
         className="case-card__diagram"
         state={entry.state}

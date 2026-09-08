@@ -3,6 +3,7 @@ import { db } from '../schema';
 import type { Penalty, Puzzle, Solve } from '../types';
 import { drillPool } from '../../domain/drill/selection';
 import { now } from '../../lib/clock';
+import { listAttempts, listAttemptsGrouped } from './case-attempts';
 import { listCasesWithAlgs, type CaseWithAlg } from './alg-repository';
 import { getOrCreateActiveSession } from './session-repository';
 import { addSolve, deleteSolves } from './solve-repository';
@@ -47,39 +48,16 @@ export async function addDrillSolve(input: NewDrillSolve): Promise<Solve> {
   });
 }
 
-/**
- * Every attempt at one case, oldest first — the order rolling averages are
- * defined over. Spans sessions on purpose: a case you drilled last month is
- * still a case you have drilled.
- */
+/** Every timed attempt at one case, oldest first. */
 export async function listCaseAttempts(caseId: string): Promise<Solve[]> {
-  const solves = await db.solves
-    .where('[caseId+createdAt]')
-    .between([caseId, Dexie.minKey], [caseId, Dexie.maxKey])
-    .toArray();
-  return solves.filter((solve) => solve.mode === 'drill');
+  return listAttempts(caseId, 'drill');
 }
 
-/**
- * The same for a whole set at once, keyed by case. One pass over the caseId
- * index rather than a query per case — the OLL screen needs 57 of these to
- * draw its progress.
- */
+/** The same for a whole set at once, keyed by case. */
 export async function listAttemptsByCase(
   caseIds: readonly string[],
 ): Promise<Map<string, Solve[]>> {
-  const grouped = new Map<string, Solve[]>(caseIds.map((caseId) => [caseId, []]));
-  if (caseIds.length === 0) return grouped;
-
-  const solves = await db.solves.where('caseId').anyOf([...caseIds]).toArray();
-  for (const solve of solves) {
-    if (solve.mode !== 'drill' || solve.caseId === null) continue;
-    grouped.get(solve.caseId)?.push(solve);
-  }
-  for (const attempts of grouped.values()) {
-    attempts.sort((a, b) => a.createdAt - b.createdAt);
-  }
-  return grouped;
+  return listAttemptsGrouped(caseIds, 'drill');
 }
 
 /**

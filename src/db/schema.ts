@@ -59,6 +59,19 @@ export class RubixDB extends Dexie {
     this.version(2).stores({
       triggers: 'id, updatedAt, isEnabled',
     });
+
+    // v3 gives a case the name its owner calls it by. No index changes — the
+    // field is only ever read whole — but the rows still have to be filled in:
+    // a missing property and an explicit null read the same in TypeScript and
+    // differently in an export, and the export is what has to round-trip.
+    this.version(3).upgrade((tx) =>
+      tx
+        .table<AlgCase>('algCases')
+        .toCollection()
+        .modify((algCase) => {
+          algCase.label = null;
+        }),
+    );
   }
 }
 

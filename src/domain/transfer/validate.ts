@@ -170,7 +170,7 @@ const isPuzzle = memberOf<Puzzle>({
   clock: true,
   minx: true,
 });
-const isSolveMode = memberOf<SolveMode>({ freestyle: true, drill: true });
+const isSolveMode = memberOf<SolveMode>({ freestyle: true, drill: true, recognition: true });
 const isPenalty = memberOf<Penalty>({ none: true, plus2: true, dnf: true });
 const isPenaltySource = memberOf<PenaltySource>({ auto: true, manual: true });
 const isSplitSource = memberOf<SplitSource>({ mic: true, smartcube: true, manual: true });
@@ -276,6 +276,7 @@ function isAlgCase(value: unknown): value is AlgCase {
     isString(value.id) &&
     isString(value.setId) &&
     isString(value.name) &&
+    isNullOr(value.label, isString) &&
     isNullOr(value.group, isString) &&
     isString(value.setupAlg) &&
     isInt(value.order) &&

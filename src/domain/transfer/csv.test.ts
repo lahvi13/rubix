@@ -216,6 +216,7 @@ describe('solvesToCsv', () => {
             id: 'pll-t',
             setId: 'pll',
             name: 'T',
+            label: null,
             group: null,
             setupAlg: '',
             order: 0,

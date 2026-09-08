@@ -5,12 +5,13 @@ import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
+import { caseAlias, caseTitle } from '../../../domain/alg/case-name';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { useCaseDetail } from '../hooks/use-case-detail';
-import { useCaseStat } from '../hooks/use-case-stats';
+import { useCaseStat, useRecognitionStat } from '../hooks/use-case-stats';
 import { useCaseAttempts } from '../hooks/use-case-attempts';
 import { AlgText } from './AlgText';
 import { AttemptList } from './AttemptList';
@@ -36,22 +37,34 @@ export function CaseDetail({
   triggers,
   onClose,
 }: CaseDetailProps) {
-  const { algCase, algorithms, active, moves, choose, addVariant, removeVariant } =
+  const { algCase, algorithms, active, moves, choose, addVariant, removeVariant, rename, forgetRecognition } =
     useCaseDetail(caseId);
   const [replayToken, setReplayToken] = useState(0);
   const [isPlaying, setPlaying] = useState(false);
   // Which move the player is turning, so the written algorithm can follow along.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
+  /**
+   * What is in the rename box. Null means nobody has touched it, and the box
+   * shows whatever the case is called — the case arrives from the database a
+   * render later than this state could be seeded from it.
+   */
+  const [nameDraft, setNameDraft] = useState<string | null>(null);
   const [showRotationAlgs] = useSetting('trainer.showRotationAlgs');
   // The algorithm leaves the cube solved, which is the one thing on this
   // screen nobody came to look at, so the case comes back by itself. Kept
   // stable: the player subscribes to it.
   const stopPlaying = useCallback(() => setPlaying(false), []);
   const stats = useCaseStat(caseId);
+  const recognition = useRecognitionStat(caseId);
   const attempts = useCaseAttempts(caseId);
 
   if (!algCase) return null;
+
+  const title = caseTitle(algCase);
+  const alias = caseAlias(algCase);
+  const label = algCase.label ?? '';
+  const shownName = nameDraft ?? label;
 
   const setupMoves = parseAlg(algCase.setupAlg);
   const setup = setupMoves.ok ? setupMoves.moves : [];
@@ -72,7 +85,7 @@ export function CaseDetail({
   const draftError = draft.trim() !== '' && !parseAlg(draft).ok;
 
   return (
-    <div className="detail case-detail" role="dialog" aria-label={algCase.name}>
+    <div className="detail case-detail" role="dialog" aria-label={title}>
       <div className="detail__header detail__header--bare">
         <button
           type="button"
@@ -86,7 +99,10 @@ export function CaseDetail({
 
       {/* The name belongs to the picture under it, not to the panel: read
           together they say which case this is. */}
-      <h2 className="case-detail__name">{algCase.name}</h2>
+      <h2 className="case-detail__name">{title}</h2>
+      {/* Under a name of the reader's own, the pack's stays visible: it is
+          what every chart and video out there calls this case. */}
+      {alias === null ? null : <p className="case-detail__alias">{alias}</p>}
 
       <div className="case-detail__stage">
         {isPlaying ? (
@@ -107,7 +123,7 @@ export function CaseDetail({
             view={view}
             stickering={stickering}
             skin={skin}
-            label={algCase.name}
+            label={title}
           />
         )}
       </div>
@@ -183,6 +199,38 @@ export function CaseDetail({
         </button>
       </form>
       {draftError ? <p className="detail__error">{strings.trainer.invalidAlg}</p> : null}
+
+      <h3 className="case-detail__section">{strings.trainer.rename}</h3>
+      <form
+        className="variants__add"
+        onSubmit={(event) => {
+          event.preventDefault();
+          watchWrite(() => rename(shownName), strings.trainer.renaming);
+        }}
+      >
+        <input
+          value={shownName}
+          onChange={(event) => setNameDraft(event.target.value)}
+          placeholder={strings.trainer.renamePlaceholder}
+          aria-label={strings.trainer.rename}
+        />
+        <button type="submit" disabled={shownName.trim() === label}>
+          {strings.trainer.renameSave}
+        </button>
+      </form>
+      <p className="detail__hint">{strings.trainer.renameHint}</p>
+
+      <h3 className="case-detail__section">{strings.recognition.caseStats}</h3>
+      <CaseStatsRow stats={recognition} />
+      {recognition === undefined || recognition.attempts === 0 ? null : (
+        <button
+          type="button"
+          className="is-danger"
+          onClick={() => watchWrite(forgetRecognition, strings.recognition.forgetting)}
+        >
+          {strings.recognition.forget}
+        </button>
+      )}
 
       <h3 className="case-detail__section">{strings.trainer.caseStats}</h3>
       <CaseStatsRow stats={stats} />

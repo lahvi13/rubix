@@ -1811,6 +1811,92 @@ button[disabled] {
   min-height: 2.75rem;
 }
 
+/* Recognition: which case is this, with no cube in your hands */
+
+.recognition {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+/* Big enough to read two side faces from arm's length, and no bigger: the
+   cards under it are what the eye has to travel to and back. */
+.recognition__cube {
+  width: min(60vw, 12rem);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.recognition__turn {
+  padding-inline: var(--space-7);
+  min-height: 2.75rem;
+}
+
+.recognition__prompt {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.recognition__verdict {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.recognition__verdict.is-correct .recognition__mark {
+  color: var(--accent);
+}
+
+.recognition__verdict.is-wrong .recognition__mark {
+  color: var(--danger);
+}
+
+.recognition__answer {
+  font-weight: 600;
+}
+
+.recognition__time {
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+
+/* Three across, two down: the set list packs as many cards in a row as it
+   can fit, which is right for reading a whole set and wrong here — six cards
+   in fours leaves a ragged second row, and each one is a cube to be compared
+   against another cube, not an icon. */
+.recognition__options {
+  width: 100%;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (min-width: 40rem) {
+  .recognition__options {
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  }
+}
+
+/* Once it is answered, the cards say what happened without a word: the right
+   one lights up, the one tapped instead is marked, and the rest step back so
+   the eye goes to the two that matter. */
+.case-card.is-correct {
+  border-color: var(--accent);
+}
+
+.case-card.is-wrong {
+  border-color: var(--danger);
+}
+
+.case-card.is-dimmed {
+  opacity: 0.45;
+}
+
 /* What a set has cost so far, and where to start next */
 
 .set-summary {
@@ -1903,6 +1989,15 @@ button[disabled] {
   margin: calc(var(--space-6) * -1) 0 calc(var(--space-5) * -1);
   text-align: center;
   font-size: var(--text-2xl);
+}
+
+/* The pack's own name, under the reader's. Its negative margin is the one the
+   name gave up when it stopped being the last line before the picture. */
+.case-detail__alias {
+  margin: 0 0 calc(var(--space-5) * -1);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--muted);
 }
 
 .case-detail__stage {

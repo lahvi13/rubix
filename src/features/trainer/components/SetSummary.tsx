@@ -1,3 +1,4 @@
+import { caseTitle } from '../../../domain/alg/case-name';
 import { slowestCases } from '../../../domain/drill/case-stats';
 import { formatAverage } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -21,7 +22,7 @@ export function SetSummary({ groups, onOpen }: SetSummaryProps) {
   const cases = (groups ?? []).flatMap((group) =>
     group.cases.map((entry) => ({
       id: entry.algCase.id,
-      name: entry.algCase.name,
+      name: caseTitle(entry.algCase),
       group: group.name,
     })),
   );

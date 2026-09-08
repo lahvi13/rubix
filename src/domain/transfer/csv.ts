@@ -8,7 +8,8 @@
  * RFC 4180: fields quoted only when they need it, rows ended with CRLF.
  */
 
-import type { Method, Solve } from '../../db/types';
+import type { AlgCase, Method, Solve } from '../../db/types';
+import { caseTitle } from '../alg/case-name';
 import { finalMs, penaltyLabel } from '../solve/final-time';
 import { phaseDurations } from '../solve/splits';
 import type { ExportData } from './types';
@@ -65,7 +66,7 @@ export function solvesToCsv(data: ExportData, format: CsvFormat): string {
       session?.name ?? '',
       solve.puzzle,
       solve.mode,
-      solve.caseId === null ? '' : (cases.get(solve.caseId)?.name ?? ''),
+      caseNameOf(cases.get(solve.caseId ?? '')),
       format.time(result),
       penaltyLabel(solve.penalty),
       result === null ? '' : String(result),
@@ -128,4 +129,9 @@ function escape(cell: string): string {
 function compare(a: string, b: string): number {
   if (a < b) return -1;
   return a > b ? 1 : 0;
+}
+
+/** What the reader calls the case; the pack name until they say otherwise. */
+function caseNameOf(algCase: AlgCase | undefined): string {
+  return algCase === undefined ? '' : caseTitle(algCase);
 }

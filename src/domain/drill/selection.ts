@@ -20,6 +20,26 @@ export function pickFrom<T>(items: readonly T[], random: Random): T | undefined 
 }
 
 /**
+ * The list in a random order, without disturbing the caller's copy. Fisher-
+ * Yates, walked from the end, so every ordering is equally likely — a sort
+ * with a random comparator is not, and here it would quietly park the right
+ * answer in the same corner of the grid too often.
+ */
+export function shuffle<T>(items: readonly T[], random: Random): T[] {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index--) {
+    const swap = Math.min(index, Math.floor(random() * (index + 1)));
+    const held = result[index];
+    const other = result[swap];
+    // Indices are in range by construction; this satisfies the checker.
+    if (held === undefined || other === undefined) continue;
+    result[index] = other;
+    result[swap] = held;
+  }
+  return result;
+}
+
+/**
  * The case to drill next. Never the same one twice in a row while there is
  * anything else to pick: a repeat is the one case whose answer is still on
  * the screen, so drilling it measures memory of the last ten seconds.
