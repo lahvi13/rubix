@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { invertAlg, parseAlg, type Move } from '../../domain/cube/notation';
 import { canonicalise } from '../../domain/cube/orientation';
 import { FACELETS, applyAlg, isSolved, solvedState, stateKey } from '../../domain/cube/state';
-import { PACKS, type AlgPack, type PackCase } from './packs';
+import { BEGINNER_GROUPS, PACKS, type AlgPack, type PackCase } from './packs';
 
 function movesOf(text: string): Move[] {
   const parsed = parseAlg(text);
@@ -46,6 +46,17 @@ const isFrontRightSlot = (index: number): boolean => {
   const [x, y, z] = position;
   return x === 1 && z === 1 && y !== 1;
 };
+
+/** How many pieces of that size are sitting where they belong. */
+function homePieces(state: CubeStateOf, pieceSize: number): number {
+  let home = 0;
+  for (const [, indices] of CUBIES) {
+    if (indices.length === pieceSize && indices.every((index) => state[index] === solved[index])) {
+      home++;
+    }
+  }
+  return home;
+}
 
 function wrongOutside(state: CubeStateOf, allowed: (index: number) => boolean): number {
   return FACELETS.filter((_, index) => !allowed(index) && state[index] !== solved[index]).length;
@@ -290,8 +301,9 @@ describe('F2L', () => {
 
 describe('beginner', () => {
   const pack = packById('beginner');
-  const corners = pack.cases.filter((entry) => entry.group === 'Bottom layer corners');
-  const edges = pack.cases.filter((entry) => entry.group === 'Middle layer edges');
+  const groupOf = (name: string) => pack.cases.filter((entry) => entry.group === name);
+  const corners = groupOf('Bottom layer corners');
+  const edges = groupOf('Middle layer edges');
 
   /** Where the piece wearing these colours has got to. */
   function pieceAt(state: CubeStateOf, colours: string): readonly number[] {
@@ -312,9 +324,18 @@ describe('beginner', () => {
     return position[0] === x && position[2] === z && position[1] !== 1;
   };
 
-  it('is the three corners and the two edges the guide teaches', () => {
+  it('groups its cases under the names the guide and the diagrams use', () => {
+    const named: readonly string[] = Object.values(BEGINNER_GROUPS);
+
+    for (const entry of pack.cases) expect(named).toContain(entry.group);
+  });
+
+  it('is the seven algorithms the guide teaches', () => {
+    expect(pack.cases).toHaveLength(7);
     expect(corners).toHaveLength(3);
     expect(edges).toHaveLength(2);
+    expect(groupOf('Corners home')).toHaveLength(1);
+    expect(groupOf('Edges home')).toHaveLength(1);
   });
 
   it.each(corners.map((entry) => [entry.name, entry] as const))(
@@ -346,14 +367,37 @@ describe('beginner', () => {
   });
 
   it.each([
-    ['beg-edge-right', 'FR', inSlot(1, 1)],
-    ['beg-edge-left', 'FL', inSlot(-1, 1)],
+    ['beg-edge-front', 'FR', inSlot(1, 1)],
+    ['beg-edge-back', 'BR', inSlot(1, -1)],
   ] as const)('%s brings an edge down from the top into its own slot', (id, colours, slot) => {
     const entry = pack.cases.find((candidate) => candidate.id === id);
     if (!entry) throw new Error(`missing case: ${id}`);
     const state = caseState(entry);
 
-    expect(pieceAt(state, colours)[1]).toBe(1);
+    // Both are met in the same place — an edge on the top right, lined up with
+    // the centre it matches — and only the colour on top says which slot it
+    // belongs to. That is what makes one grip enough for the whole step.
+    expect(pieceAt(state, colours)).toEqual([1, 1, 0]);
     expect(wrongOutside(state, (index) => isTopLayer(index) || slot(index))).toBe(0);
+  });
+
+  it('sends three corners round and leaves every edge alone', () => {
+    const entry = pack.cases.find((candidate) => candidate.id === 'beg-corners');
+    if (!entry) throw new Error('missing case: beg-corners');
+    const state = caseState(entry);
+
+    // The reason this one is here rather than a borrowed PLL: the corners can
+    // be finished without touching an edge, so the two last steps stay apart.
+    expect(wrongOutside(state, isCornerSticker)).toBe(0);
+    expect(homePieces(state, 3)).toBe(5);
+  });
+
+  it('sends three edges round and leaves every corner alone', () => {
+    const entry = pack.cases.find((candidate) => candidate.id === 'beg-edges');
+    if (!entry) throw new Error('missing case: beg-edges');
+    const state = caseState(entry);
+
+    expect(wrongOutside(state, (index) => !isCornerSticker(index))).toBe(0);
+    expect(homePieces(state, 2)).toBe(9);
   });
 });

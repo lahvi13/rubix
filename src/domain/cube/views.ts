@@ -34,7 +34,14 @@ export type Stickering =
    * when each edge matches the face it sits under, and with the centres grey
    * there is nothing to match it against.
    */
-  | 'cross';
+  | 'cross'
+  /**
+   * The bottom layer as it stands, and the piece of it still to go in, wherever
+   * that has got to. Nothing else — at this point in a beginner's solve the
+   * middle layer is not built, and drawing one of its edges floating in the top
+   * layer says look at me about a piece that does not matter yet.
+   */
+  | 'bottomLayer';
 
 export type Cell = Face | null;
 
@@ -99,6 +106,11 @@ function isLastLayerPiece(state: CubeState, index: number): boolean {
   return siblingsOf(index).some((sibling) => colourAt(state, sibling) === 'U');
 }
 
+/** Any piece of the bottom layer: it is the one wearing the bottom colour. */
+function isBottomPiece(state: CubeState, index: number): boolean {
+  return siblingsOf(index).some((sibling) => colourAt(state, sibling) === 'D');
+}
+
 /** An edge wearing the bottom colour — a corner showing D is not cross. */
 function isCrossEdge(state: CubeState, index: number): boolean {
   const stickers = siblingsOf(index);
@@ -131,6 +143,8 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       return pieceSize(index) === 2 ? colour : null;
     case 'cross':
       return pieceSize(index) === 1 || isCrossEdge(state, index) ? colour : null;
+    case 'bottomLayer':
+      return pieceSize(index) === 1 || isBottomPiece(state, index) ? colour : null;
     case 'firstTwoLayers':
       // By piece rather than by place: a last-layer piece that has dropped
       // into the slot is what makes the slot a hole, and painting it in its

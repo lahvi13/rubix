@@ -212,3 +212,25 @@ describe('the cross stickering', () => {
     expect(view.up[7]).toBe('D');
   });
 });
+
+describe('the bottom-layer stickering', () => {
+  it('draws the layer being built and leaves the rest grey', () => {
+    const view = netView(solvedState(), 'bottomLayer');
+
+    expect(view.down.every((sticker) => sticker === 'D')).toBe(true);
+    // A side face keeps its centre, so the corner has something to be placed
+    // against, plus the bottom row that belongs to the layer.
+    expect(view.front).toEqual(['.', '.', '.', '.', 'F', '.', 'F', 'F', 'F'].map(dotToNull));
+    expect(view.up).toEqual(['.', '.', '.', '.', 'U', '.', '.', '.', '.'].map(dotToNull));
+  });
+
+  it('follows the corner being put in, and nothing else that has moved', () => {
+    // The corner lifted out of the bottom layer by the first algorithm of the
+    // step: it is drawn up in the top layer, and the middle-layer edge that
+    // came out with it is not.
+    const view = netView(after("R U' R'"), 'bottomLayer');
+
+    expect(view.up.filter((sticker) => sticker !== null)).toHaveLength(2);
+    expect(view.front[5]).toBeNull();
+  });
+});

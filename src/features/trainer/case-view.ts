@@ -1,5 +1,5 @@
 import type { DiagramView } from '../../components/CubeDiagram';
-import { BEGINNER_SET_ID } from '../../db/seed/packs';
+import { BEGINNER_GROUPS, BEGINNER_SET_ID } from '../../db/seed/packs';
 import type { PlayerStickering } from './components/CasePlayer';
 import type { Stickering } from '../../domain/cube/views';
 
@@ -45,6 +45,22 @@ export function diagramFor(setId: string, group: string): Diagram {
     return {
       view: 'lastLayer',
       stickering: 'orientation',
+      playerStickering: 'full',
+    };
+  }
+  if (setId === BEGINNER_SET_ID) {
+    // Each step of the guide is looked at from where that step happens: down
+    // at the layer being built, or at the last layer with only the pieces the
+    // step moves left in colour.
+    if (group === BEGINNER_GROUPS.corners) {
+      return { view: 'isometric', stickering: 'bottomLayer', playerStickering: 'firstTwoLayers' };
+    }
+    if (group === BEGINNER_GROUPS.edges) {
+      return { view: 'isometric', stickering: 'firstTwoLayers', playerStickering: 'firstTwoLayers' };
+    }
+    return {
+      view: 'lastLayer',
+      stickering: group === BEGINNER_GROUPS.cornersHome ? 'corners' : 'edges',
       playerStickering: 'full',
     };
   }

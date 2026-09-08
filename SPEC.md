@@ -494,17 +494,35 @@ stěna, rohy na místo, hrany na místo.
 - **není to obrázková stránka**: každý případ na ní je skutečný případ z
   existující sady, kreslený stejným kódem jako v trenažéru, otevíratelný do
   stejného listu případu a přehratelný. „Drill this step“ pošle drill přesně na
-  případy toho kroku (`trainer.drillCaseIds`), ne na celou sadu, ze které jsou
-- **kroky 4–7 mají dvě úrovně**: ve výchozím stavu **jeden** algoritmus, který
-  ten krok zvládne celý opakováním, a pod ním přepínač na všechny případy kroku
-  po jednom algoritmu. Sedm rohových OLL naráz je přesně to, po čem začátečník
-  kostku odloží; schovat je ale nesmí znamenat zahodit — je to úroveň, ne trik
-- **kroky 2 a 3 mají vlastní sadu** (`beginner`, 5 případů): tahle metoda staví
-  první dvě vrstvy po jednom kousku, což F2L nedělá. V trenažéru se sada
-  nenabízí — vedle F2L by četla jako druhý způsob téhož — ale drillovat jde
+  případy toho kroku (`trainer.drillCaseIds`) — a na tu úroveň, která je zrovna
+  na obrazovce
+- **jeden algoritmus na krok, ne sada**: kroky 5–7 se otevírají jediným
+  algoritmem, který ten krok celý zvládne opakováním, plus obrázky **jak kostku
+  natočit** v ostatních případech (bez vlastního algoritmu). Přepínač pod tím
+  ukáže krok tak, jak ho zná někdo rychlý — u kroku 5 celých sedm rohových OLL,
+  u kroků 6 a 7 dvoulookové PLL. Jsou to dvě úrovně, ne skrývačka: sedm případů
+  naráz je přesně to, po čem začátečník kostku odloží
+- **vlastní sada `beginner`** (7 případů, 4 skupiny): rohy a hrany prvních dvou
+  vrstev (metoda je staví po jednom kousku, což F2L nedělá) a po jednom
+  algoritmu na rohy a hrany poslední vrstvy. Ty poslední dva jsou tu proto, že
+  cyklus tří rohů (`R' F R' B2 R F' R' B2 R2`) nechá hrany úplně na pokoji a
+  cyklus tří hran (`R U' R U R U R U' R' U' R2`) nechá na pokoji rohy — dva
+  poslední kroky se tak nemůžou navzájem rozbít, což u dvoulookového PLL neplatí.
+  V trenažéru se sada nenabízí — vedle F2L by četla jako druhý způsob téhož —
+  ale drillovat jde
+- **obrázky „jak držet“ se ověřují spuštěním** (`features/learn/steps.test.ts`),
+  ne přečtením: každý drží algoritmus, kterým se z té situace ven leze, a test
+  kontroluje, že je to **týž** algoritmus kroku (mezi opakováními smí být jen
+  `U`), že obrázek nesahá pod poslední vrstvu a že sedí pravidlo, které je u něj
+  napsané — u dvou žlutých rohů kouká žlutá nálepka předního levého rohu dopředu,
+  u žádného doleva
 - **krok 1 nemá případ**, protože kříž se neskládá z algoritmů. Místo něj je
   obrázek hotového kříže (`stickering: 'cross'`: kříž a všechny středy barevně,
-  zbytek šedě — bez středů není proti čemu shodu barev číst) a křížový drill
+  zbytek šedě — bez středů není proti čemu shodu barev číst)
+- **každý krok se kreslí z místa, kde se odehrává**: rohy spodní vrstvy přes
+  `stickering: 'bottomLayer'` (spodní vrstva a ten jeden roh, kdekoli je;
+  prostřední vrstva ještě není a její hrana plovoucí nahoře jen mate), hrany
+  prostřední přes `firstTwoLayers`, poslední vrstva přes `corners` / `edges`
 - **skrytelné v nastavení** (`ui.showLearn`): kdo kostku skládá, tuhle obrazovku
   nepotřebuje. Mizí jen z menu — `#/learn` funguje dál, protože záložka na ni je
   člověk, který ji chce

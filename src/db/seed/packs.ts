@@ -80,6 +80,18 @@ export const SET_ORDER: readonly string[] = [
  */
 export const BEGINNER_SET_ID = 'beginner';
 
+/**
+ * The steps of the beginner set, as its cases are grouped. Named here because
+ * three places have to agree on them: the pack, how each is drawn, and the
+ * guide that walks them in order.
+ */
+export const BEGINNER_GROUPS = {
+  corners: 'Bottom layer corners',
+  edges: 'Middle layer edges',
+  cornersHome: 'Corners home',
+  edgesHome: 'Edges home',
+} as const;
+
 export const CROSS_SET_ID = 'cross';
 export const CROSS_CASE_ID = 'cross';
 

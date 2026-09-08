@@ -15,15 +15,6 @@ describe('LearnScreen', () => {
     window.location.hash = '';
   });
 
-  it('walks a whole solve, a numbered step at a time', async () => {
-    render(<LearnScreen />);
-
-    const headings = await screen.findAllByRole('heading', { level: 2 });
-    expect(headings.map((heading) => heading.textContent)).toEqual(
-      LEARN_STEPS.map((step, index) => `${index + 1}${step.title}`),
-    );
-  });
-
   /** A case shows a cube; the buttons that work the screen do not. */
   const caseButtons = (section: HTMLElement): HTMLElement[] =>
     within(section)
@@ -37,26 +28,52 @@ describe('LearnScreen', () => {
       return section;
     });
 
+  const sectionFor = (title: string): HTMLElement => {
+    const found = sections().find((section) => section.textContent?.startsWith(title));
+    if (!found) throw new Error(`no step titled ${title}`);
+    return found;
+  };
+
   const settled = () =>
     waitFor(() => {
       expect(screen.queryByText(strings.learn.loading)).not.toBeInTheDocument();
     });
 
-  it('opens on one algorithm per last-layer step, however many cases it has', async () => {
+  it('walks a whole solve, a numbered step at a time', async () => {
     render(<LearnScreen />);
     await settled();
 
-    // The first two layers have no shortcut — every case there has to be
-    // learned — and the four last-layer steps each open on one algorithm.
-    expect(sections().map((section) => caseButtons(section).length)).toEqual([0, 3, 2, 1, 1, 1, 1]);
+    expect(sections().map((section) => section.querySelector('h2')?.textContent)).toEqual(
+      LEARN_STEPS.map((step, index) => `${index + 1}${step.title}`),
+    );
+  });
+
+  it('opens the last-layer steps on one algorithm, however many cases they have', async () => {
+    render(<LearnScreen />);
+    await settled();
+
+    // The first two layers have no shortcut — every algorithm there has to be
+    // learned — and the three steps that can be got through by repeating one
+    // algorithm show exactly that one.
+    expect(sections().map((section) => caseButtons(section).length)).toEqual([0, 3, 2, 3, 1, 1, 1]);
+  });
+
+  it('shows how to hold the cube for the repeats, without an algorithm each', async () => {
+    render(<LearnScreen />);
+    await settled();
+
+    const face = sectionFor('5Last layer face');
+
+    expect(within(face).getAllByRole('figure')).toHaveLength(2);
+    expect(within(face).getByText(strings.learn.holds.noneOriented)).toBeInTheDocument();
   });
 
   /**
-   * The other half of the same point: the cases are there, and the step
-   * headings point at groups that still exist. A group name that stopped
-   * matching its pack would leave a step empty and nothing else would notice.
+   * The other half of the same point: the cases are there, and the steps point
+   * at groups that still exist. A group name that stopped matching its pack
+   * would leave a step empty and nothing else would notice.
    */
-  it('has every case of every step behind the button', async () => {
+  it('has every case of the step behind the button', async () => {
     const user = userEvent.setup();
     render(<LearnScreen />);
     await settled();
@@ -71,7 +88,7 @@ describe('LearnScreen', () => {
   it('shows the cross rather than describing it', async () => {
     render(<LearnScreen />);
 
-    const figure = screen.getByRole('figure');
+    const figure = within(sectionFor('1Cross')).getByRole('figure');
     expect(figure.querySelector('img')?.getAttribute('src')).toContain('data:image/svg+xml,');
   });
 
@@ -89,21 +106,31 @@ describe('LearnScreen', () => {
     render(<LearnScreen />);
     await settled();
 
-    const edgeStep = screen
-      .getAllByRole('heading', { level: 2 })
-      .find((heading) => heading.textContent === '4Last layer cross')
-      ?.closest('section');
-    if (!edgeStep) throw new Error('no edge orientation step');
-
-    await user.click(within(edgeStep).getByRole('button', { name: 'Drill this step' }));
+    const step = sectionFor('4Last layer cross');
+    await user.click(within(step).getByRole('button', { name: strings.learn.drillStep }));
 
     expect(await getSetting('trainer.drillSetId')).toBe('2look-oll');
     // The first look of two-look OLL, not its seven corner cases as well.
-    expect(await getSetting('trainer.drillCaseIds')).toEqual([
-      '2oll-line',
-      '2oll-l',
-      '2oll-dot',
-    ]);
+    expect(await getSetting('trainer.drillCaseIds')).toEqual(['2oll-line', '2oll-l', '2oll-dot']);
     expect(window.location.hash).toBe('#/drill');
+  });
+
+  it('drills the level on show, not the one underneath it', async () => {
+    const user = userEvent.setup();
+    render(<LearnScreen />);
+    await settled();
+
+    // The corner step's beginner algorithm and its quicker version live in
+    // different sets, so switching level has to change what the drill gets.
+    const step = sectionFor('6Corners home');
+    await user.click(within(step).getByRole('button', { name: strings.learn.drillStep }));
+    expect(await getSetting('trainer.drillSetId')).toBe('beginner');
+    expect(await getSetting('trainer.drillCaseIds')).toEqual(['beg-corners']);
+
+    await user.click(within(step).getByRole('button', { name: strings.learn.showCases }));
+    await user.click(within(step).getByRole('button', { name: strings.learn.drillStep }));
+
+    expect(await getSetting('trainer.drillSetId')).toBe('2look-pll');
+    expect(await getSetting('trainer.drillCaseIds')).toEqual(['2pll-t', '2pll-y']);
   });
 });

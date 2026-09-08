@@ -1,5 +1,5 @@
 {
-  "packVersion": 1,
+  "packVersion": 2,
   "set": { "id": "beginner", "name": "Beginner" },
   "cases": [
     {
@@ -21,16 +21,28 @@
       "alg": "R U2 R' U' R U R'"
     },
     {
-      "id": "beg-edge-right",
-      "name": "Edge to the right",
+      "id": "beg-edge-front",
+      "name": "Edge to the front",
       "group": "Middle layer edges",
-      "alg": "U R U' R' U' F' U F"
+      "alg": "R' U' R' U' R' U R U R"
     },
     {
-      "id": "beg-edge-left",
-      "name": "Edge to the left",
+      "id": "beg-edge-back",
+      "name": "Edge to the back",
       "group": "Middle layer edges",
-      "alg": "U' L' U L U F U' F'"
+      "alg": "R U R U R U' R' U' R'"
+    },
+    {
+      "id": "beg-corners",
+      "name": "Headlights",
+      "group": "Corners home",
+      "alg": "R' F R' B2 R F' R' B2 R2"
+    },
+    {
+      "id": "beg-edges",
+      "name": "One side done",
+      "group": "Edges home",
+      "alg": "R U' R U R U R U' R' U' R2"
     }
   ]
 }

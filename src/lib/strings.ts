@@ -160,12 +160,10 @@ export const strings = {
     intro:
       'Seven steps from a scrambled cube to a solved one. Nothing here is quick, and none of it is wasted: a faster method replaces the last four steps and keeps the first three. The pictures stand the cube the way the trainer does — the cross goes on the bottom, and the layer left over is the one on top.',
     drillStep: 'Drill this step',
-    keyHint:
-      'One algorithm is enough for the whole step: hold the cube as the words above say, run it, look again, run it again. The picture is the case it finishes in one go.',
-    showCases: 'Every case, one algorithm each',
-    hideCases: 'Back to the one algorithm',
     loading: 'Loading the cases…',
     crossCaption: 'A finished cross: an edge under every centre whose colour it shares.',
+    showCases: 'Every case, one algorithm each',
+    hideCases: 'Back to the one algorithm',
     steps: {
       cross: {
         title: 'Cross',
@@ -177,24 +175,37 @@ export const strings = {
       },
       middle: {
         title: 'Middle layer edges',
-        text: 'Any top-layer edge without the last-layer colour on it belongs in the middle. Turn the top until the edge’s side colour matches the centre it faces — the piece and the centre make a short column — and its upward colour then says which way it goes: left or right. An edge sitting in the middle the wrong way round is sent up by either algorithm and put back with the right one.',
+        text: 'Any top-layer edge without the last-layer colour on it belongs in the middle. Turn the top until that edge is on the right with its side colour matching the centre below it; the colour facing up then says which slot it goes into — the one in front of you, or the one behind. Both algorithms are R and U and nothing else, so the cube never has to leave your hands. An edge already in the middle the wrong way round is sent back up by either one, and goes in properly on the second try.',
       },
       edgeOrientation: {
         title: 'Last layer cross',
-        text: 'Now the top face, edges first. Only the top colour matters here; where the pieces belong is a later problem. A dot, an L or a line all become a cross with the same algorithm, held as the picture shows it — the dot needs it twice, the L and the line once each.',
+        text: 'Now the top face, edges first. Only the top colour matters here; where the pieces belong is a later problem. A line becomes a cross with the first algorithm, an L with the second, and a dot — no edge showing the top colour at all — with the first and then the second. The letter f is F with the middle slice turning along with the front face, which is the only difference between the two.',
       },
       cornerOrientation: {
         title: 'Last layer face',
-        text: 'The whole top face in one colour. You can do this with a single algorithm repeated: hold the cube so that a corner already showing the top colour is at the front left, run it, look again, run it again. With two corners already done, turn the top so that the top-colour sticker of the front-left corner faces you; with none done, so that it faces left. Two or three goes and the face is one colour. The seven cases behind the button below each end it in a single go, for when you want them.',
+        text: 'The whole top face in one colour, with one algorithm and a little patience. Hold the cube as one of the three pictures below shows, run it, and look again — every case is one of the three, and none of them takes more than three goes. The seven cases behind the button each finish it in a single go, for when you want them.',
       },
       cornerPermutation: {
         title: 'Corners home',
-        text: 'The face is done and the pieces are still in the wrong places. Corners go first. Turn the top and look along each side for headlights — two corners of the same colour with a stranger between them. One algorithm covers it: run it, look again, run it again, and the corners are never more than two goes away. It shuffles the edges about on the way, which costs nothing, because the edges are the next step.',
+        text: 'The face is done and the pieces are still in the wrong places; corners go first. Look along each side for headlights — two corners of the same colour with a stranger between them. This algorithm leaves every edge exactly where it is, so nothing it does can spoil the step after it.',
       },
       edgePermutation: {
         title: 'Edges home',
-        text: 'Only the edges are left, and one algorithm does all of them. Turn the top until one side is a solid block of colour: that side is finished and the other three edges go round in a cycle. If no side matches, run it from any angle anyway — whatever it leaves you with, one more go finishes it. A wrong guess here costs a few seconds, not the solve.',
+        text: 'Only the edges are left, and one algorithm does all of them. Turn the top until one side is a solid block of colour: that side is finished, and the other three edges go round. It moves no corner at all, so what you have just done stays done.',
       },
+    },
+    holds: {
+      oneOriented:
+        'One corner already showing the top colour: put it at the front left. This is the case the algorithm ends on its own.',
+      twoOriented:
+        'Two already showing: turn the top until the top-colour sticker of the front-left corner faces you.',
+      noneOriented:
+        'None showing yet: turn the top until the top-colour sticker of the front-left corner faces left.',
+      headlights: 'Headlights at the back: the other three corners go round into place.',
+      noHeadlights:
+        'No headlights on any side: run it once from any angle and you will have some.',
+      oneSide: 'The finished side at the back: the other three edges go round.',
+      noSide: 'No side a solid colour: run it once from any angle and one will be.',
     },
   },
   trainer: {

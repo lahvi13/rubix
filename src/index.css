@@ -3338,3 +3338,28 @@ input[type='radio'] {
 .learn__more {
   margin-top: var(--space-4);
 }
+
+/* The situations the same algorithm has to be run from again. */
+.learn__holds {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.learn__hold {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.learn__hold-diagram {
+  flex: none;
+  width: 3.5rem;
+}
+
+@media (min-width: 34rem) {
+  .learn__holds {
+    grid-template-columns: 1fr 1fr;
+  }
+}
