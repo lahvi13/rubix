@@ -114,9 +114,15 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
 
 ## Co se nikdy nedělá
 
-1. **Žádný odchozí síťový provoz za běhu.** Žádné analytics, sentry, fonty z CDN,
-   ping na API. Všechny assety jsou v buildu. Jediná výjimka je service worker
-   kontrolující update samotné aplikace.
+1. **Žádný odchozí síťový provoz za běhu.** Žádné sentry, fonty z CDN, ping na API.
+   Všechny assety jsou v buildu. Výjimky jsou dvě: service worker kontrolující update
+   samotné aplikace a Cloudflare Web Analytics (beacon z
+   `static.cloudflareinsights.com`, snippet v `index.html`). Beacon nesmí do precache
+   ani do runtime cachingu — jde vždy na síť — a jeho výpadek nesmí nic rozbít:
+   je to samostatný `<script type="module">`, který na ničem nezávisí a nikdo na něj
+   nečeká. Parametr `"spa": true` v `data-cf-beacon` je oproti originálnímu snippetu
+   navíc a je povinný — bez něj se měří jen první načtení a přechody mezi obrazovkami
+   se nezapočítají.
 2. **Nic neopouští zařízení** — obzvlášť ne audio z mikrofonu. Mikrofonní stream se
    zpracovává výhradně v `AudioWorklet` a nikdy se neukládá ani neposílá.
 3. **Neukládat odvozené hodnoty.** Finální čas, průměry, PB, statistiky případu se
