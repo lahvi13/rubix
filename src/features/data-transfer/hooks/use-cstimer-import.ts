@@ -4,6 +4,7 @@ import {
   readSolveKeys,
   type ImportProgress,
 } from '../../../db/repositories/cstimer-repository';
+import { getMethodPhases } from '../../../db/repositories/method-repository';
 import { DEFAULT_METHOD_ID } from '../../../db/repositories/session-repository';
 import {
   parseCsTimerCsv,
@@ -16,7 +17,6 @@ import {
 } from '../../../domain/transfer/cstimer';
 import { logQuietly, reportError } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
-import { usePhases } from '../../splits';
 
 /** What a CSV cannot say about itself, so this is what it is taken to be. */
 const CSV_PUZZLE = '333';
@@ -24,7 +24,18 @@ const CSV_PUZZLE = '333';
 export type CsTimerState =
   | { status: 'idle' }
   | { status: 'reading' }
-  | { status: 'preview'; plan: CsTimerPlan; filename: string; isCsv: boolean }
+  | {
+      status: 'preview';
+      plan: CsTimerPlan;
+      filename: string;
+      isCsv: boolean;
+      /**
+       * The phases the plan was made with, carried to the write. Read once,
+       * because a preview counted against a method that had not loaded yet
+       * would promise a different import than the one that happens.
+       */
+      phaseKeys: string[];
+    }
   | { status: 'importing'; progress: ImportProgress }
   | { status: 'failed'; problem: CsTimerProblem };
 
@@ -50,7 +61,6 @@ export interface CsTimerImportView {
 export function useCsTimerImport(): CsTimerImportView {
   const [state, setState] = useState<CsTimerState>({ status: 'idle' });
   const [outcome, setOutcome] = useState<CsTimerOutcome | null>(null);
-  const phases = usePhases(DEFAULT_METHOD_ID);
 
   const loadFile = async (input: File): Promise<void> => {
     setOutcome(null);
@@ -79,8 +89,9 @@ export function useCsTimerImport(): CsTimerImportView {
     }
 
     try {
-      const plan = planCsTimerImport(parsed.file, await readSolveKeys(), phases.length);
-      setState({ status: 'preview', plan, filename: input.name, isCsv });
+      const phaseKeys = (await getMethodPhases(DEFAULT_METHOD_ID)).map((phase) => phase.key);
+      const plan = planCsTimerImport(parsed.file, await readSolveKeys(), phaseKeys.length);
+      setState({ status: 'preview', plan, filename: input.name, isCsv, phaseKeys });
     } catch (cause) {
       reportError(strings.cstimer.failed, cause);
       setState({ status: 'idle' });
@@ -89,13 +100,13 @@ export function useCsTimerImport(): CsTimerImportView {
 
   const confirmImport = async (): Promise<void> => {
     if (state.status !== 'preview') return;
-    const { plan } = state;
+    const { plan, phaseKeys } = state;
     setState({ status: 'importing', progress: { written: 0, total: plan.newSolves } });
 
     try {
       const imported = await applyCsTimerPlan(
         plan,
-        phases.map((phase) => phase.key),
+        phaseKeys,
         (progress) => setState({ status: 'importing', progress }),
       );
       setState({ status: 'idle' });

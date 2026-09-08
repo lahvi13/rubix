@@ -6,6 +6,7 @@ import { createSession } from '../../../db/repositories/session-repository';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { buildExportFile, clearAllData } from '../../../db/repositories/transfer-repository';
 import { seedPacks } from '../../../db/seed/seed';
+import CSTIMER_PHASES from '../../../test/fixtures/cstimer-export-phases.txt?raw';
 import { DataScreen } from './DataScreen';
 
 async function exportedFile(): Promise<File> {
@@ -213,5 +214,45 @@ describe('DataScreen, a csTimer file that cannot be read', () => {
       await screen.findByText('That file could not be read. Pick it again.'),
     ).toBeInTheDocument();
     expect(screen.queryByText('Reading the file…')).not.toBeInTheDocument();
+  });
+});
+
+describe('DataScreen, a csTimer session timed by phase', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    await seedPacks();
+  });
+
+  it('promises exactly the phase times it then writes', async () => {
+    const user = userEvent.setup();
+    const file = new File([CSTIMER_PHASES], 'cstimer.txt', { type: 'text/plain' });
+
+    render(<DataScreen />);
+    await user.upload(screen.getByLabelText('Choose a csTimer file'), file);
+
+    // Two of the five were timed in the method's four phases; the one timed
+    // in five keeps its time and loses them.
+    expect(await screen.findByText(/2 with phase times/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/1 timed in another number of phases/),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Import from csTimer' }));
+    // Generous: this one seeds the packs and imports five solves, and a busy
+    // machine takes longer than the default second.
+    await waitFor(
+      async () => {
+        expect(await db.solves.count()).toBe(5);
+      },
+      { timeout: 5000 },
+    );
+
+    // The count on screen has to be the count that landed, or the preview was
+    // a promise about a different import.
+    const solves = await db.solves.toArray();
+    expect(solves.filter((solve) => solve.splits.length > 0)).toHaveLength(2);
+    const withFive = solves.find((solve) => solve.rawMs === 32_706);
+    expect(withFive?.penalty).toBe('plus2');
+    expect(withFive?.splits).toEqual([]);
   });
 });
