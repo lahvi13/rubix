@@ -394,4 +394,14 @@ export const strings = {
     reload: 'Reload',
     dismiss: 'Later',
   },
+  install: {
+    title: 'Install',
+    hint: 'Installed, the app opens from the home screen without the browser around it, and it keeps working with no connection at all.',
+    action: 'Install the app',
+    iosTitle: 'Add to the Home Screen',
+    iosSteps:
+      'On iPhone and iPad this is done from the share sheet: tap Share at the bottom of Safari, then "Add to Home Screen". Safari gives a page no button to offer instead.',
+    iosWhy:
+      'Worth doing: an iPhone gives an installed app a far longer memory than a tab, and a tab left unopened can have its solves cleared after a week. Keep a backup either way.',
+  },
 } as const;

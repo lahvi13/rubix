@@ -248,6 +248,15 @@ body {
   overscroll-behavior: none;
   -webkit-user-select: none;
   user-select: none;
+  /*
+   * Every tap in a timer is two taps in a row somewhere. Safari answers that
+   * with a zoom, and answers a single tap by waiting to find out whether a
+   * second one is coming. `manipulation` drops the double-tap gesture and
+   * keeps scrolling and pinch-zoom, which are the ones a reader needs.
+   */
+  touch-action: manipulation;
+  /* The grey block Safari flashes over whatever was tapped. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /*
@@ -365,6 +374,9 @@ button[disabled] {
   z-index: 40;
   background: var(--bg);
   padding: var(--space-2) var(--space-5);
+  /* Held sideways the notch is beside the header, not above it. */
+  padding-inline-start: max(var(--space-5), env(safe-area-inset-left));
+  padding-inline-end: max(var(--space-5), env(safe-area-inset-right));
   border-bottom: 1px solid var(--border);
 }
 
@@ -408,6 +420,16 @@ button[disabled] {
   flex: 1;
   gap: var(--space-6);
   padding: var(--space-6);
+  /*
+   * The viewport is `viewport-fit=cover`, so the page reaches under the home
+   * indicator and, held sideways, under the notch. These keep the content out
+   * of both: the last solve in the list and the Load more button at the foot
+   * of the history were the ones sitting under the bar. `max()` rather than a
+   * sum, so a device without insets keeps exactly the padding above.
+   */
+  padding-inline-start: max(var(--space-6), env(safe-area-inset-left));
+  padding-inline-end: max(var(--space-6), env(safe-area-inset-right));
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
 }
 
 /* Scramble */
@@ -587,6 +609,9 @@ button[disabled] {
   inset: 0;
   z-index: 30;
   touch-action: none;
+  /* A finger held still on the screen is how a solve starts, and it is also
+     the gesture Safari answers with a magnifier and a copy menu. */
+  -webkit-touch-callout: none;
 }
 
 /* Abbreviated in the heading (see strings.ts), so they are set like one. */
@@ -605,6 +630,9 @@ button[disabled] {
   border-radius: var(--radius-xl);
   cursor: pointer;
   touch-action: none;
+  /* As on the overlay: the hold that arms the clock must not raise a
+     magnifier over the digits it is about to start. */
+  -webkit-touch-callout: none;
 }
 
 /* The clock and the ring around it share a box, and its font size is the
@@ -793,6 +821,9 @@ button[disabled] {
   position: fixed;
   inset-inline: 1rem;
   bottom: 1rem;
+  /* Clear of the home indicator: this one is tapped, and a tap that lands on
+     the indicator swipes the app away instead. */
+  bottom: calc(1rem + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   gap: var(--space-5);
@@ -831,7 +862,8 @@ button[disabled] {
 .app__menu {
   position: absolute;
   top: 100%;
-  inset-inline-start: 0;
+  /* Off the header's padding box, which reaches into the notch in landscape. */
+  inset-inline-start: env(safe-area-inset-left, 0);
   z-index: 9;
   display: flex;
   flex-direction: column;
@@ -1006,6 +1038,9 @@ button[disabled] {
   border-top: 1px solid var(--border);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   padding: var(--space-6);
+  /* The sheet is pinned to the bottom edge, so the home indicator lies over
+     its last row — the tags and the delete button. */
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -1650,7 +1685,7 @@ button[disabled] {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
   gap: var(--space-2);
-  max-height: 45vh;
+  max-height: 45dvh;
   overflow-y: auto;
 }
 
@@ -2535,6 +2570,7 @@ button[disabled] {
   position: fixed;
   inset-inline: 1rem;
   top: 1rem;
+  top: calc(1rem + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2562,6 +2598,7 @@ button[disabled] {
   position: fixed;
   inset-inline: 1rem;
   bottom: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   justify-content: space-between;

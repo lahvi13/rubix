@@ -100,6 +100,18 @@ const icons = [
   ['icon-512.png', 512, 0.1],
   // Maskable icons get cropped to a circle, so the face sits well inside.
   ['icon-512-maskable.png', 512, 0.22],
+  /*
+   * iOS never looks at the manifest's icons. Without an apple-touch-icon of
+   * the right size it scales whichever one it finds, and without any of them
+   * it puts a screenshot of the page on the home screen. 180 is the iPhone,
+   * 167 the iPad Pro, 152 every other iPad. They are drawn like the plain
+   * icons rather than the maskable one — iOS applies its own rounded-rect
+   * mask, which takes off far less than a circle. That the encoder writes no
+   * alpha channel matters here: iOS paints transparency black.
+   */
+  ['apple-touch-icon-180.png', 180, 0.1],
+  ['apple-touch-icon-167.png', 167, 0.1],
+  ['apple-touch-icon-152.png', 152, 0.1],
 ];
 
 for (const [name, size, padRatio] of icons) {

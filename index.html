@@ -3,11 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Rewritten from the chosen theme before the first paint (lib/appearance.ts);
+         the value here is only what a light-theme reader would see flash. -->
     <meta name="theme-color" content="#0f1115" />
     <meta name="description" content="Offline speedcubing trainer" />
     <title>Rubix</title>
+
+    <!--
+      iOS reads almost none of the web app manifest. Without these it puts a
+      screenshot of the page on the home screen and opens the app in a Safari
+      tab, manifest or no manifest. The icons have to be PNGs of their own: an
+      SVG favicon is ignored, and so are the manifest's icons.
+
+      The status bar is deliberately not 'black-translucent'. That style hands
+      the app the strip behind the clock and battery — and always draws them in
+      white, which is unreadable on the light theme. Left opaque, iOS fills it
+      from the page background, which is themed.
+    -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Rubix" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png" />
   </head>
   <body>
     <div id="root"></div>

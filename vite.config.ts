@@ -36,14 +36,20 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg'],
       manifest: {
+        // The identity of the installed app, pinned: without it the id is
+        // derived from start_url, and moving that would install a second copy
+        // beside the one already on someone's home screen.
+        id: '/',
         name: 'Rubix',
         short_name: 'Rubix',
         description: 'Offline speedcubing trainer',
+        lang: 'en',
         theme_color: '#0f1115',
         background_color: '#0f1115',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
+        scope: '/',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
