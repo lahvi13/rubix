@@ -1,6 +1,6 @@
 import type { AlgSet } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
-import { FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
+import { BEGINNER_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { useSetting } from '../../../hooks/use-setting';
 import { strings } from '../../../lib/strings';
 
@@ -31,7 +31,9 @@ export function DrillSets({ sets, setId, onSet }: DrillSetsProps) {
     <>
       <div className="trainer__sets">
         {sets
-          .filter((set) => !Object.hasOwn(FULL_SETS, set.id))
+          // The guide's own set is not offered here: it is a route through one
+          // solve rather than a set to work on, and it is drilled from there.
+          .filter((set) => !Object.hasOwn(FULL_SETS, set.id) && set.id !== BEGINNER_SET_ID)
           .map((set) => (
             <button
               key={set.id}

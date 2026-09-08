@@ -119,6 +119,13 @@ kromě PB, které je globální per `puzzle`.
   hranové tvary, které mezi 57 případy vůbec nejsou, a druhý look chce případy
   pod jmény, pod kterými se učí (Sune, Bowtie, …). Každý krok se kreslí jinak —
   u OLL nejdřív jen hrany, u PLL nejdřív jen rohy
+- **případ může mít víc vestavěných algoritmů**: vlastní odpověď packu
+  (`<case>-pack`), tentýž postup s otočenou kostkou (`-pack-grip`, schovaný za
+  `trainer.showRotationAlgs`) a **jiné řešení téhož případu** (`-pack-other-N`,
+  pole `others` v packu). To poslední se neschovává — seznam variant je přesně
+  na to — a aktivní se nestane samo; U permy tak vedle sebe nabízejí verzi se
+  slice tahy i bez nich. Každý extra se ověřuje spuštěním stejně jako hlavní
+  algoritmus
 - **statický náhled případu kreslí aplikace sama** (`components/CubeDiagram.tsx`)
   z vlastního modelu kostky (`domain/cube/`), ne `<twisty-player>`: na jedné
   obrazovce je až 57 náhledů a tolik custom elementů telefon nedá. Twisty se
@@ -493,9 +500,17 @@ stěna, rohy na místo, hrany na místo.
 
 - **není to obrázková stránka**: každý případ na ní je skutečný případ z
   existující sady, kreslený stejným kódem jako v trenažéru, otevíratelný do
-  stejného listu případu a přehratelný. „Drill this step“ pošle drill přesně na
-  případy toho kroku (`trainer.drillCaseIds`) — a na tu úroveň, která je zrovna
-  na obrazovce
+  stejného listu případu a přehratelný
+- **nikam neposílá na drill**: měřit jeden případ na čas je věc někoho, kdo už
+  kostku složí, a tahle stránka je pro dny předtím. Ze stejného důvodu se sada
+  `beginner` nenabízí ani v seznamu sad na drillu — je to cesta jedním složením,
+  ne sada k procvičování
+- **nahoře je notace** (rozbalovací, tentýž `NotationReference` jako v trenažéru)
+  a **vypínač stránky**: kdo už kostku složí, tady řekne, že to má z menu zmizet.
+  Vrátit jde v nastavení, což je u vypínače napsané
+- **stránka uvádí zdroj**, ze kterého metoda i pořadí kroků vycházejí
+  (badmephisto.com) — odkaz, na který se klikne, ne požadavek, který by appka
+  sama poslala
 - **jeden algoritmus na krok, ne sada**: kroky 5–7 se otevírají jediným
   algoritmem, který ten krok celý zvládne opakováním, plus obrázky **jak kostku
   natočit** v ostatních případech (bez vlastního algoritmu). Přepínač pod tím

@@ -9,6 +9,7 @@ export { DrillScreen } from './components/DrillScreen';
 export { CaseCard } from './components/CaseCard';
 export { CaseDetail } from './components/CaseDetail';
 export { AlgText } from './components/AlgText';
+export { NotationReference } from './components/NotationReference';
 export { diagramFor, type Diagram } from './case-view';
 export { useSetCases, type CaseGroup, type TrainerCase } from './hooks/use-alg-cases';
 export { useTriggers } from './hooks/use-triggers';

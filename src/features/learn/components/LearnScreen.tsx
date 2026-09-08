@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { navigate } from '../../../app/router';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { CROSS_SET_ID } from '../../../db/seed/packs';
 import { caseTitle } from '../../../domain/alg/case-name';
@@ -14,6 +13,7 @@ import {
   AlgText,
   CaseCard,
   CaseDetail,
+  NotationReference,
   diagramFor,
   useSetCases,
   useTriggers,
@@ -34,28 +34,52 @@ interface OpenCase {
  * One whole solve, explained in the order it happens.
  *
  * Deliberately not a page of pictures: every case on it is a real case out of
- * a real set, drawn by the same code as the trainer draws it, playable, and
- * drillable a step at a time. A printed cheat sheet cannot be practised, and
- * practising is the part that teaches the cube.
+ * a real set, drawn by the same code as the trainer draws it, and playable. A
+ * printed cheat sheet cannot be turned round and watched, and watching it turn
+ * is most of what a first cube needs.
+ *
+ * Nothing here sends anybody to the drill. Practising one case against a clock
+ * is what somebody does once they can already solve it, and this page is for
+ * the days before that.
  */
 export function LearnScreen() {
   const skin = useCubeSkin();
   const { definitions } = useTriggers();
   const [openCase, setOpenCase] = useState<OpenCase | null>(null);
-  const [, setDrillSetId] = useSetting('trainer.drillSetId');
-  const [, setDrillCaseIds] = useSetting('trainer.drillCaseIds');
-
-  const drill = (setId: string, caseIds: readonly string[]): void => {
-    setDrillSetId(setId);
-    // The step, not the set it lives in: a step is often a handful of cases out
-    // of a set that holds more, and drilling the rest is not what was asked for.
-    setDrillCaseIds(caseIds);
-    navigate('drill');
-  };
+  const [showNotation, setShowNotation] = useState(false);
+  const [showLearn, setShowLearn] = useSetting('ui.showLearn');
 
   return (
     <main className="screen screen--scroll learn">
       <p className="learn__intro">{strings.learn.intro}</p>
+
+      <div className="learn__tools">
+        <button
+          type="button"
+          className={showNotation ? 'is-active' : ''}
+          aria-expanded={showNotation}
+          onClick={() => setShowNotation((shown) => !shown)}
+        >
+          {strings.trainer.notation}
+        </button>
+      </div>
+
+      {showNotation ? <NotationReference skin={skin} /> : null}
+
+      {/* Offered before the guide rather than after it: somebody who does not
+          need this page should be able to say so and never see it again, and
+          the way back is one line further down. */}
+      <div className="learn__dismiss">
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={!showLearn}
+            onChange={(event) => setShowLearn(!event.target.checked)}
+          />
+          {strings.learn.hide}
+        </label>
+        <p className="learn__caption learn__caption--left">{strings.learn.hideHint}</p>
+      </div>
 
       {LEARN_STEPS.map((step, index) => (
         <StepSection
@@ -65,9 +89,15 @@ export function LearnScreen() {
           skin={skin}
           triggers={definitions}
           onOpen={(id, setId, group) => setOpenCase({ id, setId, group })}
-          onDrill={drill}
         />
       ))}
+
+      <p className="learn__credit">
+        {strings.learn.source}{' '}
+        <a href="http://badmephisto.com" target="_blank" rel="noopener noreferrer">
+          {strings.learn.sourceLink}
+        </a>
+      </p>
 
       {openCase !== null ? (
         <>
@@ -97,13 +127,12 @@ interface StepSectionProps {
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
   onOpen: (caseId: string, setId: string, group: string) => void;
-  onDrill: (setId: string, caseIds: readonly string[]) => void;
 }
 
-function StepSection({ number, step, skin, triggers, onOpen, onDrill }: StepSectionProps) {
+function StepSection({ number, step, skin, triggers, onOpen }: StepSectionProps) {
   const groups = useSetCases(step.setId);
   // Two steps keep their quicker version in another set altogether, so which
-  // level is on show decides both what is drawn and what gets drilled.
+  // level is on show decides what is drawn.
   const advancedGroups = useSetCases(step.advanced?.setId ?? null);
   const [showAll, setShowAll] = useState(false);
 
@@ -216,15 +245,6 @@ function StepSection({ number, step, skin, triggers, onOpen, onDrill }: StepSect
           )}
         </>
       )}
-
-      <div className="learn__actions">
-        <button
-          type="button"
-          onClick={() => onDrill(setId, shown.map((entry) => entry.algCase.id))}
-        >
-          {strings.learn.drillStep}
-        </button>
-      </div>
     </section>
   );
 }
@@ -251,25 +271,25 @@ interface KeyCaseProps {
 }
 
 /**
- * The one algorithm a step opens with, given the room that says so: wide,
- * beside its cube, and readable at arm's length rather than at the size of a
- * thumbnail in a grid of seven.
+ * The one algorithm a step opens with, given the room that says so: its name
+ * across the top, then the cube and the moves side by side, readable at arm's
+ * length rather than at the size of a thumbnail in a grid of seven.
  */
 function KeyCase({ entry, diagram, skin, triggers, onOpen }: KeyCaseProps) {
   const parsed = entry.algorithm ? parseAlg(entry.algorithm.moves) : null;
 
   return (
     <button type="button" className="case-card learn__key" onClick={onOpen}>
-      <CubeDiagram
-        className="learn__key-diagram"
-        state={entry.state}
-        view={diagram.view}
-        stickering={diagram.stickering}
-        skin={skin}
-        label={null}
-      />
-      <span className="learn__key-body">
-        <span className="case-card__name">{caseTitle(entry.algCase)}</span>
+      <span className="case-card__name">{caseTitle(entry.algCase)}</span>
+      <span className="learn__key-row">
+        <CubeDiagram
+          className="learn__key-diagram"
+          state={entry.state}
+          view={diagram.view}
+          stickering={diagram.stickering}
+          skin={skin}
+          label={null}
+        />
         {parsed?.ok ? <AlgText moves={parsed.moves} triggers={triggers} /> : null}
       </span>
     </button>

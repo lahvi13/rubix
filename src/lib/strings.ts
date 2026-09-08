@@ -159,7 +159,11 @@ export const strings = {
   learn: {
     intro:
       'Seven steps from a scrambled cube to a solved one. Nothing here is quick, and none of it is wasted: a faster method replaces the last four steps and keeps the first three. The pictures stand the cube the way the trainer does — the cross goes on the bottom, and the layer left over is the one on top.',
-    drillStep: 'Drill this step',
+    hide: 'Hide this guide from the menu',
+    hideHint:
+      'It is here for a first cube. Once you can get through one without reading, this takes it out of the menu; Settings puts it back, and nothing it points at moves.',
+    source: 'The method and the order of its steps follow the beginner guide at',
+    sourceLink: 'badmephisto.com',
     loading: 'Loading the cases…',
     crossCaption: 'A finished cross: an edge under every centre whose colour it shares.',
     showCases: 'Every case, one algorithm each',

@@ -18,7 +18,7 @@ describe('LearnScreen', () => {
   /** A case shows a cube; the buttons that work the screen do not. */
   const caseButtons = (section: HTMLElement): HTMLElement[] =>
     within(section)
-      .getAllByRole('button')
+      .queryAllByRole('button')
       .filter((button) => button.querySelector('img') !== null);
 
   const sections = (): HTMLElement[] =>
@@ -101,36 +101,42 @@ describe('LearnScreen', () => {
     expect(await screen.findByRole('dialog', { name: 'Sune' })).toBeInTheDocument();
   });
 
-  it('sends the drill at one step, not at the whole set it comes from', async () => {
-    const user = userEvent.setup();
+  it('sends nobody to the drill', async () => {
     render(<LearnScreen />);
     await settled();
 
-    const step = sectionFor('4Last layer cross');
-    await user.click(within(step).getByRole('button', { name: strings.learn.drillStep }));
-
-    expect(await getSetting('trainer.drillSetId')).toBe('2look-oll');
-    // The first look of two-look OLL, not its seven corner cases as well.
-    expect(await getSetting('trainer.drillCaseIds')).toEqual(['2oll-line', '2oll-l', '2oll-dot']);
-    expect(window.location.hash).toBe('#/drill');
+    // A deliberate absence, so it stays absent: practising one case against a
+    // clock is for somebody who can already solve the cube.
+    expect(screen.queryByText(/drill/i)).not.toBeInTheDocument();
+    expect(window.location.hash).toBe('');
   });
 
-  it('drills the level on show, not the one underneath it', async () => {
+  it('explains the letters without leaving the page', async () => {
     const user = userEvent.setup();
     render(<LearnScreen />);
-    await settled();
 
-    // The corner step's beginner algorithm and its quicker version live in
-    // different sets, so switching level has to change what the drill gets.
-    const step = sectionFor('6Corners home');
-    await user.click(within(step).getByRole('button', { name: strings.learn.drillStep }));
-    expect(await getSetting('trainer.drillSetId')).toBe('beginner');
-    expect(await getSetting('trainer.drillCaseIds')).toEqual(['beg-corners']);
+    await user.click(screen.getByRole('button', { name: strings.trainer.notation }));
 
-    await user.click(within(step).getByRole('button', { name: strings.learn.showCases }));
-    await user.click(within(step).getByRole('button', { name: strings.learn.drillStep }));
+    expect(screen.getByText(strings.trainer.notationHint)).toBeInTheDocument();
+  });
 
-    expect(await getSetting('trainer.drillSetId')).toBe('2look-pll');
-    expect(await getSetting('trainer.drillCaseIds')).toEqual(['2pll-t', '2pll-y']);
+  it('lets a reader who is past it take the page out of the menu', async () => {
+    const user = userEvent.setup();
+    render(<LearnScreen />);
+
+    await user.click(await screen.findByRole('checkbox', { name: strings.learn.hide }));
+
+    await waitFor(async () => {
+      expect(await getSetting('ui.showLearn')).toBe(false);
+    });
+  });
+
+  it('says where the method came from', () => {
+    render(<LearnScreen />);
+
+    expect(screen.getByRole('link', { name: strings.learn.sourceLink })).toHaveAttribute(
+      'href',
+      'http://badmephisto.com',
+    );
   });
 });
