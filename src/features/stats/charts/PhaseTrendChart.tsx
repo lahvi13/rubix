@@ -4,7 +4,7 @@ import type { MethodPhase } from '../../../db/types';
 import { timeAxis } from '../../../domain/stats/axis';
 import type { PhaseTrendPoint } from '../../../domain/stats/phases';
 import { formatAxisMs, formatMs } from '../../../lib/format';
-import { phaseColour } from '../../../lib/phase-colours';
+import { phaseColour, phaseFillColour } from '../../../lib/phase-colours';
 import { strings } from '../../../lib/strings';
 import { AXIS_PROPS, CHART_HEIGHT, TOOLTIP_PROPS } from './chart-theme';
 import { ChartLegend } from './ChartLegend';
@@ -63,10 +63,18 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
   });
 
   const axis = valueAxis(drawn.map(valuesOf), mode);
-  const legend = phases.map((phase, order) => ({
-    label: phase.label,
-    colour: phaseColour(order, phases.length),
-  }));
+  // The swatch is a miniature of the mark it names. A band is drawn as its
+  // fill inside its ink, so the swatch is too — a twelve-pixel square of the
+  // light theme's gold would otherwise be invisible on the card it sits on.
+  const legend = phases.map((phase, order) =>
+    mode === 'separate'
+      ? { label: phase.label, colour: phaseColour(order, phases.length) }
+      : {
+          label: phase.label,
+          colour: phaseFillColour(order, phases.length),
+          edgeColour: phaseColour(order, phases.length),
+        },
+  );
 
   return (
     <>
@@ -125,8 +133,11 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
                 key={phase.key}
                 dataKey={seriesKey(phase.key)}
                 stackId="solve"
+                // The band is the face of the cube and its edge is the ink
+                // of the same phase, which is what keeps two light bands apart
+                // where a shared border would otherwise be the only seam.
                 stroke={phaseColour(order, phases.length)}
-                fill={phaseColour(order, phases.length)}
+                fill={phaseFillColour(order, phases.length)}
                 // Full strength: at 55% the bands went olive against the dark
                 // background while the table beside them stayed bright, and
                 // the two stopped reading as the same phase.

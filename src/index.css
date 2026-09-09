@@ -99,13 +99,48 @@
    * out. The cross is white on a cube and the last layer is yellow, so the
    * ramp reads first-to-last the way the cube does — except that white and
    * yellow are not ink, and light mode has to stand in for both.
+   *
+   * On paper these sit around 4:1 against the card rather than the 4.5:1 the
+   * rest of the text holds. Deliberate, and as far as it goes: yellow is only
+   * yellow when it is light, so the gold that passed 4.5 was the mustard the
+   * bands beside it are not, and a table that disagrees with its own chart
+   * about which colour PLL is teaches the reader nothing. These are figures
+   * next to a name, never prose, and every one of them is also written in
+   * plain --text somewhere on the same screen.
    */
-  --phase-first: light-dark(#4e5566, #e6eaf2);
-  --phase-last: light-dark(#8a6b00, #f2d024);
-  --phase-mid-1: light-dark(#127a44, #25b05a);
-  --phase-mid-2: light-dark(#b45f0a, #e8811c);
-  --phase-mid-3: light-dark(#2359ad, #2f6fd0);
-  --phase-mid-4: light-dark(#b32f2f, #d63a3a);
+  --phase-first: light-dark(#545c6e, #e6eaf2);
+  --phase-last: light-dark(#9a7600, #f2d024);
+  --phase-mid-1: light-dark(#15874a, #25b05a);
+  --phase-mid-2: light-dark(#bd6300, #e8811c);
+  --phase-mid-3: light-dark(#2660bd, #2f6fd0);
+  --phase-mid-4: light-dark(#c33636, #d63a3a);
+
+  /*
+   * The same phases as areas rather than as ink. A phase colour does two jobs
+   * that pull apart on a white page: as ink it carries text — a name in the
+   * averages table, a block with its share written across it — and on paper
+   * that means dark, while a dark fill the size of a chart band comes out as
+   * mud. The light theme's orange read as brown and its gold as mustard.
+   *
+   * So an area gets the cube's own colours, undarkened, in both themes: an OLL
+   * band is the orange face and a PLL band the yellow one. Only the cross has
+   * to differ, because its face is white and a white band on a white card is
+   * not a band; on paper it becomes the pale slate its ink is the shadow of.
+   */
+  --phase-fill-first: light-dark(#b8c0d1, #e6eaf2);
+  --phase-fill-last: #f2d024;
+  --phase-fill-mid-1: #25b05a;
+  --phase-fill-mid-2: #e8811c;
+  --phase-fill-mid-3: #2f6fd0;
+  --phase-fill-mid-4: #d63a3a;
+
+  /*
+   * What a share written inside its own phase's block is set in. The far end
+   * of the page's own ground rather than --bg itself: the ink it lies on is
+   * only just dark enough to carry text, and the few percent between the page
+   * and white is the margin that keeps the number readable.
+   */
+  --phase-share-ink: light-dark(#ffffff, #0f1115);
 
   /*
    * One type scale, in sixteenths of a rem so every step lands on a whole
@@ -1794,13 +1829,16 @@ button[disabled] {
   height: 0.75rem;
   border-radius: var(--radius-sm);
   flex: none;
+  /* Held whether or not a swatch has an edge, so that one legend's squares
+     are all the same size. */
+  border: 1px solid transparent;
 }
 
 /* A series drawn as a mark to beat rather than as data reads as a rule, not
    a block — the same dashes the reference line is drawn with. */
 .chart-legend__swatch.is-reference {
   height: 0;
-  border-top-width: 2px;
+  border-width: 2px 0 0;
   border-top-style: dashed;
   border-radius: 0;
 }
@@ -3461,9 +3499,9 @@ input[type='radio'] {
 
 /*
  * The share is written on top of the phase's own colour, so the text takes
- * the page's background rather than its foreground: the phase colours are
- * light in the dark theme and dark in the light one, and this way the
- * contrast follows them without a second palette.
+ * the page's ground rather than its foreground: the phase colours are light
+ * in the dark theme and dark in the light one, and this way the contrast
+ * follows them without a second palette.
  */
 .phase-bar--shares .phase-bar__segment {
   display: grid;
@@ -3471,7 +3509,7 @@ input[type='radio'] {
   overflow: hidden;
   font-size: var(--text-2xs);
   font-weight: 700;
-  color: var(--bg);
+  color: var(--phase-share-ink);
 }
 
 /*

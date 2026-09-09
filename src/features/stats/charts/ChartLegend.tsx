@@ -1,6 +1,12 @@
 export interface LegendEntry {
   label: string;
   colour: string;
+  /**
+   * The edge the fill is drawn inside, for a series that is an area rather
+   * than a mark: a pale band is told from the card behind it by its outline,
+   * and at swatch size that outline is most of what there is to see.
+   */
+  edgeColour?: string;
   /** A dashed swatch, for a series drawn as a reference rather than as data. */
   isReference?: boolean;
 }
@@ -26,7 +32,9 @@ export function ChartLegend({ entries }: ChartLegendProps) {
               entry.isReference ? 'chart-legend__swatch is-reference' : 'chart-legend__swatch'
             }
             style={
-              entry.isReference ? { borderColor: entry.colour } : { background: entry.colour }
+              entry.isReference
+                ? { borderColor: entry.colour }
+                : { background: entry.colour, borderColor: entry.edgeColour }
             }
           />
           {entry.label}
