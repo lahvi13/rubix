@@ -10,6 +10,7 @@ import { PhaseBar, PhaseRun, usePhases } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../../../hooks/use-scramble';
+import { usePullDown } from '../../../hooks/use-pull-down';
 import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useSetting } from '../../../hooks/use-setting';
 import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
@@ -118,6 +119,8 @@ export function TimerScreen() {
   const handleDelete = useCallback((id: string) => void remove(id), [remove]);
   // Stable, or the memo on SolveList is defeated.
   const handleListScrolled = useCallback(() => setBrowsing(true), []);
+  const handleListCollapsed = useCallback(() => setBrowsing(false), []);
+  const pull = usePullDown(handleListCollapsed);
 
   return (
     <main
@@ -193,6 +196,20 @@ export function TimerScreen() {
       ) : null}
 
       <section className={isEngaged ? 'solves-panel solves-panel--hidden' : 'solves-panel'}>
+        {/* A grip, only while the list is up. The list itself cannot carry the
+            gesture: the browser claims a drag on a scrolling element after a
+            dozen pixels, long before one could be told from a scroll. This is
+            not scrollable, so the whole drag arrives — and it takes a tap as
+            well, for the reader who does not think to pull it. */}
+        {showBrowsing ? (
+          <button
+            type="button"
+            className="solves-panel__grip"
+            aria-label={strings.solve.collapseList}
+            onClick={handleListCollapsed}
+            {...pull}
+          />
+        ) : null}
         <h2 className="solves-panel__title">
           {/* The session name doubles as the way into session switching. */}
           <button

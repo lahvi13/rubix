@@ -50,3 +50,21 @@ export function readSwipe(
   // Dragging leftward pulls the next one in, the way pages move.
   return dx < 0 ? 'next' : 'previous';
 }
+/**
+ * Whether a finished drag was a pull downwards — the gesture for putting a
+ * panel that was dragged open back down again.
+ *
+ * The same thresholds as a sideways swipe, mirrored: far enough to be meant,
+ * and decisively more down than across. No margin at the edges, because the
+ * gesture that lives there is a sideways one.
+ *
+ * Whether the list underneath should have scrolled instead is not asked here.
+ * That depends on where the list is scrolled to, which the caller knows and
+ * this cannot.
+ */
+export function isPullDown(start: SwipePoint, end: SwipePoint): boolean {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  if (dy < MIN_DISTANCE_PX) return false;
+  return dy >= Math.abs(dx) * HORIZONTAL_RATIO;
+}

@@ -740,6 +740,38 @@ button[disabled] {
 .solves-panel .solves {
   min-height: 0;
   overflow-y: auto;
+  /* Scrolled to its end, this list hands nothing on to the page behind it. */
+  overscroll-behavior: contain;
+}
+
+/*
+ * The grip that puts the list away, shown only while it is up. Drawn as the
+ * bar every sheet is dragged by, because that is the gesture it takes — and
+ * touch-action none, or the browser would treat the drag as a scroll and
+ * cancel it, which is exactly what stopped the list itself from carrying it.
+ */
+.solves-panel__grip {
+  position: relative;
+  align-self: center;
+  width: 2.5rem;
+  height: 0.25rem;
+  min-height: 0;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  touch-action: none;
+  cursor: grab;
+}
+
+/* The bar is four pixels tall; the thumb needs a good deal more than that. */
+.solves-panel__grip::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  block-size: 2.5rem;
+  margin-block-start: -1.125rem;
 }
 
 .solves {
@@ -3355,6 +3387,18 @@ input[type='radio'] {
   border-radius: var(--radius-pill);
   background: var(--tint);
   color: var(--text);
+}
+
+/*
+ * With the list up this is the way back out, so it stops being a hint and
+ * becomes a control: bigger, filled and ringed. Closed it can stay quiet,
+ * because the list underneath is already an invitation to scroll it.
+ */
+.solves-panel__more[aria-expanded='true'] {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-color: var(--muted);
+  background: var(--surface-raised);
 }
 
 .solves-panel__more svg {
