@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
+import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { now } from '../../../lib/clock';
 import { formatTime, formatWhen } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -23,6 +24,8 @@ export function HistoryScreen() {
   const tags = useTags();
   const [openId, setOpenId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
+  const [isMoveOpen, setMoveOpen] = useState(false);
+  const moveSolves = useMoveSolves();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const open = history.solves.find((solve) => solve.id === openId) ?? null;
@@ -38,6 +41,11 @@ export function HistoryScreen() {
 
   const deleteSelected = () => {
     void history.removeMany([...selected]);
+    setSelected(new Set());
+  };
+
+  const moveSelected = (sessionId: string, name: string) => {
+    void moveSolves([...selected], sessionId, name);
     setSelected(new Set());
   };
 
@@ -95,23 +103,36 @@ export function HistoryScreen() {
 
       <p className="history__summary">
         {/* The session name is the way into switching, the same as on the
-            timer: it is the one word on the screen that says which solves
-            these are. */}
-        <button
-          type="button"
-          className="session-switch"
-          title={strings.sessions.switchSession}
-          onClick={() => setPickerOpen(true)}
-        >
-          {session?.name ?? ''}
-        </button>{' '}
-        · {history.solves.length} / {history.total}
-        {selected.size > 0 ? (
-          <button type="button" className="is-danger" onClick={deleteSelected}>
-            {strings.history.deleteSelected} ({selected.size})
+            timer. Named rather than left to stand alone: a word on its own
+            says neither that it is a session nor that it can be pressed. */}
+        <span className="summary__session">
+          {strings.sessions.label}
+          <button
+            type="button"
+            className="session-switch"
+            title={strings.sessions.switchSession}
+            onClick={() => setPickerOpen(true)}
+          >
+            {session?.name ?? ''}
           </button>
-        ) : null}
+        </span>
+        · {history.solves.length} / {history.total}
       </p>
+
+      {/* Its own row rather than the summary's: two actions beside the
+          session name and the counts leave nothing readable at a phone's
+          width, and the row is only there while something is selected. */}
+      {selected.size > 0 ? (
+        <div className="history__selection">
+          <span>{strings.history.selected(selected.size)}</span>
+          <button type="button" onClick={() => setMoveOpen(true)}>
+            {strings.history.moveTo}
+          </button>
+          <button type="button" className="is-danger" onClick={deleteSelected}>
+            {strings.history.deleteSelected}
+          </button>
+        </div>
+      ) : null}
 
       {history.solves.length === 0 ? (
         <p className="solves__empty">{strings.history.empty}</p>
@@ -152,6 +173,22 @@ export function HistoryScreen() {
             onClick={() => setPickerOpen(false)}
           />
           <SessionPicker onClose={() => setPickerOpen(false)} />
+        </>
+      ) : null}
+
+      {isMoveOpen ? (
+        <>
+          <button
+            type="button"
+            className="app__scrim"
+            aria-label={strings.history.close}
+            onClick={() => setMoveOpen(false)}
+          />
+          <SessionPicker
+            title={strings.history.moveTitle}
+            onPick={moveSelected}
+            onClose={() => setMoveOpen(false)}
+          />
         </>
       ) : null}
     </main>

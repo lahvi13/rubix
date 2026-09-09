@@ -70,14 +70,17 @@ export function StatsScreen() {
     <main className="screen screen--scroll">
       <div className="stats">
         <p className="history__summary">
-          <button
-            type="button"
-            className="session-switch"
-            title={strings.sessions.switchSession}
-            onClick={() => setPickerOpen(true)}
-          >
-            {session?.name}
-          </button>{' '}
+          <span className="summary__session">
+            {strings.sessions.label}
+            <button
+              type="button"
+              className="session-switch"
+              title={strings.sessions.switchSession}
+              onClick={() => setPickerOpen(true)}
+            >
+              {session?.name}
+            </button>
+          </span>
           · {stats.solveCount} {strings.stats.solves}
         </p>
 

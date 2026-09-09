@@ -81,6 +81,8 @@ export const strings = {
     action: 'Undo',
     deleted: (count: number) => (count === 1 ? 'Solve deleted.' : `${count} solves deleted.`),
     restoring: 'Putting the solves back',
+    moved: (count: number, session: string) =>
+      count === 1 ? `Solve moved to ${session}.` : `${count} solves moved to ${session}.`,
   },
   nav: {
     timer: 'Timer',
@@ -139,7 +141,10 @@ export const strings = {
     inspection: 'inspection',
     edited: 'edited',
     select: 'Select solve',
-    deleteSelected: 'Delete selected',
+    selected: (count: number) => `${count} selected`,
+    deleteSelected: 'Delete',
+    moveTo: 'Move to…',
+    moveTitle: 'Move to session',
     filterBy: 'Filter by',
     penaltyLabel: 'Penalty',
     starSolve: 'Star solve',
@@ -147,6 +152,8 @@ export const strings = {
   },
   sessions: {
     title: 'Sessions',
+    /** Written before the name, so the name reads as a session and as a button. */
+    label: 'Session',
     create: 'Create',
     switchSession: 'Switch session',
     /** The one being timed into. A label on the row, not a button. */
@@ -156,6 +163,8 @@ export const strings = {
     archive: 'Archive',
     restore: 'Restore',
     showArchived: 'Show archived',
+    /** Shown when a destination is asked for and this is the only session. */
+    noOther: 'There is no other session.',
     namePlaceholder: 'New session name',
   },
   learn: {

@@ -216,6 +216,32 @@ export async function deleteSolves(ids: string[]): Promise<Solve[]> {
 }
 
 /**
+ * Moves solves into another session, and reports them as they were so the move
+ * can be taken back. Solves left in the wrong session are a run of them rather
+ * than one, and a run put back one at a time is not an undo.
+ *
+ * `editedAt` stays untouched: it says the solve's own numbers were adjusted,
+ * and which session a solve is filed under is not one of them.
+ */
+export async function moveSolves(ids: readonly string[], sessionId: string): Promise<Solve[]> {
+  if (ids.length === 0) return [];
+  const timestamp = now();
+
+  return db.transaction('rw', db.solves, async () => {
+    const found = (await db.solves.bulkGet([...ids])).filter((solve) => solve !== undefined);
+    // A solve already in the destination is not a move, and reporting it as
+    // one would offer an undo that puts it where it already is.
+    const moving = found.filter((solve) => solve.sessionId !== sessionId);
+    if (moving.length === 0) return [];
+
+    await db.solves.bulkPut(
+      moving.map((solve) => ({ ...solve, sessionId, updatedAt: timestamp })),
+    );
+    return moving;
+  });
+}
+
+/**
  * Puts deleted solves back, tombstones included — a row that returns while its
  * tombstone stays behind is a row the next import deletes again.
  *

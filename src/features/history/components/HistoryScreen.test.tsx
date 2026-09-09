@@ -2,8 +2,16 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../../db/schema';
-import { getOrCreateActiveSession } from '../../../db/repositories/session-repository';
-import { addSolve, updateSolve } from '../../../db/repositories/solve-repository';
+import {
+  activateSession,
+  createSession,
+  getOrCreateActiveSession,
+} from '../../../db/repositories/session-repository';
+import {
+  addSolve,
+  listSolvesChronological,
+  updateSolve,
+} from '../../../db/repositories/solve-repository';
 import { HistoryScreen } from './HistoryScreen';
 
 async function seedSolve(sessionId: string, rawMs: number) {
@@ -35,6 +43,26 @@ describe('HistoryScreen', () => {
     await user.click(await screen.findByRole('button', { name: 'Default' }));
 
     expect(await screen.findByRole('dialog', { name: 'Sessions' })).toBeInTheDocument();
+  });
+
+  it('moves the selected solves into another session', async () => {
+    const other = await createSession('Evening', '333', 'freestyle');
+    // createSession activates what it creates; the history reads the active one.
+    await activateSession(sessionId);
+    const solve = await seedSolve(sessionId, 12_340);
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await user.click(await screen.findByLabelText('Select solve'));
+    await user.click(screen.getByRole('button', { name: 'Move to…' }));
+    await user.click(await screen.findByRole('button', { name: /Evening/ }));
+
+    await waitFor(async () => {
+      expect(await listSolvesChronological(other.id)).toHaveLength(1);
+    });
+    // Moved, not copied, and not silently switched to the destination either.
+    expect(await listSolvesChronological(sessionId)).toHaveLength(0);
+    expect(solve.sessionId).toBe(sessionId);
   });
 
   it('lists the session solves newest first', async () => {

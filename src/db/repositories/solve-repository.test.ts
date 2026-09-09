@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
-import { getOrCreateActiveSession } from './session-repository';
+import { createSession, getOrCreateActiveSession } from './session-repository';
 import {
   addSolve,
   deleteSolve,
@@ -9,6 +9,7 @@ import {
   listRecentSolves,
   listSolves,
   listSolvesChronological,
+  moveSolves,
   restoreSolves,
   setPenalty,
   updateSolve,
@@ -341,5 +342,53 @@ describe('solve repository splits', () => {
     await updateSolve(solve.id, { penalty: 'plus2' });
 
     expect((await db.solves.get(solve.id))?.splits).toHaveLength(1);
+  });
+});
+describe('moving solves between sessions', () => {
+  let sessionId: string;
+
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    sessionId = (await getOrCreateActiveSession('333', 'freestyle')).id;
+  });
+
+  it('files the solves under the destination and reports them as they were', async () => {
+    const other = await createSession('Evening', '333', 'freestyle');
+    const first = await addSolve(await makeSolve(sessionId, 12_340));
+    const second = await addSolve(await makeSolve(sessionId, 9990));
+
+    const previous = await moveSolves([first.id, second.id], other.id);
+
+    expect(previous.map((solve) => solve.sessionId)).toEqual([sessionId, sessionId]);
+    expect(await listSolvesChronological(other.id)).toHaveLength(2);
+    expect(await listSolvesChronological(sessionId)).toHaveLength(0);
+  });
+
+  it('is taken back by putting the reported rows back', async () => {
+    const other = await createSession('Evening', '333', 'freestyle');
+    const solve = await addSolve(await makeSolve(sessionId, 12_340));
+
+    const previous = await moveSolves([solve.id], other.id);
+    await restoreSolves(previous);
+
+    expect(await listSolvesChronological(sessionId)).toHaveLength(1);
+    expect(await listSolvesChronological(other.id)).toHaveLength(0);
+  });
+
+  // Otherwise the undo bar offers to put a solve back where it already is.
+  it('reports nothing for a solve already in the destination', async () => {
+    const solve = await addSolve(await makeSolve(sessionId, 12_340));
+
+    expect(await moveSolves([solve.id], sessionId)).toEqual([]);
+  });
+
+  // A move is not an adjustment of the solve; the detail must not claim one.
+  it('leaves editedAt alone', async () => {
+    const other = await createSession('Evening', '333', 'freestyle');
+    const solve = await addSolve(await makeSolve(sessionId, 12_340));
+
+    await moveSolves([solve.id], other.id);
+
+    expect((await db.solves.get(solve.id))?.editedAt).toBeNull();
   });
 });

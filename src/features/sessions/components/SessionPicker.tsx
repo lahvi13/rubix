@@ -10,6 +10,15 @@ const MODE = 'freestyle';
 
 interface SessionPickerProps {
   onClose: () => void;
+  /**
+   * Given, the sheet chooses a session instead of switching to one: it hands
+   * the id back and leaves the active session alone. Without it, choosing and
+   * switching are the same act — which is the point everywhere else, and
+   * exactly wrong when the session being named is a destination.
+   */
+  onPick?: (sessionId: string, name: string) => void;
+  /** What the choice is for. The sheet has no idea, so the caller says. */
+  title?: string;
 }
 
 /**
@@ -19,14 +28,22 @@ interface SessionPickerProps {
  * one being timed into. Anything that changes which session that is closes the
  * sheet: the answer to why it was opened is on the screen underneath.
  */
-export function SessionPicker({ onClose }: SessionPickerProps) {
+export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
+  const isChoosing = onPick !== undefined;
   const [includeArchived, setIncludeArchived] = useState(false);
-  const { sessions, create, rename, activate, setArchived } = useSessions(includeArchived);
+  const { sessions, create, rename, activate, setArchived } = useSessions(
+    isChoosing ? false : includeArchived,
+  );
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
   useKeyCapture(true, onClose);
+
+  // A destination is somewhere else by definition. The solves on offer come
+  // from the screen underneath, which shows the active session and nothing
+  // else, so the active one is the source rather than a place to put them.
+  const listed = isChoosing ? sessions.filter((session) => session.isActive === 0) : sessions;
 
   const submitNew = async () => {
     const name = newName.trim();
@@ -42,13 +59,18 @@ export function SessionPicker({ onClose }: SessionPickerProps) {
     setEditingId(null);
   };
 
-  const pick = async (id: string) => {
-    await activate(id);
+  const choose = async (id: string, name: string) => {
+    if (onPick) onPick(id, name);
+    else await activate(id);
     onClose();
   };
 
   return (
-    <aside className="detail session-picker" role="dialog" aria-label={strings.sessions.title}>
+    <aside
+      className="detail session-picker"
+      role="dialog"
+      aria-label={title ?? strings.sessions.title}
+    >
       <div className="detail__header detail__header--bare">
         <button
           type="button"
@@ -60,10 +82,12 @@ export function SessionPicker({ onClose }: SessionPickerProps) {
         </button>
       </div>
 
-      <h2 className="session-picker__title">{strings.sessions.title}</h2>
+      <h2 className="session-picker__title">{title ?? strings.sessions.title}</h2>
+
+      {listed.length === 0 ? <p className="detail__hint">{strings.sessions.noOther}</p> : null}
 
       <ul className="sessions">
-        {sessions.map((session) => (
+        {listed.map((session) => (
           <li
             key={session.id}
             className={session.isActive === 1 ? 'session session--active' : 'session'}
@@ -85,7 +109,7 @@ export function SessionPicker({ onClose }: SessionPickerProps) {
                 type="button"
                 className="session__name"
                 aria-current={session.isActive === 1 ? 'true' : undefined}
-                onClick={() => void pick(session.id)}
+                onClick={() => void choose(session.id, session.name)}
               >
                 <span className="session__label">
                   {session.name}
@@ -99,51 +123,60 @@ export function SessionPicker({ onClose }: SessionPickerProps) {
               </button>
             )}
 
-            <div className="session__actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingId(session.id);
-                  setEditingName(session.name);
-                }}
-              >
-                {strings.sessions.rename}
-              </button>
-              <button
-                type="button"
-                onClick={() => void setArchived(session.id, session.isArchived === 0)}
-              >
-                {session.isArchived === 1 ? strings.sessions.restore : strings.sessions.archive}
-              </button>
-            </div>
+            {/* Renaming and archiving belong to keeping sessions, not to
+                choosing one: a sheet asking where solves should go offers
+                nothing that changes the answer. */}
+            {isChoosing ? null : (
+              <div className="session__actions">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingId(session.id);
+                    setEditingName(session.name);
+                  }}
+                >
+                  {strings.sessions.rename}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void setArchived(session.id, session.isArchived === 0)}
+                >
+                  {session.isArchived === 1 ? strings.sessions.restore : strings.sessions.archive}
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ul>
 
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={includeArchived}
-          onChange={(event) => setIncludeArchived(event.target.checked)}
-        />
-        {strings.sessions.showArchived}
-      </label>
+      {isChoosing ? null : (
+        <>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={includeArchived}
+              onChange={(event) => setIncludeArchived(event.target.checked)}
+            />
+            {strings.sessions.showArchived}
+          </label>
 
-      <form
-        className="session-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void submitNew();
-        }}
-      >
-        <input
-          value={newName}
-          onChange={(event) => setNewName(event.target.value)}
-          placeholder={strings.sessions.namePlaceholder}
-          aria-label={strings.sessions.namePlaceholder}
-        />
-        <button type="submit">{strings.sessions.create}</button>
-      </form>
+          <form
+            className="session-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submitNew();
+            }}
+          >
+            <input
+              value={newName}
+              onChange={(event) => setNewName(event.target.value)}
+              placeholder={strings.sessions.namePlaceholder}
+              aria-label={strings.sessions.namePlaceholder}
+            />
+            <button type="submit">{strings.sessions.create}</button>
+          </form>
+        </>
+      )}
     </aside>
   );
 }

@@ -923,9 +923,20 @@ button[disabled] {
   color: var(--muted);
 }
 
+/* Only there while something is selected, so it may take a row of its own
+   rather than squeeze in beside the counts. */
+.history__selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
 .history {
-  list-style: none;
-  margin: 0;
+  list-style: none;  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -1304,15 +1315,26 @@ button[disabled] {
   text-underline-offset: 0.25em;
 }
 
+/* The label and the name are one phrase, so they keep normal word spacing
+   rather than the gap the summary puts between its parts. */
+.summary__session {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
 /* The session's name is the way into switching it, on the history and the
    stats the same as on the timer, and drawn the same way. */
 .session-switch {
   background: none;
   border: none;
-  color: inherit;
   font: inherit;
   padding: 0;
   cursor: pointer;
+  /* Bigger and at full strength against the muted label beside it: this is
+     what the screen is about, and the summary's own size read as a caption. */
+  font-size: var(--text-xl);
+  color: var(--text);
   text-decoration: underline dotted;
   text-underline-offset: 0.25em;
 }
