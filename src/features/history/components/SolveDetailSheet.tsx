@@ -40,18 +40,22 @@ export function SolveDetailSheet({
 
   if (!solve) return null;
 
+  // Counted from the solve on screen rather than the one asked for: the query
+  // holds the previous row for a tick after the id changes, and reading the
+  // id would have the count say "2 of 2" over the first one's numbers.
+  //
   // Stepping stops at the end of what the screen has loaded rather than
   // fetching more: a list that grows under a swipe has no end to reach.
-  const at = solveIds.indexOf(solveId);
+  const at = solveIds.indexOf(solve.id);
   const paging =
     at < 0
       ? undefined
       : {
           position: at + 1,
           total: solveIds.length,
-          onPrevious: at > 0 ? () => onOpen(solveIds[at - 1] ?? solveId) : null,
+          onPrevious: at > 0 ? () => onOpen(solveIds[at - 1] ?? solve.id) : null,
           onNext:
-            at < solveIds.length - 1 ? () => onOpen(solveIds[at + 1] ?? solveId) : null,
+            at < solveIds.length - 1 ? () => onOpen(solveIds[at + 1] ?? solve.id) : null,
         };
 
   // The sheet turns into the choice rather than stacking one on top of it: two
