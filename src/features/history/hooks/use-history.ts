@@ -3,20 +3,17 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import type { Puzzle, Solve } from '../../../db/types';
 import {
   countSolves,
-  getGlobalPbSolve,
   listMatchingSolves,
-  listSolvesChronological,
   updateSolve,
   type SolveFilters,
   type SolvePatch,
 } from '../../../db/repositories/solve-repository';
 import { finalMs } from '../../../domain/solve/final-time';
-import { bestsOf, bestPhasesIn, type Bests } from '../../../domain/stats/phases';
+import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { useRemoveSolves } from '../../../hooks/use-remove-solves';
+import { useSessionRecords } from '../../../hooks/use-session-records';
 
 const PAGE_SIZE = 50;
-
-const NO_BESTS: Bests = { totalMs: null, phaseMs: [] };
 
 export interface HistoryView {
   solves: Solve[];
@@ -53,25 +50,16 @@ export function useHistory(
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [filters, setFilters] = useState<SolveFilters>({});
 
+  const { bests, globalPbMs } = useSessionRecords(sessionId, puzzle, phaseKeys);
+
   const result = useLiveQuery(async () => {
-    if (!sessionId) return { matched: [], total: 0, all: [] };
-    const [matched, total, all] = await Promise.all([
+    if (!sessionId) return { matched: [], total: 0 };
+    const [matched, total] = await Promise.all([
       listMatchingSolves(sessionId, filters),
       countSolves(sessionId),
-      listSolvesChronological(sessionId),
     ]);
-    return { matched, total, all };
+    return { matched, total };
   }, [sessionId, filters]);
-
-  // Its own query: the best there has ever been is over every session of the
-  // puzzle, so no filter on this one can move it, and re-reading every solve
-  // each time a filter is tapped would be work for an answer already known.
-  const pb = useLiveQuery(() => getGlobalPbSolve(puzzle), [puzzle]);
-
-  const bests = useMemo(
-    () => (result === undefined ? NO_BESTS : bestsOf(result.all, phaseKeys)),
-    [result, phaseKeys],
-  );
 
   // The record filter is applied here rather than in the query: what counts as
   // a record is worked out from the session's solves, which the query has no
@@ -93,7 +81,7 @@ export function useHistory(
     hasMore: matched.length > limit,
     filters,
     bests,
-    globalPbMs: pb === undefined || pb === null ? null : finalMs(pb),
+    globalPbMs,
     setFilters: (next) => {
       setFilters(next);
       setLimit(PAGE_SIZE);

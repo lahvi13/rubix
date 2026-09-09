@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { Puzzle } from '../../../db/types';
 import {
-  getGlobalPbSingle,
+  getGlobalPbSolve,
   listSolvesChronological,
 } from '../../../db/repositories/solve-repository';
 import { getSetting, SETTING_DEFAULTS } from '../../../db/repositories/settings-repository';
@@ -51,8 +51,12 @@ export interface SessionStats {
   solveCount: number;
   windows: WindowStats[];
   sessionBestMs: number | null;
+  /** The solve behind it, so the number can be opened rather than only read. */
+  sessionBestSolveId: string | null;
   /** Best single across every freestyle session of the puzzle. */
   globalPbMs: number | null;
+  /** Likewise, and it may well belong to another session. */
+  globalPbSolveId: string | null;
   meanMs: number | null;
   medianMs: number | null;
   stdDevMs: number | null;
@@ -89,7 +93,7 @@ export function useSessionStats(
     async () => (sessionId ? listSolvesChronological(sessionId) : []),
     [sessionId],
   );
-  const globalPbMs = useLiveQuery(() => getGlobalPbSingle(puzzle), [puzzle]);
+  const globalPb = useLiveQuery(() => getGlobalPbSolve(puzzle), [puzzle]);
   const chartWindow = useLiveQuery(() => getSetting('stats.chartWindow'), []);
 
   return useMemo(() => {
@@ -107,6 +111,15 @@ export function useSessionStats(
     const firstWithAverage = windowed.findIndex((point) => point.aoMs !== null);
     const trend = firstWithAverage < 0 ? [] : windowed.slice(firstWithAverage);
 
+    const globalPbMs = globalPb === undefined || globalPb === null ? null : finalMs(globalPb);
+    const sessionBestMs = pbSingle(finals);
+    // The row behind the number. Ties go to the earliest, which is the one
+    // that set the record rather than one that matched it later.
+    const sessionBest =
+      sessionBestMs === null
+        ? null
+        : (solves.find((solve) => finalMs(solve) === sessionBestMs) ?? null);
+
     const currentAo12 = currentAverage(finals, TREND_WINDOW);
     const bestAo12 = bestAverage(finals, TREND_WINDOW);
 
@@ -117,8 +130,10 @@ export function useSessionStats(
         current: currentAverage(finals, n),
         best: bestAverage(finals, n),
       })),
-      sessionBestMs: pbSingle(finals),
-      globalPbMs: globalPbMs ?? null,
+      sessionBestMs,
+      sessionBestSolveId: sessionBest?.id ?? null,
+      globalPbMs,
+      globalPbSolveId: globalPb?.id ?? null,
       meanMs: sessionMean(finals),
       medianMs: sessionMedian(finals),
       stdDevMs: standardDeviation(finals),
@@ -133,5 +148,5 @@ export function useSessionStats(
       measuredCount: measuredSolves(solves).length,
       phaseTrend: phaseTrend(solves, phaseKeys, window),
     };
-  }, [solves, globalPbMs, chartWindow, phaseKeys]);
+  }, [solves, globalPb, chartWindow, phaseKeys]);
 }

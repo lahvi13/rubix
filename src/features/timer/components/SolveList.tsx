@@ -2,6 +2,7 @@ import { memo } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { SolvePhases } from '../../splits';
 import { finalMs } from '../../../domain/solve/final-time';
+import type { Bests } from '../../../domain/stats/phases';
 import { togglePenalty } from '../../../domain/solve/penalty';
 import { now } from '../../../lib/clock';
 import { formatTime, formatWhen } from '../../../lib/format';
@@ -23,6 +24,13 @@ interface SolveListProps {
   onOpen: (id: string) => void;
   /** The session's method, so a timed solve can show the shape of its phases. */
   phases: readonly MethodPhase[];
+  /**
+   * The session's records, read from the whole of it. This list is the latest
+   * fifty, and the best of those is a fact about the list rather than about
+   * the solve — which is not what a star should mean here or anywhere else.
+   */
+  bests: Bests;
+  globalPbMs: number | null;
   onChangePenalty: (id: string, penalty: Penalty) => void;
   onDelete: (id: string) => void;
 }
@@ -36,6 +44,8 @@ interface SolveListProps {
 export const SolveList = memo(function SolveList({
   solves,
   phases,
+  bests,
+  globalPbMs,
   onScrolled,
   onOpen,
   onChangePenalty,
@@ -59,11 +69,12 @@ export const SolveList = memo(function SolveList({
         <li key={solve.id} className="solves__row">
           <button type="button" className="solves__open" onClick={() => onOpen(solve.id)}>
             <span className="solves__index">{solves.length - index}.</span>
-            <span className="solves__time">{formatTime(finalMs(solve))}</span>
+            <SolveTime solve={solve} bests={bests} globalPbMs={globalPbMs} />
             <span className="solves__meta">
               {solve.penalty !== 'none' && solve.penaltySource === 'auto'
                 ? strings.solve.autoPenalty
                 : formatWhen(solve.createdAt, at)}
+              {solve.starred === 1 ? ` ${strings.history.mark}` : ''}
             </span>
           </button>
           {index === 0 ? (
@@ -95,3 +106,35 @@ export const SolveList = memo(function SolveList({
     </ol>
   );
 });
+
+interface SolveTimeProps {
+  solve: Solve;
+  bests: Bests;
+  globalPbMs: number | null;
+}
+
+/** The time, wearing whichever record it holds — the history's tiers exactly. */
+function SolveTime({ solve, bests, globalPbMs }: SolveTimeProps) {
+  const resultMs = finalMs(solve);
+  const isBest = resultMs !== null && resultMs === bests.totalMs;
+  const isPb = resultMs !== null && resultMs === globalPbMs;
+
+  return (
+    <span
+      className={
+        isPb ? 'solves__time is-best is-record' : isBest ? 'solves__time is-best' : 'solves__time'
+      }
+    >
+      {formatTime(resultMs)}
+      {isPb || isBest ? (
+        <span
+          className={isPb ? 'history__best is-record' : 'history__best'}
+          role="img"
+          aria-label={isPb ? strings.history.personalBest : strings.history.sessionBest}
+        >
+          {strings.history.star}
+        </span>
+      ) : null}
+    </span>
+  );
+}

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { MethodPhase } from '../../../db/types';
+import { getSession } from '../../../db/repositories/session-repository';
 import { getSolve, updateSolve, type SolvePatch } from '../../../db/repositories/solve-repository';
 import { useMoveSolves } from '../../../hooks/use-move-solves';
+import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useRemoveSolves } from '../../../hooks/use-remove-solves';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
@@ -33,6 +35,18 @@ export function SolveDetailSheet({
   onClose,
 }: SolveDetailSheetProps) {
   const solve = useLiveQuery(() => getSolve(solveId), [solveId]);
+  // Read from the solve's own session, which is not always the one on screen:
+  // the stats offer the all-time best, and that may have been set elsewhere.
+  const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
+  const { bests, globalPbMs } = useSessionRecords(
+    solve?.sessionId ?? null,
+    solve?.puzzle ?? '333',
+    phaseKeys,
+  );
+  const session = useLiveQuery(
+    async () => (solve ? ((await getSession(solve.sessionId)) ?? null) : null),
+    [solve?.sessionId],
+  );
   const tags = useTags();
   const removeSolves = useRemoveSolves();
   const moveSolves = useMoveSolves();
@@ -93,6 +107,9 @@ export function SolveDetailSheet({
       }}
       onMove={() => setMoving(true)}
       paging={paging}
+      bests={bests}
+      globalPbMs={globalPbMs}
+      sessionName={session?.name ?? null}
       onClose={onClose}
     />
   );

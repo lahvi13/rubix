@@ -39,6 +39,7 @@ export const strings = {
     releaseToFinish: 'Release to finish',
   },
   splits: {
+    bestPhase: (phase: string) => `Best ${phase} of this session`,
     title: 'Phases',
     phaseAverages: 'Phase averages',
     phaseTrend: 'Phase trend',

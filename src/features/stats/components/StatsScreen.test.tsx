@@ -1,7 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
-import { getOrCreateActiveSession } from '../../../db/repositories/session-repository';
+import {
+  activateSession,
+  createSession,
+  getActiveSession,
+  getOrCreateActiveSession,
+} from '../../../db/repositories/session-repository';
 import { addSolve, updateSolve } from '../../../db/repositories/solve-repository';
 import { StatsScreen } from './StatsScreen';
 
@@ -77,4 +83,35 @@ describe('StatsScreen', () => {
 
     expect(await screen.findByTestId('trend-chart')).toBeInTheDocument();
   });
+  it('opens the solve behind a best without moving the reader elsewhere', async () => {
+    // The all-time best belongs to another session; the one being read holds
+    // only its own best.
+    const elsewhere = await createSession('Evening', '333', 'freestyle');
+    await seedSolve(elsewhere.id, 5000);
+    await activateSession(sessionId);
+    await seedSolve(sessionId, 12_000);
+    const user = userEvent.setup();
+
+    render(<StatsScreen />);
+    await screen.findByText('5.00');
+
+    await user.click(screen.getByRole('button', { name: /PB single/i }));
+
+    const sheet = await screen.findByRole('dialog');
+    // It says which session it came from, since it is not this one. The name
+    // is a second read, so it lands a tick after the sheet itself.
+    await waitFor(() => {
+      expect(sheet.textContent).toContain('Evening');
+    });
+    // And reading it did not move anybody: the active session is untouched.
+    expect((await getActiveSession('333', 'freestyle'))?.id).toBe(sessionId);
+  });
+
+  it('leaves a best that has no solve behind it unpressable', async () => {
+    render(<StatsScreen />);
+
+    await screen.findByText('No solves in this session yet.');
+    expect(screen.queryByRole('button', { name: /PB single/i })).not.toBeInTheDocument();
+  });
+
 });

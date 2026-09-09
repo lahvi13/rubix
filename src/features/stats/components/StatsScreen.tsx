@@ -6,12 +6,15 @@ import {
 import { useSetting } from '../../../hooks/use-setting';
 import { formatAverage, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
+import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseAverages, usePhases } from '../../splits';
 import { useSessionStats } from '../hooks/use-session-stats';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
+/** Opened at a number rather than at a place in a list, so nothing to step. */
+const NO_SOLVES: readonly string[] = [];
 
 // Recharts is by far the biggest dependency after cubing.js; keep it out of
 // the timer's chunk and load it only when someone actually opens this screen.
@@ -29,17 +32,29 @@ interface StatCardProps {
   label: string;
   value: string;
   highlight?: boolean;
+  /** Given, the card opens the solve behind the number. */
+  onOpen?: () => void;
   /** A second, smaller line — two rates that belong together in one card. */
   detail?: ReactNode;
 }
 
-function StatCard({ label, value, highlight = false, detail }: StatCardProps) {
-  return (
-    <div className={highlight ? 'stat-card stat-card--highlight' : 'stat-card'}>
+function StatCard({ label, value, highlight = false, onOpen, detail }: StatCardProps) {
+  const className = highlight ? 'stat-card stat-card--highlight' : 'stat-card';
+  const body = (
+    <>
       <span className="stat-card__label">{label}</span>
       <span className="stat-card__value">{value}</span>
       {detail === undefined ? null : <span className="stat-card__detail">{detail}</span>}
-    </div>
+    </>
+  );
+
+  // A card that leads somewhere is a button; one that only states a number
+  // stays a plain card, so nothing offers a press that does nothing.
+  if (onOpen === undefined) return <div className={className}>{body}</div>;
+  return (
+    <button type="button" className={`${className} stat-card--open`} onClick={onOpen}>
+      {body}
+    </button>
   );
 }
 
@@ -63,6 +78,7 @@ export function StatsScreen() {
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
   const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
   const [isPickerOpen, setPickerOpen] = useState(false);
+  const [openSolveId, setOpenSolveId] = useState<string | null>(null);
 
   if (stats === null) return <main className="screen screen--scroll" />;
 
@@ -89,14 +105,28 @@ export function StatsScreen() {
         ) : (
           <>
             <div className="stat-cards">
+              {/* Both open the solve behind them, and neither switches session:
+                  the all-time best is often another session's, and being moved
+                  out of the one being read to see it would be a worse answer
+                  than the number on its own. */}
               <StatCard
                 label={strings.stats.pbSingle}
                 value={formatAverage(stats.globalPbMs)}
                 highlight
+                onOpen={
+                  stats.globalPbSolveId === null
+                    ? undefined
+                    : () => setOpenSolveId(stats.globalPbSolveId)
+                }
               />
               <StatCard
                 label={strings.stats.sessionBest}
                 value={formatAverage(stats.sessionBestMs)}
+                onOpen={
+                  stats.sessionBestSolveId === null
+                    ? undefined
+                    : () => setOpenSolveId(stats.sessionBestSolveId)
+                }
               />
               <StatCard label={strings.stats.mean} value={formatAverage(stats.meanMs)} />
               <StatCard label={strings.stats.median} value={formatAverage(stats.medianMs)} />
@@ -197,6 +227,16 @@ export function StatsScreen() {
           </>
         )}
       </div>
+
+      {openSolveId === null ? null : (
+        <SolveDetailSheet
+          solveId={openSolveId}
+          phases={phases}
+          solveIds={NO_SOLVES}
+          onOpen={setOpenSolveId}
+          onClose={() => setOpenSolveId(null)}
+        />
+      )}
 
       {isPickerOpen ? (
         <SessionPicker onClose={() => setPickerOpen(false)} />

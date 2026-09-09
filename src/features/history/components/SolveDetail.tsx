@@ -3,6 +3,7 @@ import { Sheet, type SheetPaging } from '../../../components/Sheet';
 import type { MethodPhase, Solve, Tag } from '../../../db/types';
 import type { SolvePatch } from '../../../db/repositories/solve-repository';
 import { finalMs } from '../../../domain/solve/final-time';
+import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { parseTimeInput } from '../../../domain/solve/parse-time';
 import { togglePenalty } from '../../../domain/solve/penalty';
 import { formatDateTime, formatMs, formatTime } from '../../../lib/format';
@@ -19,6 +20,11 @@ interface SolveDetailProps {
   /** Opens the choice of where to file it; the sheet handles the rest. */
   onMove: () => void;
   paging?: SheetPaging;
+  /** The session's records, so the solve can say which of them it holds. */
+  bests: Bests;
+  globalPbMs: number | null;
+  /** Which session it belongs to — it need not be the one being read. */
+  sessionName: string | null;
   onClose: () => void;
 }
 
@@ -31,12 +37,20 @@ export function SolveDetail({
   onDelete,
   onMove,
   paging,
+  bests,
+  globalPbMs,
+  sessionName,
   onClose,
 }: SolveDetailProps) {
   const [timeInput, setTimeInput] = useState(() => formatMs(solve.rawMs));
   const [timeError, setTimeError] = useState(false);
   const [note, setNote] = useState(solve.note ?? '');
   const [newTag, setNewTag] = useState('');
+
+  const resultMs = finalMs(solve);
+  const isBest = resultMs !== null && resultMs === bests.totalMs;
+  const isPb = resultMs !== null && resultMs === globalPbMs;
+  const bestPhases = bestPhasesIn(solve, phases.map((phase) => phase.key), bests);
 
   const commitTime = () => {
     const parsed = parseTimeInput(timeInput);
@@ -66,7 +80,22 @@ export function SolveDetail({
 
   return (
     <Sheet label={strings.history.detailTitle} paging={paging} onClose={onClose}>
-      <span className="detail__result">{formatTime(finalMs(solve))}</span>
+      <span
+        className={
+          isPb ? 'detail__result is-best is-record' : isBest ? 'detail__result is-best' : 'detail__result'
+        }
+      >
+        {formatTime(resultMs)}
+        {isPb || isBest ? (
+          <span
+            className={isPb ? 'history__best is-record' : 'history__best'}
+            role="img"
+            aria-label={isPb ? strings.history.personalBest : strings.history.sessionBest}
+          >
+            {strings.history.star}
+          </span>
+        ) : null}
+      </span>
 
       <p className="detail__scramble">{solve.scramble}</p>
 
@@ -122,6 +151,7 @@ export function SolveDetail({
           <SplitEditor
             solve={solve}
             phases={phases}
+            bestPhases={bestPhases}
             onChange={(splits) =>
               onEdit(solve.id, { splits, phaseKeys: phases.map((phase) => phase.key) })
             }
@@ -176,6 +206,9 @@ export function SolveDetail({
 
       <footer className="detail__footer">
         <span className="detail__meta">
+          {/* Which session, because a solve can be opened from the stats and
+              that one may well have been set in another. */}
+          {sessionName === null ? '' : `${sessionName} · `}
           {formatDateTime(solve.createdAt)}
           {solve.inspectionMs === null
             ? ''

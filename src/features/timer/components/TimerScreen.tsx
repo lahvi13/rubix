@@ -10,6 +10,7 @@ import { PhaseBar, PhaseRun, usePhases } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../../../hooks/use-scramble';
+import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useSetting } from '../../../hooks/use-setting';
 import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
 import { ScramblePanel } from './ScramblePanel';
@@ -89,6 +90,7 @@ export function TimerScreen() {
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
   const openableSolves = useMemo(() => solves.map((solve) => solve.id), [solves]);
+  const records = useSessionRecords(session?.id ?? null, PUZZLE, phaseKeys);
   const showBrowsing = isBrowsing && status === 'idle';
 
   // Derived, not synchronized: the result stays up only while the machine is
@@ -232,6 +234,8 @@ export function TimerScreen() {
         <SolveList
           solves={solves}
           phases={methodPhases}
+          bests={records.bests}
+          globalPbMs={records.globalPbMs}
           onScrolled={handleListScrolled}
           onOpen={setOpenSolveId}
           onChangePenalty={handleChangePenalty}

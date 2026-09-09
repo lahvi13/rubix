@@ -15,6 +15,8 @@ import { PhaseBar } from './PhaseBar';
 interface SplitEditorProps {
   solve: Solve;
   phases: readonly MethodPhase[];
+  /** Phases of this solve that are the fastest that phase has been. */
+  bestPhases?: readonly string[];
   onChange: (splits: Split[]) => void;
 }
 
@@ -23,7 +25,7 @@ interface SplitEditorProps {
  * at which it ended. The cumulative time is the editable one — it is what is
  * stored, and moving one boundary is meant to change exactly two phases.
  */
-export function SplitEditor({ solve, phases, onChange }: SplitEditorProps) {
+export function SplitEditor({ solve, phases, bestPhases, onChange }: SplitEditorProps) {
   const [invalidPhase, setInvalidPhase] = useState<string | null>(null);
   const keys = phases.map((phase) => phase.key);
   const durations = phaseDurations(solve.splits, keys, solve.rawMs);
@@ -69,7 +71,18 @@ export function SplitEditor({ solve, phases, onChange }: SplitEditorProps) {
                 style={{ background: phaseColour(index, phases.length) }}
                 aria-hidden="true"
               />
-              <span className="splits__name">{phase.label}</span>
+              <span className="splits__name">
+                {phase.label}
+                {bestPhases?.includes(phase.key) ? (
+                  <span
+                    className="splits__best"
+                    role="img"
+                    aria-label={strings.splits.bestPhase(phase.label)}
+                  >
+                    {strings.history.star}
+                  </span>
+                ) : null}
+              </span>
               <span className="splits__duration">
                 {duration?.ms == null ? '—' : formatMs(duration.ms)}
               </span>
