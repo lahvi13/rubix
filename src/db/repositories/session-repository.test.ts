@@ -161,3 +161,56 @@ describe('deleting a session', () => {
     expect((await getOrCreateActiveSession('333', 'freestyle')).id).not.toBe(session.id);
   });
 });
+describe('what stays active when the active session goes away', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+  });
+
+  it('adopts a session that is already there rather than making another', async () => {
+    const first = await getOrCreateActiveSession('333', 'freestyle');
+    const evening = await createSession('Evening', '333', 'freestyle');
+    await activateSession(first.id);
+
+    await deleteSession(first.id);
+
+    expect((await getOrCreateActiveSession('333', 'freestyle')).id).toBe(evening.id);
+    expect(await db.sessions.count()).toBe(1);
+  });
+
+  // Archiving clears isActive too, and used to leave the same hole.
+  it('adopts one when the active session is archived instead of deleted', async () => {
+    const first = await getOrCreateActiveSession('333', 'freestyle');
+    const evening = await createSession('Evening', '333', 'freestyle');
+    await activateSession(first.id);
+
+    await setSessionArchived(first.id, true);
+
+    expect((await getOrCreateActiveSession('333', 'freestyle')).id).toBe(evening.id);
+    expect((await listSessions()).filter((s) => s.name === 'Default')).toHaveLength(0);
+  });
+
+  it('will not adopt an archived session, and makes one when there is nothing else', async () => {
+    const only = await getOrCreateActiveSession('333', 'freestyle');
+    const old = await createSession('Old', '333', 'freestyle');
+    await setSessionArchived(old.id, true);
+    await activateSession(only.id);
+
+    await deleteSession(only.id);
+    const fresh = await getOrCreateActiveSession('333', 'freestyle');
+
+    expect(fresh.id).not.toBe(old.id);
+    expect(fresh.name).toBe('Default');
+  });
+
+  // A drill session is not a freestyle session to fall back on.
+  it('does not adopt across modes', async () => {
+    const drill = await getOrCreateActiveSession('333', 'drill');
+    const freestyle = await getOrCreateActiveSession('333', 'freestyle');
+
+    await deleteSession(freestyle.id);
+    const fresh = await getOrCreateActiveSession('333', 'freestyle');
+
+    expect(fresh.id).not.toBe(drill.id);
+    expect(fresh.mode).toBe('freestyle');
+  });
+});

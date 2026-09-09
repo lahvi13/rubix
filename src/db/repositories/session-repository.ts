@@ -21,6 +21,20 @@ export async function getOrCreateActiveSession(
       .first();
     if (existing) return existing;
 
+    // Nothing is active because the session that was got deleted or archived.
+    // Take up one that is already there instead of conjuring a second Default
+    // beside it: archiving the session you are timing into is an ordinary thing
+    // to do, and every time it happened the list grew another one.
+    const adopted = (await db.sessions.where('[mode+isArchived]').equals([mode, 0]).toArray())
+      .filter((session) => session.puzzle === puzzle)
+      // The one worked in most recently is the likeliest one meant.
+      .sort((a, b) => b.updatedAt - a.updatedAt)[0];
+    if (adopted) {
+      const updatedAt = now();
+      await db.sessions.update(adopted.id, { isActive: 1, updatedAt });
+      return { ...adopted, isActive: 1, updatedAt };
+    }
+
     const session = buildSession(DEFAULT_SESSION_NAME, puzzle, mode);
     await db.sessions.add(session);
     return session;
