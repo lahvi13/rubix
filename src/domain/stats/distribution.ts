@@ -118,6 +118,26 @@ export function histogram(finals: readonly (number | null)[]): HistogramBin[] {
 }
 
 /**
+ * Where a time sits along a drawn histogram, as a fraction 0..1 of the whole
+ * row of bars — null for a time the bars do not cover.
+ *
+ * The chart needs this because a bar cannot mark a time on its own: the bin
+ * holding the current average is coloured, but an average that falls in a bin
+ * no solve landed in has no bar to colour, and the one reading a cuber most
+ * wants off this chart — where am I — simply went missing. A fraction rather
+ * than a millisecond value, because the bins are drawn as equal bands and the
+ * overflow bin covers an open-ended range: it has no inside to point into, so
+ * a time in it is put at its middle.
+ */
+export function histogramPosition(bins: readonly HistogramBin[], ms: number): number | null {
+  const index = bins.findIndex((bin) => ms >= bin.startMs && ms < bin.endMs);
+  const bin = bins[index];
+  if (bin === undefined) return null;
+  const within = bin.isOverflow ? 0.5 : (ms - bin.startMs) / (bin.endMs - bin.startMs);
+  return (index + within) / bins.length;
+}
+
+/**
  * Tukey's upper fence, p75 + 1.5 × IQR. Nothing is dropped by it — it decides
  * only which times stop having a say in how wide a bin is.
  */

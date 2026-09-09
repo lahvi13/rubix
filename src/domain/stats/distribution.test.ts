@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Penalty } from '../../db/types';
 import {
   histogram,
+  histogramPosition,
   penaltyRate,
   sessionMean,
   sessionMedian,
@@ -120,5 +121,45 @@ describe('histogram', () => {
     const bins = histogram([58_000, 58_500, 59_000, 59_500, 120_000]);
     expect(bins.some((bin) => bin.isOverflow)).toBe(false);
     expect(bins[bins.length - 1]?.endMs).toBeGreaterThan(120_000);
+  });
+});
+
+describe('histogramPosition', () => {
+  const bins = histogram([10_000, 11_000, 12_000]);
+
+  it('has bins to place a time in', () => {
+    expect(bins).toHaveLength(5);
+    expect(bins[0]?.startMs).toBe(10_000);
+    expect(bins[4]?.endMs).toBe(12_500);
+  });
+
+  it.each<[string, number, number | null]>([
+    ['the very start of the row', 10_000, 0],
+    ['halfway into the first bin', 10_250, 0.1],
+    ['the start of the last bin', 12_000, 0.8],
+    ['the last instant the row covers', 12_499, 0.9996],
+    ['a time faster than every bin', 9_999, null],
+    ['a time past the end of the row', 12_500, null],
+  ])('places %s', (_name, ms, expected) => {
+    const position = histogramPosition(bins, ms);
+    if (expected === null) expect(position).toBeNull();
+    else expect(position).toBeCloseTo(expected, 4);
+  });
+
+  it('has no position on an empty histogram', () => {
+    expect(histogramPosition([], 10_000)).toBeNull();
+  });
+
+  it('puts a time inside the overflow bin at its middle', () => {
+    // The overflow bin is open-ended, so there is no "how far into it" to
+    // measure; anything in it is marked at the band's centre.
+    const session = [...Array.from({ length: 19 }, (_, index) => 58_000 + index * 200), 120_000];
+    const fenced = histogram(session);
+    const overflow = fenced[fenced.length - 1];
+
+    expect(overflow?.isOverflow).toBe(true);
+    const middle = (fenced.length - 0.5) / fenced.length;
+    expect(histogramPosition(fenced, 120_000)).toBeCloseTo(middle, 6);
+    expect(histogramPosition(fenced, overflow?.startMs ?? 0)).toBeCloseTo(middle, 6);
   });
 });

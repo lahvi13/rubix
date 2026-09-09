@@ -1,5 +1,15 @@
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import type { HistogramBin } from '../../../domain/stats/distribution';
+import {
+  Bar,
+  BarChart,
+  DefaultZIndexes,
+  ResponsiveContainer,
+  Tooltip,
+  usePlotArea,
+  XAxis,
+  YAxis,
+  ZIndexLayer,
+} from 'recharts';
+import { histogramPosition, type HistogramBin } from '../../../domain/stats/distribution';
 import { formatAxisMs, formatMs } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { AXIS_PROPS, BAR_TOOLTIP_PROPS, CHART_HEIGHT } from './chart-theme';
@@ -21,13 +31,18 @@ interface HistogramChartProps {
  */
 export function HistogramChart({ bins, currentAoMs }: HistogramChartProps) {
   const axisMax = bins[bins.length - 1]?.startMs ?? 0;
+  // Where the ao12 actually falls, which is not the same question as which bar
+  // holds it: the bin it lands in may hold no solves at all, and a coloured
+  // bar that does not exist marks nothing.
+  const marker = currentAoMs === null ? null : histogramPosition(bins, currentAoMs);
   const data: Row[] = bins.map((bin) => ({
     startMs: bin.startMs,
     label: binLabel(bin, axisMax),
     range: binRange(bin),
     count: bin.count,
-    // The bar holding the current ao12, which is what turns a histogram into
-    // "and here is where I am" rather than a shape.
+    // Said by the tooltip alone. The bar used to be painted in the accent as
+    // well, which put two marks on one fact and left the exact one — the
+    // marker — to be read against a bar in its own colour.
     isCurrent: currentAoMs !== null && currentAoMs >= bin.startMs && currentAoMs < bin.endMs,
   }));
 
@@ -56,24 +71,56 @@ export function HistogramChart({ bins, currentAoMs }: HistogramChartProps) {
               );
             }}
           />
-          <Bar dataKey="count" radius={[3, 3, 0, 0]} isAnimationActive={false}>
-            {data.map((row) => (
-              <Cell key={row.startMs} fill={row.isCurrent ? 'var(--accent)' : 'var(--muted)'} />
-            ))}
-          </Bar>
+          <Bar dataKey="count" fill="var(--muted)" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+          {marker === null ? null : <AverageMarker position={marker} />}
         </BarChart>
       </ResponsiveContainer>
       <ChartLegend
         entries={[
           { label: strings.stats.histogramSeries, colour: 'var(--muted)' },
-          {
-            label: `${strings.stats.trendSeries} · ${strings.stats.current}`,
-            colour: 'var(--accent)',
-          },
+          // Named with its own time: the axis is ticked in bins, so the line
+          // says where but never how much, and there is no room to write it
+          // on the line without it running off the edge of a phone.
+          ...(currentAoMs === null
+            ? []
+            : [
+                {
+                  label: `${strings.stats.trendSeries} · ${formatMs(currentAoMs)}`,
+                  colour: 'var(--accent)',
+                  isReference: true,
+                },
+              ]),
         ]}
       />
       <p className="chart-note">{strings.stats.distributionAxes}</p>
     </>
+  );
+}
+
+/**
+ * The current average, drawn where it actually falls rather than on the band
+ * it belongs to. A ReferenceLine cannot do this: the bars sit on an axis of
+ * categories, which can only be pointed at a whole band at a time, and half a
+ * band is the width of five seconds. So the line is drawn straight into the
+ * plot, which recharts hands over the measurements of.
+ */
+function AverageMarker({ position }: { position: number }) {
+  const area = usePlotArea();
+  if (area === undefined) return null;
+  const x = area.x + area.width * position;
+  const ends = { x1: x, x2: x, y1: area.y, y2: area.y + area.height };
+  // SVG has no z-index, so recharts stacks by layer instead, and anything
+  // drawn without asking for one lands under the bars. This is a reference
+  // line in all but name, so it goes where recharts puts those.
+  return (
+    <ZIndexLayer zIndex={DefaultZIndexes.line}>
+      {/* Cased in the card's own colour, dash for dash. The line crosses the
+          bars, and the accent and the grey they are drawn in are nearly the
+          same brightness — hue alone would leave it to be found rather than
+          seen. */}
+      <line {...ends} stroke="var(--surface)" strokeWidth={4} strokeDasharray="4 4" />
+      <line {...ends} stroke="var(--accent)" strokeWidth={2} strokeDasharray="4 4" />
+    </ZIndexLayer>
   );
 }
 
