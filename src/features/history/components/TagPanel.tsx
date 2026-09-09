@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CloseIcon } from '../../../components/Icons';
 import { Sheet } from '../../../components/Sheet';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
@@ -34,17 +33,6 @@ export function TagPanel({ onClose }: TagPanelProps) {
 
   return (
     <Sheet label={strings.history.tags} className="tag-panel" onClose={onClose}>
-      <div className="detail__header detail__header--bare">
-        <button
-          type="button"
-          className="detail__close"
-          onClick={onClose}
-          aria-label={strings.history.close}
-        >
-          <CloseIcon />
-        </button>
-      </div>
-
       <h2 className="session-picker__title">{strings.history.tags}</h2>
 
       {tags.length === 0 ? <p className="detail__hint">{strings.history.noTags}</p> : null}

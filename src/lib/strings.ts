@@ -90,6 +90,11 @@ export const strings = {
     moved: (count: number, session: string) =>
       count === 1 ? `Solve moved to ${session}.` : `${count} solves moved to ${session}.`,
   },
+  sheet: {
+    previous: 'Previous',
+    next: 'Next',
+    position: (at: number, total: number) => `${at} / ${total}`,
+  },
   nav: {
     timer: 'Timer',
     history: 'History',

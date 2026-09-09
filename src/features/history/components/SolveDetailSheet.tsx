@@ -13,6 +13,10 @@ import { SolveDetail } from './SolveDetail';
 interface SolveDetailSheetProps {
   solveId: string;
   phases: readonly MethodPhase[];
+  /** The solves this one is among, in the order they are shown. */
+  solveIds: readonly string[];
+  /** Opens another of them â how the sheet steps through the list. */
+  onOpen: (id: string) => void;
   onClose: () => void;
 }
 
@@ -21,7 +25,13 @@ interface SolveDetailSheetProps {
  * hand already, but the timer's own list does not, and a second copy of this
  * wiring is how the two screens would start to differ.
  */
-export function SolveDetailSheet({ solveId, phases, onClose }: SolveDetailSheetProps) {
+export function SolveDetailSheet({
+  solveId,
+  phases,
+  solveIds,
+  onOpen,
+  onClose,
+}: SolveDetailSheetProps) {
   const solve = useLiveQuery(() => getSolve(solveId), [solveId]);
   const tags = useTags();
   const removeSolves = useRemoveSolves();
@@ -29,6 +39,20 @@ export function SolveDetailSheet({ solveId, phases, onClose }: SolveDetailSheetP
   const [isMoving, setMoving] = useState(false);
 
   if (!solve) return null;
+
+  // Stepping stops at the end of what the screen has loaded rather than
+  // fetching more: a list that grows under a swipe has no end to reach.
+  const at = solveIds.indexOf(solveId);
+  const paging =
+    at < 0
+      ? undefined
+      : {
+          position: at + 1,
+          total: solveIds.length,
+          onPrevious: at > 0 ? () => onOpen(solveIds[at - 1] ?? solveId) : null,
+          onNext:
+            at < solveIds.length - 1 ? () => onOpen(solveIds[at + 1] ?? solveId) : null,
+        };
 
   // The sheet turns into the choice rather than stacking one on top of it: two
   // panels deep, the one underneath is covered anyway and only the way back out
@@ -64,6 +88,7 @@ export function SolveDetailSheet({ solveId, phases, onClose }: SolveDetailSheetP
         onClose();
       }}
       onMove={() => setMoving(true)}
+      paging={paging}
       onClose={onClose}
     />
   );

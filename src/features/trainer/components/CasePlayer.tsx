@@ -89,6 +89,9 @@ export function CasePlayer({
     <twisty-player
       ref={player}
       className="case-player"
+      // Dragging this turns the cube. A swipe that spun it instead of
+      // turning the page would be maddening, so the sheet skips it.
+      data-no-swipe=""
       puzzle="3x3x3"
       alg={alg}
       experimental-setup-alg={`${CUBE_ORIENTATION} ${setupAlg}`}

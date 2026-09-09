@@ -31,6 +31,8 @@ export function HistoryScreen() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const open = history.solves.find((solve) => solve.id === openId) ?? null;
+  // What the sheet steps through: the filtered list as far as it is loaded.
+  const openable = useMemo(() => history.solves.map((solve) => solve.id), [history.solves]);
 
   const toggleSelected = (id: string) => {
     setSelected((current) => {
@@ -173,7 +175,13 @@ export function HistoryScreen() {
       ) : null}
 
       {open ? (
-        <SolveDetailSheet solveId={open.id} phases={phases} onClose={() => setOpenId(null)} />
+        <SolveDetailSheet
+          solveId={open.id}
+          phases={phases}
+          solveIds={openable}
+          onOpen={setOpenId}
+          onClose={() => setOpenId(null)}
+        />
       ) : null}
 
       {isPickerOpen ? (

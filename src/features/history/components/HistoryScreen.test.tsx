@@ -83,6 +83,48 @@ describe('HistoryScreen', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('steps from one solve to the next without going back to the list', async () => {
+    await seedSolve(sessionId, 12_340);
+    await seedSolve(sessionId, 9990);
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    // Newest first, so the fastest one is at the top of the list.
+    await user.click(await screen.findByText('9.99'));
+    // The sheet reads the solve back from the database, so it arrives a
+    // tick after the tap.
+    await screen.findByRole('dialog');
+    expect(screen.getByText('1 / 2')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('2 / 2')).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText('Time')).toHaveValue('12.34');
+  });
+
+  it('stops at both ends of the list rather than wrapping round', async () => {
+    await seedSolve(sessionId, 12_340);
+    await seedSolve(sessionId, 9990);
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await user.click(await screen.findByText('9.99'));
+    await screen.findByRole('dialog');
+
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled();
+
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('2 / 2')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeEnabled();
+  });
+
   it('lists the session solves newest first', async () => {
     await seedSolve(sessionId, 12_340);
     await seedSolve(sessionId, 9990);

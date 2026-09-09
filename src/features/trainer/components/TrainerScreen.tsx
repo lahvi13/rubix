@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { SheetPaging } from '../../../components/Sheet';
 import { strings } from '../../../lib/strings';
 import { BEGINNER_SET_ID, CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { navigate } from '../../../app/router';
@@ -48,6 +49,15 @@ export function TrainerScreen() {
   const skin = useCubeSkin();
   const { definitions } = useTriggers();
   const [openCase, setOpenCase] = useState<{ id: string; group: string } | null>(null);
+  // A set is what gets studied, so stepping runs across its groups rather
+  // than stopping at the end of one.
+  const ordered = useMemo(
+    () =>
+      (groups ?? []).flatMap((group) =>
+        group.cases.map((entry) => ({ id: entry.algCase.id, group: group.name })),
+      ),
+    [groups],
+  );
   const [panel, setPanel] = useState<Panel>('none');
 
   const countOf = (list: CaseGroup[] | undefined): number =>
@@ -156,6 +166,7 @@ export function TrainerScreen() {
 
       {openCase !== null ? (
         <CaseDetail
+          paging={pagingFor(ordered, openCase.id, setOpenCase)}
           // A fresh sheet per case: the rename box is seeded from the case
           // it belongs to, and nothing carries over between two of them.
           key={openCase.id}
@@ -168,4 +179,28 @@ export function TrainerScreen() {
       ) : null}
     </main>
   );
+}
+
+/**
+ * Where the open case sits in the set, and the way to its neighbours. Null
+ * ends rather than wrapping: a set has a first and a last case, and coming
+ * out of the end back at the start loses the reader's place in it.
+ */
+function pagingFor(
+  ordered: readonly { id: string; group: string }[],
+  openId: string,
+  open: (next: { id: string; group: string }) => void,
+): SheetPaging | undefined {
+  const at = ordered.findIndex((entry) => entry.id === openId);
+  if (at < 0) return undefined;
+  const step = (to: number) => {
+    const next = ordered[to];
+    if (next) open(next);
+  };
+  return {
+    position: at + 1,
+    total: ordered.length,
+    onPrevious: at > 0 ? () => step(at - 1) : null,
+    onNext: at < ordered.length - 1 ? () => step(at + 1) : null,
+  };
 }

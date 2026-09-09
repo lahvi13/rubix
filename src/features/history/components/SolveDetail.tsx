@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { CloseIcon } from '../../../components/Icons';
-import { Sheet } from '../../../components/Sheet';
+import { Sheet, type SheetPaging } from '../../../components/Sheet';
 import type { MethodPhase, Solve, Tag } from '../../../db/types';
 import type { SolvePatch } from '../../../db/repositories/solve-repository';
 import { finalMs } from '../../../domain/solve/final-time';
@@ -19,6 +18,7 @@ interface SolveDetailProps {
   onDelete: (id: string) => void;
   /** Opens the choice of where to file it; the sheet handles the rest. */
   onMove: () => void;
+  paging?: SheetPaging;
   onClose: () => void;
 }
 
@@ -30,6 +30,7 @@ export function SolveDetail({
   onCreateTag,
   onDelete,
   onMove,
+  paging,
   onClose,
 }: SolveDetailProps) {
   const [timeInput, setTimeInput] = useState(() => formatMs(solve.rawMs));
@@ -64,18 +65,8 @@ export function SolveDetail({
   };
 
   return (
-    <Sheet label={strings.history.detailTitle} onClose={onClose}>
-      <header className="detail__header">
-        <span className="detail__result">{formatTime(finalMs(solve))}</span>
-        <button
-          type="button"
-          className="detail__close"
-          onClick={onClose}
-          aria-label={strings.history.close}
-        >
-          <CloseIcon />
-        </button>
-      </header>
+    <Sheet label={strings.history.detailTitle} paging={paging} onClose={onClose}>
+      <span className="detail__result">{formatTime(finalMs(solve))}</span>
 
       <p className="detail__scramble">{solve.scramble}</p>
 

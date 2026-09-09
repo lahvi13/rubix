@@ -88,6 +88,7 @@ export function TimerScreen() {
   // Which solve is open in the detail sheet, if any.
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
+  const openableSolves = useMemo(() => solves.map((solve) => solve.id), [solves]);
   const showBrowsing = isBrowsing && status === 'idle';
 
   // Derived, not synchronized: the result stays up only while the machine is
@@ -242,6 +243,8 @@ export function TimerScreen() {
         <SolveDetailSheet
           solveId={openSolveId}
           phases={methodPhases}
+          solveIds={openableSolves}
+          onOpen={setOpenSolveId}
           onClose={() => setOpenSolveId(null)}
         />
       )}

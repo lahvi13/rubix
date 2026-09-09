@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CloseIcon } from '../../../components/Icons';
 import { Sheet } from '../../../components/Sheet';
 import { formatDate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -68,17 +67,6 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
 
   return (
     <Sheet label={title ?? strings.sessions.title} className="session-picker" onClose={onClose}>
-      <div className="detail__header detail__header--bare">
-        <button
-          type="button"
-          className="detail__close"
-          onClick={onClose}
-          aria-label={strings.history.close}
-        >
-          <CloseIcon />
-        </button>
-      </div>
-
       <h2 className="session-picker__title">{title ?? strings.sessions.title}</h2>
 
       {listed.length === 0 ? <p className="detail__hint">{strings.sessions.noOther}</p> : null}

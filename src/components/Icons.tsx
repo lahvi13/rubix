@@ -30,3 +30,19 @@ export function CloseIcon() {
     </svg>
   );
 }
+
+export function PreviousIcon() {
+  return (
+    <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14.5 6L8.5 12l6 6" />
+    </svg>
+  );
+}
+
+export function NextIcon() {
+  return (
+    <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9.5 6l6 6-6 6" />
+    </svg>
+  );
+}

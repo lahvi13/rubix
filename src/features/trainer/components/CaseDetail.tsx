@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
 import { packAlgKind, type PackAlgKind } from '../../../db/seed/packs';
-import { CloseIcon, PlayIcon, StopIcon } from '../../../components/Icons';
-import { Sheet } from '../../../components/Sheet';
+import { PlayIcon, StopIcon } from '../../../components/Icons';
+import { Sheet, type SheetPaging } from '../../../components/Sheet';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { Stickering } from '../../../domain/cube/views';
@@ -34,6 +34,7 @@ interface CaseDetailProps {
   playerStickering: PlayerStickering;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
+  paging?: SheetPaging;
   onClose: () => void;
 }
 
@@ -44,6 +45,7 @@ export function CaseDetail({
   playerStickering,
   skin,
   triggers,
+  paging,
   onClose,
 }: CaseDetailProps) {
   const { algCase, algorithms, active, moves, choose, addVariant, removeVariant, rename, forgetRecognition } =
@@ -96,18 +98,7 @@ export function CaseDetail({
   const draftError = draft.trim() !== '' && !parseAlg(draft).ok;
 
   return (
-    <Sheet label={title} className="case-detail" onClose={onClose}>
-      <div className="detail__header detail__header--bare">
-        <button
-          type="button"
-          className="detail__close"
-          onClick={onClose}
-          aria-label={strings.history.close}
-        >
-          <CloseIcon />
-        </button>
-      </div>
-
+    <Sheet label={title} className="case-detail" paging={paging} onClose={onClose}>
       {/* The name belongs to the picture under it, not to the panel: read
           together they say which case this is. */}
       <h2 className="case-detail__name">{title}</h2>
