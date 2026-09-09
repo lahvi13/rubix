@@ -22,6 +22,12 @@ interface Panel {
 
 const panels: Panel[] = [];
 let nextId = 1;
+/**
+ * The entry a panel has just let go of, for the length of one commit. A panel
+ * opening in that window is taking over from the one that closed; anything
+ * later is a different situation and must push an entry of its own.
+ */
+let handedOver: number | null = null;
 
 /** The id on the entry at the top of the stack, if it is one of ours. */
 function currentId(): number | null {
@@ -49,7 +55,13 @@ export function holdBackForPanel(close: () => void): () => void {
   // picker — unmounts and mounts inside one commit, and the entry of the one
   // going is still on top. The newcomer takes it over rather than stacking a
   // second, or closing one panel would take two presses.
-  const inherited = panels.length === 0 ? currentId() : null;
+  //
+  // Only an entry handed over just now, though. A reload keeps the state on
+  // the entry it reloads, so after one there can be an id sitting there that
+  // no panel is holding — and taking that over would mean opening a panel
+  // without an entry at all, leaving the app on the first back press.
+  const inherited =
+    panels.length === 0 && handedOver !== null && currentId() === handedOver ? handedOver : null;
   const panel: Panel = { id: inherited ?? nextId++, close, isHolding: true };
   panels.push(panel);
   if (inherited === null) window.history.pushState({ rubixPanel: panel.id }, '');
@@ -63,9 +75,11 @@ export function holdBackForPanel(close: () => void): () => void {
     if (!panel.isHolding) return;
 
     // Closed some other way, so the entry has to go — but only if it is still
-    // on top and nobody has taken it over. Deferred by a microtask, which is
-    // when a hand-over has had its chance to claim it.
+    // on top and nobody has taken it over. Offered for the length of one
+    // commit first, which is when a hand-over has its chance to claim it.
+    handedOver = panel.id;
     queueMicrotask(() => {
+      handedOver = null;
       if (panels.length === 0 && currentId() === panel.id) window.history.back();
     });
   };
@@ -74,5 +88,6 @@ export function holdBackForPanel(close: () => void): () => void {
 /** Test seam: forgets everything this module is holding. */
 export function resetSheetHistory(): void {
   panels.length = 0;
+  handedOver = null;
   window.removeEventListener('popstate', handlePop);
 }

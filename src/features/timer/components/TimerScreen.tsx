@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
@@ -119,13 +119,66 @@ export function TimerScreen() {
   );
   const handleDelete = useCallback((id: string) => void remove(id), [remove]);
   // Stable, or the memo on SolveList is defeated.
-  const handleListScrolled = useCallback(() => setBrowsing(true), []);
-  const handleListCollapsed = useCallback(() => setBrowsing(false), []);
+  /*
+   * Whether the panel may hold its back entry yet.
+   *
+   * Pulled up by scrolling, the list opens on a gesture that grants no user
+   * activation — a scroll is not one, and the touch that caused it only
+   * grants activation when it ends. Chrome marks a history entry pushed
+   * without activation as one to skip, so the back press sails past it and
+   * out of the app. The entry therefore waits for the finger to lift.
+   *
+   * Opened by the chevron there is nothing to wait for: the click has granted
+   * activation already, which is why that way round has always worked.
+   */
+  const [isHoldReady, setHoldReady] = useState(false);
+  const handleListScrolled = useCallback(() => {
+    setBrowsing(true);
+    setHoldReady(false);
+  }, []);
+  const handleListCollapsed = useCallback(() => {
+    setBrowsing(false);
+    setHoldReady(false);
+  }, []);
+
+  // Whether a finger is on the glass, which is the only case that has to wait.
+  const isTouching = useRef(false);
+  useEffect(() => {
+    const down = () => (isTouching.current = true);
+    const up = () => (isTouching.current = false);
+    window.addEventListener('touchstart', down, { passive: true });
+    window.addEventListener('touchend', up, { passive: true });
+    window.addEventListener('touchcancel', up, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', down);
+      window.removeEventListener('touchend', up);
+      window.removeEventListener('touchcancel', up);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!showBrowsing || isHoldReady) return;
+    // A wheel or a trackpad opened it: no touch to wait for, and nothing to
+    // gain by waiting.
+    if (!isTouching.current) {
+      setHoldReady(true);
+      return;
+    }
+    // Touchcancel as well as touchend: the browser cancels the sequence when
+    // it takes the gesture to scroll with, and the finger still comes off.
+    const arm = () => setHoldReady(true);
+    window.addEventListener('touchend', arm, { once: true });
+    window.addEventListener('touchcancel', arm, { once: true });
+    return () => {
+      window.removeEventListener('touchend', arm);
+      window.removeEventListener('touchcancel', arm);
+    };
+  }, [showBrowsing, isHoldReady]);
   const pull = usePullDown(handleListCollapsed);
   // Up over the screen, the list is a panel like any other: back puts it away
   // rather than leaving the timer. Only while it is actually up — a solve in
   // progress hides it, and a back press should not be spent on it then.
-  useBackToClose(handleListCollapsed, showBrowsing);
+  useBackToClose(handleListCollapsed, showBrowsing && isHoldReady);
 
   return (
     <main
@@ -232,7 +285,11 @@ export function TimerScreen() {
             className="solves-panel__more"
             aria-expanded={showBrowsing}
             aria-label={showBrowsing ? strings.solve.collapseList : strings.solve.expandList}
-            onClick={() => setBrowsing((open) => !open)}
+            onClick={() => {
+              setBrowsing((open) => !open);
+              // A click has granted activation, so the entry can be held at once.
+              setHoldReady(true);
+            }}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d={showBrowsing ? 'M7 10l5 5 5-5' : 'M7 14l5-5 5 5'} />
