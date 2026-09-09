@@ -42,7 +42,7 @@ interface CaseDetailProps {
   triggers: readonly TriggerDefinition[];
   /** The cases this one is among, in the order the set lays them out. */
   ordered?: readonly CaseInSet[];
-  /** Opens another of them â how the sheet steps through the set. */
+  /** Opens another of them — how the sheet steps through the set. */
   onOpen?: (entry: CaseInSet) => void;
   onClose: () => void;
 }
@@ -63,7 +63,7 @@ export function CaseDetail({
   const [replayToken, setReplayToken] = useState(0);
   // The sheet used to be keyed by case id so that stepping to the next one
   // built a fresh panel. That took the panel out of the document and put a
-  // new one back a paint later, once its case had been read â and the screen
+  // new one back a paint later, once its case had been read — and the screen
   // underneath showed through the gap. It stays mounted now, holding the
   // case it is showing until the next one has arrived, and clears what
   // belonged to the old one here instead.
@@ -145,7 +145,7 @@ export function CaseDetail({
     <Sheet label={title} className="case-detail" paging={paging} onClose={onClose}>
       {/* The name belongs to the picture under it, not to the panel: read
           together they say which case this is. */}
-      {/* Which family it belongs to â for OLL that is how the case is
+      {/* Which family it belongs to — for OLL that is how the case is
           recognised in the first place, so it belongs above the name. */}
       {inSet === null ? null : <p className="case-detail__group">{inSet.group}</p>}
       <h2 className="case-detail__name">{title}</h2>

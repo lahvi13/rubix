@@ -15,7 +15,7 @@ interface SolveDetailSheetProps {
   phases: readonly MethodPhase[];
   /** The solves this one is among, in the order they are shown. */
   solveIds: readonly string[];
-  /** Opens another of them â how the sheet steps through the list. */
+  /** Opens another of them — how the sheet steps through the list. */
   onOpen: (id: string) => void;
   onClose: () => void;
 }
