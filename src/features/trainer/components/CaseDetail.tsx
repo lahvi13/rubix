@@ -27,6 +27,12 @@ const PACK_LABELS: Record<PackAlgKind, string> = {
   other: strings.trainer.packAlgOther,
 };
 
+/** A case's place in a set: which one, and under which heading. */
+export interface CaseInSet {
+  id: string;
+  group: string;
+}
+
 interface CaseDetailProps {
   caseId: string;
   view: DiagramView;
@@ -34,7 +40,10 @@ interface CaseDetailProps {
   playerStickering: PlayerStickering;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
-  paging?: SheetPaging;
+  /** The cases this one is among, in the order the set lays them out. */
+  ordered?: readonly CaseInSet[];
+  /** Opens another of them â how the sheet steps through the set. */
+  onOpen?: (entry: CaseInSet) => void;
   onClose: () => void;
 }
 
@@ -45,12 +54,20 @@ export function CaseDetail({
   playerStickering,
   skin,
   triggers,
-  paging,
+  ordered,
+  onOpen,
   onClose,
 }: CaseDetailProps) {
   const { algCase, algorithms, active, moves, choose, addVariant, removeVariant, rename, forgetRecognition } =
     useCaseDetail(caseId);
   const [replayToken, setReplayToken] = useState(0);
+  // The sheet used to be keyed by case id so that stepping to the next one
+  // built a fresh panel. That took the panel out of the document and put a
+  // new one back a paint later, once its case had been read â and the screen
+  // underneath showed through the gap. It stays mounted now, holding the
+  // case it is showing until the next one has arrived, and clears what
+  // belonged to the old one here instead.
+  const [shownId, setShownId] = useState(caseId);
   const [isPlaying, setPlaying] = useState(false);
   // Which move the player is turning, so the written algorithm can follow along.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
@@ -70,7 +87,34 @@ export function CaseDetail({
   const recognition = useRecognitionStat(caseId);
   const attempts = useCaseAttempts(caseId);
 
+  if (shownId !== caseId) {
+    setShownId(caseId);
+    setDraft('');
+    setNameDraft(null);
+    setPlaying(false);
+    setPlayingMove(null);
+  }
+
   if (!algCase) return null;
+
+  // Counted from the case on screen, not the one asked for: the query holds
+  // the previous case for a tick, and reading the id would have the count
+  // and the heading describe one case over another one's picture.
+  const at = ordered?.findIndex((entry) => entry.id === algCase.id) ?? -1;
+  const inSet = at < 0 || ordered === undefined ? null : ordered[at] ?? null;
+  const step = (to: number) => {
+    const next = ordered?.[to];
+    if (next && onOpen) onOpen(next);
+  };
+  const paging: SheetPaging | undefined =
+    inSet === null || ordered === undefined
+      ? undefined
+      : {
+          position: at + 1,
+          total: ordered.length,
+          onPrevious: at > 0 ? () => step(at - 1) : null,
+          onNext: at < ordered.length - 1 ? () => step(at + 1) : null,
+        };
 
   const title = caseTitle(algCase);
   const alias = caseAlias(algCase);
@@ -101,6 +145,9 @@ export function CaseDetail({
     <Sheet label={title} className="case-detail" paging={paging} onClose={onClose}>
       {/* The name belongs to the picture under it, not to the panel: read
           together they say which case this is. */}
+      {/* Which family it belongs to â for OLL that is how the case is
+          recognised in the first place, so it belongs above the name. */}
+      {inSet === null ? null : <p className="case-detail__group">{inSet.group}</p>}
       <h2 className="case-detail__name">{title}</h2>
       {/* Under a name of the reader's own, the pack's stays visible: it is
           what every chart and video out there calls this case. */}

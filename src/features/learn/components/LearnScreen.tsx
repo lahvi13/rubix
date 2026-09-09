@@ -101,7 +101,6 @@ export function LearnScreen() {
 
       {openCase !== null ? (
         <CaseDetail
-          key={openCase.id}
           caseId={openCase.id}
           {...diagramFor(openCase.setId, openCase.group)}
           skin={skin}

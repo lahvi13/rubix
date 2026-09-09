@@ -2243,6 +2243,17 @@ button[disabled] {
   gap: var(--space-5);
 }
 
+/* The family above the name: quieter than it, because it says which kind of
+   case this is and the name says which one. */
+.case-detail__group {
+  margin: 0 0 calc(var(--space-3) * -1);
+  text-align: center;
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
 /* The name and the picture are read as one thing, so they sit together
    rather than a panel's width apart. Only downwards now: the negative top
    margin used to tuck the name beside a header row holding nothing but the
