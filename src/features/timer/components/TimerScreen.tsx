@@ -10,6 +10,7 @@ import { PhaseBar, PhaseRun, usePhases } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../../../hooks/use-scramble';
+import { useBackToClose } from '../../../hooks/use-back-to-close';
 import { usePullDown } from '../../../hooks/use-pull-down';
 import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useSetting } from '../../../hooks/use-setting';
@@ -121,6 +122,10 @@ export function TimerScreen() {
   const handleListScrolled = useCallback(() => setBrowsing(true), []);
   const handleListCollapsed = useCallback(() => setBrowsing(false), []);
   const pull = usePullDown(handleListCollapsed);
+  // Up over the screen, the list is a panel like any other: back puts it away
+  // rather than leaving the timer. Only while it is actually up — a solve in
+  // progress hides it, and a back press should not be spent on it then.
+  useBackToClose(handleListCollapsed, showBrowsing);
 
   return (
     <main
