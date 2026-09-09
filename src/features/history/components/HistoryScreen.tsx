@@ -21,7 +21,7 @@ export function HistoryScreen() {
   const session = useActiveSession(PUZZLE, MODE);
   const phases = usePhases(session?.methodId ?? null);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
-  const history = useHistory(session?.id ?? null, phaseKeys);
+  const history = useHistory(session?.id ?? null, PUZZLE, phaseKeys);
   const tags = useTags();
   const [openId, setOpenId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
@@ -76,7 +76,20 @@ export function HistoryScreen() {
         ))}
         <button
           type="button"
-          aria-label={strings.history.filterStarred}
+          aria-label={strings.history.filterRecords}
+          className={history.filters.record ? 'is-active' : ''}
+          onClick={() =>
+            history.setFilters({
+              ...history.filters,
+              record: history.filters.record ? undefined : true,
+            })
+          }
+        >
+          {strings.history.star}
+        </button>
+        <button
+          type="button"
+          aria-label={strings.history.filterMarked}
           className={history.filters.starred ? 'is-active' : ''}
           onClick={() =>
             history.setFilters({
@@ -85,7 +98,7 @@ export function HistoryScreen() {
             })
           }
         >
-          {strings.history.star}
+          {strings.history.mark}
         </button>
         {tags.tags.map((tag) => (
           <button
@@ -159,6 +172,7 @@ export function HistoryScreen() {
               phases={phases}
               phaseKeys={phaseKeys}
               bests={history.bests}
+              globalPbMs={history.globalPbMs}
               tagColors={solve.tagIds.map((id) => tags.byId.get(id)?.color ?? '#555')}
               isSelected={selected.has(solve.id)}
               onToggleSelected={() => toggleSelected(solve.id)}
@@ -208,6 +222,7 @@ interface HistoryRowProps {
   phases: readonly MethodPhase[];
   phaseKeys: readonly string[];
   bests: Bests;
+  globalPbMs: number | null;
   tagColors: string[];
   isSelected: boolean;
   onToggleSelected: () => void;
@@ -219,6 +234,7 @@ function HistoryRow({
   phases,
   phaseKeys,
   bests,
+  globalPbMs,
   tagColors,
   isSelected,
   onToggleSelected,
@@ -228,10 +244,13 @@ function HistoryRow({
   const resultMs = finalMs(solve);
   // A DNF has no result, so it cannot be the best one however small its rawMs.
   const isBest = resultMs !== null && resultMs === bests.totalMs;
+  // The best this puzzle has ever seen, which may have been set in another
+  // session; it wears its own colour so the two are never read as one thing.
+  const isPb = resultMs !== null && resultMs === globalPbMs;
   const bestPhases = bestPhasesIn(solve, phaseKeys, bests);
-  // Worth coming back to: it holds the best result, or the fastest one of its
-  // phases has been. The whole row is lit rather than only the number, so the
-  // ones to look at can be found without reading any of them.
+  // Worth coming back to: it holds the session's best result, or the fastest
+  // one of its phases has been. The whole row is lit rather than only the
+  // number, so the ones to look at can be found without reading any of them.
   const holdsBest = isBest || bestPhases.length > 0;
 
   return (
@@ -243,17 +262,31 @@ function HistoryRow({
         aria-label={strings.history.select}
       />
       <button type="button" className="history__open" onClick={onOpen}>
-        <span className={isBest ? 'history__time is-best' : 'history__time'}>
+        {/* One row, one colour: the time and its star say the same thing, or
+            the reader has to work out which of them outranks the other. */}
+        <span
+          className={
+            isPb ? 'history__time is-best is-record' : isBest ? 'history__time is-best' : 'history__time'
+          }
+        >
           {formatTime(resultMs)}
-          {holdsBest ? (
-            <span className="history__best" role="img" aria-label={strings.history.holdsBest}>
-              ★
+          {/* One star, in the colour of the strongest thing it is. A phase
+              best is not starred here: its own block is ringed on the bar
+              below, which says which phase rather than only that one of
+              them was. */}
+          {isPb || isBest ? (
+            <span
+              className={isPb ? 'history__best is-record' : 'history__best'}
+              role="img"
+              aria-label={isPb ? strings.history.personalBest : strings.history.sessionBest}
+            >
+              {strings.history.star}
             </span>
           ) : null}
         </span>
         <span className="history__meta">
           {formatWhen(solve.createdAt, at)}
-          {solve.starred === 1 ? ' ★' : ''}
+          {solve.starred === 1 ? ` ${strings.history.mark}` : ''}
           {solve.note ? ' ✎' : ''}
         </span>
         <span className="history__tags">

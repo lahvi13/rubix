@@ -105,11 +105,11 @@ export function SolveDetail({
         </button>
         <button
           type="button"
-          aria-label={strings.history.starSolve}
+          aria-label={strings.history.markSolve}
           className={solve.starred === 1 ? 'is-active' : ''}
           onClick={() => onEdit(solve.id, { starred: solve.starred === 1 ? 0 : 1 })}
         >
-          {strings.history.star}
+          {strings.history.mark}
         </button>
       </div>
 

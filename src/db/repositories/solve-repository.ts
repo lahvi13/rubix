@@ -38,7 +38,13 @@ export interface SolvePatch {
 
 export interface SolveFilters {
   penalty?: Penalty;
+  /** The reader's own mark on a solve. */
   starred?: boolean;
+  /**
+   * Only the session's records. Not applied here: what a record is depends on
+   * every solve of the session, which this query is in the middle of reading.
+   */
+  record?: boolean;
   tagId?: string;
 }
 
@@ -132,12 +138,17 @@ export async function listSolvesChronological(sessionId: string): Promise<Solve[
 }
 
 /**
- * Global PB single for a puzzle, across all freestyle sessions. The compound
- * index skips DNFs and drills entirely, and the fold avoids materialising
- * every solve just to keep one number.
+ * The best single a puzzle has ever seen, across all freestyle sessions, and
+ * the solve it belongs to. The compound index skips DNFs and drills entirely,
+ * and the fold keeps one row rather than materialising every solve.
+ *
+ * The solve itself, not only the time: the history marks the row it is on and
+ * the stats offer to open it, and both need to know which one it is. It may
+ * well be in another session than the one being read.
  */
-export async function getGlobalPbSingle(puzzle: Puzzle): Promise<number | null> {
-  let best: number | null = null;
+export async function getGlobalPbSolve(puzzle: Puzzle): Promise<Solve | null> {
+  let best: Solve | null = null;
+  let bestMs: number | null = null;
   await db.solves
     .where('[puzzle+mode+penalty]')
     .anyOf([
@@ -146,9 +157,17 @@ export async function getGlobalPbSingle(puzzle: Puzzle): Promise<number | null> 
     ])
     .each((solve) => {
       const ms = finalMs(solve);
-      if (ms !== null && (best === null || ms < best)) best = ms;
+      if (ms !== null && (bestMs === null || ms < bestMs)) {
+        bestMs = ms;
+        best = solve;
+      }
     });
   return best;
+}
+
+export async function getGlobalPbSingle(puzzle: Puzzle): Promise<number | null> {
+  const solve = await getGlobalPbSolve(puzzle);
+  return solve === null ? null : finalMs(solve);
 }
 
 export async function countSolves(sessionId: string): Promise<number> {

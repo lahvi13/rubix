@@ -142,11 +142,61 @@ describe('HistoryScreen', () => {
 
     render(<HistoryScreen />);
 
-    const marks = await screen.findAllByLabelText('Holds a best of this view');
+    // Nothing faster exists anywhere, so the session's best is the best there
+    // has ever been and is marked as the stronger of the two.
+    const marks = await screen.findAllByLabelText('Personal best');
     expect(marks).toHaveLength(1);
     const row = marks[0]?.closest('.history__row');
     expect(row).toHaveClass('is-notable');
     expect(row?.textContent).toContain('9.99');
+  });
+
+  it('tells the best of this session apart from the best there has ever been', async () => {
+    const elsewhere = await createSession('Evening', '333', 'freestyle');
+    await seedSolve(elsewhere.id, 5000);
+    await activateSession(sessionId);
+    await seedSolve(sessionId, 12_340);
+    await seedSolve(sessionId, 9990);
+
+    render(<HistoryScreen />);
+
+    // The faster solve is another session's, so this one only holds the
+    // session record and says so.
+    const marks = await screen.findAllByLabelText('Best of this session');
+    expect(marks).toHaveLength(1);
+    expect(marks[0]?.closest('.history__row')?.textContent).toContain('9.99');
+    expect(screen.queryByLabelText('Personal best')).not.toBeInTheDocument();
+  });
+
+  it('keeps the records marked when a filter is on', async () => {
+    await seedSolve(sessionId, 12_340);
+    const best = await seedSolve(sessionId, 9990);
+    await updateSolve(best.id, { starred: 1 });
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await user.click(await screen.findByRole('button', { name: 'Filter marked' }));
+
+    // A record belongs to the solve, not to whatever the filters let through:
+    // the mark must not move because the list got shorter.
+    await waitFor(() => {
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    });
+    expect(await screen.findByLabelText('Personal best')).toBeInTheDocument();
+  });
+
+  it('shows only the records when asked for them', async () => {
+    await seedSolve(sessionId, 12_340);
+    await seedSolve(sessionId, 9990);
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await user.click(await screen.findByRole('button', { name: 'Filter records' }));
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    });
+    expect(screen.getByText(/9.99/)).toBeInTheDocument();
   });
 
   it('applies a penalty from the detail drawer and shows the new result', async () => {

@@ -71,6 +71,11 @@
   --muted: light-dark(#5d6575, #868ea3);
   --accent: light-dark(#15803d, #4ade80);
   --warn: light-dark(#a35a06, #fbbf24);
+  /* The all-time best. Its own token rather than --warn's gold, which means
+     a +2: the two would sit in one sheet meaning opposite things. Gold has
+     to darken for a light ground and brighten for a dark one, or it reads as
+     grey on one of them. */
+  --record: light-dark(#946300, #ffd24a);
   --danger: light-dark(#c62d2d, #f87171);
 
   /* A wash over whatever an open menu or sheet is covering. */
@@ -1040,6 +1045,10 @@ button[disabled] {
   font-weight: 600;
 }
 
+.history__time.is-record {
+  color: var(--record);
+}
+
 /*
  * The row holds a best — the result, or the fastest one of its phases has
  * been. Lit as a whole, because the point of the mark is to be found while
@@ -1065,6 +1074,12 @@ button[disabled] {
   font-size: 0.62em;
   vertical-align: super;
   color: var(--accent);
+}
+
+/* The best there has ever been outranks the best of this session, so it is
+   the one that changes colour. */
+.history__best.is-record {
+  color: var(--record);
 }
 
 .history__meta {
@@ -1199,7 +1214,7 @@ button[disabled] {
 
 /* As quiet as the close button beside it. Stepping through is an offer, not
    the reason the panel is open, and it sits next to text fields and a
-   delete â none of which it may shout over. */
+   delete — none of which it may shout over. */
 .sheet__pager {
   display: flex;
   align-items: center;

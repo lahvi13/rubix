@@ -143,9 +143,12 @@ export const strings = {
     close: 'Close',
     rawTime: 'Time',
     invalidTime: 'Use 12.34 or 1:23.45',
+    /** A record's mark. Never the reader's own — that one is the flag. */
     star: '★',
-    /** The mark on a row that holds a best — not the same star as a starred solve. */
-    holdsBest: 'Holds a best of this view',
+    /** The reader's own mark, so that it cannot be read as a record. */
+    mark: '⚑',
+    personalBest: 'Personal best',
+    sessionBest: 'Best of this session',
     tags: 'Tags',
     newTag: 'New tag',
     note: 'Note',
@@ -158,8 +161,9 @@ export const strings = {
     moveTitle: 'Move to session',
     filterBy: 'Filter by',
     penaltyLabel: 'Penalty',
-    starSolve: 'Star solve',
-    filterStarred: 'Filter starred',
+    markSolve: 'Mark solve',
+    filterMarked: 'Filter marked',
+    filterRecords: 'Filter records',
     editTags: 'Edit tags',
     tagName: 'Tag name',
     noTags: 'No tags yet. A tag made here can be put on any solve.',
