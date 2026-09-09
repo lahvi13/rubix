@@ -143,6 +143,14 @@
   --phase-share-ink: light-dark(#ffffff, #0f1115);
 
   /*
+   * The ground the animated cube stands on. cubing.js paints its own cube and
+   * cannot be given a skin — pale grey plastic, white stickers — so on a white
+   * page it is a cube with no edges. Our own drawing needs none of this: it
+   * wears the reader's skin and outlines every sticker.
+   */
+  --cube-stage: light-dark(#d6dbe5, #1b202a);
+
+  /*
    * One type scale, in sixteenths of a rem so every step lands on a whole
    * pixel at the default size. A rule picks a step; nothing writes its own
    * size, which is what kept twenty of them in here.
@@ -572,7 +580,10 @@ button[disabled] {
 .scramble__player {
   /* Enough to make up for the player's own margin, with room left for the
      layer that is turning: mid-move the cube is wider than it is at rest, and
-     the box clips. */
+     the box clips. The number is the size of the still picture this replaces —
+     swapping one cube for the other must not resize it — which is why the
+     ground under it takes a little clipping at the edge rather than the cube
+     being shrunk to fit. */
   width: calc(var(--stage-width) * 1.25);
   height: calc(var(--stage-height) * 1.25);
   /*
@@ -605,6 +616,13 @@ button[disabled] {
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--muted);
+}
+
+/* Only under the player: the still picture is drawn in the reader's own
+   colours and holds its own against the page. */
+.scramble__stage.is-watching {
+  background: var(--cube-stage);
+  border-radius: var(--radius-lg);
 }
 
 /* A short phone has no room for a big cube and a list of solves both. */
