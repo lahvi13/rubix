@@ -177,43 +177,19 @@ export function HistoryScreen() {
       ) : null}
 
       {isPickerOpen ? (
-        <>
-          <button
-            type="button"
-            className="app__scrim"
-            aria-label={strings.history.close}
-            onClick={() => setPickerOpen(false)}
-          />
-          <SessionPicker onClose={() => setPickerOpen(false)} />
-        </>
+        <SessionPicker onClose={() => setPickerOpen(false)} />
       ) : null}
 
       {isMoveOpen ? (
-        <>
-          <button
-            type="button"
-            className="app__scrim"
-            aria-label={strings.history.close}
-            onClick={() => setMoveOpen(false)}
-          />
-          <SessionPicker
-            title={strings.history.moveTitle}
-            onPick={moveSelected}
-            onClose={() => setMoveOpen(false)}
-          />
-        </>
+        <SessionPicker
+          title={strings.history.moveTitle}
+          onPick={moveSelected}
+          onClose={() => setMoveOpen(false)}
+        />
       ) : null}
 
       {isTagPanelOpen ? (
-        <>
-          <button
-            type="button"
-            className="app__scrim"
-            aria-label={strings.history.close}
-            onClick={() => setTagPanelOpen(false)}
-          />
-          <TagPanel onClose={() => setTagPanelOpen(false)} />
-        </>
+        <TagPanel onClose={() => setTagPanelOpen(false)} />
       ) : null}
     </main>
   );

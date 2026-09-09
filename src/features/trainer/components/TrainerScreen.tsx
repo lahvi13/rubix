@@ -155,24 +155,16 @@ export function TrainerScreen() {
       ))}
 
       {openCase !== null ? (
-        <>
-          <button
-            type="button"
-            className="app__scrim"
-            aria-label={strings.history.close}
-            onClick={() => setOpenCase(null)}
-          />
-          <CaseDetail
-            // A fresh sheet per case: the rename box is seeded from the case
-            // it belongs to, and nothing carries over between two of them.
-            key={openCase.id}
-            caseId={openCase.id}
-            {...diagramFor(setId ?? '', openCase.group)}
-            skin={skin}
-            triggers={definitions}
-            onClose={() => setOpenCase(null)}
-          />
-        </>
+        <CaseDetail
+          // A fresh sheet per case: the rename box is seeded from the case
+          // it belongs to, and nothing carries over between two of them.
+          key={openCase.id}
+          caseId={openCase.id}
+          {...diagramFor(setId ?? '', openCase.group)}
+          skin={skin}
+          triggers={definitions}
+          onClose={() => setOpenCase(null)}
+        />
       ) : null}
     </main>
   );

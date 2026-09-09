@@ -199,15 +199,7 @@ export function StatsScreen() {
       </div>
 
       {isPickerOpen ? (
-        <>
-          <button
-            type="button"
-            className="app__scrim"
-            aria-label={strings.history.close}
-            onClick={() => setPickerOpen(false)}
-          />
-          <SessionPicker onClose={() => setPickerOpen(false)} />
-        </>
+        <SessionPicker onClose={() => setPickerOpen(false)} />
       ) : null}
     </main>
   );

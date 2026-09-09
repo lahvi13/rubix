@@ -249,15 +249,7 @@ export function TimerScreen() {
       {/* Outside the panel that holds its button: the panel slides away
           while a solve is running, and the sheet is fixed to the screen. */}
       {isPickerOpen ? (
-        <>
-          <button
-            type="button"
-            className="app__scrim"
-            aria-label={strings.history.close}
-            onClick={() => setPickerOpen(false)}
-          />
-          <SessionPicker onClose={() => setPickerOpen(false)} />
-        </>
+        <SessionPicker onClose={() => setPickerOpen(false)} />
       ) : null}
     </main>
   );

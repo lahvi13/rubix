@@ -100,22 +100,14 @@ export function LearnScreen() {
       </p>
 
       {openCase !== null ? (
-        <>
-          <button
-            type="button"
-            className="app__scrim"
-            aria-label={strings.history.close}
-            onClick={() => setOpenCase(null)}
-          />
-          <CaseDetail
-            key={openCase.id}
-            caseId={openCase.id}
-            {...diagramFor(openCase.setId, openCase.group)}
-            skin={skin}
-            triggers={definitions}
-            onClose={() => setOpenCase(null)}
-          />
-        </>
+        <CaseDetail
+          key={openCase.id}
+          caseId={openCase.id}
+          {...diagramFor(openCase.setId, openCase.group)}
+          skin={skin}
+          triggers={definitions}
+          onClose={() => setOpenCase(null)}
+        />
       ) : null}
     </main>
   );

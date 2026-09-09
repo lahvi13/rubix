@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CloseIcon } from '../../../components/Icons';
-import { useKeyCapture } from '../../../hooks/use-key-capture';
+import { Sheet } from '../../../components/Sheet';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { useRemoveTag } from '../hooks/use-remove-tag';
@@ -25,8 +25,6 @@ export function TagPanel({ onClose }: TagPanelProps) {
   const usage = useTagUsage();
   const [newName, setNewName] = useState('');
 
-  useKeyCapture(true, onClose);
-
   const submitNew = () => {
     const name = newName.trim();
     if (name === '') return;
@@ -35,7 +33,7 @@ export function TagPanel({ onClose }: TagPanelProps) {
   };
 
   return (
-    <aside className="detail tag-panel" role="dialog" aria-label={strings.history.tags}>
+    <Sheet label={strings.history.tags} className="tag-panel" onClose={onClose}>
       <div className="detail__header detail__header--bare">
         <button
           type="button"
@@ -94,6 +92,6 @@ export function TagPanel({ onClose }: TagPanelProps) {
         />
         <button type="submit">{strings.sessions.create}</button>
       </form>
-    </aside>
+    </Sheet>
   );
 }

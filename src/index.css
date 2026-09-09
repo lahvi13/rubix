@@ -859,6 +859,16 @@ button[disabled] {
   cursor: default;
 }
 
+/*
+ * A sheet's wash goes over the header too, unlike the menu's. The menu drops
+ * out of the header and needs it lit; a sheet covers the screen and says so
+ * with aria-modal, which would be a lie while the way out of the screen sat
+ * above the wash still taking taps.
+ */
+.sheet-scrim {
+  z-index: 45;
+}
+
 .app__menu {
   position: absolute;
   top: 100%;
@@ -1098,6 +1108,11 @@ button[disabled] {
   background: var(--surface);
   border-top: 1px solid var(--border);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  /* The panel has to read as lying over the screen rather than as more of
+     it. On a dark ground the surface colour is barely a step up from the
+     background and a hairline border disappears, so the edge is carried by
+     a shadow cast upwards onto what it covers. */
+  box-shadow: 0 -0.75rem 1.5rem var(--scrim);
   padding: var(--space-6);
   /* The sheet is pinned to the bottom edge, so the home indicator lies over
      its last row — the tags and the delete button. */
@@ -1124,6 +1139,7 @@ button[disabled] {
     width: 26rem;
     border-radius: 0;
     border-left: 1px solid var(--border);
+    box-shadow: -0.75rem 0 1.5rem var(--scrim);
   }
 }
 

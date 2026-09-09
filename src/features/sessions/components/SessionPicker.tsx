@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CloseIcon } from '../../../components/Icons';
-import { useKeyCapture } from '../../../hooks/use-key-capture';
+import { Sheet } from '../../../components/Sheet';
 import { formatDate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useRemoveSession } from '../hooks/use-remove-session';
@@ -41,8 +41,6 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const removeSession = useRemoveSession();
 
-  useKeyCapture(true, onClose);
-
   // A destination is somewhere else by definition. The solves on offer come
   // from the screen underneath, which shows the active session and nothing
   // else, so the active one is the source rather than a place to put them.
@@ -69,11 +67,7 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
   };
 
   return (
-    <aside
-      className="detail session-picker"
-      role="dialog"
-      aria-label={title ?? strings.sessions.title}
-    >
+    <Sheet label={title ?? strings.sessions.title} className="session-picker" onClose={onClose}>
       <div className="detail__header detail__header--bare">
         <button
           type="button"
@@ -207,6 +201,6 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
           </form>
         </>
       )}
-    </aside>
+    </Sheet>
   );
 }

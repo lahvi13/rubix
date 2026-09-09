@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
 import { packAlgKind, type PackAlgKind } from '../../../db/seed/packs';
 import { CloseIcon, PlayIcon, StopIcon } from '../../../components/Icons';
+import { Sheet } from '../../../components/Sheet';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { Stickering } from '../../../domain/cube/views';
@@ -95,7 +96,7 @@ export function CaseDetail({
   const draftError = draft.trim() !== '' && !parseAlg(draft).ok;
 
   return (
-    <div className="detail case-detail" role="dialog" aria-label={title}>
+    <Sheet label={title} className="case-detail" onClose={onClose}>
       <div className="detail__header detail__header--bare">
         <button
           type="button"
@@ -254,6 +255,6 @@ export function CaseDetail({
         onDelete={(id) => watchWrite(() => attempts.remove(id), strings.drill.discarding)}
         onDeleteAll={() => watchWrite(attempts.removeAll, strings.drill.discarding)}
       />
-    </div>
+    </Sheet>
   );
 }
