@@ -11,6 +11,7 @@ import { SolvePhases, usePhases } from '../../splits';
 import { useHistory } from '../hooks/use-history';
 import { useTags } from '../hooks/use-tags';
 import { SolveDetailSheet } from './SolveDetailSheet';
+import { TagPanel } from './TagPanel';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
@@ -25,6 +26,7 @@ export function HistoryScreen() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [isMoveOpen, setMoveOpen] = useState(false);
+  const [isTagPanelOpen, setTagPanelOpen] = useState(false);
   const moveSolves = useMoveSolves();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -99,6 +101,16 @@ export function HistoryScreen() {
             {tag.name}
           </button>
         ))}
+        {/* Last in the row and about the tags beside it, not a filter of
+            its own — this is the only screen where a tag is written, so
+            it is the only one where a wrong one is noticed. */}
+        <button
+          type="button"
+          className="filters__edit"
+          onClick={() => setTagPanelOpen(true)}
+        >
+          {strings.history.editTags}
+        </button>
       </div>
 
       <p className="history__summary">
@@ -189,6 +201,18 @@ export function HistoryScreen() {
             onPick={moveSelected}
             onClose={() => setMoveOpen(false)}
           />
+        </>
+      ) : null}
+
+      {isTagPanelOpen ? (
+        <>
+          <button
+            type="button"
+            className="app__scrim"
+            aria-label={strings.history.close}
+            onClick={() => setTagPanelOpen(false)}
+          />
+          <TagPanel onClose={() => setTagPanelOpen(false)} />
         </>
       ) : null}
     </main>

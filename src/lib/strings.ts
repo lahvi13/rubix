@@ -149,6 +149,12 @@ export const strings = {
     penaltyLabel: 'Penalty',
     starSolve: 'Star solve',
     filterStarred: 'Filter starred',
+    editTags: 'Edit tags',
+    tagName: 'Tag name',
+    noTags: 'No tags yet. A tag made here can be put on any solve.',
+    /** Said next to a delete, so it reads as what would be stripped. */
+    tagOnSolves: (count: number) => `on ${count} ${count === 1 ? 'solve' : 'solves'}`,
+    confirmDeleteTag: 'Delete?',
   },
   sessions: {
     title: 'Sessions',

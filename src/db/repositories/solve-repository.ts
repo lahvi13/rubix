@@ -155,6 +155,15 @@ export async function countSolves(sessionId: string): Promise<number> {
   return db.solves.where('sessionId').equals(sessionId).count();
 }
 
+/**
+ * How many solves carry a tag, across every session. Asked before a tag is
+ * deleted: deleting one strips it from all of them, and the number is the
+ * only warning of how much that touches.
+ */
+export async function countSolvesWithTag(tagId: string): Promise<number> {
+  return db.solves.where('tagIds').equals(tagId).count();
+}
+
 /** Manual penalty change from the UI. Always marks the solve as edited. */
 export async function setPenalty(id: string, penalty: Penalty): Promise<void> {
   await updateSolve(id, { penalty });

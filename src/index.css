@@ -912,6 +912,12 @@ button[disabled] {
   background: var(--surface);
 }
 
+/* Not a filter but the way to the tags themselves: dotted, like every
+   other text button that opens something. */
+.filters__edit {
+  border-style: dashed;
+}
+
 /* History */
 
 .history__summary {
@@ -925,6 +931,50 @@ button[disabled] {
 
 /* Only there while something is selected, so it may take a row of its own
    rather than squeeze in beside the counts. */
+/* Tags */
+
+.tag-panel {
+  gap: var(--space-5);
+}
+
+.tag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* A card like the session's: the name has to stay wide enough to type in,
+   which it is not with a count and a button beside it on a phone. */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+}
+
+/* The tag's own colour on the edge of its name, the way the chips wear it. */
+.tag-row__name {
+  flex: 1 1 8rem;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+}
+
+.tag-row__usage {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
 .history__selection {
   display: flex;
   flex-wrap: wrap;
@@ -2847,6 +2897,7 @@ button[disabled] {
 .detail textarea,
 .session-form input,
 .session input,
+.tag-row__name,
 .triggers input,
 .triggers__add input,
 .variants__add input {
