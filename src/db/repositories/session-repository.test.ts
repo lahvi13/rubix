@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
+import { addSolve } from './solve-repository';
 import {
   activateSession,
   createSession,
+  deleteSession,
   getActiveSession,
   getOrCreateActiveSession,
   listSessions,
@@ -101,5 +103,61 @@ describe('session repository', () => {
     expect(await listSessions()).toHaveLength(2);
     expect((await listSessions(false, 'freestyle')).every((s) => s.mode === 'freestyle')).toBe(true);
     expect(await listSessions(false, 'freestyle')).toHaveLength(1);
+  });
+});
+describe('deleting a session', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+  });
+
+  async function seedSolve(sessionId: string) {
+    return addSolve({
+      sessionId,
+      puzzle: '333',
+      mode: 'freestyle',
+      scramble: "R U R' U'",
+      rawMs: 12_340,
+      penalty: 'none',
+      penaltySource: 'auto',
+      inspectionMs: null,
+      startedAt: Date.now(),
+    });
+  }
+
+  it('takes the solves timed into it with it', async () => {
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    const keeper = await createSession('Evening', '333', 'freestyle');
+    const doomed = await seedSolve(session.id);
+    const kept = await seedSolve(keeper.id);
+
+    await deleteSession(session.id);
+
+    expect(await db.sessions.get(session.id)).toBeUndefined();
+    expect(await db.solves.get(doomed.id)).toBeUndefined();
+    // Only its own: another session's solves are not in the blast radius.
+    expect(await db.solves.get(kept.id)).toBeDefined();
+  });
+
+  it('leaves a grave for the session and for every solve', async () => {
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    const solve = await seedSolve(session.id);
+
+    await deleteSession(session.id);
+
+    const graves = await db.tombstones.toArray();
+    expect(graves).toContainEqual(
+      expect.objectContaining({ id: session.id, table: 'sessions' }),
+    );
+    expect(graves).toContainEqual(expect.objectContaining({ id: solve.id, table: 'solves' }));
+  });
+
+  // Otherwise the next solve lands in a session that is not there any more.
+  it('leaves nothing active when the active session goes', async () => {
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+
+    await deleteSession(session.id);
+
+    expect(await getActiveSession('333', 'freestyle')).toBeNull();
+    expect((await getOrCreateActiveSession('333', 'freestyle')).id).not.toBe(session.id);
   });
 });

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CloseIcon } from '../../../components/Icons';
 import { useKeyCapture } from '../../../hooks/use-key-capture';
 import { formatDate } from '../../../lib/format';
+import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { useSessions } from '../hooks/use-sessions';
 
@@ -31,12 +32,13 @@ interface SessionPickerProps {
 export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
   const isChoosing = onPick !== undefined;
   const [includeArchived, setIncludeArchived] = useState(false);
-  const { sessions, create, rename, activate, setArchived } = useSessions(
+  const { sessions, create, rename, activate, setArchived, remove } = useSessions(
     isChoosing ? false : includeArchived,
   );
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   useKeyCapture(true, onClose);
 
@@ -143,8 +145,35 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
                 >
                   {session.isArchived === 1 ? strings.sessions.restore : strings.sessions.archive}
                 </button>
+                <button type="button" onClick={() => setConfirmingId(session.id)}>
+                  {strings.solve.delete}
+                </button>
               </div>
             )}
+
+            {/* What goes with the session is spelled out before it goes: the
+                solves leave the averages and the personal best with it, and
+                unlike archiving there is nothing to undo afterwards. */}
+            {confirmingId === session.id ? (
+              <div className="session__confirm">
+                <p>{strings.sessions.deleteWarning(session.solveCount)}</p>
+                <div className="session__actions">
+                  <button
+                    type="button"
+                    className="is-danger"
+                    onClick={() => {
+                      setConfirmingId(null);
+                      watchWrite(() => remove(session.id), strings.sessions.confirmDelete);
+                    }}
+                  >
+                    {strings.sessions.confirmDelete}
+                  </button>
+                  <button type="button" onClick={() => setConfirmingId(null)}>
+                    {strings.sessions.cancel}
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>

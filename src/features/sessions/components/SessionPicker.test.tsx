@@ -94,4 +94,50 @@ describe('SessionPicker', () => {
       expect(await screen.findByText('There is no other session.')).toBeInTheDocument();
     });
   });
+  describe('deleting a session', () => {
+    it('asks once more, and says what leaves with it', async () => {
+      await getOrCreateActiveSession('333', 'freestyle');
+      const user = userEvent.setup();
+
+      render(<SessionPicker onClose={vi.fn()} />);
+
+      await user.click(await screen.findByRole('button', { name: 'Delete' }));
+
+      expect(
+        screen.getByText(/This session has no solves in it. Deleting it cannot be undone./),
+      ).toBeInTheDocument();
+      // Still there: the first press only arms the second.
+      expect(await db.sessions.count()).toBe(1);
+
+      await user.click(screen.getByRole('button', { name: 'Delete session' }));
+
+      await waitFor(async () => {
+        expect(await db.sessions.count()).toBe(0);
+      });
+    });
+
+    it('backs out without deleting anything', async () => {
+      await getOrCreateActiveSession('333', 'freestyle');
+      const user = userEvent.setup();
+
+      render(<SessionPicker onClose={vi.fn()} />);
+
+      await user.click(await screen.findByRole('button', { name: 'Delete' }));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      expect(screen.queryByRole('button', { name: 'Delete session' })).not.toBeInTheDocument();
+      expect(await db.sessions.count()).toBe(1);
+    });
+
+    // Choosing where solves go is no place to offer to destroy any of it.
+    it('is not offered while a destination is being chosen', async () => {
+      await getOrCreateActiveSession('333', 'freestyle');
+      await createSession('Evening', '333', 'freestyle');
+
+      render(<SessionPicker onPick={vi.fn()} onClose={vi.fn()} />);
+
+      expect(await screen.findByRole('button', { name: /Default/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    });
+  });
 });

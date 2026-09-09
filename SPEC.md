@@ -87,8 +87,13 @@ dostávají hotová data z domény.
   — každá editace nastaví `editedAt`
 - mazání solvu (tombstone), hromadné mazání označených; každé mazání solvů
   se dá ~5 s vzít zpět (viz 5, „Omyl a návrat")
-- sessiony: založení, přejmenování, archivace; právě jedna aktivní session
+- sessiony: založení, přejmenování, archivace, smazání; právě jedna aktivní session
   na kombinaci `puzzle + mode`
+- **archivace a smazání nejsou totéž.** Archivovaná session zmizí z přepínače, ale
+  její solvy pořád platí — PB single je nad všemi freestyle sessiony puzzle a
+  archivací se nemění. Osobní rekord, který se hne při úklidu seznamu session,
+  není rekord. Kdo chce solvy pryč z čísel, session smaže: to vezme i všechny
+  její solvy (tombstony pro session i pro každý solve) a nejde vzít zpět
 - přepínání sessions nemá vlastní obrazovku: otevírá se ze jména session tam, kde je
   napsáno — na timeru, v historii a ve statistikách. Zvolená session je aktivní
   session, tedy zároveň to, co je vidět, i to, kam padne další složení

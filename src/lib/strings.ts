@@ -171,6 +171,14 @@ export const strings = {
     showArchived: 'Show archived',
     /** Shown when a destination is asked for and this is the only session. */
     noOther: 'There is no other session.',
+    /** Archiving is the reversible one; this is not, and says so first. */
+    deleteWarning: (count: number) =>
+      count === 0
+        ? 'This session has no solves in it. Deleting it cannot be undone.'
+        : `Deleting takes ${count} ${count === 1 ? 'solve' : 'solves'} with it, out of the`
+          + ' averages and out of the personal best. This cannot be undone.',
+    confirmDelete: 'Delete session',
+    cancel: 'Cancel',
     namePlaceholder: 'New session name',
   },
   learn: {

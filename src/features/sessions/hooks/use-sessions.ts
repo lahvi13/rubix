@@ -3,6 +3,7 @@ import type { Puzzle, Session, SolveMode } from '../../../db/types';
 import {
   activateSession,
   createSession,
+  deleteSession,
   listSessions,
   renameSession,
   setSessionArchived,
@@ -20,6 +21,7 @@ export interface SessionsView {
   rename: (id: string, name: string) => Promise<void>;
   activate: (id: string) => Promise<void>;
   setArchived: (id: string, archived: boolean) => Promise<void>;
+  remove: (id: string) => Promise<void>;
 }
 
 /**
@@ -47,5 +49,6 @@ export function useSessions(includeArchived: boolean): SessionsView {
     rename: renameSession,
     activate: activateSession,
     setArchived: async (id, archived) => setSessionArchived(id, archived),
+    remove: deleteSession,
   };
 }

@@ -272,8 +272,3 @@ export async function restoreSolves(solves: readonly Solve[]): Promise<void> {
   });
 }
 
-/** Used when a whole session goes away; solves must not outlive their session. */
-export async function deleteSolvesOfSession(sessionId: string): Promise<void> {
-  const ids = await db.solves.where('sessionId').equals(sessionId).primaryKeys();
-  await deleteSolves(ids);
-}

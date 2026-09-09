@@ -101,6 +101,32 @@ export async function setSessionArchived(id: string, archived: boolean): Promise
   });
 }
 
+/**
+ * Deletes a session and everything timed into it. Archiving is the softer act —
+ * out of the pickers, still counted in a personal best, because a best that
+ * moves when the session list is tidied is not one. This is the act that takes
+ * solves out of the numbers, and it says so before it runs.
+ *
+ * The solves are read outside the write: a transaction with an await per row is
+ * how "Transaction committed too early" happens, so the ids are gathered first
+ * and the change goes in as two bulk calls.
+ */
+export async function deleteSession(id: string): Promise<void> {
+  const solveIds = await db.solves.where('sessionId').equals(id).primaryKeys();
+  const deletedAt = now();
+
+  await db.transaction('rw', db.sessions, db.solves, db.tombstones, async () => {
+    await db.solves.bulkDelete(solveIds);
+    await db.sessions.delete(id);
+    // Graves for the solves and for the session itself: a row deleted without
+    // one comes back on the next import.
+    await db.tombstones.bulkPut([
+      ...solveIds.map((solveId) => ({ id: solveId, table: 'solves', deletedAt })),
+      { id, table: 'sessions', deletedAt },
+    ]);
+  });
+}
+
 function buildSession(name: string, puzzle: Puzzle, mode: SolveMode): Session {
   const timestamp = now();
   return {
