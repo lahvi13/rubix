@@ -79,7 +79,7 @@ describe('SessionPicker', () => {
       render(<SessionPicker onPick={vi.fn()} onClose={vi.fn()} />);
 
       // 'Evening' is active after being created, so 'Default' is the only
-      // destination â and renaming and archiving are not on offer at all.
+      // destination — and renaming and archiving are not on offer at all.
       expect(await screen.findByRole('button', { name: /Default/ })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Evening/ })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Rename' })).not.toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('SessionPicker', () => {
       await user.click(await screen.findByRole('button', { name: 'Delete' }));
 
       expect(
-        screen.getByText(/This session has no solves in it. Deleting it cannot be undone./),
+        screen.getByText('This session has no solves in it.'),
       ).toBeInTheDocument();
       // Still there: the first press only arms the second.
       expect(await db.sessions.count()).toBe(1);

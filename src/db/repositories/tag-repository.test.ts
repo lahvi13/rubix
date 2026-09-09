@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
 import { getOrCreateActiveSession } from './session-repository';
 import { addSolve, updateSolve } from './solve-repository';
-import { createTag, deleteTag, listTags, renameTag } from './tag-repository';
+import { createTag, deleteTag, listTags, renameTag, restoreTag } from './tag-repository';
 
 async function solveIn(sessionId: string) {
   return addSolve({
@@ -76,5 +76,24 @@ describe('tag repository', () => {
 
     expect((await db.tags.get(tag.id))?.name).toBe('fixed');
     expect((await db.solves.get(solve.id))?.tagIds).toEqual([tag.id]);
+  });
+  it('puts a deleted tag back on the solves it came off', async () => {
+    const tag = await createTag('warmup');
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    const solve = await solveIn(session.id);
+    await updateSolve(solve.id, { tagIds: [tag.id] });
+
+    const deleted = await deleteTag(tag.id);
+    expect((await db.solves.get(solve.id))?.tagIds).toEqual([]);
+
+    await restoreTag(deleted!);
+
+    expect((await listTags()).map((row) => row.name)).toEqual(['warmup']);
+    expect((await db.solves.get(solve.id))?.tagIds).toEqual([tag.id]);
+    expect(await db.tombstones.get(tag.id)).toBeUndefined();
+  });
+
+  it('reports nothing for a tag that is not there', async () => {
+    expect(await deleteTag('missing')).toBeNull();
   });
 });

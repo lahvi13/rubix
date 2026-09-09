@@ -3,6 +3,7 @@ import { CloseIcon } from '../../../components/Icons';
 import { useKeyCapture } from '../../../hooks/use-key-capture';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
+import { useRemoveTag } from '../hooks/use-remove-tag';
 import { useTagUsage } from '../hooks/use-tag-usage';
 import { useTags } from '../hooks/use-tags';
 
@@ -19,10 +20,10 @@ interface TagPanelProps {
  * the destructive button apart from it.
  */
 export function TagPanel({ onClose }: TagPanelProps) {
-  const { tags, create, rename, remove } = useTags();
+  const { tags, create, rename } = useTags();
+  const removeTag = useRemoveTag();
   const usage = useTagUsage();
   const [newName, setNewName] = useState('');
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   useKeyCapture(true, onClose);
 
@@ -68,25 +69,12 @@ export function TagPanel({ onClose }: TagPanelProps) {
               {strings.history.tagOnSolves(usage.get(tag.id) ?? 0)}
             </span>
 
-            {/* Two taps rather than a dialog, and never the reflex kind: this
-                is a rare, deliberate act that also strips the tag off every
-                solve wearing it, which the count beside it has just said. */}
-            {confirmingId === tag.id ? (
-              <button
-                type="button"
-                className="is-danger"
-                onClick={() => {
-                  setConfirmingId(null);
-                  watchWrite(() => remove(tag.id), strings.solve.delete);
-                }}
-              >
-                {strings.history.confirmDeleteTag}
-              </button>
-            ) : (
-              <button type="button" onClick={() => setConfirmingId(tag.id)}>
-                {strings.solve.delete}
-              </button>
-            )}
+            {/* One press: the undo bar carries the way back, and the count
+                beside this has already said how many solves it comes off.
+                A confirmation on top of an undo is a tax on being right. */}
+            <button type="button" className="is-danger" onClick={() => void removeTag(tag.id)}>
+              {strings.solve.delete}
+            </button>
           </li>
         ))}
       </ul>

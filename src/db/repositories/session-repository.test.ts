@@ -5,6 +5,7 @@ import {
   activateSession,
   createSession,
   deleteSession,
+  restoreSession,
   getActiveSession,
   getOrCreateActiveSession,
   listSessions,
@@ -212,5 +213,59 @@ describe('what stays active when the active session goes away', () => {
 
     expect(fresh.id).not.toBe(drill.id);
     expect(fresh.mode).toBe('freestyle');
+  });
+});
+describe('putting a deleted session back', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+  });
+
+  async function seedSolve(sessionId: string) {
+    return addSolve({
+      sessionId,
+      puzzle: '333',
+      mode: 'freestyle',
+      scramble: "R U R' U'",
+      rawMs: 12_340,
+      penalty: 'none',
+      penaltySource: 'auto',
+      inspectionMs: null,
+      startedAt: Date.now(),
+    });
+  }
+
+  it('brings back the session, its solves and no graves', async () => {
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    const solve = await seedSolve(session.id);
+
+    const deleted = await deleteSession(session.id);
+    await restoreSession(deleted!);
+
+    expect(await db.sessions.get(session.id)).toBeDefined();
+    expect(await db.solves.get(solve.id)).toBeDefined();
+    // A row back with its grave still standing is deleted again on import.
+    expect(await db.tombstones.get(session.id)).toBeUndefined();
+    expect(await db.tombstones.get(solve.id)).toBeUndefined();
+  });
+
+  // Two active sessions for one puzzle and mode is a state nothing can read.
+  it('stands down whatever was adopted while it was gone', async () => {
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    const spare = await createSession('Evening', '333', 'freestyle');
+    await activateSession(session.id);
+
+    const deleted = await deleteSession(session.id);
+    // The app adopts the spare the moment something asks for an active session.
+    expect((await getOrCreateActiveSession('333', 'freestyle')).id).toBe(spare.id);
+
+    await restoreSession(deleted!);
+
+    expect((await getActiveSession('333', 'freestyle'))?.id).toBe(session.id);
+    expect(await db.sessions.where('[puzzle+mode+isActive]').equals(['333', 'freestyle', 1]).count())
+      .toBe(1);
+  });
+
+  it('reports nothing for a session that is not there', async () => {
+    expect(await deleteSession('missing')).toBeNull();
   });
 });

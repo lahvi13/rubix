@@ -1,10 +1,16 @@
 import { db } from '../schema';
-import type { Puzzle, Session, SolveMode } from '../types';
+import type { Puzzle, Session, Solve, SolveMode } from '../types';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 
 export const DEFAULT_METHOD_ID = 'cfop';
 const DEFAULT_SESSION_NAME = 'Default';
+
+/** A deleted session and everything that was timed into it. */
+export interface DeletedSession {
+  session: Session;
+  solves: Solve[];
+}
 
 /**
  * Returns the active session for the given puzzle/mode, creating one on first
@@ -125,19 +131,49 @@ export async function setSessionArchived(id: string, archived: boolean): Promise
  * how "Transaction committed too early" happens, so the ids are gathered first
  * and the change goes in as two bulk calls.
  */
-export async function deleteSession(id: string): Promise<void> {
-  const solveIds = await db.solves.where('sessionId').equals(id).primaryKeys();
+export async function deleteSession(id: string): Promise<DeletedSession | null> {
+  const solves = await db.solves.where('sessionId').equals(id).toArray();
   const deletedAt = now();
 
-  await db.transaction('rw', db.sessions, db.solves, db.tombstones, async () => {
-    await db.solves.bulkDelete(solveIds);
+  return db.transaction('rw', db.sessions, db.solves, db.tombstones, async () => {
+    const session = await db.sessions.get(id);
+    if (!session) return null;
+
+    await db.solves.bulkDelete(solves.map((solve) => solve.id));
     await db.sessions.delete(id);
     // Graves for the solves and for the session itself: a row deleted without
     // one comes back on the next import.
     await db.tombstones.bulkPut([
-      ...solveIds.map((solveId) => ({ id: solveId, table: 'solves', deletedAt })),
+      ...solves.map((solve) => ({ id: solve.id, table: 'solves', deletedAt })),
       { id, table: 'sessions', deletedAt },
     ]);
+
+    return { session, solves };
+  });
+}
+
+/**
+ * Puts a deleted session and its solves back exactly as they were, graves
+ * included. The session goes first: a solve whose session is not there yet
+ * belongs to nothing for as long as that lasts.
+ *
+ * If it was the active one, it becomes active again and whatever was adopted in
+ * its absence stands down — two active sessions for one puzzle and mode is a
+ * state the rest of the app has no reading for.
+ */
+export async function restoreSession({ session, solves }: DeletedSession): Promise<void> {
+  await db.transaction('rw', db.sessions, db.solves, db.tombstones, async () => {
+    if (session.isActive === 1) await clearActive(session.puzzle, session.mode);
+    await db.sessions.put(session);
+    await db.solves.bulkPut(solves);
+
+    const ids = [session.id, ...solves.map((solve) => solve.id)];
+    const graves = await db.tombstones.bulkGet(ids);
+    await db.tombstones.bulkDelete(
+      graves
+        .filter((grave) => grave?.table === 'sessions' || grave?.table === 'solves')
+        .map((grave) => grave?.id ?? ''),
+    );
   });
 }
 

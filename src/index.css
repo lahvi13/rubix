@@ -1309,7 +1309,7 @@ button[disabled] {
 }
 
 /* The whole width picks the session; renaming and archiving are the rarer
-   edits below it. A tap area rather than a button, so it paints itself â and
+   edits below it. A tap area rather than a button, so it paints itself — and
    minds its own height. */
 .session__name {
   display: flex;
@@ -2884,7 +2884,10 @@ button[disabled] {
   border-radius: var(--radius-md);
   background: var(--surface);
   font-size: var(--text-md);
-  z-index: 11;
+  /* Over the sheets, not under them. A session is deleted from inside one
+     that stays open afterwards, and an offer to undo hidden behind a panel
+     is the promise this bar exists to keep, broken. */
+  z-index: 60;
 }
 
 .undo-bar__message {

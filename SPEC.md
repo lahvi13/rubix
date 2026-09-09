@@ -93,7 +93,12 @@ dostávají hotová data z domény.
   její solvy pořád platí — PB single je nad všemi freestyle sessiony puzzle a
   archivací se nemění. Osobní rekord, který se hne při úklidu seznamu session,
   není rekord. Kdo chce solvy pryč z čísel, session smaže: to vezme i všechny
-  její solvy (tombstony pro session i pro každý solve) a nejde vzít zpět
+  její solvy (tombstony pro session i pro každý solve). Karta se předtím zeptá
+  podruhé a řekne, kolika solvů se to týká; po smazání se dá — stejně jako u solvů
+  — ~5 s vzít zpět. Smazání tagu je vratné taky, včetně návratu na solvy, ze kterých
+  ho to strhlo
+- když aktivní session zmizí (smazáním nebo archivací), aktivní se stane některá
+  ze zbývajících — nezakládá se nový Default vedle starého
 - přepínání sessions nemá vlastní obrazovku: otevírá se ze jména session tam, kde je
   napsáno — na timeru, v historii a ve statistikách. Zvolená session je aktivní
   session, tedy zároveň to, co je vidět, i to, kam padne další složení

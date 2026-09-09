@@ -81,6 +81,12 @@ export const strings = {
     action: 'Undo',
     deleted: (count: number) => (count === 1 ? 'Solve deleted.' : `${count} solves deleted.`),
     restoring: 'Putting the solves back',
+    putBack: 'Putting it back',
+    tagDeleted: (name: string) => `Tag “${name}” deleted.`,
+    sessionDeleted: (name: string, solves: number) =>
+      solves === 0
+        ? `Session “${name}” deleted.`
+        : `Session “${name}” deleted, with ${solves} ${solves === 1 ? 'solve' : 'solves'}.`,
     moved: (count: number, session: string) =>
       count === 1 ? `Solve moved to ${session}.` : `${count} solves moved to ${session}.`,
   },
@@ -154,7 +160,6 @@ export const strings = {
     noTags: 'No tags yet. A tag made here can be put on any solve.',
     /** Said next to a delete, so it reads as what would be stripped. */
     tagOnSolves: (count: number) => `on ${count} ${count === 1 ? 'solve' : 'solves'}`,
-    confirmDeleteTag: 'Delete?',
   },
   sessions: {
     title: 'Sessions',
@@ -174,9 +179,9 @@ export const strings = {
     /** Archiving is the reversible one; this is not, and says so first. */
     deleteWarning: (count: number) =>
       count === 0
-        ? 'This session has no solves in it. Deleting it cannot be undone.'
+        ? 'This session has no solves in it.'
         : `Deleting takes ${count} ${count === 1 ? 'solve' : 'solves'} with it, out of the`
-          + ' averages and out of the personal best. This cannot be undone.',
+          + ' averages and out of the personal best.',
     confirmDelete: 'Delete session',
     cancel: 'Cancel',
     namePlaceholder: 'New session name',

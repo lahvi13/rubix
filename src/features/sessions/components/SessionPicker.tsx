@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { CloseIcon } from '../../../components/Icons';
 import { useKeyCapture } from '../../../hooks/use-key-capture';
 import { formatDate } from '../../../lib/format';
-import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
+import { useRemoveSession } from '../hooks/use-remove-session';
 import { useSessions } from '../hooks/use-sessions';
 
 const PUZZLE = '333';
@@ -32,13 +32,14 @@ interface SessionPickerProps {
 export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
   const isChoosing = onPick !== undefined;
   const [includeArchived, setIncludeArchived] = useState(false);
-  const { sessions, create, rename, activate, setArchived, remove } = useSessions(
+  const { sessions, create, rename, activate, setArchived } = useSessions(
     isChoosing ? false : includeArchived,
   );
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const removeSession = useRemoveSession();
 
   useKeyCapture(true, onClose);
 
@@ -163,7 +164,7 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
                     className="is-danger"
                     onClick={() => {
                       setConfirmingId(null);
-                      watchWrite(() => remove(session.id), strings.sessions.confirmDelete);
+                      void removeSession(session.id);
                     }}
                   >
                     {strings.sessions.confirmDelete}
