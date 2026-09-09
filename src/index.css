@@ -1113,7 +1113,10 @@ button[disabled] {
      background and a hairline border disappears, so the edge is carried by
      a shadow cast upwards onto what it covers. */
   box-shadow: 0 -0.75rem 1.5rem var(--scrim);
-  padding: var(--space-6);
+  /* No padding at the top: the bar pinned there carries it instead. A
+     sticky box cannot rise above its containing block, so any padding here
+     is a strip of scrolling content showing above the bar. */
+  padding: 0 var(--space-6);
   /* The sheet is pinned to the bottom edge, so the home indicator lies over
      its last row — the tags and the delete button. */
   padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
@@ -1178,14 +1181,15 @@ button[disabled] {
    sequence at the other when there is one. */
 .sheet__bar {
   /* Pinned: the panel is taller than the screen, and both the way out and
-     the way through it scrolled away with the content. The negative margins
-     take back the panel's padding so the bar spans its full width and the
-     content passes under it rather than beside it. */
+     the way through it scrolled away with the content. It carries the panel's
+     top padding itself so its box starts where the scrollport does, and the
+     negative side margins let it span the full width with the content passing
+     under it rather than beside it. */
   position: sticky;
   top: 0;
   z-index: 1;
-  margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) 0;
-  padding: var(--space-4) var(--space-6);
+  margin-inline: calc(var(--space-6) * -1);
+  padding: var(--space-6) var(--space-6) var(--space-4);
   background: var(--surface);
   display: flex;
   align-items: center;
