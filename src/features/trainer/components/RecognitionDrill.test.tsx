@@ -58,6 +58,9 @@ describe('RecognitionDrill', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
     render(<DrillScreen />);
     await screen.findByText('Which case is this?');
+    // The question is asked before its cards are ready, and the clock only
+    // starts with them; advancing it in that gap leaves nothing to measure.
+    await waitFor(() => expect(cards().length).toBeGreaterThan(0));
 
     clock += 1400;
     await user.click(firstCard());
