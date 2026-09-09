@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useBackToClose } from '../hooks/use-back-to-close';
 import { useKeyCapture } from '../hooks/use-key-capture';
 import { strings } from '../lib/strings';
 
@@ -14,7 +15,8 @@ interface SheetProps {
 /**
  * A panel over the screen, with everything that makes it one: the wash that
  * dims what it covers and closes it when tapped, the keyboard held so a Space
- * meant for a button here does not start a solve underneath.
+ * meant for a button here does not start a solve underneath, and the back
+ * gesture closing it rather than leaving the screen.
  *
  * All of it lives here because it used to live at each call site, and one of
  * them had already drifted — the solve detail shipped without a wash, which is
@@ -22,6 +24,7 @@ interface SheetProps {
  */
 export function Sheet({ label, className, onClose, children }: SheetProps) {
   useKeyCapture(true, onClose);
+  useBackToClose(onClose);
 
   return (
     <>
