@@ -74,7 +74,16 @@ export const SolveList = memo(function SolveList({
               {solve.penalty !== 'none' && solve.penaltySource === 'auto'
                 ? strings.solve.autoPenalty
                 : formatWhen(solve.createdAt, at)}
-              {solve.starred === 1 ? ` ${strings.history.mark}` : ''}
+              {solve.starred === 1 ? (
+                <span className="history__flag" role="img" aria-label={strings.history.marked}>
+                  {strings.history.mark}
+                </span>
+              ) : null}
+              {solve.note ? (
+                <span className="history__flag" role="img" aria-label={strings.history.hasNote}>
+                  {strings.history.noteMark}
+                </span>
+              ) : null}
             </span>
           </button>
           {index === 0 ? (

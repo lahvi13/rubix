@@ -286,8 +286,22 @@ function HistoryRow({
         </span>
         <span className="history__meta">
           {formatWhen(solve.createdAt, at)}
-          {solve.starred === 1 ? ` ${strings.history.mark}` : ''}
-          {solve.note ? ' ✎' : ''}
+          {/* Both wear the text's full strength rather than the meta's grey:
+              they say the solve has something on it, and at the muted weight
+              beside a timestamp they were being missed. Not a colour of their
+              own — the accent and the gold on this row already mean a record
+              apiece, and a third meaning in a third hue is how it stops being
+              readable. */}
+          {solve.starred === 1 ? (
+            <span className="history__flag" role="img" aria-label={strings.history.marked}>
+              {strings.history.mark}
+            </span>
+          ) : null}
+          {solve.note ? (
+            <span className="history__flag" role="img" aria-label={strings.history.hasNote}>
+              {strings.history.noteMark}
+            </span>
+          ) : null}
         </span>
         <span className="history__tags">
           {tagColors.map((color, index) => (

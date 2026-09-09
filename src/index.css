@@ -920,11 +920,19 @@ button[disabled] {
   border-radius: var(--radius-pill);
 }
 
-/* A filter is on or off, not right or wrong; it fills instead of colouring. */
+/*
+ * A filter is on or off, not right or wrong, so it takes no colour that
+ * means something: the accent is a session's best and the gold is the best
+ * there has ever been, and a chip wearing either would be read as a verdict.
+ * It changes weight instead — ring, fill and text all at once, because the
+ * fill alone was a shade off the background on a dark ground and the ring
+ * was not changing at all.
+ */
 .filters button.is-active {
-  border-color: var(--border);
+  border-color: var(--text);
   color: var(--text);
-  background: var(--surface);
+  background: var(--surface-raised);
+  font-weight: 600;
 }
 
 /* Not a filter but the way to the tags themselves: dotted, like every
@@ -1090,6 +1098,13 @@ button[disabled] {
  * means "I starred this" already lives. Accent, small and superscript, so the
  * two are never read as the same mark.
  */
+/* What the reader put on the row: their own mark, and whether there is a note
+   to read. Lifted out of the meta's grey, since that is what was hiding them. */
+.history__flag {
+  margin-left: 0.4em;
+  color: var(--text);
+}
+
 .history__best {
   margin-left: 0.3em;
   font-size: 0.62em;

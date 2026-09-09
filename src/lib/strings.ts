@@ -148,6 +148,10 @@ export const strings = {
     star: '★',
     /** The reader's own mark, so that it cannot be read as a record. */
     mark: '⚑',
+    marked: 'Marked',
+    /** Said on the row when the solve carries a note. */
+    noteMark: '✎',
+    hasNote: 'Has a note',
     personalBest: 'Personal best',
     sessionBest: 'Best of this session',
     tags: 'Tags',
