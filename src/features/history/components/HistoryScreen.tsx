@@ -1,15 +1,17 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { now } from '../../../lib/clock';
-import { formatTime, formatWhen } from '../../../lib/format';
+import { dayKey, formatDate, formatTime, formatWhen } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { SolvePhases, usePhases } from '../../splits';
 import { useHistory } from '../hooks/use-history';
+import { useSolveDays } from '../hooks/use-solve-days';
 import { useTags } from '../hooks/use-tags';
+import { DayPicker } from './DayPicker';
 import { SolveDetailSheet } from './SolveDetailSheet';
 import { TagPanel } from './TagPanel';
 
@@ -23,10 +25,12 @@ export function HistoryScreen() {
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   const history = useHistory(session?.id ?? null, PUZZLE, phaseKeys);
   const tags = useTags();
+  const days = useSolveDays(session?.id ?? null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [isMoveOpen, setMoveOpen] = useState(false);
   const [isTagPanelOpen, setTagPanelOpen] = useState(false);
+  const [isDayPickerOpen, setDayPickerOpen] = useState(false);
   const moveSolves = useMoveSolves();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -100,12 +104,24 @@ export function HistoryScreen() {
         >
           {strings.history.mark}
         </button>
+        {/* Only offered once there is more than one day to choose between. */}
+        {days.length > 1 ? (
+          <button
+            type="button"
+            aria-label={strings.history.filterDay}
+            className={history.filters.day === undefined ? '' : 'is-active'}
+            onClick={() => setDayPickerOpen(true)}
+          >
+            {history.filters.day === undefined
+              ? strings.history.days
+              : formatDate(days.find((day) => day.key === history.filters.day)?.at ?? 0)}
+          </button>
+        ) : null}
         {tags.tags.map((tag) => (
           <button
             key={tag.id}
             type="button"
             className={history.filters.tagId === tag.id ? 'is-active' : ''}
-            style={{ borderColor: tag.color }}
             onClick={() =>
               history.setFilters({
                 ...history.filters,
@@ -165,20 +181,33 @@ export function HistoryScreen() {
         <p className="solves__empty">{strings.history.empty}</p>
       ) : (
         <ol className="history">
-          {history.solves.map((solve) => (
-            <HistoryRow
-              key={solve.id}
-              solve={solve}
-              phases={phases}
-              phaseKeys={phaseKeys}
-              bests={history.bests}
-              globalPbMs={history.globalPbMs}
-              tagColors={solve.tagIds.map((id) => tags.byId.get(id)?.color ?? '#555')}
-              isSelected={selected.has(solve.id)}
-              onToggleSelected={() => toggleSelected(solve.id)}
-              onOpen={() => setOpenId(solve.id)}
-            />
-          ))}
+          {history.solves.map((solve, index) => {
+            // A heading whenever the day changes. The list runs newest first,
+            // so each one opens the day below it — which is what stops a long
+            // session from being an undated column of numbers.
+            const before = history.solves[index - 1];
+            const startsDay =
+              before === undefined || dayKey(before.createdAt) !== dayKey(solve.createdAt);
+
+            return (
+              <Fragment key={solve.id}>
+                {startsDay ? (
+                  <li className="history__day">{formatDate(solve.createdAt)}</li>
+                ) : null}
+                <HistoryRow
+                  solve={solve}
+                  phases={phases}
+                  phaseKeys={phaseKeys}
+                  bests={history.bests}
+                  globalPbMs={history.globalPbMs}
+                  tagColors={solve.tagIds.map((id) => tags.byId.get(id)?.color ?? '#555')}
+                  isSelected={selected.has(solve.id)}
+                  onToggleSelected={() => toggleSelected(solve.id)}
+                  onOpen={() => setOpenId(solve.id)}
+                />
+              </Fragment>
+            );
+          })}
         </ol>
       )}
 
@@ -207,6 +236,15 @@ export function HistoryScreen() {
           title={strings.history.moveTitle}
           onPick={moveSelected}
           onClose={() => setMoveOpen(false)}
+        />
+      ) : null}
+
+      {isDayPickerOpen ? (
+        <DayPicker
+          days={days}
+          selected={history.filters.day}
+          onPick={(day) => history.setFilters({ ...history.filters, day })}
+          onClose={() => setDayPickerOpen(false)}
         />
       ) : null}
 

@@ -90,7 +90,15 @@ export function TimerScreen() {
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
   const openableSolves = useMemo(() => solves.map((solve) => solve.id), [solves]);
-  const records = useSessionRecords(session?.id ?? null, PUZZLE, phaseKeys);
+  // From the method's phases, not the timer's: `phaseKeys` above is empty
+  // unless phase timing is switched on, while the list below draws the bars
+  // of every solve that has them. Asked with the wrong keys, the records come
+  // back without phases and nothing is ever marked.
+  const listedPhaseKeys = useMemo(
+    () => methodPhases.map((phase) => phase.key),
+    [methodPhases],
+  );
+  const records = useSessionRecords(session?.id ?? null, PUZZLE, listedPhaseKeys);
   const showBrowsing = isBrowsing && status === 'idle';
 
   // Derived, not synchronized: the result stays up only while the machine is

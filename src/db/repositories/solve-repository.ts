@@ -45,6 +45,11 @@ export interface SolveFilters {
    * every solve of the session, which this query is in the middle of reading.
    */
   record?: boolean;
+  /**
+   * One day of practice, as a local date key. Not applied here either: which
+   * day a timestamp falls on is a question about the reader's timezone.
+   */
+  day?: string;
   tagId?: string;
 }
 

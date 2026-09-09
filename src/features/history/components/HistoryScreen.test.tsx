@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../../db/schema';
@@ -26,6 +26,11 @@ async function seedSolve(sessionId: string, rawMs: number) {
     inspectionMs: null,
     startedAt: Date.now(),
   });
+}
+
+/** The solve rows, which the list now interleaves with day headings. */
+function rows(): Element[] {
+  return [...document.querySelectorAll('.history__row')];
 }
 
 describe('HistoryScreen', () => {
@@ -180,7 +185,7 @@ describe('HistoryScreen', () => {
     // A record belongs to the solve, not to whatever the filters let through:
     // the mark must not move because the list got shorter.
     await waitFor(() => {
-      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+      expect(rows()).toHaveLength(1);
     });
     expect(await screen.findByLabelText('Personal best')).toBeInTheDocument();
   });
@@ -194,7 +199,7 @@ describe('HistoryScreen', () => {
     await user.click(await screen.findByRole('button', { name: 'Filter records' }));
 
     await waitFor(() => {
-      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+      expect(rows()).toHaveLength(1);
     });
     expect(screen.getByText(/9.99/)).toBeInTheDocument();
   });
@@ -232,4 +237,80 @@ describe('HistoryScreen', () => {
     });
     expect(screen.getAllByText('DNF').length).toBeGreaterThan(0);
   });
+  it('heads each day, so a long session is not an undated column', async () => {
+    const today = await seedSolve(sessionId, 12_340);
+    const earlier = await seedSolve(sessionId, 9990);
+    // Two days apart, which is what a session left running over a week looks
+    // like from the inside.
+    await db.solves.update(earlier.id, { createdAt: today.createdAt - 2 * 86_400_000 });
+
+    render(<HistoryScreen />);
+
+    await waitFor(() => {
+      expect(rows()).toHaveLength(2);
+    });
+    const headings = [...document.querySelectorAll('.history__day')];
+    expect(headings).toHaveLength(2);
+    // One heading per day, not one per solve.
+    expect(headings[0]?.textContent).not.toBe(headings[1]?.textContent);
+  });
+
+  it('heads the day once when the solves share it', async () => {
+    await seedSolve(sessionId, 12_340);
+    await seedSolve(sessionId, 9990);
+
+    render(<HistoryScreen />);
+
+    await waitFor(() => {
+      expect(rows()).toHaveLength(2);
+    });
+    expect(document.querySelectorAll('.history__day')).toHaveLength(1);
+  });
+
+  it('narrows the list to one day of practice, and back again', async () => {
+    const today = await seedSolve(sessionId, 12_340);
+    const earlier = await seedSolve(sessionId, 9990);
+    await db.solves.update(earlier.id, { createdAt: today.createdAt - 2 * 86_400_000 });
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await waitFor(() => {
+      expect(rows()).toHaveLength(2);
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Filter by day' }));
+    const picker = await screen.findByRole('dialog', { name: 'Days' });
+    // Only the days that were practised on: every one carries a count, which
+    // the way back to all of them does not.
+    expect(picker.querySelectorAll('.day__count')).toHaveLength(2);
+
+    await user.click(within(picker).getAllByRole('button', { name: /solve/ })[0]!);
+
+    await waitFor(() => {
+      expect(rows()).toHaveLength(1);
+    });
+    // One day on screen, so the heading that names it appears once.
+    expect(document.querySelectorAll('.history__day')).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: 'Filter by day' }));
+    await user.click(await screen.findByRole('button', { name: 'All days' }));
+
+    await waitFor(() => {
+      expect(rows()).toHaveLength(2);
+    });
+  });
+
+  // One day is not a choice, and a chip offering it would be a dead control.
+  it('offers no day picker until there is more than one day', async () => {
+    await seedSolve(sessionId, 12_340);
+    await seedSolve(sessionId, 9990);
+
+    render(<HistoryScreen />);
+
+    await waitFor(() => {
+      expect(rows()).toHaveLength(2);
+    });
+    expect(screen.queryByRole('button', { name: 'Filter by day' })).not.toBeInTheDocument();
+  });
+
 });

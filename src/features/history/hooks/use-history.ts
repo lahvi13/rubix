@@ -9,6 +9,7 @@ import {
   type SolvePatch,
 } from '../../../db/repositories/solve-repository';
 import { finalMs } from '../../../domain/solve/final-time';
+import { dayKey } from '../../../lib/format';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { useRemoveSolves } from '../../../hooks/use-remove-solves';
 import { useSessionRecords } from '../../../hooks/use-session-records';
@@ -65,14 +66,20 @@ export function useHistory(
   // a record is worked out from the session's solves, which the query has no
   // way of knowing while it is running.
   const matched = useMemo(() => {
-    const rows = result?.matched ?? [];
-    if (!filters.record) return rows;
-    return rows.filter(
-      (solve) =>
-        (finalMs(solve) !== null && finalMs(solve) === bests.totalMs) ||
-        bestPhasesIn(solve, phaseKeys, bests).length > 0,
-    );
-  }, [result, filters.record, bests, phaseKeys]);
+    let rows = result?.matched ?? [];
+    if (filters.day !== undefined) {
+      const day = filters.day;
+      rows = rows.filter((solve) => dayKey(solve.createdAt) === day);
+    }
+    if (filters.record) {
+      rows = rows.filter(
+        (solve) =>
+          (finalMs(solve) !== null && finalMs(solve) === bests.totalMs) ||
+          bestPhasesIn(solve, phaseKeys, bests).length > 0,
+      );
+    }
+    return rows;
+  }, [result, filters.record, filters.day, bests, phaseKeys]);
 
   return {
     solves: matched.slice(0, limit),

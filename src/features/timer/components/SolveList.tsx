@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { SolvePhases } from '../../splits';
 import { finalMs } from '../../../domain/solve/final-time';
-import type { Bests } from '../../../domain/stats/phases';
+import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { togglePenalty } from '../../../domain/solve/penalty';
 import { now } from '../../../lib/clock';
 import { formatTime, formatWhen } from '../../../lib/format';
@@ -51,6 +51,8 @@ export const SolveList = memo(function SolveList({
   onChangePenalty,
   onDelete,
 }: SolveListProps) {
+  const phaseKeys = phases.map((phase) => phase.key);
+
   if (solves.length === 0) {
     return <p className="solves__empty">{strings.solve.empty}</p>;
   }
@@ -66,7 +68,7 @@ export const SolveList = memo(function SolveList({
       }}
     >
       {solves.map((solve, index) => (
-        <li key={solve.id} className="solves__row">
+        <li key={solve.id} className={rowClass(solve, phaseKeys, bests)}>
           <button type="button" className="solves__open" onClick={() => onOpen(solve.id)}>
             <span className="solves__index">{solves.length - index}.</span>
             <SolveTime solve={solve} bests={bests} globalPbMs={globalPbMs} />
@@ -109,7 +111,15 @@ export const SolveList = memo(function SolveList({
           ) : null}
           {/* Which of them were timed by phase, without opening any. No
               numbers: this list is a peek under a running timer. */}
-          <SolvePhases solve={solve} phases={phases} detail="shape" />
+          {/* The same ring the history draws round a phase that is the fastest
+              it has been. Here it matters more: this is the list a solve is
+              looked at in while the cube is still in hand. */}
+          <SolvePhases
+            solve={solve}
+            phases={phases}
+            detail="shape"
+            bestPhases={bestPhasesIn(solve, phaseKeys, bests)}
+          />
         </li>
       ))}
     </ol>
@@ -146,4 +156,17 @@ function SolveTime({ solve, bests, globalPbMs }: SolveTimeProps) {
       ) : null}
     </span>
   );
+}
+
+/**
+ * Rows holding a record are lit, the way the history lights them: the whole
+ * row rather than one number, so the ones worth opening can be picked out
+ * without reading any of them.
+ */
+function rowClass(solve: Solve, phaseKeys: readonly string[], bests: Bests): string {
+  const resultMs = finalMs(solve);
+  const holdsBest =
+    (resultMs !== null && resultMs === bests.totalMs) ||
+    bestPhasesIn(solve, phaseKeys, bests).length > 0;
+  return holdsBest ? 'solves__row is-notable' : 'solves__row';
 }

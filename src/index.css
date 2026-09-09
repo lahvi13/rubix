@@ -79,6 +79,14 @@
   --danger: light-dark(#c62d2d, #f87171);
 
   /* A wash over whatever an open menu or sheet is covering. */
+  /*
+   * How tall the pinned header stands. Written out because something else has
+   * to pin below it — the history's day headings — and the two sliding apart
+   * would hide a date behind the title. In rem, so it follows the text-size
+   * setting the way the header itself does.
+   */
+  --header-height: calc(2.5rem + var(--space-2) * 2 + 1px);
+
   --scrim: light-dark(rgb(15 24 40 / 32%), rgb(0 0 0 / 45%));
   /* The faintest fill that still reads as "this one is on". */
   --tint: light-dark(rgb(21 24 31 / 7%), rgb(255 255 255 / 8%));
@@ -374,6 +382,7 @@ button[disabled] {
 .app__header {
   position: sticky;
   top: 0;
+  min-height: var(--header-height);
   /* Above the timer's press surface: with a solve under way the rest of the
      screen belongs to the clock, but the way out must not. */
   z-index: 40;
@@ -952,9 +961,72 @@ button[disabled] {
   color: var(--muted);
 }
 
+/*
+ * The day a run of solves belongs to. Pinned under the app's own header so
+ * that scrolling a long session always says which day is being read — the
+ * question a hundred undated times cannot answer.
+ */
+.history__day {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  margin: var(--space-5) 0 var(--space-3);
+  padding: var(--space-2) 0;
+  background: var(--bg);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* The first one opens the list, so it needs no room above it. */
+.history__day:first-child {
+  margin-top: 0;
+}
+
 /* Only there while something is selected, so it may take a row of its own
    rather than squeeze in beside the counts. */
 /* Tags */
+
+.day-picker {
+  gap: var(--space-5);
+}
+
+.day-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* A row of the picker: the date, and how much was done that day. */
+.day {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+}
+
+.day.is-active {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.day__count {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
 
 .tag-panel {
   gap: var(--space-5);
@@ -1085,7 +1157,8 @@ button[disabled] {
  * that speed. Raised rather than tinted: the row already carries the phase
  * colours, and a wash behind them would fight with every one of them.
  */
-.history__row.is-notable {
+.history__row.is-notable,
+.solves__row.is-notable {
   background: var(--surface-raised);
   box-shadow: inset 2px 0 0 var(--accent);
   /* The ring around a best block breaks the block off its ground, so the
@@ -1094,9 +1167,8 @@ button[disabled] {
 }
 
 /*
- * Attached to the time rather than set in the meta line, where the star that
- * means "I starred this" already lives. Accent, small and superscript, so the
- * two are never read as the same mark.
+ * Attached to the time, which is what it is about. Small and superscript so
+ * a record is announced without shouting over the number that earned it.
  */
 /* What the reader put on the row: their own mark, and whether there is a note
    to read. Lifted out of the meta's grey, since that is what was hiding them. */

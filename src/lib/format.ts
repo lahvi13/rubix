@@ -137,3 +137,17 @@ export function formatIsoDateTime(timestamp: number): string {
 }
 
 export { MS_PER_MINUTE, MS_PER_SECOND };
+/**
+ * The day a timestamp falls on, in the reader's own timezone, as something
+ * two timestamps can be compared by. Not a formatted date: this is the key a
+ * list groups by, and it has to sort and match exactly.
+ *
+ * Local rather than UTC, because a solve at eleven at night belongs to the
+ * evening it happened in and not to the next morning.
+ */
+export function dayKey(ms: number): string {
+  const at = new Date(ms);
+  const month = String(at.getMonth() + 1).padStart(2, '0');
+  const day = String(at.getDate()).padStart(2, '0');
+  return `${at.getFullYear()}-${month}-${day}`;
+}
