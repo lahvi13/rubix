@@ -84,6 +84,9 @@ describe('RecognitionDrill', () => {
     await screen.findByRole('status');
 
     const wasRight = tapped.classList.contains('is-correct');
+    // The status shows the moment the answer is judged, but the row is
+    // written after it; reading straight away catches an empty table.
+    await waitFor(async () => expect(await db.solves.count()).toBe(1));
     const solve = await db.solves.toCollection().first();
     expect(solve?.penalty).toBe(wasRight ? 'none' : 'dnf');
     expect(screen.getByRole('status').textContent).toMatch(wasRight ? /^Right/ : /^No —/);
@@ -116,6 +119,7 @@ describe('RecognitionDrill', () => {
     expect(solution).not.toBeNull();
 
     // The algorithm shown is the one the answered case is drilled with.
+    await waitFor(async () => expect(await db.solves.count()).toBe(1));
     const solve = await db.solves.toCollection().first();
     const active = await db.algorithms
       .where('caseId')
