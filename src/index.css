@@ -1238,11 +1238,17 @@ button[disabled] {
 
 .detail__footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-5);
   border-top: 1px solid var(--border);
   padding-top: var(--space-5);
+}
+
+.detail__footer-actions {
+  display: flex;
+  gap: var(--space-3);
 }
 
 .detail__meta {

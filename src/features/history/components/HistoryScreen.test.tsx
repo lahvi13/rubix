@@ -65,6 +65,24 @@ describe('HistoryScreen', () => {
     expect(solve.sessionId).toBe(sessionId);
   });
 
+  it('moves a single solve out of the detail sheet', async () => {
+    const other = await createSession('Evening', '333', 'freestyle');
+    await activateSession(sessionId);
+    await seedSolve(sessionId, 12_340);
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await user.click(await screen.findByText('12.34'));
+    await user.click(await screen.findByRole('button', { name: 'Move to…' }));
+    await user.click(await screen.findByRole('button', { name: /Evening/ }));
+
+    await waitFor(async () => {
+      expect(await listSolvesChronological(other.id)).toHaveLength(1);
+    });
+    // The detail was showing a solve that is somewhere else now.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('lists the session solves newest first', async () => {
     await seedSolve(sessionId, 12_340);
     await seedSolve(sessionId, 9990);

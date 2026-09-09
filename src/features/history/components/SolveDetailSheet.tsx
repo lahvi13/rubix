@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { MethodPhase } from '../../../db/types';
 import { getSolve, updateSolve, type SolvePatch } from '../../../db/repositories/solve-repository';
+import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { useRemoveSolves } from '../../../hooks/use-remove-solves';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
+import { SessionPicker } from '../../sessions';
 import { useTags } from '../hooks/use-tags';
 import { SolveDetail } from './SolveDetail';
 
@@ -22,8 +25,27 @@ export function SolveDetailSheet({ solveId, phases, onClose }: SolveDetailSheetP
   const solve = useLiveQuery(() => getSolve(solveId), [solveId]);
   const tags = useTags();
   const removeSolves = useRemoveSolves();
+  const moveSolves = useMoveSolves();
+  const [isMoving, setMoving] = useState(false);
 
   if (!solve) return null;
+
+  // The sheet turns into the choice rather than stacking one on top of it: two
+  // panels deep, the one underneath is covered anyway and only the way back out
+  // gets harder. Once the solve is filed elsewhere this detail is showing a
+  // solve from a session nobody is looking at, so the move closes it.
+  if (isMoving) {
+    return (
+      <SessionPicker
+        title={strings.history.moveTitle}
+        onPick={(sessionId, name) => {
+          void moveSolves([solve.id], sessionId, name);
+          onClose();
+        }}
+        onClose={() => setMoving(false)}
+      />
+    );
+  }
 
   return (
     <SolveDetail
@@ -41,6 +63,7 @@ export function SolveDetailSheet({ solveId, phases, onClose }: SolveDetailSheetP
         void removeSolves([id]);
         onClose();
       }}
+      onMove={() => setMoving(true)}
       onClose={onClose}
     />
   );

@@ -16,6 +16,8 @@ interface SolveDetailProps {
   onEdit: (id: string, patch: SolvePatch) => void;
   onCreateTag: (name: string) => Promise<Tag>;
   onDelete: (id: string) => void;
+  /** Opens the choice of where to file it; the sheet handles the rest. */
+  onMove: () => void;
   onClose: () => void;
 }
 
@@ -26,6 +28,7 @@ export function SolveDetail({
   onEdit,
   onCreateTag,
   onDelete,
+  onMove,
   onClose,
 }: SolveDetailProps) {
   const [timeInput, setTimeInput] = useState(() => formatMs(solve.rawMs));
@@ -187,9 +190,14 @@ export function SolveDetail({
             : ` · ${strings.history.inspection} ${formatMs(solve.inspectionMs)}`}
           {solve.editedAt === null ? '' : ` · ${strings.history.edited}`}
         </span>
-        <button type="button" className="is-danger" onClick={() => onDelete(solve.id)}>
-          {strings.solve.delete}
-        </button>
+        <div className="detail__footer-actions">
+          <button type="button" onClick={onMove}>
+            {strings.history.moveTo}
+          </button>
+          <button type="button" className="is-danger" onClick={() => onDelete(solve.id)}>
+            {strings.solve.delete}
+          </button>
+        </div>
       </footer>
     </aside>
   );
