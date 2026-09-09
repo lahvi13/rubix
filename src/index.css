@@ -143,12 +143,14 @@
   --phase-share-ink: light-dark(#ffffff, #0f1115);
 
   /*
-   * The ground the animated cube stands on. cubing.js paints its own cube and
-   * cannot be given a skin — pale grey plastic, white stickers — so on a white
-   * page it is a cube with no edges. Our own drawing needs none of this: it
-   * wears the reader's skin and outlines every sticker.
+   * The ground the animated cube stands on, and only on paper. cubing.js
+   * paints its own cube and cannot be given a skin — pale grey plastic, white
+   * stickers — which on a white page is a cube with no edges; against the dark
+   * theme that same pale cube stands out on its own, and a card under it is a
+   * box the picture did not need. Our own drawing needs none of this in either
+   * theme: it wears the reader's skin and outlines every sticker.
    */
-  --cube-stage: light-dark(#d6dbe5, #1b202a);
+  --cube-stage: light-dark(#d6dbe5, transparent);
 
   /*
    * One type scale, in sixteenths of a rem so every step lands on a whole
