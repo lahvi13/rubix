@@ -89,7 +89,6 @@ export const strings = {
     learn: 'Learn',
     trainer: 'Trainer',
     drill: 'Drill',
-    sessions: 'Sessions',
     settings: 'Settings',
     data: 'Data',
     openMenu: 'Open menu',
@@ -147,9 +146,12 @@ export const strings = {
     filterStarred: 'Filter starred',
   },
   sessions: {
+    title: 'Sessions',
     create: 'Create',
-    activate: 'Use',
     switchSession: 'Switch session',
+    /** The one being timed into. A label on the row, not a button. */
+    activeBadge: 'active',
+    solveCount: (count: number) => `${count} ${count === 1 ? 'solve' : 'solves'}`,
     rename: 'Rename',
     archive: 'Archive',
     restore: 'Restore',
@@ -433,7 +435,8 @@ export const strings = {
     importing: (written: number, total: number) => `Importing… ${written} / ${total}`,
     imported: (count: number) =>
       `Imported ${count} ${count === 1 ? 'solve' : 'solves'} from csTimer.`,
-    whereToFind: 'Imported sessions are on the Sessions screen — switch to one to see it in the history and the stats.',
+    whereToFind:
+      'Imported sessions are behind the session name at the top of the timer, the history and the stats — pick one there to see its solves.',
     skippedTitle: 'Rows that were skipped',
     reasons: {
       malformed: 'not a solve csTimer would write',

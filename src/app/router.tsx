@@ -13,7 +13,6 @@ export const ROUTES = [
   'drill',
   'history',
   'stats',
-  'sessions',
   'settings',
   'data',
 ] as const;

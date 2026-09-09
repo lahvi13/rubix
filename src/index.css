@@ -1191,10 +1191,20 @@ button[disabled] {
 
 /* Sessions */
 
+.session-picker {
+  gap: var(--space-5);
+}
+
+/* The row above it holds nothing but the close button, so the heading takes
+   back the gap that row would otherwise leave under itself. */
+.session-picker__title {
+  margin: calc(var(--space-5) * -1) 0 0;
+  font-size: var(--text-xl);
+}
+
 .session-form {
   display: flex;
   gap: var(--space-3);
-  margin-bottom: var(--space-6);
 }
 
 .session-form input {
@@ -1203,19 +1213,25 @@ button[disabled] {
 
 .sessions {
   list-style: none;
-  margin: 0 0 var(--space-6);
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
+/*
+ * A card, not a row: a name and two buttons beside each other have nothing
+ * left of them at a phone's width, and the name is the part that has to stay
+ * readable. The sheet is no wider on a desktop, so there is one layout.
+ */
 .session {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-5);
-  background: var(--surface);
+  flex-direction: column;
+  gap: var(--space-3);
+  /* Inset, not raised: the sheet under it is already the surface colour, and
+     a card painted the same as its sheet has no edge at all. */
+  background: var(--bg);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   padding: var(--space-4) var(--space-5);
@@ -1225,17 +1241,15 @@ button[disabled] {
   border-color: var(--accent);
 }
 
-.session__main {
+/* The whole width picks the session; renaming and archiving are the rarer
+   edits below it. A tap area rather than a button, so it paints itself â and
+   minds its own height. */
+.session__name {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  width: 100%;
   min-width: 0;
-}
-
-.session__name {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
   background: none;
   border: none;
   color: inherit;
@@ -1243,6 +1257,12 @@ button[disabled] {
   padding: 0;
   text-align: left;
   cursor: pointer;
+}
+
+.session__label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
 }
 
 .session__badge {
@@ -1284,7 +1304,21 @@ button[disabled] {
   text-underline-offset: 0.25em;
 }
 
+/* The session's name is the way into switching it, on the history and the
+   stats the same as on the timer, and drawn the same way. */
+.session-switch {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.25em;
+}
+
 /* Stats */
+
 
 .stats {
   display: flex;
@@ -2819,9 +2853,16 @@ input[type='radio'] {
 }
 
 /* A dotted-underline text button is still a button you hit with a thumb. */
-.solves-panel__session {
+.solves-panel__session,
+.session-switch {
   padding: var(--space-4) 0;
   min-height: 2.25rem;
+}
+
+/* The card's own tap area: two lines of text are already tall enough, but the
+   floor holds when a session has a short name and no solves in it yet. */
+.session__name {
+  min-height: 2.75rem;
 }
 
 /* Troubleshooting */

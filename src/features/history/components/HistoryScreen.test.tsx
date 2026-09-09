@@ -28,6 +28,15 @@ describe('HistoryScreen', () => {
     sessionId = (await getOrCreateActiveSession('333', 'freestyle')).id;
   });
 
+  it('opens the session picker from the name of the session being read', async () => {
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await user.click(await screen.findByRole('button', { name: 'Default' }));
+
+    expect(await screen.findByRole('dialog', { name: 'Sessions' })).toBeInTheDocument();
+  });
+
   it('lists the session solves newest first', async () => {
     await seedSolve(sessionId, 12_340);
     await seedSolve(sessionId, 9990);

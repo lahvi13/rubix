@@ -1,13 +1,13 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { DataScreen } from '../features/data-transfer';
 import { HistoryScreen } from '../features/history';
 import { LearnScreen } from '../features/learn';
-import { SessionsScreen } from '../features/sessions';
 import { SettingsScreen } from '../features/settings';
 import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
 import { DrillScreen, TrainerScreen } from '../features/trainer';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
+import { useKeyCapture } from '../hooks/use-key-capture';
 import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
@@ -29,23 +29,7 @@ export function App() {
   // Applied here because this is the one component that is always mounted.
   useAppearance();
 
-  // While the menu is open the keyboard belongs to it: the timer listens on
-  // the window, and a Space meant for a menu item must not start a solve
-  // underneath. Propagation is stopped, never the default action, so Space and
-  // Enter still activate the focused item.
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const swallow = (event: KeyboardEvent) => {
-      event.stopPropagation();
-      if (event.type === 'keydown' && event.key === 'Escape') setMenuOpen(false);
-    };
-    window.addEventListener('keydown', swallow, true);
-    window.addEventListener('keyup', swallow, true);
-    return () => {
-      window.removeEventListener('keydown', swallow, true);
-      window.removeEventListener('keyup', swallow, true);
-    };
-  }, [isMenuOpen]);
+  useKeyCapture(isMenuOpen, () => setMenuOpen(false));
 
   return (
     <div className="app">
@@ -100,7 +84,6 @@ export function App() {
         {route === 'learn' ? <LearnScreen /> : null}
         {route === 'history' ? <HistoryScreen /> : null}
         {route === 'stats' ? <StatsScreen /> : null}
-        {route === 'sessions' ? <SessionsScreen /> : null}
         {route === 'trainer' ? <TrainerScreen /> : null}
         {route === 'drill' ? <DrillScreen /> : null}
         {route === 'settings' ? <SettingsScreen /> : null}

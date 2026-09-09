@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, type ReactNode } from 'react';
+import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react';
 import {
   PHASE_TREND_MODES,
   type PhaseTrendMode,
@@ -6,7 +6,7 @@ import {
 import { useSetting } from '../../../hooks/use-setting';
 import { formatAverage, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import { useActiveSession } from '../../sessions';
+import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseAverages, usePhases } from '../../splits';
 import { useSessionStats } from '../hooks/use-session-stats';
 
@@ -62,6 +62,7 @@ export function StatsScreen() {
   const stats = useSessionStats(session?.id ?? null, PUZZLE, phaseKeys);
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
   const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
+  const [isPickerOpen, setPickerOpen] = useState(false);
 
   if (stats === null) return <main className="screen screen--scroll" />;
 
@@ -69,7 +70,15 @@ export function StatsScreen() {
     <main className="screen screen--scroll">
       <div className="stats">
         <p className="history__summary">
-          {session?.name} · {stats.solveCount} {strings.stats.solves}
+          <button
+            type="button"
+            className="session-switch"
+            title={strings.sessions.switchSession}
+            onClick={() => setPickerOpen(true)}
+          >
+            {session?.name}
+          </button>{' '}
+          · {stats.solveCount} {strings.stats.solves}
         </p>
 
         {stats.solveCount === 0 ? (
@@ -185,6 +194,18 @@ export function StatsScreen() {
           </>
         )}
       </div>
+
+      {isPickerOpen ? (
+        <>
+          <button
+            type="button"
+            className="app__scrim"
+            aria-label={strings.history.close}
+            onClick={() => setPickerOpen(false)}
+          />
+          <SessionPicker onClose={() => setPickerOpen(false)} />
+        </>
+      ) : null}
     </main>
   );
 }

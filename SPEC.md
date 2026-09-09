@@ -89,6 +89,9 @@ dostávají hotová data z domény.
   se dá ~5 s vzít zpět (viz 5, „Omyl a návrat")
 - sessiony: založení, přejmenování, archivace; právě jedna aktivní session
   na kombinaci `puzzle + mode`
+- přepínání sessions nemá vlastní obrazovku: otevírá se ze jména session tam, kde je
+  napsáno — na timeru, v historii a ve statistikách. Zvolená session je aktivní
+  session, tedy zároveň to, co je vidět, i to, kam padne další složení
 
 ### 3.4 Statistiky
 

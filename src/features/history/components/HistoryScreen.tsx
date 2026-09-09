@@ -5,7 +5,7 @@ import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { now } from '../../../lib/clock';
 import { formatTime, formatWhen } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import { useActiveSession } from '../../sessions';
+import { SessionPicker, useActiveSession } from '../../sessions';
 import { SolvePhases, usePhases } from '../../splits';
 import { useHistory } from '../hooks/use-history';
 import { useTags } from '../hooks/use-tags';
@@ -22,6 +22,7 @@ export function HistoryScreen() {
   const history = useHistory(session?.id ?? null, phaseKeys);
   const tags = useTags();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [isPickerOpen, setPickerOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const open = history.solves.find((solve) => solve.id === openId) ?? null;
@@ -93,7 +94,18 @@ export function HistoryScreen() {
       </div>
 
       <p className="history__summary">
-        {session?.name ?? ''} · {history.solves.length} / {history.total}
+        {/* The session name is the way into switching, the same as on the
+            timer: it is the one word on the screen that says which solves
+            these are. */}
+        <button
+          type="button"
+          className="session-switch"
+          title={strings.sessions.switchSession}
+          onClick={() => setPickerOpen(true)}
+        >
+          {session?.name ?? ''}
+        </button>{' '}
+        · {history.solves.length} / {history.total}
         {selected.size > 0 ? (
           <button type="button" className="is-danger" onClick={deleteSelected}>
             {strings.history.deleteSelected} ({selected.size})
@@ -129,6 +141,18 @@ export function HistoryScreen() {
 
       {open ? (
         <SolveDetailSheet solveId={open.id} phases={phases} onClose={() => setOpenId(null)} />
+      ) : null}
+
+      {isPickerOpen ? (
+        <>
+          <button
+            type="button"
+            className="app__scrim"
+            aria-label={strings.history.close}
+            onClick={() => setPickerOpen(false)}
+          />
+          <SessionPicker onClose={() => setPickerOpen(false)} />
+        </>
       ) : null}
     </main>
   );

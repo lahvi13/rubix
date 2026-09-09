@@ -3,10 +3,9 @@ import type { Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { now } from '../../../lib/clock';
 import { strings } from '../../../lib/strings';
-import { navigate } from '../../../app/router';
 import { reportError } from '../../../lib/errors';
 import { SolveDetailSheet } from '../../history';
-import { useActiveSession } from '../../sessions';
+import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseBar, PhaseRun, usePhases } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
@@ -88,6 +87,7 @@ export function TimerScreen() {
   const [isBrowsing, setBrowsing] = useState(false);
   // Which solve is open in the detail sheet, if any.
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
+  const [isPickerOpen, setPickerOpen] = useState(false);
   const showBrowsing = isBrowsing && status === 'idle';
 
   // Derived, not synchronized: the result stays up only while the machine is
@@ -188,7 +188,7 @@ export function TimerScreen() {
             type="button"
             className="solves-panel__session"
             title={strings.sessions.switchSession}
-            onClick={() => navigate('sessions')}
+            onClick={() => setPickerOpen(true)}
           >
             {session?.name ?? strings.appName}
           </button>
@@ -245,6 +245,20 @@ export function TimerScreen() {
           onClose={() => setOpenSolveId(null)}
         />
       )}
+
+      {/* Outside the panel that holds its button: the panel slides away
+          while a solve is running, and the sheet is fixed to the screen. */}
+      {isPickerOpen ? (
+        <>
+          <button
+            type="button"
+            className="app__scrim"
+            aria-label={strings.history.close}
+            onClick={() => setPickerOpen(false)}
+          />
+          <SessionPicker onClose={() => setPickerOpen(false)} />
+        </>
+      ) : null}
     </main>
   );
 }
