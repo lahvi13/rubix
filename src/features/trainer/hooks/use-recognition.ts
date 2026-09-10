@@ -4,7 +4,6 @@ import type { AlgCase, Algorithm } from '../../../db/types';
 import { listCasesWithAlgs, type CaseWithAlg } from '../../../db/repositories/alg-repository';
 import { loadDrillPool } from '../../../db/repositories/drill-repository';
 import { addRecognitionAttempt } from '../../../db/repositories/recognition-repository';
-import { CROSS_SET_ID } from '../../../db/seed/packs';
 import { parseAlg, type Move } from '../../../domain/cube/notation';
 import type { CubeState } from '../../../domain/cube/state';
 import { aufForAngle } from '../../../domain/recognition/angle';
@@ -51,7 +50,7 @@ export interface RecognitionOutcome {
 }
 
 /** Why there is no question to answer. */
-export type RecognitionProblem = 'loading' | 'empty' | 'tooFew' | 'cross';
+export type RecognitionProblem = 'loading' | 'empty' | 'tooFew';
 
 export interface RecognitionView {
   /** Every case of the set, for the picker. Undefined while loading. */
@@ -89,7 +88,6 @@ interface Round {
  * ten cases you keep losing to should not have to be done twice.
  */
 export function useRecognition(setId: string, selectedIds: readonly string[]): RecognitionView {
-  const isCross = setId === CROSS_SET_ID;
   const selectionKey = selectedIds.join(',');
 
   const data = useLiveQuery(async () => {
@@ -192,7 +190,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   return {
     cases,
     question,
-    problem: problemOf(isCross, pool),
+    problem: problemOf(pool),
     isTurned,
     turn: () => setTurned((turned) => !turned),
     outcome,
@@ -201,8 +199,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   };
 }
 
-function problemOf(isCross: boolean, pool: CaseWithAlg[] | undefined): RecognitionProblem | null {
-  if (isCross) return 'cross';
+function problemOf(pool: CaseWithAlg[] | undefined): RecognitionProblem | null {
   if (pool === undefined) return 'loading';
   if (pool.length === 0) return 'empty';
   if (pool.length < MIN_POOL) return 'tooFew';

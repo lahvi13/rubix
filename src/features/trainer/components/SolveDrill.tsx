@@ -31,6 +31,8 @@ import { DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
 interface SolveDrillProps {
   mode: DrillMode;
   onMode: (mode: DrillMode) => void;
+  /** False for the cross, which has no case to name and so no switch. */
+  canRecognise: boolean;
 }
 
 /**
@@ -39,7 +41,7 @@ interface SolveDrillProps {
  * own statistics stay hidden until the attempt is over — recognising the case
  * is half of what is being drilled.
  */
-export function SolveDrill({ mode, onMode }: SolveDrillProps) {
+export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
   const sets = useAlgSets();
   const [setId, setSetId] = useSetting('trainer.drillSetId');
   const [selectedIds, setSelectedIds] = useSetting('trainer.drillCaseIds');
@@ -77,7 +79,15 @@ export function SolveDrill({ mode, onMode }: SolveDrillProps) {
             }}
           />
 
-          <DrillSetup summary={drillSummary(setId, mode, poolIds, selectedIds)}>
+          <DrillSetup
+            summary={drillSummary(
+              setId,
+              mode,
+              poolIds,
+              selectedIds,
+              drill.timer.inspectionEnabled,
+            )}
+          >
             <DrillLooks
               setId={setId}
               onSet={(next) => {
@@ -85,7 +95,7 @@ export function SolveDrill({ mode, onMode }: SolveDrillProps) {
                 drill.reset();
               }}
             />
-            <DrillModes mode={mode} onMode={onMode} />
+            <DrillModes mode={mode} onMode={onMode} canRecognise={canRecognise} />
 
             {drill.isCross ? (
               <>

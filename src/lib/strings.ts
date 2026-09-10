@@ -326,7 +326,7 @@ export const strings = {
      * off in the settings.
      */
     crossHint:
-      'Scramble a solved cube held white on top, green in front. Then hold to start — solve the cross only.',
+      'Scramble a solved cube held white on top, green in front. Then turn it over and hold to start — the white cross goes on the bottom.',
     crossSetup: 'The cube after the scramble',
     showCase: 'Show me',
     gaveUp: 'Looked up, so it counts as a DNF.',
@@ -347,12 +347,14 @@ export const strings = {
     crossMoves: 'moves',
     crossSolved: 'The cross is already done.',
     crossFront: 'In front:',
-    crossFrontHint: 'Tap the side you have towards you.',
+    crossFrontHint: 'Tap the side you have towards you, now that the cube is over.',
     crossColours: { F: 'Green', R: 'Red', B: 'Blue', L: 'Orange' },
     modeSolve: 'Solve it',
     modeRecognise: 'Name it',
     /* Named for what is behind the line, because the line itself is the answer. */
     setup: 'Change what is drilled',
+    inspectionOn: 'Inspection on',
+    inspectionOff: 'Inspection off',
   },
   recognition: {
     question: 'Which case is this?',
@@ -365,7 +367,6 @@ export const strings = {
     next: 'Next case',
     tooFew: 'Tick at least two cases: with one there is nothing to tell apart.',
     empty: 'Nothing to recognise in this set.',
-    cross: 'The cross has no case to recognise. Pick another set.',
     caseStats: 'Your recognition',
     saving: 'Saving the attempt',
     forgetting: 'Clearing the recognition attempts',

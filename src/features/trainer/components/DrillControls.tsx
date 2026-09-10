@@ -85,6 +85,8 @@ export function DrillLooks({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
 interface DrillModesProps {
   mode: DrillMode;
   onMode: (mode: DrillMode) => void;
+  /** False for the cross, which has no case to name and so only one half. */
+  canRecognise: boolean;
 }
 
 /**
@@ -92,7 +94,9 @@ interface DrillModesProps {
  * only saying which one it is. Same set and same ticked cases — what changes
  * is which half of the skill is being timed.
  */
-export function DrillModes({ mode, onMode }: DrillModesProps) {
+export function DrillModes({ mode, onMode, canRecognise }: DrillModesProps) {
+  if (!canRecognise) return null;
+
   return (
     <div className="trainer__looks">
       <button

@@ -152,12 +152,15 @@ describe('RecognitionDrill', () => {
 
     const after = screen.getByRole('img', { name: 'Which case is this?' }).getAttribute('src');
     expect(after).not.toBe(before);
+    // The one line says the cube has moved, which the picture cannot.
     expect(screen.getByText('Seen from the back left.')).toBeInTheDocument();
+    expect(screen.queryByText('Which case is this?')).not.toBeInTheDocument();
     // Still a question: nothing has been answered and nothing stored.
     expect(await db.solves.count()).toBe(0);
-    expect(screen.getByText('Which case is this?')).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Turn back' }));
+    expect(screen.getByText('Which case is this?')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Which case is this?' }).getAttribute('src')).toBe(
       before,
     );
@@ -172,13 +175,27 @@ describe('RecognitionDrill', () => {
     ).toBeInTheDocument();
   });
 
-  it('has no case to recognise in the cross', async () => {
+  it('does not offer the cross as something to name', async () => {
+    const user = userEvent.setup();
     await setSetting('trainer.drillSetId', 'cross');
     render(<DrillScreen />);
 
-    expect(
-      await screen.findByText('The cross has no case to recognise. Pick another set.'),
-    ).toBeInTheDocument();
+    // Naming it was a dead end, so the switch goes rather than the answer
+    // being an apology: the cross opens on the drill it actually has.
+    expect(await screen.findByRole('timer')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /^Change what is drilled/ }));
+    expect(screen.queryByRole('button', { name: 'Name it' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Solve it' })).not.toBeInTheDocument();
+  });
+
+  it('leaves the stored half alone while the cross is on screen', async () => {
+    await setSetting('trainer.drillSetId', 'cross');
+    render(<DrillScreen />);
+    await screen.findByRole('timer');
+
+    // The cross is solved rather than named because it has no other half, not
+    // because a preference was changed — so leaving it goes back to naming.
+    expect(await db.settings.get('trainer.drillMode')).toMatchObject({ value: 'recognise' });
   });
 
   it('moves on to a fresh question', async () => {

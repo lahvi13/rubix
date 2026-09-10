@@ -2396,6 +2396,23 @@ button[disabled] {
   aspect-ratio: 1;
 }
 
+/*
+ * A phone whose usable height is under about 800px — most of them, once the
+ * browser or the system bars have taken their share. The six cards are the
+ * half of this screen that has to be complete: a second row cut off by the
+ * fold is a round played on three answers. So the space comes out of the
+ * gaps and out of the cube, which is still large enough to read two faces.
+ */
+@media (max-height: 800px) {
+  .recognition {
+    gap: var(--space-4);
+  }
+
+  .recognition__cube {
+    width: min(60vw, 22dvh, 12rem);
+  }
+}
+
 .recognition__turn {
   padding-inline: var(--space-7);
   min-height: 2.75rem;
@@ -2432,10 +2449,6 @@ button[disabled] {
   color: var(--muted);
 }
 
-/* Three across, two down: the set list packs as many cards in a row as it
-   can fit, which is right for reading a whole set and wrong here — six cards
-   in fours leaves a ragged second row, and each one is a cube to be compared
-   against another cube, not an icon. */
 /* The algorithm, and in front of it the turn this particular angle asks for.
    Set apart rather than run together: the AUF belongs to the question, the
    algorithm belongs to the case. */
@@ -2473,6 +2486,10 @@ button[disabled] {
   gap: var(--space-4);
 }
 
+/* Three across, two down: the set list packs as many cards in a row as it
+   can fit, which is right for reading a whole set and wrong here — six cards
+   in fours leaves a ragged second row, and each one is a cube to be compared
+   against another cube, not an icon. */
 .recognition__options {
   width: 100%;
   grid-template-columns: repeat(3, 1fr);

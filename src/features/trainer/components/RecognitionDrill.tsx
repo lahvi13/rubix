@@ -60,15 +60,13 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
 
         <DrillSetup summary={drillSummary(setId, mode, caseIds, selectedIds)}>
           <DrillLooks setId={setId} onSet={setSetId} />
-          <DrillModes mode={mode} onMode={onMode} />
-          {recognition.problem === 'cross' ? null : (
-            <CasePool
-              cases={recognition.cases}
-              selectedIds={selectedIds}
-              stats={stats}
-              onSelect={setSelectedIds}
-            />
-          )}
+          <DrillModes mode={mode} onMode={onMode} canRecognise />
+          <CasePool
+            cases={recognition.cases}
+            selectedIds={selectedIds}
+            stats={stats}
+            onSelect={setSelectedIds}
+          />
         </DrillSetup>
       </div>
 
@@ -107,18 +105,21 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
             )}
           </div>
 
+          {/* One line, never two. The cube and six cards have to be taken in
+              together on a phone, and a sentence explaining a picture that
+              explains itself was costing the bottom row of cards. What is left
+              is the two things the picture cannot say: that a question is being
+              asked, and that the cube has been turned round — without which the
+              picture is simply wrong about which sides you are looking at. */}
           {outcome === null ? (
-            <p className="recognition__prompt">{strings.recognition.question}</p>
+            <p className="recognition__prompt">
+              {recognition.isTurned
+                ? strings.recognition.turnedHint
+                : strings.recognition.question}
+            </p>
           ) : (
             <Verdict outcome={outcome} title={caseTitle(question.answer)} />
           )}
-          <p className="drill__hint">
-            {recognition.isTurned
-              ? strings.recognition.turnedHint
-              : outcome === null
-                ? strings.recognition.hint
-                : (question.answer.group ?? '')}
-          </p>
 
           {outcome === null ? null : (
             <Solution
@@ -151,8 +152,6 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
 
 function problemText(problem: RecognitionProblem | null): string {
   switch (problem) {
-    case 'cross':
-      return strings.recognition.cross;
     case 'tooFew':
       return strings.recognition.tooFew;
     case 'empty':
