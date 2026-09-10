@@ -13,7 +13,7 @@ import type { Penalty } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
-import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-view';
+import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 import { useSetting } from '../../../hooks/use-setting';
 import { watchWrite } from '../../../lib/errors';
@@ -555,7 +555,10 @@ function CrossPlayer({ setupAlg, alg, replayToken, onMove }: CrossPlayerProps) {
       data-no-swipe=""
       puzzle="3x3x3"
       alg={alg}
-      experimental-setup-alg={setupAlg}
+      /* Stood on its head first, like every other player here: cubing.js
+         starts a cube white on top, and the drill's moves are written for the
+         cube the app models — yellow up, the cross on the bottom. */
+      experimental-setup-alg={`${CUBE_ORIENTATION} ${setupAlg}`}
       experimental-setup-anchor="start"
       visualization="3D"
       background="none"

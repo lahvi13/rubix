@@ -2318,6 +2318,18 @@ button[disabled] {
   min-height: 3rem;
 }
 
+/*
+ * The answer overflows its row on purpose — that is what the page scrolls for
+ * — so nothing in it may be squeezed to make it fit. A flex column shrinks its
+ * items when it runs short, and an item whose content is not its own (the
+ * cube playing the cross builds itself into a shadow root) has no natural
+ * height to stop at: it went to nought pixels, animating where nobody could
+ * see it, while the moves lit up in the text below.
+ */
+.drill__answer > * {
+  flex-shrink: 0;
+}
+
 .drill__case-name {
   margin: 0;
   font-size: var(--text-2xl);
