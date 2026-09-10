@@ -8,6 +8,12 @@ interface AttemptActionsProps {
   penalty: Penalty;
   onJudge: (penalty: Exclude<Penalty, 'none'>) => void;
   onDelete: () => void;
+  /**
+   * Whether the penalty is the reader's to change. A looked-up case was never
+   * timed, so clearing its DNF would leave a solve of no seconds standing as
+   * a time; throwing it away is the only thing left that makes sense.
+   */
+  judgeable?: boolean;
 }
 
 /**
@@ -16,23 +22,32 @@ interface AttemptActionsProps {
  * than a solve. Same controls as the timer's own list, because it is the same
  * job.
  */
-export function AttemptActions({ penalty, onJudge, onDelete }: AttemptActionsProps) {
+export function AttemptActions({
+  penalty,
+  onJudge,
+  onDelete,
+  judgeable = true,
+}: AttemptActionsProps) {
   return (
     <span className="solves__actions">
-      <button
-        type="button"
-        className={penalty === 'plus2' ? 'is-active' : ''}
-        onClick={() => onJudge('plus2')}
-      >
-        {strings.solve.plusTwo}
-      </button>
-      <button
-        type="button"
-        className={penalty === 'dnf' ? 'is-active' : ''}
-        onClick={() => onJudge('dnf')}
-      >
-        {strings.solve.dnf}
-      </button>
+      {judgeable ? (
+        <>
+          <button
+            type="button"
+            className={penalty === 'plus2' ? 'is-active' : ''}
+            onClick={() => onJudge('plus2')}
+          >
+            {strings.solve.plusTwo}
+          </button>
+          <button
+            type="button"
+            className={penalty === 'dnf' ? 'is-active' : ''}
+            onClick={() => onJudge('dnf')}
+          >
+            {strings.solve.dnf}
+          </button>
+        </>
+      ) : null}
       <button type="button" onClick={onDelete}>
         {strings.solve.delete}
       </button>

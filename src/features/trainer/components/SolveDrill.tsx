@@ -325,7 +325,12 @@ function Answer({
       {/* The attempt is stored the moment the clock stops, so a dropped cube
           has to be fixable right here rather than hunted down later. */}
       {stored === null ? null : (
-        <AttemptActions penalty={stored.penalty} onJudge={onJudge} onDelete={onDiscard} />
+        <AttemptActions
+          penalty={stored.penalty}
+          onJudge={onJudge}
+          onDelete={onDiscard}
+          judgeable={!gaveUp}
+        />
       )}
 
       <button type="button" className="result-bar__next" onClick={onNext}>

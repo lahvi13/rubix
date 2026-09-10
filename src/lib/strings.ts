@@ -337,9 +337,9 @@ export const strings = {
       'Solve the cross first — after that every scramble carries on from where the last one left you, so there is never a cube to rebuild.',
     crossSetup: 'The cross after the scramble, as you will hold it',
     showCase: 'Show me',
-    /* Nothing is stored for a case that was looked up: the clock locks the
-       moment the answer appears, so there is no attempt to record. */
-    gaveUp: 'Looked up — nothing timed for this one.',
+    /* A looked-up case is stored as a DNF and never timed: the clock locks
+       the moment the answer appears. */
+    gaveUp: 'Looked up, so it counts as a DNF.',
     next: 'Next case',
     empty: 'Nothing to drill in this set.',
     attempts: 'Attempts',

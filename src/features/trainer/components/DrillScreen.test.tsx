@@ -121,14 +121,47 @@ describe('DrillScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Show me' }));
     expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
 
+    // Reaching for the answer costs a DNF, the way giving up on a solve does —
+    // and it is what keeps the case in "Needs work" instead of leaving it with
+    // no attempts and so no pace at all.
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+    const looked = await db.solves.toCollection().first();
+    expect(looked?.penalty).toBe('dnf');
+    expect(looked?.rawMs).toBe(0);
+    expect(screen.getByText('Looked up, so it counts as a DNF.')).toBeInTheDocument();
+
     await attempt(user, 9000);
 
     // Recognising the case is most of the work, so a time set with the answer
     // already on screen is not a time. The clock refuses rather than storing
     // one, and says why.
-    expect(await db.solves.count()).toBe(0);
+    expect(await db.solves.count()).toBe(1);
     expect(screen.getByRole('timer')).toHaveTextContent('0.00');
     expect(screen.getByText('Answer shown — Next case to go again')).toBeInTheDocument();
+  });
+
+  it('lets a look-up be thrown away, but not turned into a time', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText(/R2 F'/);
+
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+    await screen.findByRole('heading', { name: 'T' });
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+
+    // Clearing the DNF would leave a solve of no seconds standing as a time,
+    // so the only judgement on offer is throwing it away.
+    expect(screen.queryByRole('button', { name: 'DNF' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '+2' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(0);
+    });
   });
 
   it('will not time the same case twice once its answer is up', async () => {

@@ -237,7 +237,30 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
       watchWrite(() => deleteSolve(stored.id), strings.drill.discarding);
     },
     reveal: () => {
-      if (current !== null) setRevealed({ caseId: current.algCase.id, gaveUp: true });
+      if (current === null) return;
+      setRevealed({ caseId: current.algCase.id, gaveUp: true });
+      /*
+       * Stored as a DNF, with no time because none was taken. A case you keep
+       * looking up is the case most worth drilling, and leaving no trace hid
+       * it from the very thing that finds those — a case with no attempts has
+       * no pace, so it never reaches "Needs work" or the slowest ten. It also
+       * puts a price on the button: reaching for the answer is a DNF, the way
+       * giving up on a solve is.
+       */
+      watchWrite(
+        () =>
+          addDrillSolve({
+            puzzle: PUZZLE,
+            caseId: current.algCase.id,
+            scramble: current.scramble,
+            rawMs: 0,
+            penalty: 'dnf',
+            penaltySource: 'auto',
+            inspectionMs: null,
+            startedAt: now(),
+          }).then((solve) => setStored({ id: solve.id, penalty: solve.penalty })),
+        strings.errors.saveSolve,
+      );
     },
     reset,
     next,
