@@ -3,6 +3,7 @@ import type { AlgCase, AlgSet, Algorithm } from '../../../db/types';
 import { listCasesWithAlgs, listSets } from '../../../db/repositories/alg-repository';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState, type CubeState } from '../../../domain/cube/state';
+import { diagramFor } from '../case-view';
 
 export interface TrainerCase {
   algCase: AlgCase;
@@ -30,7 +31,8 @@ export function useAlgSets(): AlgSet[] | undefined {
  * The cases of one set, in pack order and grouped the way the set groups them
  * (dot shapes, corners only, and so on). The cube state of each case is worked
  * out here rather than stored — a stored picture would go stale the moment a
- * setup changed.
+ * setup changed — and stood the way that set is looked at, so a card and the
+ * sheet it opens show the same cube.
  */
 export function useSetCases(setId: string | null): CaseGroup[] | undefined {
   const cases = useLiveQuery(async () => (setId === null ? [] : listCasesWithAlgs(setId)), [setId]);
@@ -43,7 +45,7 @@ export function useSetCases(setId: string | null): CaseGroup[] | undefined {
     const trainerCase: TrainerCase = {
       algCase: entry.algCase,
       algorithm: entry.active,
-      state: stateOf(entry.algCase.setupAlg),
+      state: stateOf(entry.algCase.setupAlg, diagramFor(setId ?? '', name).orientation),
     };
 
     if (group) group.cases.push(trainerCase);
@@ -52,7 +54,13 @@ export function useSetCases(setId: string | null): CaseGroup[] | undefined {
   return groups;
 }
 
-export function stateOf(setupAlg: string): CubeState {
-  const parsed = parseAlg(setupAlg);
+/**
+ * The cube a case is met on. The orientation goes in front of the setup rather
+ * than after it: turning the cube first repaints the faces the setup then
+ * works on, which leaves the case in the same slot in a different colour —
+ * turning it afterwards would move the case itself out of view.
+ */
+export function stateOf(setupAlg: string, orientation = ''): CubeState {
+  const parsed = parseAlg(`${orientation} ${setupAlg}`);
   return parsed.ok ? applyAlg(solvedState(), parsed.moves) : solvedState();
 }

@@ -24,8 +24,14 @@ export const CAMERA_LONGITUDE = 45;
  * The algorithm that follows is performed exactly as written: a rotation moves
  * the pieces, not the letters, so R still turns the layer on the right.
  *
- * The one thing it cannot fix is which side is which colour. Our palette puts
- * red on the right of a yellow-up cube where a real one has orange, and no
- * rotation turns a cube into its own mirror image.
+ * It leaves the two cubes painted the same, which is the point: our skins are
+ * a standard cube written down as it is held here, and cubing.js flipped by z2
+ * is that same cube — yellow up, green in front, red on the left and orange on
+ * the right. What it cannot match is the reader's chosen skin; the player
+ * paints its own colours, which is why the still picture is ours to draw.
+ *
+ * A set looked at through a rotation of its own (`features/trainer/case-view`)
+ * puts that rotation after this one, in front of the setup, and both cubes end
+ * up standing the same way round.
  */
 export const CUBE_ORIENTATION = 'z2';

@@ -314,7 +314,7 @@ function Answer({
       {moves.length === 0 ? null : (
         <CubeDiagram
           className="drill__diagram"
-          state={stateOf(current.algCase.setupAlg)}
+          state={stateOf(current.algCase.setupAlg, diagram.orientation)}
           view={diagram.view}
           stickering={diagram.stickering}
           skin={skin}

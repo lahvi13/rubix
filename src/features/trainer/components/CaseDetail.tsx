@@ -38,6 +38,8 @@ interface CaseDetailProps {
   view: DiagramView;
   stickering: Stickering;
   playerStickering: PlayerStickering;
+  /** The whole-cube rotation the set is looked at through; see `case-view`. */
+  orientation: string;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
   /** The cases this one is among, in the order the set lays them out. */
@@ -52,6 +54,7 @@ export function CaseDetail({
   view,
   stickering,
   playerStickering,
+  orientation,
   skin,
   triggers,
   ordered,
@@ -121,7 +124,9 @@ export function CaseDetail({
   const label = algCase.label ?? '';
   const shownName = nameDraft ?? label;
 
-  const setupMoves = parseAlg(algCase.setupAlg);
+  // The rotation is part of the setup here, so the still picture and the cube
+  // that replaces it are stood the same way round.
+  const setupMoves = parseAlg(`${orientation} ${algCase.setupAlg}`);
   const setup = setupMoves.ok ? setupMoves.moves : [];
   const state = applyAlg(solvedState(), setup);
   // Hiding a variant must never hide the one being drilled. Only the grips are
@@ -157,7 +162,8 @@ export function CaseDetail({
         {isPlaying ? (
           <CasePlayer
             // Performed exactly as written — the player is stood yellow up
-            // first, and a rotation moves the pieces, not the letters.
+            // first, the set's own rotation is already at the head of the
+            // setup, and a rotation moves the pieces, not the letters.
             setupAlg={formatAlg(setup)}
             alg={formatAlg(moves)}
             stickering={playerStickering}

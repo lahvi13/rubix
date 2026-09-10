@@ -14,6 +14,7 @@ import { now } from '../../../lib/clock';
 import { reportError } from '../../../lib/errors';
 import { systemRandom } from '../../../lib/random';
 import { strings } from '../../../lib/strings';
+import { diagramFor } from '../case-view';
 import { stateOf } from './use-alg-cases';
 
 const PUZZLE = '333';
@@ -127,7 +128,14 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
       const entry = byId.get(id);
       // A case that has gone since the round was drawn is simply not offered.
       if (entry !== undefined) {
-        options.push({ algCase: entry.algCase, state: stateOf(entry.algCase.setupAlg) });
+        // Stood the way the trainer's own card stands it: the cards are
+        // there to be matched against what was learned, and a case turned
+        // to a different colour is a second thing to recognise.
+        const orientation = diagramFor(setId, entry.algCase.group ?? '').orientation;
+        options.push({
+          algCase: entry.algCase,
+          state: stateOf(entry.algCase.setupAlg, orientation),
+        });
       }
     }
 
@@ -144,7 +152,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
       scramble: round.scramble,
       options,
     };
-  }, [pool, round]);
+  }, [pool, round, setId]);
 
   /**
    * When the question went up. Set after paint, and only while it is still
