@@ -46,3 +46,12 @@ export function NextIcon() {
     </svg>
   );
 }
+
+/** The mark on a line that folds a panel away; `up` is the open state. */
+export function ChevronIcon({ up }: { up: boolean }) {
+  return (
+    <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+      <path d={up ? 'M7 14l5-5 5 5' : 'M7 10l5 5 5-5'} />
+    </svg>
+  );
+}

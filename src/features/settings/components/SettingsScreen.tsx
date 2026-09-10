@@ -231,7 +231,7 @@ export function SettingsScreen() {
             checked={inspectionEnabled}
             onChange={(event) => setInspectionEnabled(event.target.checked)}
           />
-          {strings.timer.inspectionToggle}
+          {strings.timer.inspectionToggleLabel}
         </label>
 
         <label className="toggle">

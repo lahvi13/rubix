@@ -33,6 +33,11 @@ async function attempt(user: ReturnType<typeof userEvent.setup>, solveMs: number
   await user.keyboard('[/Space]');
 }
 
+/** Everything but the set row lives behind one line; this is the tap that opens it. */
+async function openSetup(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(await screen.findByRole('button', { name: /^Change what is drilled/ }));
+}
+
 /** Whether the printed solution really solves the cross of the held cube. */
 function isCrossSolvedAfter(scramble: string, hold: string, solution: string): boolean {
   const moves = [scramble, hold, solution].map((text) => {
@@ -146,6 +151,7 @@ describe('DrillScreen', () => {
 
     expect(await screen.findByText(SCRAMBLE)).toBeInTheDocument();
     // Nothing to pick from and nothing to look up.
+    await openSetup(user);
     expect(screen.queryByRole('button', { name: /^Cases/ })).not.toBeInTheDocument();
 
     await attempt(user, 4000);
@@ -225,6 +231,7 @@ describe('DrillScreen', () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
 
+    await openSetup(user);
     await user.click(await screen.findByRole('button', { name: /^Cases/ }));
     expect(await screen.findByLabelText('T')).toBeInTheDocument();
 
@@ -250,15 +257,42 @@ describe('DrillScreen', () => {
     expect(isCrossSolvedAfter(SCRAMBLE, 'x2 y2', solution)).toBe(true);
   });
 
-  it('asks which side is in front before the attempt, not after it', async () => {
+  it('asks which side is in front only once there is a solution to write', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.drillSetId', 'cross');
+    await setSetting('timer.inspectionEnabled', false);
+    render(<DrillScreen />);
+    await screen.findByText(SCRAMBLE);
+
+    // The grip decides how the moves are written and nothing else, so asking
+    // before there are any moves is asking about the scramble instead.
+    expect(screen.queryByRole('button', { name: 'Green' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+
+    expect(await screen.findByRole('heading', { name: /Shortest cross/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Green' })).toBeInTheDocument();
+  });
+
+  it('draws the cube the cross scramble lands on, so the grip is not guesswork', async () => {
     await setSetting('trainer.drillSetId', 'cross');
     render(<DrillScreen />);
     await screen.findByText(SCRAMBLE);
 
-    // The moment to say how you picked the cube up is while you are picking it
-    // up, so the colours are there before the clock has run at all.
-    expect(screen.getByRole('button', { name: 'Green' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: /Shortest cross/ })).not.toBeInTheDocument();
+    // Only the cross: every other set is set up from the case being drilled,
+    // and a picture of that cube would give the answer away.
+    expect(screen.getByAltText('The cube after the scramble')).toBeInTheDocument();
+  });
+
+  it("keeps the picture off when the timer's own preview is off", async () => {
+    await setSetting('trainer.drillSetId', 'cross');
+    await setSetting('timer.showScramblePreview', false);
+    render(<DrillScreen />);
+    await screen.findByText(SCRAMBLE);
+
+    expect(screen.queryByAltText('The cube after the scramble')).not.toBeInTheDocument();
+    // The words are the fallback, so the orientation is still said somewhere.
+    expect(screen.getByText(/white on top, green in front/)).toBeInTheDocument();
   });
 
   it('offers the other solutions of the same length', async () => {
@@ -333,13 +367,16 @@ describe('DrillScreen', () => {
     await screen.findByText(SCRAMBLE);
 
     // Nothing drilled yet, nothing to offer.
+    await openSetup(user);
     expect(screen.queryByRole('button', { name: /^Attempts/ })).not.toBeInTheDocument();
+    await openSetup(user);
 
     await attempt(user, 8000);
     await user.click(screen.getByRole('button', { name: 'Next case' }));
 
     // The cross has no case sheet in the trainer, so its attempts have to be
     // reachable from here.
+    await openSetup(user);
     await user.click(await screen.findByRole('button', { name: 'Attempts 1' }));
     // The panel says 8.00 three times over: last, best, and the attempt row
     // itself — which is the one with the buttons on it.
@@ -368,9 +405,17 @@ describe('DrillScreen', () => {
     });
   });
 
-  it('says how much of the set is being drilled', async () => {
+  it('says how much of the set is being drilled without being opened', async () => {
+    const user = userEvent.setup();
     render(<DrillScreen />);
 
-    expect(await screen.findByRole('button', { name: 'Cases 1 / 21' })).toBeInTheDocument();
+    // The folded line has to answer it on its own, or folding it away would
+    // hide what is being practised.
+    expect(
+      await screen.findByRole('button', { name: 'Change what is drilled: Full · Solve it · 1 / 21' }),
+    ).toBeInTheDocument();
+
+    await openSetup(user);
+    expect(screen.getByRole('button', { name: 'Cases 1 / 21' })).toBeInTheDocument();
   });
 });

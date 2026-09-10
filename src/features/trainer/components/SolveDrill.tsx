@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
+import { ChevronIcon } from '../../../components/Icons';
 import { TimerDisplay } from '../../../components/TimerDisplay';
 import { formatAlg, parseAlg, type Move } from '../../../domain/cube/notation';
 import { CROSS_HOLDS, crossSolutions, warmCrossSolver } from '../../../domain/cube/cross-solver';
 import { CROSS_CASE_ID } from '../../../db/seed/packs';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
-import { withWhiteTop } from '../../../lib/cube-skins';
+import { withWhiteTop, type CubeSkin } from '../../../lib/cube-skins';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { CaseStats } from '../../../domain/drill/case-stats';
 import type { Penalty } from '../../../db/types';
@@ -24,7 +25,8 @@ import { AlgText } from './AlgText';
 import { AttemptActions, AttemptList } from './AttemptList';
 import { CasePool } from './CasePool';
 import { CaseStatsRow } from './CaseStats';
-import { DrillModes, DrillSets } from './DrillControls';
+import { drillSummary } from '../drill-summary';
+import { DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
 
 interface SolveDrillProps {
   mode: DrillMode;
@@ -47,6 +49,9 @@ export function SolveDrill({ mode, onMode }: SolveDrillProps) {
 
   const caseIds = (drill.cases ?? []).map((entry) => entry.algCase.id);
   const stats = useCaseStats(caseIds);
+  // The cross is one row in the case table only so that its attempts have
+  // somewhere to live; there is nothing to tick, so nothing to count.
+  const poolIds = drill.isCross ? [] : caseIds;
 
   const status = drill.timer.state.status;
   const isSolving = status === 'running';
@@ -62,48 +67,66 @@ export function SolveDrill({ mode, onMode }: SolveDrillProps) {
   return (
     <main className="screen">
       <div className={isSolving ? 'drill__setup is-hidden' : 'drill__setup'}>
-        <DrillSets
-          sets={sets ?? []}
-          setId={setId}
-          onSet={(next) => {
-            setSetId(next);
-            drill.reset();
-          }}
-        />
-        <DrillModes mode={mode} onMode={onMode} />
-
-        {drill.isCross ? (
-          <>
-            {/* The cross is the one drill that inspects, so it is the one that
-                needs the switch. It is the same switch as the timer screen's. */}
-            <label className="toggle">
-              <input
-                type="checkbox"
-                checked={drill.timer.inspectionEnabled}
-                onChange={(event) => drill.timer.setInspectionEnabled(event.target.checked)}
-              />
-              {strings.timer.inspectionToggle}
-            </label>
-            <FrontPicker skin={skin} />
-            <CrossHistory stats={stats?.get(CROSS_CASE_ID)} />
-          </>
-        ) : (
-          /* Changing what is drilled starts a fresh attempt: the answer and
-             the time on the clock belong to the case that was on screen a
-             moment ago. */
-          <CasePool
-            cases={drill.cases}
-            selectedIds={selectedIds}
-            stats={stats}
-            onSelect={(ids) => {
-              setSelectedIds(ids);
+        <div className="drill__bar">
+          <DrillSets
+            sets={sets ?? []}
+            setId={setId}
+            onSet={(next) => {
+              setSetId(next);
               drill.reset();
             }}
           />
-        )}
+
+          <DrillSetup summary={drillSummary(setId, mode, poolIds, selectedIds)}>
+            <DrillLooks
+              setId={setId}
+              onSet={(next) => {
+                setSetId(next);
+                drill.reset();
+              }}
+            />
+            <DrillModes mode={mode} onMode={onMode} />
+
+            {drill.isCross ? (
+              <>
+                {/* The cross is the one drill that inspects, so it is the one
+                    that needs the switch. Same switch as the timer screen's —
+                    written out here, where the row is not fighting for width. */}
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={drill.timer.inspectionEnabled}
+                    onChange={(event) => drill.timer.setInspectionEnabled(event.target.checked)}
+                  />
+                  {strings.timer.inspectionToggleLabel}
+                </label>
+                <CrossHistory stats={stats?.get(CROSS_CASE_ID)} />
+              </>
+            ) : (
+              /* Changing what is drilled starts a fresh attempt: the answer and
+                 the time on the clock belong to the case that was on screen a
+                 moment ago. */
+              <CasePool
+                cases={drill.cases}
+                selectedIds={selectedIds}
+                stats={stats}
+                onSelect={(ids) => {
+                  setSelectedIds(ids);
+                  drill.reset();
+                }}
+              />
+            )}
+          </DrillSetup>
+        </div>
 
         <div className="drill__scramble">
           <ScrambleLine drill={drill} current={current} />
+          {/* Only while there is still a cube to set up. Once the answer is
+              up, the picture has done its job and the screen needs the room
+              for the solution — this one has no scroll to fall back on. */}
+          {drill.isCross && !drill.isRevealed ? (
+            <ScrambleCube scramble={current?.scramble ?? ''} skin={skin} />
+          ) : null}
         </div>
       </div>
 
@@ -176,6 +199,33 @@ function ScrambleLine({ drill, current }: ScrambleLineProps) {
   );
 }
 
+/**
+ * The scrambled cube, drawn where it is held while the scramble is performed:
+ * white on top, green in front. It is the answer to "which way up do I start",
+ * which the cross is the only drill that has to ask — every other set is set
+ * up from a case, and a picture of it would be the answer to the question the
+ * drill is asking.
+ *
+ * Follows the timer's own switch, so somebody who has turned scramble pictures
+ * off does not get one here; the hint under the moves says the same in words.
+ */
+function ScrambleCube({ scramble, skin }: { scramble: string; skin: CubeSkin }) {
+  const [mode] = useSetting('ui.twistyMode');
+  const [isPreviewShown] = useSetting('timer.showScramblePreview');
+  const parsed = parseAlg(scramble);
+  if (!isPreviewShown || !parsed.ok) return null;
+
+  return (
+    <CubeDiagram
+      className="drill__scramble-cube"
+      state={applyAlg(solvedState(), parsed.moves)}
+      view={mode === '3D' ? 'isometric' : 'net'}
+      skin={withWhiteTop(skin)}
+      label={strings.drill.crossSetup}
+    />
+  );
+}
+
 interface AnswerProps {
   current: DrillItem;
   setId: string;
@@ -224,7 +274,7 @@ function Answer({
         />
       )}
       {moves.length === 0 ? null : <AlgText moves={moves} triggers={triggers} />}
-      {isCross ? <CrossSolution scramble={current.scramble} /> : null}
+      {isCross ? <CrossSolution scramble={current.scramble} skin={skin} /> : null}
 
       <CaseStatsRow stats={stats} />
       {/* The attempt is stored the moment the clock stops, so a dropped cube
@@ -250,6 +300,7 @@ const COLOUR_NAMES: Record<string, string> = strings.drill.crossColours;
 
 interface CrossSolutionProps {
   scramble: string;
+  skin: CubeSkin;
 }
 
 /**
@@ -261,8 +312,8 @@ interface CrossSolutionProps {
  * colours are on show and tapping one rewrites the solution. That also
  * explains the convention without a word of explanation.
  */
-function CrossSolution({ scramble }: CrossSolutionProps) {
-  const [front] = useSetting('trainer.crossFront');
+function CrossSolution({ scramble, skin }: CrossSolutionProps) {
+  const [front, setFront] = useSetting('trainer.crossFront');
 
   const parsed = parseAlg(scramble);
   const hold = CROSS_HOLDS.find((choice) => choice.front === front) ?? CROSS_HOLDS[0];
@@ -280,6 +331,7 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
         {strings.drill.crossSolution}
         {best.length === 0 ? '' : ` · ${best.length} ${strings.drill.crossMoves}`}
       </h3>
+      <FrontPicker skin={skin} front={front} onFront={setFront} />
       {best.length === 0 ? (
         <p className="drill__hint">{strings.drill.crossSolved}</p>
       ) : (
@@ -300,15 +352,19 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
   );
 }
 
+interface FrontPickerProps {
+  skin: CubeSkin;
+  front: string;
+  onFront: (front: string) => void;
+}
+
 /**
- * Which side is towards you. It sits with the scramble rather than with the
- * answer, because that is when you know: you read the scramble, put the cube
- * down cross-first and tap the colour you are looking at. The answer is then
- * already written for that grip — and tapping another colour after the fact
- * rewrites it, because this row is still on screen.
+ * Which side is towards you. It belongs to the solution and sits with it: the
+ * only thing it changes is how those moves are written, and above the scramble
+ * it read as a claim about the orientation the scramble itself starts from —
+ * which is a different question, and one the picture up there answers.
  */
-function FrontPicker({ skin }: { skin: ReturnType<typeof useCubeSkin> }) {
-  const [front, setFront] = useSetting('trainer.crossFront');
+function FrontPicker({ skin, front, onFront }: FrontPickerProps) {
   // A scramble is performed with white on top, and these are its colours.
   const scrambleSkin = withWhiteTop(skin);
 
@@ -323,9 +379,10 @@ function FrontPicker({ skin }: { skin: ReturnType<typeof useCubeSkin> }) {
           style={{ background: scrambleSkin.faces[choice.front] }}
           aria-label={COLOUR_NAMES[choice.front] ?? choice.front}
           aria-pressed={choice.front === front}
-          onClick={() => setFront(choice.front)}
+          onClick={() => onFront(choice.front)}
         />
       ))}
+      <p className="drill__hint drill__fronts-hint">{strings.drill.crossFrontHint}</p>
     </div>
   );
 }
@@ -350,7 +407,10 @@ function CrossHistory({ stats }: { stats: CaseStats | undefined }) {
         aria-expanded={isOpen}
         onClick={() => setOpen((open) => !open)}
       >
-        {strings.drill.attemptsTitle} {attempts.attempts.length}
+        <span>
+          {strings.drill.attemptsTitle} {attempts.attempts.length}
+        </span>
+        <ChevronIcon up={isOpen} />
       </button>
 
       {isOpen ? (

@@ -1,10 +1,7 @@
 import { CubeDiagram } from '../../../components/CubeDiagram';
-import type { ReactNode } from 'react';
-import type { AlgSet } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { caseTitle } from '../../../domain/alg/case-name';
 import { formatAlg, type Move } from '../../../domain/cube/notation';
-import { useState } from 'react';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { formatTime } from '../../../lib/format';
@@ -22,7 +19,8 @@ import {
 import { AlgText } from './AlgText';
 import { CasePool } from './CasePool';
 import { CaseStatsRow } from './CaseStats';
-import { DrillModes, DrillSets } from './DrillControls';
+import { drillSummary } from '../drill-summary';
+import { DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
 
 interface RecognitionDrillProps {
   mode: DrillMode;
@@ -57,18 +55,22 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
 
   return (
     <main className="screen screen--scroll">
-      <Setup summary={summaryOf(sets ?? [], setId, caseIds, selectedIds)}>
+      <div className="drill__bar">
         <DrillSets sets={sets ?? []} setId={setId} onSet={setSetId} />
-        <DrillModes mode={mode} onMode={onMode} />
-        {recognition.problem === 'cross' ? null : (
-          <CasePool
-            cases={recognition.cases}
-            selectedIds={selectedIds}
-            stats={stats}
-            onSelect={setSelectedIds}
-          />
-        )}
-      </Setup>
+
+        <DrillSetup summary={drillSummary(setId, mode, caseIds, selectedIds)}>
+          <DrillLooks setId={setId} onSet={setSetId} />
+          <DrillModes mode={mode} onMode={onMode} />
+          {recognition.problem === 'cross' ? null : (
+            <CasePool
+              cases={recognition.cases}
+              selectedIds={selectedIds}
+              stats={stats}
+              onSelect={setSelectedIds}
+            />
+          )}
+        </DrillSetup>
+      </div>
 
       {question === null || chart === null ? (
         <p className="drill__hint">{problemText(recognition.problem)}</p>
@@ -145,47 +147,6 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
       )}
     </main>
   );
-}
-
-/**
- * The four rows of controls, folded into the one line that says what they are
- * set to.
- *
- * They are worth a quarter of a phone screen and are touched once a session,
- * while the two things this screen is actually for — the cube and the cards —
- * have to be taken in together, in one look, without scrolling between them.
- * So they are shut by default and the line names the choices, which is also
- * what makes it obvious there is something behind it.
- */
-function Setup({ summary, children }: { summary: string; children: ReactNode }) {
-  const [isOpen, setOpen] = useState(false);
-
-  return (
-    <div className="recognition__setup">
-      <button
-        type="button"
-        className="drill__pool-toggle"
-        aria-expanded={isOpen}
-        onClick={() => setOpen((open) => !open)}
-      >
-        {summary}
-      </button>
-      {isOpen ? <div className="recognition__panel">{children}</div> : null}
-    </div>
-  );
-}
-
-/** What the controls are set to: the set, and how much of it is being drilled. */
-function summaryOf(
-  sets: readonly AlgSet[],
-  setId: string,
-  caseIds: readonly string[],
-  selectedIds: readonly string[],
-): string {
-  const name = sets.find((set) => set.id === setId)?.name ?? setId;
-  const ticked = caseIds.filter((id) => selectedIds.includes(id));
-  const count = ticked.length === 0 ? caseIds.length : ticked.length;
-  return `${name} · ${strings.drill.modeRecognise} · ${count} / ${caseIds.length}`;
 }
 
 function problemText(problem: RecognitionProblem | null): string {

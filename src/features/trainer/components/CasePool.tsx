@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChevronIcon } from '../../../components/Icons';
 import type { CaseWithAlg } from '../../../db/repositories/alg-repository';
 import { slowestCases, type CaseStats } from '../../../domain/drill/case-stats';
 import { caseTitle } from '../../../domain/alg/case-name';
@@ -39,9 +40,12 @@ export function CasePool({ cases, selectedIds, stats, onSelect }: CasePoolProps)
         aria-expanded={isOpen}
         onClick={() => setOpen((open) => !open)}
       >
-        {strings.drill.pool} {tickedHere.length === 0 ? caseIds.length : tickedHere.length}
-        {' / '}
-        {caseIds.length}
+        <span>
+          {strings.drill.pool} {tickedHere.length === 0 ? caseIds.length : tickedHere.length}
+          {' / '}
+          {caseIds.length}
+        </span>
+        <ChevronIcon up={isOpen} />
       </button>
 
       {isOpen ? (

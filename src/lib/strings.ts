@@ -26,8 +26,9 @@ export const strings = {
     /*
      * Two switches share the panel's heading with the session name and the
      * count, and at the largest text size the words push each other onto a
-     * line of their own. Abbreviated for the eye; the full word is what a
-     * screen reader is given.
+     * line of their own. Abbreviated for the eye there and nowhere else; the
+     * full word is what a screen reader is given, and what the settings and
+     * the drill print, where the line is not fighting anything for width.
      */
     inspectionToggle: 'Insp',
     inspectionToggleLabel: 'Inspection',
@@ -318,7 +319,15 @@ export const strings = {
     poolHint: 'Tick the cases to drill. Nothing ticked means the whole set.',
     poolDone: 'Done',
     caseHint: 'Perform it, then hold to start.',
-    crossHint: 'Perform it, then hold to start — solve the cross only.',
+    /*
+     * The cross is scrambled from a real cube rather than set up from a case,
+     * so the orientation it starts in is part of the instruction. Said in
+     * words as well as drawn, because the picture beside it can be switched
+     * off in the settings.
+     */
+    crossHint:
+      'Scramble a solved cube held white on top, green in front. Then hold to start — solve the cross only.',
+    crossSetup: 'The cube after the scramble',
     showCase: 'Show me',
     gaveUp: 'Looked up, so it counts as a DNF.',
     next: 'Next case',
@@ -338,9 +347,12 @@ export const strings = {
     crossMoves: 'moves',
     crossSolved: 'The cross is already done.',
     crossFront: 'In front:',
+    crossFrontHint: 'Tap the side you have towards you.',
     crossColours: { F: 'Green', R: 'Red', B: 'Blue', L: 'Orange' },
     modeSolve: 'Solve it',
     modeRecognise: 'Name it',
+    /* Named for what is behind the line, because the line itself is the answer. */
+    setup: 'Change what is drilled',
   },
   recognition: {
     question: 'Which case is this?',

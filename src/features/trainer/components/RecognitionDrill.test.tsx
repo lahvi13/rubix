@@ -202,8 +202,11 @@ describe('RecognitionDrill', () => {
 
     // Folded away by default: the cube and the cards have to share one screen.
     expect(screen.queryByRole('button', { name: 'Solve it' })).not.toBeInTheDocument();
+    // The set has its own row above the line, so the line says what is being
+    // done with it rather than repeating the name.
+    expect(screen.getByRole('button', { name: 'PLL' })).toHaveClass('is-active');
     const summary = screen.getByRole('button', { name: /Name it/ });
-    expect(summary).toHaveTextContent('PLL · Name it · 2 / 21');
+    expect(summary).toHaveTextContent('Full · Name it · 2 / 21');
 
     await user.click(summary);
     await user.click(screen.getByRole('button', { name: 'Solve it' }));

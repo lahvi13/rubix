@@ -2155,8 +2155,60 @@ button[disabled] {
   visibility: hidden;
 }
 
+/*
+ * The set row and the line that everything else folds behind. Tight together,
+ * because they are one control: the row says which set, the line says what is
+ * being done with it.
+ */
+.drill__bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto var(--space-5);
+}
+
+/* The trainer's own rows carry a margin for a page that scrolls; inside the
+   fold the gap above does the spacing. */
+.drill__bar .trainer__sets,
+.drill__bar .trainer__looks,
+.drill__setup-panel .trainer__looks {
+  margin-bottom: 0;
+}
+
+.drill__setup-fold {
+  width: 100%;
+}
+
+.drill__setup-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
 .drill__pool {
   width: 100%;
+}
+
+/*
+ * The line a folded panel leaves behind. Full width with the chevron at its
+ * end, so it reads as a way in rather than as one more option in a row — on
+ * the drill it is the only route back to the set list and to the other half
+ * of the screen, and a button the width of its own text does not say so.
+ */
+.drill__pool-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
 }
 
 .drill__picker {
@@ -2200,6 +2252,17 @@ button[disabled] {
   min-height: 4rem;
 }
 
+/* Where the cross scramble lands. Sized like the timer's own preview, but by
+   the height of the screen rather than its width: this one shares the page
+   with a clock that must not be pushed off the bottom, and the flat net is
+   the wide shape of the two. */
+.drill__scramble-cube {
+  width: auto;
+  height: auto;
+  max-width: min(260px, 62vw);
+  max-height: min(170px, 20dvh);
+}
+
 /* Read at arm's length with a cube in both hands, so bigger than body text
    by a long way; the clamp keeps a 21-move cross scramble on the screen. */
 .drill__moves {
@@ -2225,6 +2288,11 @@ button[disabled] {
   align-items: center;
   gap: var(--space-4);
   min-height: 3rem;
+  /* The drill does not scroll as a page — the clock has to stay put — so the
+     answer scrolls inside its own row instead. Its height comes from the row,
+     so this is the whole fix: a short phone with a long cross solution on it
+     used to push "Next case" past the bottom with no way to reach it. */
+  overflow-y: auto;
 }
 
 .drill__case-name {
@@ -2256,6 +2324,11 @@ button[disabled] {
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
+}
+
+/* On its own line under the swatches, whatever the row wrapped to. */
+.drill__fronts-hint {
+  flex-basis: 100%;
 }
 
 /* A colour you tap, so it is a target for a thumb, not a dot. */
@@ -2363,21 +2436,6 @@ button[disabled] {
    can fit, which is right for reading a whole set and wrong here — six cards
    in fours leaves a ragged second row, and each one is a cube to be compared
    against another cube, not an icon. */
-/* The controls, folded away. Full width so the line it leaves behind reads as
-   a header for the screen rather than as a stray button. */
-.recognition__setup {
-  width: 100%;
-  max-width: 40rem;
-  margin: 0 auto var(--space-5);
-}
-
-.recognition__panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  margin-top: var(--space-5);
-}
-
 /* The algorithm, and in front of it the turn this particular angle asks for.
    Set apart rather than run together: the AUF belongs to the question, the
    algorithm belongs to the case. */
