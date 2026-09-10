@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { ChevronIcon } from '../../../components/Icons';
 import { TimerDisplay } from '../../../components/TimerDisplay';
@@ -12,6 +12,9 @@ import type { CaseStats } from '../../../domain/drill/case-stats';
 import type { Penalty } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
+import { usePlayingMove } from '../../../hooks/use-playing-move';
+import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-view';
+import type { TwistyPlayerElement } from '../../../types/twisty';
 import { useSetting } from '../../../hooks/use-setting';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
@@ -67,7 +70,7 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
   }, [drill.isCross]);
 
   return (
-    <main className="screen">
+    <main className="screen screen--scroll screen--drill">
       <div className={isSolving ? 'drill__setup is-hidden' : 'drill__setup'}>
         <div className="drill__bar">
           <DrillSets
@@ -131,12 +134,11 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
 
         <div className="drill__scramble">
           <ScrambleLine drill={drill} current={current} />
-          {/* Only while there is still a cube to set up. Once the answer is
-              up, the picture has done its job and the screen needs the room
-              for the solution — this one has no scroll to fall back on. */}
-          {drill.isCross && !drill.isRevealed ? (
-            <ScrambleCube scramble={current?.scramble ?? ''} skin={skin} />
-          ) : null}
+          {/* Stays up once the attempt is over, rather than making room for the
+              answer: the page scrolls now, and a picture that vanished at the
+              moment the clock stopped took the clock 150px up the screen with
+              it. It is also the cube the animation below starts from. */}
+          {drill.isCross ? <ScrambleCube scramble={current?.scramble ?? ''} skin={skin} /> : null}
         </div>
       </div>
 
@@ -324,6 +326,10 @@ interface CrossSolutionProps {
  */
 function CrossSolution({ scramble, skin }: CrossSolutionProps) {
   const [front, setFront] = useSetting('trainer.crossFront');
+  // Bumped rather than toggled, so tapping again replays instead of doing
+  // nothing; zero is "not watching yet".
+  const [watchToken, setWatchToken] = useState(0);
+  const [playingMove, setPlayingMove] = useState<number | null>(null);
 
   const parsed = parseAlg(scramble);
   const hold = CROSS_HOLDS.find((choice) => choice.front === front) ?? CROSS_HOLDS[0];
@@ -333,7 +339,7 @@ function CrossSolution({ scramble, skin }: CrossSolutionProps) {
       : [];
 
   const [best, ...rest] = solutions;
-  if (best === undefined) return null;
+  if (best === undefined || hold === undefined) return null;
 
   return (
     <>
@@ -346,7 +352,29 @@ function CrossSolution({ scramble, skin }: CrossSolutionProps) {
         <p className="drill__hint">{strings.drill.crossSolved}</p>
       ) : (
         <>
-          <p className="drill__moves">{formatAlg(best)}</p>
+          {/* The cube picks up where the reader's did: scrambled, then turned
+              over into the grip they said they were using, so the moves below
+              mean on screen exactly what they mean in their hands. */}
+          {watchToken === 0 ? null : (
+            <CrossPlayer
+              setupAlg={`${scramble} ${formatAlg(hold.rotation)}`}
+              alg={formatAlg(best)}
+              replayToken={watchToken}
+              onMove={setPlayingMove}
+            />
+          )}
+          <p className="drill__moves">
+            {formatAlg(best)
+              .split(' ')
+              .map((move, index) => (
+                <span key={index + move} aria-current={index === playingMove ? 'step' : undefined}>
+                  {move + ' '}
+                </span>
+              ))}
+          </p>
+          <button type="button" onClick={() => setWatchToken((token) => token + 1)}>
+            {watchToken === 0 ? strings.drill.crossWatch : strings.drill.crossWatchAgain}
+          </button>
           {/* The others are the same length; which one suits your hands is
               exactly what there is to look at. */}
           {rest.length === 0 ? null : (
@@ -440,5 +468,74 @@ function CrossHistory({ stats }: { stats: CaseStats | undefined }) {
         </div>
       ) : null}
     </div>
+  );
+}
+
+interface CrossPlayerProps {
+  /** The scramble and the turn onto the cross face, as one setup. */
+  setupAlg: string;
+  alg: string;
+  /** Bumped by the caller to perform the same solution again. */
+  replayToken: number;
+  onMove: (index: number | null) => void;
+}
+
+/**
+ * The cross being solved, on a cube that turns.
+ *
+ * Watched from underneath, which no other player in the app does: the cross is
+ * built on the face the cube is standing on, and from the usual angle it is the
+ * one face you cannot see. It is the same look a reader gets by tilting the
+ * cube to check their work.
+ *
+ * These are cubing.js's colours rather than the reader's — the player cannot be
+ * given a skin — which is also why the still picture beside the scramble is
+ * drawn by us and this only arrives when somebody asks for it, chunk and all.
+ */
+function CrossPlayer({ setupAlg, alg, replayToken, onMove }: CrossPlayerProps) {
+  const player = useRef<TwistyPlayerElement | null>(null);
+  const [isReady, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void import('cubing/twisty').then(() => {
+      if (!cancelled) setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  usePlayingMove(player, isReady, onMove);
+
+  useEffect(() => {
+    if (!isReady) return;
+    const element = player.current;
+    if (!element) return;
+
+    element.jumpToStart();
+    element.play();
+  }, [isReady, setupAlg, alg, replayToken]);
+
+  if (!isReady) return <p className="case-player__loading">{strings.trainer.loadingPlayer}</p>;
+
+  return (
+    <twisty-player
+      ref={player}
+      className="case-player"
+      // Dragging this turns the cube; without it a drag would scroll the page
+      // out from under the thing being watched.
+      data-no-swipe=""
+      puzzle="3x3x3"
+      alg={alg}
+      experimental-setup-alg={setupAlg}
+      experimental-setup-anchor="start"
+      visualization="3D"
+      background="none"
+      camera-latitude={-CAMERA_LATITUDE}
+      camera-longitude={CAMERA_LONGITUDE}
+      control-panel="none"
+      hint-facelets="none"
+    />
   );
 }

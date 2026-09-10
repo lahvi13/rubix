@@ -346,6 +346,8 @@ export const strings = {
     crossSolution: 'Shortest cross',
     crossMoves: 'moves',
     crossSolved: 'The cross is already done.',
+    crossWatch: 'Watch it',
+    crossWatchAgain: 'Watch again',
     crossFront: 'In front:',
     crossFrontHint: 'Tap the side you have towards you, now that the cube is over.',
     crossColours: { F: 'Green', R: 'Red', B: 'Blue', L: 'Orange' },

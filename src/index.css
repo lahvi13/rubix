@@ -554,6 +554,7 @@ button[disabled] {
  * cannot collide with the row below.
  */
 .scramble__moves span[aria-current],
+.drill__moves span[aria-current],
 .alg__move[aria-current] {
   color: var(--accent);
 }
@@ -1047,6 +1048,33 @@ button[disabled] {
 
 .screen--scroll {
   display: block;
+}
+
+/*
+ * The drill scrolls as a page, but keeps the three rows: while it is timing,
+ * the scramble, the clock and the answer have to sit exactly where they sat a
+ * moment ago, and a block layout would walk the clock up the screen as the
+ * scramble grew. So the first two rows keep their bands and the answer takes
+ * whatever it needs — the cross's is a solution, its alternatives and a cube
+ * playing it, which was never going to fit in a third of a phone.
+ */
+.screen--drill {
+  display: grid;
+  /*
+   * Exactly one viewport tall, and told so rather than left to the content —
+   * the rows are shares, and shares of a height that moves are rows that move.
+   * The clock has to be in the same place at the end of a solve as it was at
+   * the start, and the cross answer that arrives at that moment is longer than
+   * the row it lands in.
+   *
+   * So the row keeps its size and the answer overflows it. Nothing clips it on
+   * the way out, so the page grows instead, which is the scrolling the cross
+   * needs — a solution, its alternatives and a cube performing it were never
+   * going to fit in a third of a phone.
+   */
+  flex: none;
+  height: calc(100dvh - var(--header-height));
+  grid-template-rows: auto minmax(min-content, 0.9fr) minmax(0, 2.2fr);
 }
 
 /* Filters */
@@ -2288,11 +2316,6 @@ button[disabled] {
   align-items: center;
   gap: var(--space-4);
   min-height: 3rem;
-  /* The drill does not scroll as a page — the clock has to stay put — so the
-     answer scrolls inside its own row instead. Its height comes from the row,
-     so this is the whole fix: a short phone with a long cross solution on it
-     used to push "Next case" past the bottom with no way to reach it. */
-  overflow-y: auto;
 }
 
 .drill__case-name {
