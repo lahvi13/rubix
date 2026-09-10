@@ -358,6 +358,9 @@ export const strings = {
     crossSolved: 'The cross is already done.',
     crossWatch: 'Watch it',
     crossWatchAgain: 'Watch again',
+    /* Names the list for a screen reader; on screen its place under the
+       solution says what it is. */
+    crossAlternatives: 'Other solutions of the same length',
     crossFront: 'In front:',
     crossFrontHint: 'Tap the side you keep towards you, cross face down.',
     /*

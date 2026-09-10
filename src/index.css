@@ -2403,6 +2403,22 @@ button[disabled] {
 
 /* The other shortest solutions: there to be compared, so quieter than the
    first but still in the same monospaced shape. */
+/*
+ * A line of moves to tap, not a button: it keeps the list's own type and
+ * colour and takes only the height a thumb needs, because the button family
+ * would otherwise paint an outline round every alternative and turn a quiet
+ * list into a row of controls competing with the solution above it.
+ */
+.drill__alternatives button {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
 .drill__alternatives {
   list-style: none;
   margin: 0;

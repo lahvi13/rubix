@@ -362,6 +362,9 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
   // nothing; zero is "not watching yet".
   const [watchToken, setWatchToken] = useState(0);
   const [playingMove, setPlayingMove] = useState<number | null>(null);
+  /** Which of the shortest solutions is the one on show and on the cube. */
+  const [chosen, setChosen] = useState(0);
+  const [chosenFor, setChosenFor] = useState(front);
 
   const parsed = parseAlg(scramble);
   const hold = CROSS_HOLDS.find((choice) => choice.front === front) ?? CROSS_HOLDS[0];
@@ -370,8 +373,18 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
       ? crossSolutions(applyAlg(applyAlg(solvedState(), parsed.moves), hold.rotation))
       : [];
 
-  const [best, ...rest] = solutions;
+  // Turning the cube round rewrites every solution, so the one that was picked
+  // out of the old set does not exist in the new one. Adjusted during render
+  // rather than in an effect: this is state that no longer matches what it was
+  // derived from, and an effect would paint the stale choice first.
+  if (chosenFor !== front) {
+    setChosenFor(front);
+    setChosen(0);
+  }
+
+  const best = solutions[chosen] ?? solutions[0];
   if (best === undefined || hold === undefined) return null;
+  const others = solutions.filter((_, index) => index !== chosen);
 
   return (
     <>
@@ -384,7 +397,7 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
       ) : (
         <>
           {/* The cube picks up where the reader's did: scrambled, then turned
-              over into the grip they said they were using, so the moves below
+              round into the grip they said they were using, so the moves below
               mean on screen exactly what they mean in their hands. */}
           {watchToken === 0 ? null : (
             <CrossPlayer
@@ -406,12 +419,24 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
           <button type="button" onClick={() => setWatchToken((token) => token + 1)}>
             {watchToken === 0 ? strings.drill.crossWatch : strings.drill.crossWatchAgain}
           </button>
-          {/* The others are the same length; which one suits your hands is
-              exactly what there is to look at. */}
-          {rest.length === 0 ? null : (
-            <ul className="drill__alternatives">
-              {rest.map((solution) => (
-                <li key={formatAlg(solution)}>{formatAlg(solution)}</li>
+          {/*
+            The others are the same length; which one suits your hands is
+            exactly what there is to look at, and reading five moves is not the
+            same as seeing them. So each one takes the place of the solution
+            above when it is tapped — and the cube, already set up and already
+            watching that line, simply performs the new one.
+          */}
+          {others.length === 0 ? null : (
+            <ul className="drill__alternatives" aria-label={strings.drill.crossAlternatives}>
+              {others.map((solution) => (
+                <li key={formatAlg(solution)}>
+                  <button
+                    type="button"
+                    onClick={() => setChosen(solutions.indexOf(solution))}
+                  >
+                    {formatAlg(solution)}
+                  </button>
+                </li>
               ))}
             </ul>
           )}

@@ -362,6 +362,37 @@ describe('DrillScreen', () => {
     }
   });
 
+  it('puts an alternative on the cube by tapping it', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.drillSetId', 'cross');
+    await setSetting('timer.inspectionEnabled', false);
+    render(<DrillScreen />);
+    await screen.findByText(SCRAMBLE);
+
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+    await screen.findByRole('heading', { name: /Shortest cross/ });
+
+    const shown = () =>
+      screen.getByRole('heading', { name: /Shortest cross/ }).parentElement
+        ?.querySelector('.drill__moves')?.textContent?.trim() ?? '';
+    const listed = () =>
+      screen.getAllByRole('listitem').map((node) => node.textContent?.trim() ?? '');
+
+    const first = shown();
+    const [alternative] = listed();
+    expect(alternative).toBeDefined();
+    if (alternative === undefined) return;
+
+    // Reading five moves is not the same as seeing them, so tapping one takes
+    // the place of the solution above — which is what the cube performs.
+    await user.click(screen.getByRole('button', { name: alternative }));
+
+    expect(shown()).toBe(alternative);
+    expect(listed()).toContain(first);
+    // Still a shortest cross for the cube as it is held, not just a swap of text.
+    expect(isCrossSolvedAfter(SCRAMBLE, '', shown())).toBe(true);
+  });
+
   it('rewrites the cross for the side you say is in front', async () => {
     const user = userEvent.setup();
     await setSetting('trainer.drillSetId', 'cross');
