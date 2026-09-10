@@ -37,6 +37,16 @@ export const strings = {
     phaseToggleLabel: 'Phases',
     tapToEndPhase: 'Tap to end · hold to finish',
     releaseToFinish: 'Release to finish',
+    /*
+     * What the time that has just landed is worth, said in the line the hint
+     * leaves empty once a solve is over. The wording is the history's, so the
+     * same achievement is not called two different things on two screens.
+     */
+    recordPb: 'Personal best',
+    recordSession: 'Session best',
+    recordPhases: (phases: string) => `Best ${phases}`,
+    /** Between the names of phases that were all best on the same solve. */
+    recordPhaseJoin: ' · ',
   },
   splits: {
     bestPhase: (phase: string) => `Best ${phase} of this session`,
@@ -75,6 +85,9 @@ export const strings = {
     plusTwo: '+2',
     dnf: 'DNF',
     delete: 'Delete',
+    /* What the delete button says once it is armed and one more tap will do it. */
+    confirmDelete: 'Delete?',
+    confirmDeleteLabel: 'Delete this solve — tap again to confirm',
     empty: 'No solves yet. Hold to start.',
     autoPenalty: 'from inspection',
   },

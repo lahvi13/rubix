@@ -392,6 +392,117 @@ describe('TimerScreen', () => {
     back.mockRestore();
   });
 
+  it('takes two taps to delete the last solve', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await findScramble();
+    await keyboardSolve(user, tick, 5000);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+
+    // +2 and DNF are the neighbours this button is protected from.
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(await db.solves.count()).toBe(1);
+
+    const armed = await screen.findByRole('button', { name: /tap again/i });
+    await user.click(armed);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(0);
+    });
+  });
+
+  it('disarms the delete when another action is taken instead', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await findScramble();
+    await keyboardSolve(user, tick, 5000);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: '+2' }));
+
+    // Back to asking, not to deleting: the next tap must not be the second one.
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    expect(await db.solves.count()).toBe(1);
+  });
+
+  it('says what the finished time was worth, biggest record first', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await findScramble();
+
+    // The first solve of an empty database is the best there has ever been.
+    await keyboardSolve(user, tick, 12_340);
+    expect(await screen.findByText('Personal best')).toBeInTheDocument();
+
+    await user.click(await screen.findByRole('button', { name: 'Next scramble' }));
+    await keyboardSolve(user, tick, 20_000);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(2);
+    });
+    expect(screen.queryByText('Personal best')).not.toBeInTheDocument();
+    expect(screen.queryByText('Session best')).not.toBeInTheDocument();
+  });
+
+  it('names the phase a slower solve turned out to hold', async () => {
+    await seedCfop();
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await findScramble();
+    const phaseToggle = await screen.findByRole('checkbox', { name: 'Phases' });
+    await waitFor(() => expect(phaseToggle).toBeEnabled());
+    await user.click(phaseToggle);
+
+    /** An attempt tapped through its phases, ending on the last one. */
+    async function phaseSolve(phaseMs: number[]): Promise<void> {
+      await user.keyboard('[Space>]');
+      tick(50);
+      await user.keyboard('[/Space]');
+      tick(3000);
+      await user.keyboard('[Space>]');
+      tick(400);
+      await user.keyboard('[/Space]');
+      for (const ms of phaseMs) {
+        tick(ms);
+        await user.keyboard('[Space>]');
+        await user.keyboard('[/Space]');
+      }
+    }
+
+    await phaseSolve([2000, 8000, 4000, 6000]);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+    await user.click(await screen.findByRole('button', { name: 'Next scramble' }));
+
+    // Slower overall, so neither record is its — but nobody has ever crossed
+    // faster, and that is the thing worth saying.
+    await phaseSolve([1500, 9000, 5000, 7000]);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(2);
+    });
+    expect(await screen.findByText('Best Cross')).toBeInTheDocument();
+  });
+
   it('creates the default session on first render', async () => {
     render(<TimerScreen />);
 

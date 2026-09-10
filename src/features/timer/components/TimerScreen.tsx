@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Penalty } from '../../../db/types';
+import type { MethodPhase, Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
+import { bestPhasesIn } from '../../../domain/stats/phases';
+import { resultRecord, type ResultRecord } from '../../../domain/stats/records';
 import { now } from '../../../lib/clock';
 import { strings } from '../../../lib/strings';
 import { reportError } from '../../../lib/errors';
@@ -17,11 +19,27 @@ import { useSetting } from '../../../hooks/use-setting';
 import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
 import { ScramblePanel } from './ScramblePanel';
 import { SolveList } from './SolveList';
-import { TimerDisplay } from '../../../components/TimerDisplay';
+import { TimerDisplay, type RecordNote } from '../../../components/TimerDisplay';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
 const EMPTY_PHASES: never[] = [];
+
+/**
+ * A record put into words. The phase tier is the only one that needs the
+ * method: `resultRecord` deals in phase keys, and nobody wants to read one.
+ */
+function noteFor(record: ResultRecord, phases: readonly MethodPhase[]): RecordNote {
+  if (record.kind === 'pb') return { tier: 'pb', label: strings.timer.recordPb };
+  if (record.kind === 'session') return { tier: 'session', label: strings.timer.recordSession };
+  const named = record.phases.map(
+    (key) => phases.find((phase) => phase.key === key)?.label ?? key,
+  );
+  return {
+    tier: 'phase',
+    label: strings.timer.recordPhases(named.join(strings.timer.recordPhaseJoin)),
+  };
+}
 
 export function TimerScreen() {
   const session = useActiveSession(PUZZLE, MODE);
@@ -106,10 +124,49 @@ export function TimerScreen() {
   // Derived, not synchronized: the result stays up only while the machine is
   // at rest with a finished time. Starting the next attempt (or cancelling,
   // which wipes lastRawMs) hides it without any bookkeeping.
-  const lastSolve = solves[0];
   const resultVisible =
     showResult &&
     (status === 'stopped' || (timer.state.status === 'idle' && timer.state.lastRawMs !== null));
+
+  /*
+   * The solve the clock is showing, which is not simply the newest one: the
+   * list is a live query and the attempt has to be written before it arrives,
+   * so for a moment after the clock stops the newest row is still the solve
+   * before this one. Anything drawn under the time — its phases, what record
+   * it holds — would be describing that one.
+   */
+  const clockRawMs =
+    timer.state.status === 'stopped'
+      ? timer.state.rawMs
+      : timer.state.status === 'idle'
+        ? timer.state.lastRawMs
+        : null;
+  const lastSolve = solves[0];
+  const shownSolve =
+    resultVisible && lastSolve && clockRawMs !== null && lastSolve.rawMs === Math.round(clockRawMs)
+      ? lastSolve
+      : null;
+
+  // What that time turned out to be worth. Read from records that already
+  // count it, so a solve that has just become the best IS the best.
+  const record = useMemo(
+    () =>
+      shownSolve === null
+        ? null
+        : resultRecord(shownSolve, listedPhaseKeys, records.bests, records.globalPbMs),
+    [shownSolve, listedPhaseKeys, records],
+  );
+  const recordNote = useMemo(
+    () => (record === null ? null : noteFor(record, methodPhases)),
+    [record, methodPhases],
+  );
+  // The same ring the lists draw round a phase that is the fastest it has
+  // been, on the bar of the solve that just happened.
+  const shownBestPhases = useMemo(
+    () =>
+      shownSolve === null ? [] : bestPhasesIn(shownSolve, listedPhaseKeys, records.bests),
+    [shownSolve, listedPhaseKeys, records],
+  );
 
   // Stable references, or the memo on SolveList would be defeated by the
   // per-frame re-renders while the timer is live.
@@ -235,6 +292,7 @@ export function TimerScreen() {
           finishArmed={timer.finishArmed}
           byPhase={timer.phaseIndex !== null}
           resultShown={resultVisible}
+          record={recordNote}
           inspectionCues={timer.inspectionCues}
           inspectionEnabled={timer.inspectionEnabled}
           touchHandlers={timer.touchHandlers}
@@ -250,8 +308,13 @@ export function TimerScreen() {
         ) : null}
 
         {/* The phases of the solve just finished, under the time it produced. */}
-        {resultVisible && lastSolve && lastSolve.splits.length > 0 ? (
-          <PhaseBar splits={lastSolve.splits} phases={methodPhases} rawMs={lastSolve.rawMs} />
+        {shownSolve && shownSolve.splits.length > 0 ? (
+          <PhaseBar
+            splits={shownSolve.splits}
+            phases={methodPhases}
+            rawMs={shownSolve.rawMs}
+            bestPhases={shownBestPhases}
+          />
         ) : null}
       </div>
 

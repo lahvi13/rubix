@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { SolvePhases } from '../../splits';
 import { finalMs } from '../../../domain/solve/final-time';
@@ -36,6 +36,13 @@ interface SolveListProps {
 }
 
 /**
+ * How long the delete button stays armed. Long enough to move a thumb one
+ * button along, short enough that it is never still armed when the reader
+ * comes back to the row after the next solve.
+ */
+const DISARM_AFTER_MS = 4000;
+
+/**
  * Flat list of the session's solves. Penalties and deletion are offered on the
  * most recent solve only — full editing lands with the history screen.
  * Memoised: the timer above repaints every animation frame, and fifty rows
@@ -51,6 +58,24 @@ export const SolveList = memo(function SolveList({
   onChangePenalty,
   onDelete,
 }: SolveListProps) {
+  /*
+   * Which solve's delete button is armed, by id rather than by a flag: these
+   * buttons sit on whichever solve is newest, and the next one lands under
+   * the reader's thumb a second or two later. Named by id, an arm cannot
+   * outlive the row it was meant for.
+   *
+   * Two taps rather than one because of where the button is: +2 and DNF are
+   * next to it, they are reached for with a cube still in hand, and a thumb
+   * one button off would otherwise throw the solve away. The undo bar is
+   * still behind this — it is the second net, not the first.
+   */
+  const [armedId, setArmedId] = useState<string | null>(null);
+  useEffect(() => {
+    if (armedId === null) return;
+    const handle = setTimeout(() => setArmedId(null), DISARM_AFTER_MS);
+    return () => clearTimeout(handle);
+  }, [armedId]);
+
   const phaseKeys = phases.map((phase) => phase.key);
 
   if (solves.length === 0) {
@@ -69,7 +94,14 @@ export const SolveList = memo(function SolveList({
     >
       {solves.map((solve, index) => (
         <li key={solve.id} className={rowClass(solve, phaseKeys, bests)}>
-          <button type="button" className="solves__open" onClick={() => onOpen(solve.id)}>
+          <button
+            type="button"
+            className="solves__open"
+            onClick={() => {
+              setArmedId(null);
+              onOpen(solve.id);
+            }}
+          >
             <span className="solves__index">{solves.length - index}.</span>
             <SolveTime solve={solve} bests={bests} globalPbMs={globalPbMs} />
             <span className="solves__meta">
@@ -93,19 +125,37 @@ export const SolveList = memo(function SolveList({
               <button
                 type="button"
                 className={solve.penalty === 'plus2' ? 'is-active' : ''}
-                onClick={() => onChangePenalty(solve.id, togglePenalty(solve.penalty, 'plus2'))}
+                onClick={() => {
+                  setArmedId(null);
+                  onChangePenalty(solve.id, togglePenalty(solve.penalty, 'plus2'));
+                }}
               >
                 {strings.solve.plusTwo}
               </button>
               <button
                 type="button"
                 className={solve.penalty === 'dnf' ? 'is-active' : ''}
-                onClick={() => onChangePenalty(solve.id, togglePenalty(solve.penalty, 'dnf'))}
+                onClick={() => {
+                  setArmedId(null);
+                  onChangePenalty(solve.id, togglePenalty(solve.penalty, 'dnf'));
+                }}
               >
                 {strings.solve.dnf}
               </button>
-              <button type="button" onClick={() => onDelete(solve.id)}>
-                {strings.solve.delete}
+              <button
+                type="button"
+                className={armedId === solve.id ? 'is-danger' : ''}
+                aria-label={armedId === solve.id ? strings.solve.confirmDeleteLabel : undefined}
+                onClick={() => {
+                  if (armedId !== solve.id) {
+                    setArmedId(solve.id);
+                    return;
+                  }
+                  setArmedId(null);
+                  onDelete(solve.id);
+                }}
+              >
+                {armedId === solve.id ? strings.solve.confirmDelete : strings.solve.delete}
               </button>
             </span>
           ) : null}

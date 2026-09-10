@@ -757,6 +757,23 @@ button[disabled] {
   color: var(--muted);
 }
 
+/*
+ * What the finished time was worth, in the line the hint leaves empty. Set
+ * like the rest of the app's records — the star, and the two colours the
+ * lists already use for them — so that it is recognised rather than read.
+ */
+.timer__record {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* The one record above a session's own; the lists give it the same colour. */
+.timer__record.is-pb {
+  color: var(--record);
+}
+
 .timer--holding .timer__value {
   color: var(--danger);
 }

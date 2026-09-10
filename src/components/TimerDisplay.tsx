@@ -4,6 +4,16 @@ import { INSPECTION_LIMIT_MS } from '../domain/solve/penalty';
 import { formatInspection, formatMsParts } from '../lib/format';
 import { strings } from '../lib/strings';
 
+/**
+ * A record the finished time turned out to hold, ready to be read: the tier
+ * decides how loudly it is drawn, the label says what it is. Resolved by the
+ * caller, which is the only one that knows the method's phase names.
+ */
+export interface RecordNote {
+  tier: 'pb' | 'session' | 'phase';
+  label: string;
+}
+
 interface TimerDisplayProps {
   state: TimerState;
   displayMs: number | null;
@@ -22,6 +32,12 @@ interface TimerDisplayProps {
    * scramble. The hint would be describing the solve that is already over.
    */
   resultShown?: boolean;
+  /**
+   * What that finished time was worth, if anything. Only read while
+   * `resultShown`: on any other stage of the attempt it would describe a
+   * solve that is no longer on the clock.
+   */
+  record?: RecordNote | null;
   /** When inspection beeps, in elapsed milliseconds; the ring changes with them. */
   inspectionCues?: readonly number[];
   inspectionEnabled: boolean;
@@ -39,6 +55,7 @@ export function TimerDisplay({
   finishArmed = false,
   byPhase = false,
   resultShown = false,
+  record = null,
   inspectionCues = [],
   inspectionEnabled,
   touchHandlers,
@@ -69,8 +86,23 @@ export function TimerDisplay({
         </div>
         {isInspecting ? <InspectionBar elapsedMs={inspectionMs} /> : null}
       </div>
+      {/* One line, two jobs: what the next gesture will do while there is one
+          to describe, and what the time that has landed is worth once there
+          is not. The same line either way, so a record does not push the
+          screen about at the moment it is being read. */}
       <p className="timer__hint">
-        {resultShown ? '' : hintFor(state, armed, finishArmed, byPhase, inspectionEnabled)}
+        {resultShown ? (
+          record === null || record === undefined ? (
+            ''
+          ) : (
+            <span className={`timer__record is-${record.tier}`}>
+              <span aria-hidden="true">{strings.history.star} </span>
+              {record.label}
+            </span>
+          )
+        ) : (
+          hintFor(state, armed, finishArmed, byPhase, inspectionEnabled)
+        )}
       </p>
     </div>
   );
