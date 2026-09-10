@@ -63,8 +63,18 @@ export function readSwipe(
  * this cannot.
  */
 export function isPullDown(start: SwipePoint, end: SwipePoint): boolean {
+  return isPull(start, end, 1);
+}
+
+/** The same drag the other way: the gesture that pulls a panel open. */
+export function isPullUp(start: SwipePoint, end: SwipePoint): boolean {
+  return isPull(start, end, -1);
+}
+
+/** One rule for both, so that what counts as a pull cannot differ by direction. */
+function isPull(start: SwipePoint, end: SwipePoint, sign: 1 | -1): boolean {
   const dx = end.x - start.x;
-  const dy = end.y - start.y;
+  const dy = (end.y - start.y) * sign;
   if (dy < MIN_DISTANCE_PX) return false;
   return dy >= Math.abs(dx) * HORIZONTAL_RATIO;
 }

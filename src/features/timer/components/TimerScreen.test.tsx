@@ -351,7 +351,7 @@ describe('TimerScreen', () => {
     });
   });
 
-  it('holds the list open through the scrolling that follows the first', async () => {
+  it('pulls the list up on a drag, and never on a scroll', async () => {
     const user = userEvent.setup();
     let clock = 0;
     const tick = (ms: number) => (clock += ms);
@@ -366,30 +366,33 @@ describe('TimerScreen', () => {
 
     const list = container.querySelector('.solves');
     if (list === null) throw new Error('the list of solves never appeared');
-    Object.defineProperty(list, 'scrollTop', { value: 40, configurable: true });
+    const browsing = () => container.querySelector('.screen--browsing');
 
-    const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
-    // Pulled up by a finger, so the entry waits for it to lift.
-    await act(async () => {
-      window.dispatchEvent(new Event('touchstart'));
-    });
+    /*
+     * A scroll must not open it. The list does not scroll while it is down,
+     * and a gesture the browser has claimed grants no user activation — the
+     * back entry the panel would push is one Chrome skips over, which is a
+     * back press spent leaving the app.
+     */
     fireEvent.scroll(list);
-    await act(async () => {
-      window.dispatchEvent(new Event('touchend'));
-    });
-    expect(container.querySelector('.screen--browsing')).not.toBeNull();
-
-    // Every scroll from here on is the reader moving around inside a list that
-    // is already up. Not one may let go of the entry it is holding: the pop
-    // that follows closes it under them.
-    await act(async () => {
-      window.dispatchEvent(new Event('touchstart'));
-    });
-    for (let index = 0; index < 5; index += 1) fireEvent.scroll(list);
     await act(async () => {});
-    expect(back).not.toHaveBeenCalled();
-    expect(container.querySelector('.screen--browsing')).not.toBeNull();
-    back.mockRestore();
+    expect(browsing()).toBeNull();
+
+    // Short of the threshold the reader was aiming at a row, not pulling.
+    fireEvent.pointerDown(list, { clientX: 200, clientY: 700 });
+    fireEvent.pointerUp(list, { clientX: 200, clientY: 680 });
+    await act(async () => {});
+    expect(browsing()).toBeNull();
+
+    fireEvent.pointerDown(list, { clientX: 200, clientY: 700 });
+    fireEvent.pointerUp(list, { clientX: 200, clientY: 540 });
+    await waitFor(() => expect(browsing()).not.toBeNull());
+
+    // And back puts it away, which is the whole reason the gesture is a drag.
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(browsing()).toBeNull();
   });
 
   it('takes two taps to delete the last solve', async () => {

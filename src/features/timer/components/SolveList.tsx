@@ -1,5 +1,6 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
+import type { PullHandlers } from '../../../hooks/use-pull';
 import { SolvePhases } from '../../splits';
 import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
@@ -11,15 +12,16 @@ import { strings } from '../../../lib/strings';
 interface SolveListProps {
   solves: Solve[];
   /**
-   * Told when the list has been scrolled off its top, so the screen can hand
-   * it more room. Reading further is the reason anyone scrolls a list of four
-   * rows, and it should not have to be asked for twice.
+   * The drag that pulls the list up over the cube, for as long as it is down.
+   * Left out once it is up, when the list is a scroller again and a drag on
+   * it means what it says.
    *
-   * Only ever true: growing the list can leave its contents fitting, and a
-   * scroll position that falls back to zero on its own would put the list
-   * straight back where it was.
+   * A drag rather than a scroll because of what a scroll costs: the browser
+   * claims the gesture, and a claimed gesture grants no user activation, so
+   * the back entry the panel wants to hold gets pushed without one and Chrome
+   * skips straight past it. See `usePull`.
    */
-  onScrolled: () => void;
+  pull?: PullHandlers;
   /** A solve in the list is a way into it, the same as one in the history. */
   onOpen: (id: string) => void;
   /** The session's method, so a timed solve can show the shape of its phases. */
@@ -53,7 +55,7 @@ export const SolveList = memo(function SolveList({
   phases,
   bests,
   globalPbMs,
-  onScrolled,
+  pull,
   onOpen,
   onChangePenalty,
   onDelete,
@@ -76,6 +78,21 @@ export const SolveList = memo(function SolveList({
     return () => clearTimeout(handle);
   }, [armedId]);
 
+  /*
+   * Back down to a peek, the list shows the newest solves again rather than
+   * wherever it was left while it was up. It keeps its scroll position
+   * otherwise, and down here it cannot be scrolled — so the peek would be
+   * stuck showing the middle of the session with no way back to the top.
+   *
+   * `pull` is the collapsed state: it is handed in only while the list is
+   * down, because that is the only time a drag on it is a gesture.
+   */
+  const list = useRef<HTMLOListElement>(null);
+  const isDown = pull !== undefined;
+  useEffect(() => {
+    if (isDown && list.current !== null) list.current.scrollTop = 0;
+  }, [isDown]);
+
   const phaseKeys = phases.map((phase) => phase.key);
 
   if (solves.length === 0) {
@@ -86,12 +103,7 @@ export const SolveList = memo(function SolveList({
   const at = now();
 
   return (
-    <ol
-      className="solves"
-      onScroll={(event) => {
-        if (event.currentTarget.scrollTop > 8) onScrolled();
-      }}
-    >
+    <ol className="solves" ref={list} {...pull}>
       {solves.map((solve, index) => (
         <li key={solve.id} className={rowClass(solve, phaseKeys, bests)}>
           <button

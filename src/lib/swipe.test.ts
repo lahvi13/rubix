@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isPullDown, readSwipe, type SwipeDirection } from './swipe';
+import { isPullDown, isPullUp, readSwipe, type SwipeDirection } from './swipe';
 
 const BOUNDS = { width: 412 };
 const from = { x: 200, y: 400 };
@@ -36,5 +36,21 @@ describe('isPullDown', () => {
     ['no movement at all is a tap', from, false],
   ])('%s', (_name, end, expected) => {
     expect(isPullDown(from, end)).toBe(expected);
+  });
+});
+
+describe('isPullUp', () => {
+  const from = { x: 200, y: 400 };
+
+  it.each<[string, { x: number; y: number }, boolean]>([
+    ['a firm drag up pulls the panel open', { x: 205, y: 300 }, true],
+    ['a short drag is a tap that slipped', { x: 200, y: 360 }, false],
+    ['exactly at the threshold is still short', { x: 200, y: 341 }, false],
+    ['downwards is not a pull up', { x: 200, y: 500 }, false],
+    ['a drag more across than up is a swipe', { x: 320, y: 320 }, false],
+    ['a diagonal that is decisively up still counts', { x: 240, y: 280 }, true],
+    ['no movement at all is a tap', from, false],
+  ])('%s', (_name, end, expected) => {
+    expect(isPullUp(from, end)).toBe(expected);
   });
 });

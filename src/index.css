@@ -817,6 +817,21 @@ button[disabled] {
 }
 
 /*
+ * Down at the bottom the list is a peek, not a scroller: it is dragged up to
+ * be read, and the drag has to arrive whole. A scrollable list loses it — the
+ * browser claims the gesture after a dozen pixels, and a claimed gesture is
+ * one the page never hears the end of. Worse, it grants no user activation,
+ * without which Chrome marks the panel's history entry as one to skip and the
+ * back press leaves the app. The grip that puts the list away has always been
+ * `touch-action: none` for the first half of that reason; this is the same
+ * rule, applied to the half of the gesture that opens it.
+ */
+.screen:not(.screen--browsing) .solves-panel .solves {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/*
  * The grip that puts the list away, shown only while it is up. Drawn as the
  * bar every sheet is dragged by, because that is the gesture it takes — and
  * touch-action none, or the browser would treat the drag as a scroll and

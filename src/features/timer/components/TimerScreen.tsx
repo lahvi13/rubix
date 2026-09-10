@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { MethodPhase, Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { bestPhasesIn } from '../../../domain/stats/phases';
@@ -13,7 +13,7 @@ import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useScramble } from '../../../hooks/use-scramble';
 import { useBackToClose } from '../../../hooks/use-back-to-close';
-import { usePullDown } from '../../../hooks/use-pull-down';
+import { usePull } from '../../../hooks/use-pull';
 import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useSetting } from '../../../hooks/use-setting';
 import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
@@ -176,75 +176,28 @@ export function TimerScreen() {
   );
   const handleDelete = useCallback((id: string) => void remove(id), [remove]);
   // Stable, or the memo on SolveList is defeated.
-  /*
-   * Whether the panel may hold its back entry yet.
-   *
-   * Pulled up by scrolling, the list opens on a gesture that grants no user
-   * activation — a scroll is not one, and the touch that caused it only
-   * grants activation when it ends. Chrome marks a history entry pushed
-   * without activation as one to skip, so the back press sails past it and
-   * out of the app. The entry therefore waits for the finger to lift.
-   *
-   * Opened by the chevron there is nothing to wait for: the click has granted
-   * activation already, which is why that way round has always worked.
-   */
-  const [isHoldReady, setHoldReady] = useState(false);
-  /*
-   * Only the scroll that opens the list matters here; the rest are the reader
-   * moving around inside it, and momentum alone fires dozens a second after
-   * the finger has gone. Un-arming on every one of them let go of the back
-   * entry and took it again per frame, and one of those releases arrives as a
-   * pop — which closes the list under the reader for a frame and shows the
-   * scramble behind it.
-   */
-  const handleListScrolled = useCallback(() => {
-    if (isBrowsing) return;
-    setBrowsing(true);
-    setHoldReady(false);
-  }, [isBrowsing]);
-  const handleListCollapsed = useCallback(() => {
-    setBrowsing(false);
-    setHoldReady(false);
-  }, []);
+  const handleListExpanded = useCallback(() => setBrowsing(true), []);
+  const handleListCollapsed = useCallback(() => setBrowsing(false), []);
 
-  // Whether a finger is on the glass, which is the only case that has to wait.
-  const isTouching = useRef(false);
-  useEffect(() => {
-    const down = () => (isTouching.current = true);
-    const up = () => (isTouching.current = false);
-    window.addEventListener('touchstart', down, { passive: true });
-    window.addEventListener('touchend', up, { passive: true });
-    window.addEventListener('touchcancel', up, { passive: true });
-    return () => {
-      window.removeEventListener('touchstart', down);
-      window.removeEventListener('touchend', up);
-      window.removeEventListener('touchcancel', up);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!showBrowsing || isHoldReady) return;
-    // A wheel or a trackpad opened it: no touch to wait for, and nothing to
-    // gain by waiting.
-    if (!isTouching.current) {
-      setHoldReady(true);
-      return;
-    }
-    // Touchcancel as well as touchend: the browser cancels the sequence when
-    // it takes the gesture to scroll with, and the finger still comes off.
-    const arm = () => setHoldReady(true);
-    window.addEventListener('touchend', arm, { once: true });
-    window.addEventListener('touchcancel', arm, { once: true });
-    return () => {
-      window.removeEventListener('touchend', arm);
-      window.removeEventListener('touchcancel', arm);
-    };
-  }, [showBrowsing, isHoldReady]);
-  const pull = usePullDown(handleListCollapsed);
+  /*
+   * Both ways the list is dragged. Up while it is down, down from the grip
+   * while it is up — and never a scroll either way, which is why the list
+   * does not scroll while it is down (see `.solves` in the stylesheet).
+   *
+   * That is not a preference. A touch the browser has taken for a scroll
+   * grants no user activation at any point of itself, the finger lifting
+   * included, and Chrome marks a history entry pushed without activation as
+   * one to skip — so the back press that should have put the list away went
+   * straight out of the app instead. Measured: every event of a scroll flick
+   * reports `navigator.userActivation.isActive === false`, while a drag on
+   * the grip reports true on pointerup.
+   */
+  const pullUp = usePull('up', handleListExpanded);
+  const pullDown = usePull('down', handleListCollapsed);
   // Up over the screen, the list is a panel like any other: back puts it away
   // rather than leaving the timer. Only while it is actually up — a solve in
   // progress hides it, and a back press should not be spent on it then.
-  useBackToClose(handleListCollapsed, showBrowsing && isHoldReady);
+  useBackToClose(handleListCollapsed, showBrowsing);
 
   return (
     <main
@@ -337,7 +290,7 @@ export function TimerScreen() {
             className="solves-panel__grip"
             aria-label={strings.solve.collapseList}
             onClick={handleListCollapsed}
-            {...pull}
+            {...pullDown}
           />
         ) : null}
         <h2 className="solves-panel__title">
@@ -357,11 +310,7 @@ export function TimerScreen() {
             className="solves-panel__more"
             aria-expanded={showBrowsing}
             aria-label={showBrowsing ? strings.solve.collapseList : strings.solve.expandList}
-            onClick={() => {
-              setBrowsing((open) => !open);
-              // A click has granted activation, so the entry can be held at once.
-              setHoldReady(true);
-            }}
+            onClick={() => setBrowsing((open) => !open)}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d={showBrowsing ? 'M7 10l5 5 5-5' : 'M7 14l5-5 5 5'} />
@@ -400,7 +349,7 @@ export function TimerScreen() {
           phases={methodPhases}
           bests={records.bests}
           globalPbMs={records.globalPbMs}
-          onScrolled={handleListScrolled}
+          pull={showBrowsing ? undefined : pullUp}
           onOpen={setOpenSolveId}
           onChangePenalty={handleChangePenalty}
           onDelete={handleDelete}
