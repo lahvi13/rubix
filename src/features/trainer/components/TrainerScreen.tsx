@@ -87,32 +87,6 @@ export function TrainerScreen() {
             {set.name}
           </button>
         ))}
-        <span className="trainer__spacer" />
-        {/* The drill opens on whatever is being looked at, two-look included. */}
-        <button
-          type="button"
-          disabled={setId === null}
-          onClick={() => {
-            if (setId !== null) setDrillSetId(setId);
-            navigate('drill');
-          }}
-        >
-          {strings.trainer.drillSet}
-        </button>
-        <button
-          type="button"
-          className={panel === 'notation' ? 'is-active' : ''}
-          onClick={() => setPanel((current) => (current === 'notation' ? 'none' : 'notation'))}
-        >
-          {strings.trainer.notation}
-        </button>
-        <button
-          type="button"
-          className={panel === 'triggers' ? 'is-active' : ''}
-          onClick={() => setPanel((current) => (current === 'triggers' ? 'none' : 'triggers'))}
-        >
-          {strings.trainer.triggers}
-        </button>
       </div>
 
       {twoLookId !== undefined ? (
@@ -139,6 +113,40 @@ export function TrainerScreen() {
           </button>
         </div>
       ) : null}
+
+      {/* What to do with the set, kept off the row that says which set it is:
+          three named sets and three unrelated buttons ran past the width of a
+          phone and left the last one stranded on a line of its own. What is
+          done to the set stands on the left, what is only looked up on the
+          right. */}
+      <div className="trainer__actions">
+        {/* The drill opens on whatever is being looked at, two-look included. */}
+        <button
+          type="button"
+          disabled={setId === null}
+          onClick={() => {
+            if (setId !== null) setDrillSetId(setId);
+            navigate('drill');
+          }}
+        >
+          {strings.trainer.drillSet}
+        </button>
+        <span className="trainer__spacer" />
+        <button
+          type="button"
+          className={panel === 'notation' ? 'is-active' : ''}
+          onClick={() => setPanel((current) => (current === 'notation' ? 'none' : 'notation'))}
+        >
+          {strings.trainer.notation}
+        </button>
+        <button
+          type="button"
+          className={panel === 'triggers' ? 'is-active' : ''}
+          onClick={() => setPanel((current) => (current === 'triggers' ? 'none' : 'triggers'))}
+        >
+          {strings.trainer.triggers}
+        </button>
+      </div>
 
       <SetSummary groups={groups} onOpen={(id, group) => setOpenCase({ id, group })} />
 

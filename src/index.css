@@ -2078,14 +2078,27 @@ button[disabled] {
 
 /* Trainer */
 
-.trainer__sets {
+/*
+ * Three rows, narrowing from what is being looked at to what can be done with
+ * it: which set, which route through it, and then the drill and the two
+ * references. They used to be one row, which on a phone was wider than the
+ * screen — the last button wrapped and sat alone under the set names, reading
+ * as one of them.
+ */
+.trainer__sets,
+.trainer__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
   max-width: 60rem;
-  margin: 0 auto var(--space-6);
+  margin: 0 auto var(--space-3);
   width: 100%;
+}
+
+/* Only the last of the three carries the gap down to the cases. */
+.trainer__actions {
+  margin-bottom: var(--space-6);
 }
 
 .trainer__spacer {
@@ -2096,7 +2109,7 @@ button[disabled] {
   display: flex;
   gap: var(--space-2);
   max-width: 60rem;
-  margin: 0 auto var(--space-6);
+  margin: 0 auto var(--space-3);
   width: 100%;
 }
 
