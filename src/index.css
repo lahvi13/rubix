@@ -2702,9 +2702,14 @@ button[disabled] {
 }
 
 .case-detail__stage {
+  position: relative;
   display: flex;
   justify-content: center;
-  min-height: 12rem;
+  /* A fixed height, not a floor: the player is lifted out of the flow to be
+     drawn bigger than the box (below), and a stage that grew with it would
+     shift the whole sheet the moment the cube started turning. */
+  height: 12rem;
+  overflow: hidden;
 }
 
 .case-detail__diagram {
@@ -2715,6 +2720,21 @@ button[disabled] {
 .case-player {
   width: 12rem;
   height: 12rem;
+}
+
+/*
+ * The same trick the scramble preview plays: the player draws its cube inside
+ * a margin of its own, so at the size of the box it comes out visibly smaller
+ * than the picture it replaces. It gets a bigger box, centred by hand because
+ * it no longer takes part in the layout, and the stage clips the margin away.
+ */
+.case-detail__stage .case-player {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: 15rem;
+  height: 15rem;
+  transform: translate(-50%, -50%);
 }
 
 .case-player__loading {
