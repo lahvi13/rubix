@@ -503,6 +503,21 @@ describe('TimerScreen', () => {
     expect(await screen.findByText('Best Cross')).toBeInTheDocument();
   });
 
+  it('puts the attempt switches away while the list is up over the cube', async () => {
+    const user = userEvent.setup();
+    render(<TimerScreen />);
+    await findScramble();
+    expect(screen.getByRole('checkbox', { name: 'Inspection' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'More solves' }));
+    expect(screen.queryByRole('checkbox', { name: 'Inspection' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'Phases' })).not.toBeInTheDocument();
+
+    // The chevron, not the grip: with the list up, both put it away.
+    await user.click(screen.getByRole('button', { name: 'Back to the timer', expanded: true }));
+    expect(screen.getByRole('checkbox', { name: 'Inspection' })).toBeInTheDocument();
+  });
+
   it('creates the default session on first render', async () => {
     render(<TimerScreen />);
 

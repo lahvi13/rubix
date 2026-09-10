@@ -367,27 +367,32 @@ export function TimerScreen() {
               <path d={showBrowsing ? 'M7 10l5 5 5-5' : 'M7 14l5-5 5 5'} />
             </svg>
           </button>
-          <span className="solves-panel__toggles">
-            <label className="toggle solves-panel__toggle">
-              <input
-                type="checkbox"
-                checked={timer.inspectionEnabled}
-                onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
-                aria-label={strings.timer.inspectionToggleLabel}
-              />
-              {strings.timer.inspectionToggle}
-            </label>
-            <label className="toggle solves-panel__toggle">
-              <input
-                type="checkbox"
-                checked={splitMode === 'phases'}
-                disabled={methodPhases.length === 0}
-                onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
-                aria-label={strings.timer.phaseToggleLabel}
-              />
-              {strings.timer.phaseToggle}
-            </label>
-          </span>
+          {/* Both switches set up the next attempt, and with the list up over
+              the cube there is no next attempt in sight — this is a screen for
+              reading what has already been timed. They come back with it. */}
+          {showBrowsing ? null : (
+            <span className="solves-panel__toggles">
+              <label className="toggle solves-panel__toggle">
+                <input
+                  type="checkbox"
+                  checked={timer.inspectionEnabled}
+                  onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
+                  aria-label={strings.timer.inspectionToggleLabel}
+                />
+                {strings.timer.inspectionToggle}
+              </label>
+              <label className="toggle solves-panel__toggle">
+                <input
+                  type="checkbox"
+                  checked={splitMode === 'phases'}
+                  disabled={methodPhases.length === 0}
+                  onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
+                  aria-label={strings.timer.phaseToggleLabel}
+                />
+                {strings.timer.phaseToggle}
+              </label>
+            </span>
+          )}
         </h2>
         <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
         <SolveList
