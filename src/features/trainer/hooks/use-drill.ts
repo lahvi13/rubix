@@ -141,27 +141,23 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   // The completion callback lives as long as the timer does, so what it needs
   // is read from refs rather than captured.
   const currentRef = useRef(current);
-  const revealedRef = useRef(revealed);
   useEffect(() => {
     currentRef.current = current;
-    revealedRef.current = revealed;
   });
 
   const handleComplete = useCallback((attempt: CompletedAttempt) => {
     const item = currentRef.current;
     if (item === null) return;
-    const lookedUp = revealedRef.current?.caseId === item.algCase.id && revealedRef.current.gaveUp;
-    setRevealed({ caseId: item.algCase.id, gaveUp: lookedUp });
+    // Looking the case up locks the clock, so nothing can arrive here on a
+    // case whose answer was already on screen.
+    setRevealed({ caseId: item.algCase.id, gaveUp: false });
 
-    const penalty = lookedUp ? 'dnf' : attempt.penalty;
     void addDrillSolve({
       puzzle: PUZZLE,
       caseId: item.algCase.id,
       scramble: item.scramble,
       rawMs: attempt.rawMs,
-      // Looking the case up is not a solve; it is kept as an attempt so the
-      // count stays honest, but it cannot count as a time.
-      penalty,
+      penalty: attempt.penalty,
       penaltySource: 'auto',
       inspectionMs: attempt.inspectionMs,
       startedAt: now() - Math.round(attempt.rawMs),
@@ -172,12 +168,24 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
       });
   }, []);
 
+  /*
+   * An answer is on show for the case on screen — whether it was earned or
+   * looked up. From here the clock is locked: knowing the case is most of the
+   * work, so a second time on it is not a time, and storing it would flatter
+   * the case's numbers with an attempt nobody really made. Next case is the
+   * way on, and it clears this by clearing the answer.
+   */
+  const hasAnswer = revealed !== null && revealed.caseId === current?.algCase.id;
+
   // Inspection is off for algorithm cases — fifteen seconds of it over a
   // three-second PLL trains nothing, and the automatic +2 would fire on every
   // attempt where somebody thought about the case. The cross is the opposite:
   // reading the scramble and planning the cross inside inspection is exactly
   // the thing being practised, so there it follows the timer's own switch.
-  const timer = useTimer(handleComplete, { inspection: isCross ? 'setting' : 'off' });
+  const timer = useTimer(handleComplete, {
+    inspection: isCross ? 'setting' : 'off',
+    locked: hasAnswer,
+  });
   const status = timer.state.status;
 
   // Derived rather than synchronised, like the timer screen's result: the

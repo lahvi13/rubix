@@ -23,6 +23,9 @@ export const strings = {
     releaseToStart: 'Release to start',
     releaseToInspect: 'Release to inspect',
     inspectionHint: 'Tap to inspect',
+    /* Said where the hint lives, because the clock refusing to start is
+       otherwise indistinguishable from the clock being broken. */
+    locked: 'Answer shown — Next case to go again',
     /*
      * Two switches share the panel's heading with the session name and the
      * count, and at the largest text size the words push each other onto a
@@ -334,7 +337,9 @@ export const strings = {
       'Solve the cross first — after that every scramble carries on from where the last one left you, so there is never a cube to rebuild.',
     crossSetup: 'The cross after the scramble, as you will hold it',
     showCase: 'Show me',
-    gaveUp: 'Looked up, so it counts as a DNF.',
+    /* Nothing is stored for a case that was looked up: the clock locks the
+       moment the answer appears, so there is no attempt to record. */
+    gaveUp: 'Looked up — nothing timed for this one.',
     next: 'Next case',
     empty: 'Nothing to drill in this set.',
     attempts: 'Attempts',

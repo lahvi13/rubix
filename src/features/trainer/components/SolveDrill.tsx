@@ -158,12 +158,15 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
         inspectionMs={drill.timer.inspectionMs}
         armed={drill.timer.armed}
         inspectionEnabled={drill.timer.inspectionEnabled}
+        locked={drill.timer.isLocked}
         touchHandlers={drill.timer.touchHandlers}
       />
 
       {/* Mid-solve nobody aims for the numbers: any tap must stop the clock,
-          and the release after it is swallowed here too. */}
-      {status === 'running' || status === 'stopped' ? (
+          and the release after it is swallowed here too. Once the answer is up
+          it comes off, or it would sit over the buttons that judge the attempt
+          while refusing to do anything itself. */}
+      {!drill.timer.isLocked && (status === 'running' || status === 'stopped') ? (
         <div className="timer-overlay" aria-hidden="true" {...drill.timer.touchHandlers} />
       ) : null}
 

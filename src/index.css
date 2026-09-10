@@ -705,6 +705,17 @@ button[disabled] {
   font-weight: 600;
 }
 
+/*
+ * The clock with the attempt over and the answer up. The time stays — it is
+ * what the attempt was for, and the case's own row repeats it below — but the
+ * surface is no longer a button, so a thumb that lands here does nothing
+ * rather than quietly starting a rep whose answer is already on screen.
+ */
+.timer.is-locked {
+  cursor: default;
+  opacity: 0.75;
+}
+
 .timer {
   display: flex;
   flex-direction: column;

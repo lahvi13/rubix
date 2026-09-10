@@ -38,6 +38,12 @@ interface TimerDisplayProps {
    * solve that is no longer on the clock.
    */
   record?: RecordNote | null;
+  /**
+   * No new attempt can be started from here. The time stays on the clock — it
+   * is what the attempt was for — but the surface stops offering to start
+   * another one, and the hint says where the way on is instead.
+   */
+  locked?: boolean;
   /** When inspection beeps, in elapsed milliseconds; the ring changes with them. */
   inspectionCues?: readonly number[];
   inspectionEnabled: boolean;
@@ -56,6 +62,7 @@ export function TimerDisplay({
   byPhase = false,
   resultShown = false,
   record = null,
+  locked = false,
   inspectionCues = [],
   inspectionEnabled,
   touchHandlers,
@@ -65,9 +72,10 @@ export function TimerDisplay({
 
   return (
     <div
-      className={`timer timer--${modifier}`}
+      className={locked ? `timer timer--${modifier} is-locked` : `timer timer--${modifier}`}
       role="button"
       tabIndex={-1}
+      aria-disabled={locked || undefined}
       aria-live="off"
       {...touchHandlers}
     >
@@ -100,6 +108,8 @@ export function TimerDisplay({
               {record.label}
             </span>
           )
+        ) : locked ? (
+          strings.timer.locked
         ) : (
           hintFor(state, armed, finishArmed, byPhase, inspectionEnabled)
         )}

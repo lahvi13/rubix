@@ -37,6 +37,8 @@ export interface TimerView {
   /** Index into the configured phases, or null outside a guided run. */
   phaseIndex: number | null;
   inspectionEnabled: boolean;
+  /** No new attempt can be started; see TimerOptions.locked. */
+  isLocked: boolean;
   /** When inspection beeps, in elapsed ms. The countdown is drawn from these too. */
   inspectionCues: readonly number[];
   setInspectionEnabled: (enabled: boolean) => void;
@@ -75,6 +77,15 @@ export interface TimerOptions {
    * the plain timer: one press stops the clock.
    */
   phases?: readonly string[];
+  /**
+   * No new attempt may be started. The drill locks the clock once the case is
+   * on show: a second time on a case whose answer you have just read is not a
+   * time, and it would go into that case's numbers as though it were.
+   *
+   * Only starting is refused. A release still reaches the machine, or the
+   * attempt that just finished would be left parked mid-press.
+   */
+  locked?: boolean;
 }
 
 /**
@@ -108,7 +119,10 @@ export function useTimer(
     phases,
   };
 
+  const isLocked = options.locked ?? false;
+
   const configRef = useRef(config);
+  const lockedRef = useRef(isLocked);
   const stateRef = useRef(state);
   const onCompleteRef = useRef(onComplete);
   const firedCues = useRef<Set<number>>(new Set());
@@ -118,12 +132,14 @@ export function useTimer(
   // an effect because refs must not be written during render.
   useEffect(() => {
     configRef.current = config;
+    lockedRef.current = isLocked;
     stateRef.current = state;
     onCompleteRef.current = onComplete;
     if (settings) cues.current = settings.inspectionCues;
   });
 
   const dispatch = useCallback((event: TimerEvent) => {
+    if (lockedRef.current && event.type === 'press') return;
     setState((current) => timerReducer(current, event, configRef.current));
   }, []);
 
@@ -225,6 +241,7 @@ export function useTimer(
     phaseIndex: currentPhaseIndex(state, config),
     inspectionEnabled: config.inspectionEnabled,
     inspectionCues: settings?.inspectionCues ?? SETTING_DEFAULTS['timer.inspectionCues'],
+    isLocked,
     setInspectionEnabled,
     reset,
     touchHandlers: {

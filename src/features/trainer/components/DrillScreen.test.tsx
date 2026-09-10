@@ -113,7 +113,7 @@ describe('DrillScreen', () => {
     expect(solve?.inspectionMs).toBeNull();
   });
 
-  it('counts an attempt you looked up as a DNF', async () => {
+  it('will not time a case you have looked up', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
     await screen.findByText(/R2 F'/);
@@ -123,12 +123,39 @@ describe('DrillScreen', () => {
 
     await attempt(user, 9000);
 
+    // Recognising the case is most of the work, so a time set with the answer
+    // already on screen is not a time. The clock refuses rather than storing
+    // one, and says why.
+    expect(await db.solves.count()).toBe(0);
+    expect(screen.getByRole('timer')).toHaveTextContent('0.00');
+    expect(screen.getByText('Answer shown — Next case to go again')).toBeInTheDocument();
+  });
+
+  it('will not time the same case twice once its answer is up', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText(/R2 F'/);
+
+    await attempt(user, 3210);
+    expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
     await waitFor(async () => {
       expect(await db.solves.count()).toBe(1);
     });
-    const solve = await db.solves.toCollection().first();
-    expect(solve?.penalty).toBe('dnf');
-    expect(solve?.rawMs).toBe(9000);
+
+    // A second go at a case whose answer is on screen would flatter its
+    // numbers with an attempt nobody really made.
+    await attempt(user, 1000);
+
+    expect(await db.solves.count()).toBe(1);
+    // The time that was earned is still the one on the clock.
+    expect(screen.getByRole('timer')).toHaveTextContent('3.21');
+
+    // Moving on hands the clock back.
+    await user.click(screen.getByRole('button', { name: 'Next case' }));
+    await attempt(user, 4560);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(2);
+    });
   });
 
   it('counts the case towards its own statistics, not the timer session', async () => {
