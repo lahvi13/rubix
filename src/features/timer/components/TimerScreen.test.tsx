@@ -521,6 +521,47 @@ describe('TimerScreen', () => {
     expect(screen.getByRole('checkbox', { name: 'Inspection' })).toBeInTheDocument();
   });
 
+  it('puts the list down when an attempt finishes under it', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    const { container } = render(<TimerScreen />);
+    await findScramble();
+    await user.click(screen.getByRole('button', { name: 'More solves' }));
+    expect(container.querySelector('.screen--browsing')).not.toBeNull();
+
+    // The space bar reaches the timer from anywhere, list up or not.
+    await keyboardSolve(user, tick, 9990);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+
+    // The finished time is what there is to look at now, not the list.
+    expect(container.querySelector('.screen--browsing')).toBeNull();
+    expect(await screen.findByRole('button', { name: 'Next scramble' })).toBeInTheDocument();
+  });
+
+  it('leaves the list where it was when an attempt is abandoned', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    const { container } = render(<TimerScreen />);
+    await findScramble();
+    await user.click(screen.getByRole('button', { name: 'More solves' }));
+
+    await user.keyboard('[Space>]');
+    clock += 50;
+    await user.keyboard('[/Space]');
+    await user.keyboard('{Escape}');
+
+    // Nothing was timed, so nothing has taken the reader off what they were on.
+    await waitFor(() => expect(container.querySelector('.screen--browsing')).not.toBeNull());
+    expect(await db.solves.count()).toBe(0);
+  });
+
   it('creates the default session on first render', async () => {
     render(<TimerScreen />);
 

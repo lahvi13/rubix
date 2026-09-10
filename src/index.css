@@ -436,6 +436,23 @@ button[disabled] {
   border-bottom: 1px solid var(--border);
 }
 
+/*
+ * With a solve under way the header belongs to the clock as much as the rest
+ * of the screen: a tap up here is a thumb that missed with a cube in both
+ * hands, and it should stop the timer the way a tap anywhere else does. The
+ * taps fall through to the press surface, which reaches under the header.
+ *
+ * Only the way out still answers, and whatever it opens with it — a menu that
+ * came up mid-solve and could not be tapped back down would be a trap.
+ */
+.app:has(.screen--solving) .app__header {
+  pointer-events: none;
+}
+
+.app:has(.screen--solving) :is(.app__menu-toggle, .app__menu, .app__scrim) {
+  pointer-events: auto;
+}
+
 .app__title {
   display: flex;
   align-items: baseline;

@@ -55,10 +55,24 @@ export function TimerScreen() {
   // After a solve the screen shows the result, not the next scramble; the
   // user moves on explicitly (or just starts the next attempt).
   const [showResult, setShowResult] = useState(false);
+  // The list, pulled up over the cube to be read. Any touch of the timer ends
+  // it, so there is no way to be browsing and solving at once.
+  const [isBrowsing, setBrowsing] = useState(false);
 
   const handleComplete = useCallback(
     (attempt: CompletedAttempt) => {
       setShowResult(true);
+      /*
+       * And the list goes back down, if it was up. On a phone there is
+       * nothing to start an attempt with while it is up — the clock is
+       * clipped away — but the space bar reaches the timer from anywhere, and
+       * the list used to come back over the finished time the moment the
+       * clock stopped, hiding the result, what record it was, and the way on
+       * to the next scramble. An attempt that is abandoned rather than
+       * finished leaves the reader where they were, which is why this is here
+       * and not on the press.
+       */
+      setBrowsing(false);
 
       if (!session) {
         // Losing a solve silently is worse than any other failure here.
@@ -103,9 +117,6 @@ export function TimerScreen() {
    * read, so the clock gets the screen — and nothing else can be under it.
    */
   const isEngaged = status === 'inspecting' || status === 'holding' || status === 'running';
-  // The list, pulled up over the cube to be read. Any touch of the timer ends
-  // it, so there is no way to be browsing and solving at once.
-  const [isBrowsing, setBrowsing] = useState(false);
   // Which solve is open in the detail sheet, if any.
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
