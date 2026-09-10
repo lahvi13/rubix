@@ -29,14 +29,20 @@ export function TrainerScreen() {
       set.id !== CROSS_SET_ID &&
       set.id !== BEGINNER_SET_ID,
   );
-  const [chosenSetId, setChosenSetId] = useState<string | null>(null);
+  // Remembered rather than held for the visit: coming back from the timer to
+  // the set you were working through is what the drill already does.
+  const [rememberedSetId, setRememberedSetId] = useSetting('trainer.setId');
   const [, setDrillSetId] = useSetting('trainer.drillSetId');
   const [twoLookDefault] = useSetting('trainer.twoLookDefault');
   const [showAlgs] = useSetting('trainer.showAlgs');
   const [chosenLook, setChosenLook] = useState<boolean | null>(null);
   const isTwoLook = chosenLook ?? twoLookDefault;
 
-  const baseSetId = chosenSetId ?? fullSets[0]?.id ?? null;
+  // A remembered set that is no longer there — a pack gone from a restored
+  // backup — leaves the trainer on the first one rather than on nothing.
+  const baseSetId = fullSets.some((set) => set.id === rememberedSetId)
+    ? rememberedSetId
+    : fullSets[0]?.id ?? null;
   const twoLookId = baseSetId === null ? undefined : TWO_LOOK_SETS[baseSetId];
   const setId = isTwoLook && twoLookId !== undefined ? twoLookId : baseSetId;
 
@@ -71,7 +77,7 @@ export function TrainerScreen() {
             type="button"
             className={set.id === baseSetId ? 'is-active' : ''}
             onClick={() => {
-              setChosenSetId(set.id);
+              setRememberedSetId(set.id);
               // Back to whatever the settings say; the set button is not a
               // vote on how to solve the last layer.
               setChosenLook(null);

@@ -42,6 +42,11 @@ export interface SettingValues {
   'trainer.showAlgs': boolean;
   /** Offer the built-in variants that start by turning the cube. */
   'trainer.showRotationAlgs': boolean;
+  /**
+   * Which set the trainer opens on. Somebody halfway through OLL comes back to
+   * OLL — the same courtesy the drill already pays with the key below.
+   */
+  'trainer.setId': string;
   /** Which set the drill draws its cases from. */
   'trainer.drillSetId': string;
   /**
@@ -101,6 +106,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'trainer.twoLookDefault': false,
   'trainer.showAlgs': false,
   'trainer.showRotationAlgs': true,
+  'trainer.setId': 'f2l',
   'trainer.drillSetId': 'pll',
   'trainer.drillMode': 'solve',
   'trainer.drillCaseIds': [],

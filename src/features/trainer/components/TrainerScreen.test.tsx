@@ -5,6 +5,7 @@ import { db } from '../../../db/schema';
 import { getActiveAlgorithm } from '../../../db/repositories/alg-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { addDrillSolve } from '../../../db/repositories/drill-repository';
+import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import { TrainerScreen } from './TrainerScreen';
 
 describe('TrainerScreen', () => {
@@ -131,6 +132,31 @@ describe('TrainerScreen', () => {
       expect(screen.getAllByRole('button', { name: /^(I|L|Dot|Sune|Anti-Sune|H|Pi|T|U|Bowtie)$/ })).toHaveLength(10);
     });
     expect(screen.getByRole('heading', { name: '1 / Edges' })).toBeInTheDocument();
+  });
+
+  it('comes back to the set that was last looked at', async () => {
+    const user = userEvent.setup();
+    const first = render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'PLL' }));
+    // The setting, not the screen: what has to survive is the leaving, and a
+    // live query swapping fifty-seven cards for twenty-one is slow enough
+    // under fake-indexeddb to time a test out on its own.
+    await waitFor(async () => {
+      expect(await getSetting('trainer.setId')).toBe('pll');
+    });
+
+    first.unmount();
+    render(<TrainerScreen />);
+
+    expect(await screen.findByRole('button', { name: 'T' })).toBeInTheDocument();
+  });
+
+  it('opens on the first set when the remembered one is gone', async () => {
+    await setSetting('trainer.setId', 'no-such-set');
+    render(<TrainerScreen />);
+
+    expect(await screen.findByRole('button', { name: 'F2L 1' })).toBeInTheDocument();
   });
 
   it('keeps the two-look sets out of the list of sets', async () => {
