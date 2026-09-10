@@ -1,7 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
+import { resetSheetHistory } from '../../../lib/sheet-history';
 import { TimerScreen } from './TimerScreen';
 
 // The real client spins up a module worker, which jsdom cannot run, and
@@ -41,9 +42,29 @@ async function seedCfop(): Promise<void> {
   });
 }
 
+/** A whole attempt on the keyboard: tap to inspect, hold to start, tap to stop. */
+async function keyboardSolve(
+  user: ReturnType<typeof userEvent.setup>,
+  tick: (ms: number) => void,
+  solveMs: number,
+): Promise<void> {
+  await user.keyboard('[Space>]');
+  tick(50);
+  await user.keyboard('[/Space]');
+  tick(3000);
+  await user.keyboard('[Space>]');
+  tick(400);
+  await user.keyboard('[/Space]');
+  tick(solveMs);
+  await user.keyboard('[Space>]');
+  await user.keyboard('[/Space]');
+}
+
 describe('TimerScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
+    // The panels hold their entries in module state, which outlives a render.
+    resetSheetHistory();
   });
 
   it('shows a scramble, a zeroed timer and an empty session', async () => {
@@ -275,6 +296,100 @@ describe('TimerScreen', () => {
     await user.keyboard('[/KeyJ]');
 
     expect(await screen.findByText('OLL')).toBeInTheDocument();
+  });
+
+  it('keeps the tap that stopped the clock from reaching what was under it', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    const { container } = render(<TimerScreen />);
+    await findScramble();
+
+    // A solve in the list, so the press surface has a DNF button under it.
+    await keyboardSolve(user, tick, 5000);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+
+    // The next attempt on the glass: tap to inspect, hold to start, tap to stop.
+    const surface = container.querySelector('.timer');
+    if (surface === null) throw new Error('the clock never appeared');
+    await user.pointer([
+      { keys: '[TouchA>]', target: surface },
+      { keys: '[/TouchA]', target: surface },
+    ]);
+    const overlay = container.querySelector('.timer-overlay');
+    if (overlay === null) throw new Error('the press surface never appeared');
+    tick(3000);
+    await user.pointer({ keys: '[TouchA>]', target: overlay });
+    tick(400);
+    await user.pointer({ keys: '[/TouchA]', target: overlay });
+    tick(7000);
+    await user.pointer([
+      { keys: '[TouchA>]', target: overlay },
+      { keys: '[/TouchA]', target: overlay },
+    ]);
+
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(2);
+    });
+
+    // The click the tap leaves behind is dispatched once the surface is gone,
+    // and lands on whatever the timer was covering.
+    const dnf = await screen.findByRole('button', { name: 'DNF' });
+    await act(async () => {
+      dnf.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    expect((await db.solves.orderBy('createdAt').last())?.penalty).toBe('none');
+
+    // Only that one click, though — the button still works when aimed at.
+    await user.click(dnf);
+    await waitFor(async () => {
+      expect((await db.solves.orderBy('createdAt').last())?.penalty).toBe('dnf');
+    });
+  });
+
+  it('holds the list open through the scrolling that follows the first', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    const { container } = render(<TimerScreen />);
+    await findScramble();
+    await keyboardSolve(user, tick, 5000);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(1);
+    });
+
+    const list = container.querySelector('.solves');
+    if (list === null) throw new Error('the list of solves never appeared');
+    Object.defineProperty(list, 'scrollTop', { value: 40, configurable: true });
+
+    const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+    // Pulled up by a finger, so the entry waits for it to lift.
+    await act(async () => {
+      window.dispatchEvent(new Event('touchstart'));
+    });
+    fireEvent.scroll(list);
+    await act(async () => {
+      window.dispatchEvent(new Event('touchend'));
+    });
+    expect(container.querySelector('.screen--browsing')).not.toBeNull();
+
+    // Every scroll from here on is the reader moving around inside a list that
+    // is already up. Not one may let go of the entry it is holding: the pop
+    // that follows closes it under them.
+    await act(async () => {
+      window.dispatchEvent(new Event('touchstart'));
+    });
+    for (let index = 0; index < 5; index += 1) fireEvent.scroll(list);
+    await act(async () => {});
+    expect(back).not.toHaveBeenCalled();
+    expect(container.querySelector('.screen--browsing')).not.toBeNull();
+    back.mockRestore();
   });
 
   it('creates the default session on first render', async () => {

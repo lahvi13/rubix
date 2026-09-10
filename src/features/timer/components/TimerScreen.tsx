@@ -132,10 +132,19 @@ export function TimerScreen() {
    * activation already, which is why that way round has always worked.
    */
   const [isHoldReady, setHoldReady] = useState(false);
+  /*
+   * Only the scroll that opens the list matters here; the rest are the reader
+   * moving around inside it, and momentum alone fires dozens a second after
+   * the finger has gone. Un-arming on every one of them let go of the back
+   * entry and took it again per frame, and one of those releases arrives as a
+   * pop — which closes the list under the reader for a frame and shows the
+   * scramble behind it.
+   */
   const handleListScrolled = useCallback(() => {
+    if (isBrowsing) return;
     setBrowsing(true);
     setHoldReady(false);
-  }, []);
+  }, [isBrowsing]);
   const handleListCollapsed = useCallback(() => {
     setBrowsing(false);
     setHoldReady(false);

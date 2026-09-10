@@ -235,10 +235,35 @@ export function useTimer(
       },
       onPointerUp: (event: ReactPointerEvent) => {
         event.preventDefault();
+        // The release that stops the clock hands the screen back in the same
+        // commit, so the press surface is gone before the tap's click is
+        // dispatched — and a touch's click is hit-tested where it lands, not
+        // where it started.
+        if (event.pointerType !== 'mouse') swallowTapClick();
         dispatch({ type: 'release', at: monotonicNow() });
       },
     },
   };
+}
+
+/**
+ * Eats the click a tap leaves behind.
+ *
+ * Preventing the default on pointerdown suppresses the compatibility mouse
+ * events but not the click, which arrives after the release and finds
+ * whatever the timer was covering: the inspection toggle, the last solve's
+ * DNF. Nothing on the press surface itself wants a click, so eating it costs
+ * nothing.
+ */
+function swallowTapClick(): void {
+  const swallow = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  window.addEventListener('click', swallow, { capture: true, once: true });
+  // The ghost comes with the tap or not at all; a click later than that is
+  // one the user aimed.
+  window.setTimeout(() => window.removeEventListener('click', swallow, true), 300);
 }
 
 /**
