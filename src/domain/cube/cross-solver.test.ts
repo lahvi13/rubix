@@ -112,11 +112,14 @@ describe('solveCross', () => {
 
   it('offers four ways to hold the scrambled cube, one per side', () => {
     expect(CROSS_HOLDS.map((hold) => hold.front).sort()).toEqual(['B', 'F', 'L', 'R']);
+    // In the order the app names sides: front, right, back, left of the cube
+    // the scramble was performed on.
+    expect(CROSS_HOLDS.map((hold) => hold.front)).toEqual(['F', 'R', 'B', 'L']);
   });
 
   it('solves the white cross for the cube as it is actually held', () => {
-    // A scramble is performed with white on top, so the cross to solve is the
-    // one that starts up there; the hold turns the cube over first.
+    // The cube is scrambled cross down and stays there, so the hold only turns
+    // it round to whichever side the reader keeps towards them.
     const state = scrambled("D2 L' B2 R2 U' F' L U R2 D");
 
     for (const hold of CROSS_HOLDS) {
@@ -137,8 +140,9 @@ describe('solveCross', () => {
     for (const hold of CROSS_HOLDS) {
       const held = applyAlg(state, hold.rotation);
       const solved = applyAlg(held, solveCross(held) ?? []);
-      // The face the cross ends on is the one that was on top for the scramble.
-      expect(centreOf(solved, 'D')).toBe('U');
+      // The cross ends on the face it was already on: turning the cube round
+      // moves the sides past it, never the face it stands on.
+      expect(centreOf(solved, 'D')).toBe('D');
     }
   });
 

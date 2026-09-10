@@ -307,14 +307,15 @@ export function crossSolutions(state: CubeState, limit = 4): Move[][] {
 }
 
 /**
- * The four ways to pick the cube up once it is scrambled: cross face down,
+ * The four ways to hold the cube while the cross is drilled: cross face down,
  * and one of the four sides towards you. Which one is a matter of taste and
  * of what came up — so the screen offers all four and the reader taps the
  * colour they are actually looking at.
  *
- * A scramble is performed with white on top (see withWhiteTop), and this app
- * models exactly that frame, so putting the cross down means turning the cube
- * over: x2, and then however many quarter turns of y.
+ * Quarter turns of y and nothing else. The drill scrambles a cube that is
+ * already cross down and stays that way — it starts from a solved cross rather
+ * than a solved cube, so there is no solved cube to stand the other way up and
+ * nothing to turn over between one attempt and the next.
  */
 export interface CrossHold {
   /** Applied to the scrambled state to get the cube as it is now held. */
@@ -325,11 +326,12 @@ export interface CrossHold {
 
 // Ordered so the fronts come out front, right, back, left of the cube as it
 // was scrambled, which is the order the app names sides in everywhere else.
-const HOLD_TEXTS = ['x2 y2', 'x2 y', 'x2', "x2 y'"] as const;
+const HOLD_TEXTS = ['', 'y', 'y2', "y'"] as const;
 
 export const CROSS_HOLDS: readonly CrossHold[] = HOLD_TEXTS.map((text) => {
   const parsed = parseAlg(text);
   if (!parsed.ok) throw new Error(`Bad hold: ${text}`);
+
 
   const turned = applyAlg(solvedState(), parsed.moves);
   const front = FACELETS.find(

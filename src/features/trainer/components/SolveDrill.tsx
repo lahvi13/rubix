@@ -6,7 +6,7 @@ import { formatAlg, parseAlg, type Move } from '../../../domain/cube/notation';
 import { CROSS_HOLDS, crossSolutions, warmCrossSolver } from '../../../domain/cube/cross-solver';
 import { CROSS_CASE_ID } from '../../../db/seed/packs';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
-import { withWhiteTop, type CubeSkin } from '../../../lib/cube-skins';
+import type { CubeSkin } from '../../../lib/cube-skins';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { CaseStats } from '../../../domain/drill/case-stats';
 import type { Penalty } from '../../../db/types';
@@ -138,7 +138,17 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
               answer: the page scrolls now, and a picture that vanished at the
               moment the clock stopped took the clock 150px up the screen with
               it. It is also the cube the animation below starts from. */}
-          {drill.isCross ? <ScrambleCube scramble={current?.scramble ?? ''} skin={skin} /> : null}
+          {drill.isCross ? (
+            <CrossSetup
+              scramble={current?.scramble ?? ''}
+              skin={skin}
+              /* Said once, to somebody who has not drilled the cross before:
+                 after the first attempt the cube is already where the next
+                 scramble expects it, and the line would be telling them to do
+                 what they have just done. */
+              isFirstTime={stats !== undefined && stats.get(CROSS_CASE_ID) === undefined}
+            />
+          ) : null}
         </div>
       </div>
 
@@ -212,29 +222,49 @@ function ScrambleLine({ drill, current }: ScrambleLineProps) {
 }
 
 /**
- * The scrambled cube, drawn where it is held while the scramble is performed:
- * white on top, green in front. It is the answer to "which way up do I start",
- * which the cross is the only drill that has to ask — every other set is set
- * up from a case, and a picture of it would be the answer to the question the
- * drill is asking.
+ * How the cross is held, and what it looks like once the scramble is on it.
  *
- * Follows the timer's own switch, so somebody who has turned scramble pictures
- * off does not get one here; the hint under the moves says the same in words.
+ * Both belong here rather than with the answer. The drill no longer starts
+ * from a solved cube — it starts from a solved cross, which is the state every
+ * attempt leaves behind — so the grip is a standing fact about how the reader
+ * works, not something they report afterwards: it decides which colours the
+ * picture wears, and the picture is read before the attempt, not after it.
+ *
+ * The picture claims only the cross edges and the centres, because that is all
+ * the drill knows and all the cross needs. The rest of the reader's cube is
+ * whatever the last attempt left there, and drawing it would be an invention.
  */
-function ScrambleCube({ scramble, skin }: { scramble: string; skin: CubeSkin }) {
+function CrossSetup({
+  scramble,
+  skin,
+  isFirstTime,
+}: {
+  scramble: string;
+  skin: CubeSkin;
+  isFirstTime: boolean;
+}) {
+  const [front, setFront] = useSetting('trainer.crossFront');
   const [mode] = useSetting('ui.twistyMode');
   const [isPreviewShown] = useSetting('timer.showScramblePreview');
+
   const parsed = parseAlg(scramble);
-  if (!isPreviewShown || !parsed.ok) return null;
+  const hold = CROSS_HOLDS.find((choice) => choice.front === front) ?? CROSS_HOLDS[0];
 
   return (
-    <CubeDiagram
-      className="drill__scramble-cube"
-      state={applyAlg(solvedState(), parsed.moves)}
-      view={mode === '3D' ? 'isometric' : 'net'}
-      skin={withWhiteTop(skin)}
-      label={strings.drill.crossSetup}
-    />
+    <>
+      {isFirstTime ? <p className="drill__hint">{strings.drill.crossFirst}</p> : null}
+      <FrontPicker skin={skin} front={front} onFront={setFront} />
+      {!isPreviewShown || !parsed.ok || hold === undefined ? null : (
+        <CubeDiagram
+          className="drill__scramble-cube"
+          state={applyAlg(applyAlg(solvedState(), parsed.moves), hold.rotation)}
+          view={mode === '3D' ? 'isometric' : 'net'}
+          stickering="cross"
+          skin={skin}
+          label={strings.drill.crossSetup}
+        />
+      )}
+    </>
   );
 }
 
@@ -286,7 +316,7 @@ function Answer({
         />
       )}
       {moves.length === 0 ? null : <AlgText moves={moves} triggers={triggers} />}
-      {isCross ? <CrossSolution scramble={current.scramble} skin={skin} /> : null}
+      {isCross ? <CrossSolution scramble={current.scramble} /> : null}
 
       <CaseStatsRow stats={stats} />
       {/* The attempt is stored the moment the clock stops, so a dropped cube
@@ -312,7 +342,6 @@ const COLOUR_NAMES: Record<string, string> = strings.drill.crossColours;
 
 interface CrossSolutionProps {
   scramble: string;
-  skin: CubeSkin;
 }
 
 /**
@@ -324,8 +353,8 @@ interface CrossSolutionProps {
  * colours are on show and tapping one rewrites the solution. That also
  * explains the convention without a word of explanation.
  */
-function CrossSolution({ scramble, skin }: CrossSolutionProps) {
-  const [front, setFront] = useSetting('trainer.crossFront');
+function CrossSolution({ scramble }: CrossSolutionProps) {
+  const [front] = useSetting('trainer.crossFront');
   // Bumped rather than toggled, so tapping again replays instead of doing
   // nothing; zero is "not watching yet".
   const [watchToken, setWatchToken] = useState(0);
@@ -347,7 +376,6 @@ function CrossSolution({ scramble, skin }: CrossSolutionProps) {
         {strings.drill.crossSolution}
         {best.length === 0 ? '' : ` · ${best.length} ${strings.drill.crossMoves}`}
       </h3>
-      <FrontPicker skin={skin} front={front} onFront={setFront} />
       {best.length === 0 ? (
         <p className="drill__hint">{strings.drill.crossSolved}</p>
       ) : (
@@ -397,15 +425,14 @@ interface FrontPickerProps {
 }
 
 /**
- * Which side is towards you. It belongs to the solution and sits with it: the
- * only thing it changes is how those moves are written, and above the scramble
- * it read as a claim about the orientation the scramble itself starts from —
- * which is a different question, and one the picture up there answers.
+ * Which side you keep towards you. It governs the picture and the solution
+ * alike, so it sits with the picture — the one of the two that is read before
+ * the attempt rather than after it.
+ *
+ * Named for the four sides of the cube as it was scrambled — cross down, the
+ * way it is held throughout, so the app's own colours are the ones on it.
  */
 function FrontPicker({ skin, front, onFront }: FrontPickerProps) {
-  // A scramble is performed with white on top, and these are its colours.
-  const scrambleSkin = withWhiteTop(skin);
-
   return (
     <div className="drill__fronts">
       <span className="drill__hint">{strings.drill.crossFront}</span>
@@ -414,7 +441,7 @@ function FrontPicker({ skin, front, onFront }: FrontPickerProps) {
           key={choice.front}
           type="button"
           className={choice.front === front ? 'drill__front is-active' : 'drill__front'}
-          style={{ background: scrambleSkin.faces[choice.front] }}
+          style={{ background: skin.faces[choice.front] }}
           aria-label={COLOUR_NAMES[choice.front] ?? choice.front}
           aria-pressed={choice.front === front}
           onClick={() => onFront(choice.front)}

@@ -320,14 +320,19 @@ export const strings = {
     poolDone: 'Done',
     caseHint: 'Perform it, then hold to start.',
     /*
-     * The cross is scrambled from a real cube rather than set up from a case,
-     * so the orientation it starts in is part of the instruction. Said in
-     * words as well as drawn, because the picture beside it can be switched
-     * off in the settings.
+     * The one instruction that has to be right, because the drill's whole
+     * shape rests on it: what these moves are performed on is a cube whose
+     * cross is solved, not one that is solved. That is the state every attempt
+     * leaves behind, so the next one carries straight on from it and nobody
+     * has to rebuild a cube between reps. Said in words as well as drawn,
+     * because the picture beside it can be switched off in the settings.
      */
     crossHint:
-      'Scramble a solved cube held white on top, green in front. Then turn it over and hold to start — the white cross goes on the bottom.',
-    crossSetup: 'The cube after the scramble',
+      'Hold the cube cross face down, perform it, and hold to start. The cross never leaves the bottom.',
+    /* Shown once, where somebody arriving at the drill will read it. */
+    crossFirst:
+      'Solve the cross first — after that every scramble carries on from where the last one left you, so there is never a cube to rebuild.',
+    crossSetup: 'The cross after the scramble, as you will hold it',
     showCase: 'Show me',
     gaveUp: 'Looked up, so it counts as a DNF.',
     next: 'Next case',
@@ -349,8 +354,13 @@ export const strings = {
     crossWatch: 'Watch it',
     crossWatchAgain: 'Watch again',
     crossFront: 'In front:',
-    crossFrontHint: 'Tap the side you have towards you, now that the cube is over.',
-    crossColours: { F: 'Green', R: 'Red', B: 'Blue', L: 'Orange' },
+    crossFrontHint: 'Tap the side you keep towards you, cross face down.',
+    /*
+     * Named for the sides of a cube held cross down, which is how it is held
+     * for the whole drill. Turning a standard cube cross-down swaps the poles'
+     * neighbours, so red is on the left and orange on the right.
+     */
+    crossColours: { F: 'Green', R: 'Orange', B: 'Blue', L: 'Red' },
     modeSolve: 'Solve it',
     modeRecognise: 'Name it',
     /* Named for what is behind the line, because the line itself is the answer. */

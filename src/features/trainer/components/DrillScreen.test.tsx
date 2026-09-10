@@ -38,7 +38,14 @@ async function openSetup(user: ReturnType<typeof userEvent.setup>): Promise<void
   await user.click(await screen.findByRole('button', { name: /^Change what is drilled/ }));
 }
 
-/** Whether the printed solution really solves the cross of the held cube. */
+/**
+ * Whether the printed solution really solves the cross of the held cube.
+ *
+ * It starts from a solved cube, which is also the check that the drill's
+ * promise holds: only the cross pieces of the starting state can matter, so a
+ * cube that merely has its cross solved gets the same answer, and that is what
+ * lets one attempt run straight into the next.
+ */
 function isCrossSolvedAfter(scramble: string, hold: string, solution: string): boolean {
   const moves = [scramble, hold, solution].map((text) => {
     const parsed = parseAlg(text);
@@ -250,38 +257,49 @@ describe('DrillScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Show me' }));
 
     const heading = await screen.findByRole('heading', { name: /Shortest cross/ });
-    // Green in front by default: the cube turned over and round, x2 y2. The
-    // printed solution has to solve the cross of the cube held exactly so.
+    // Green in front by default, which is the cube exactly as it was
+    // scrambled: cross down, no turn at all.
     const solution = heading.parentElement?.querySelector('.drill__moves')?.textContent ?? '';
     expect(solution).not.toBe('');
-    expect(isCrossSolvedAfter(SCRAMBLE, 'x2 y2', solution)).toBe(true);
+    expect(isCrossSolvedAfter(SCRAMBLE, '', solution)).toBe(true);
   });
 
-  it('asks which side is in front only once there is a solution to write', async () => {
-    const user = userEvent.setup();
+  it('asks which side is in front before the attempt, because the picture needs it', async () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
     await screen.findByText(SCRAMBLE);
 
-    // The grip decides how the moves are written and nothing else, so asking
-    // before there are any moves is asking about the scramble instead.
-    expect(screen.queryByRole('button', { name: 'Green' })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Show me' }));
-
-    expect(await screen.findByRole('heading', { name: /Shortest cross/ })).toBeInTheDocument();
+    // The grip decides the colours of the cross drawn above as well as the
+    // moves written below, and the picture is read before the clock runs.
     expect(screen.getByRole('button', { name: 'Green' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Shortest cross/ })).not.toBeInTheDocument();
   });
 
-  it('draws the cube the cross scramble lands on, so the grip is not guesswork', async () => {
+  it('names the four fronts for a cube held cross down', async () => {
     await setSetting('trainer.drillSetId', 'cross');
     render(<DrillScreen />);
     await screen.findByText(SCRAMBLE);
 
-    // Only the cross: every other set is set up from the case being drilled,
-    // and a picture of that cube would give the answer away.
-    expect(screen.getByAltText('The cube after the scramble')).toBeInTheDocument();
+    // Front, right, back, left of the cube as it was scrambled — cross down,
+    // which is how it is held for the whole drill.
+    for (const colour of ['Green', 'Orange', 'Blue', 'Red']) {
+      expect(screen.getByRole('button', { name: colour })).toBeInTheDocument();
+    }
+  });
+
+  it('draws the cross the scramble lands on, and claims nothing else', async () => {
+    await setSetting('trainer.drillSetId', 'cross');
+    render(<DrillScreen />);
+    await screen.findByText(SCRAMBLE);
+
+    // Only the cross: the rest of the reader's cube is whatever the last
+    // attempt left there, so drawing it would be an invention. And only here —
+    // every other set is set up from the case being drilled, and a picture of
+    // that cube would give the answer away.
+    expect(
+      screen.getByAltText('The cross after the scramble, as you will hold it'),
+    ).toBeInTheDocument();
   });
 
   it("keeps the picture off when the timer's own preview is off", async () => {
@@ -290,9 +308,12 @@ describe('DrillScreen', () => {
     render(<DrillScreen />);
     await screen.findByText(SCRAMBLE);
 
-    expect(screen.queryByAltText('The cube after the scramble')).not.toBeInTheDocument();
-    // The words are the fallback, so the orientation is still said somewhere.
-    expect(screen.getByText(/white on top, green in front/)).toBeInTheDocument();
+    expect(
+      screen.queryByAltText('The cross after the scramble, as you will hold it'),
+    ).not.toBeInTheDocument();
+    // The words are the fallback, so what the moves are performed on — a cube
+    // whose cross is solved, not a solved cube — is still said somewhere.
+    expect(screen.getByText(/The cross never leaves the bottom/)).toBeInTheDocument();
   });
 
   it('offers the other solutions of the same length', async () => {
@@ -308,7 +329,7 @@ describe('DrillScreen', () => {
     const alternatives = screen.getAllByRole('listitem').map((node) => node.textContent ?? '');
     expect(alternatives.length).toBeGreaterThan(0);
     for (const alternative of alternatives) {
-      expect(isCrossSolvedAfter(SCRAMBLE, 'x2 y2', alternative)).toBe(true);
+      expect(isCrossSolvedAfter(SCRAMBLE, '', alternative)).toBe(true);
     }
   });
 
@@ -327,8 +348,9 @@ describe('DrillScreen', () => {
       const solution =
         screen.getByRole('heading', { name: /Shortest cross/ }).parentElement
           ?.querySelector('.drill__moves')?.textContent ?? '';
-      // Red in front is x2 y instead, and the moves have to follow.
-      expect(isCrossSolvedAfter(SCRAMBLE, 'x2 y', solution)).toBe(true);
+      // Red is the left of a cube held cross down, so it comes round the
+      // other way, and the moves have to follow.
+      expect(isCrossSolvedAfter(SCRAMBLE, "y'", solution)).toBe(true);
     });
   });
 
