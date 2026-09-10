@@ -49,7 +49,10 @@ export interface TimerView {
    * number ends up describing something the user is no longer looking at.
    */
   reset: () => void;
-  /** Spread onto the touch surface; the keyboard is wired up globally. */
+  /**
+   * Spread onto the touch surface; the keyboard is wired up globally. Inert
+   * while the timer is locked, so the surface goes back to being page.
+   */
   touchHandlers: {
     onPointerDown: (event: ReactPointerEvent) => void;
     onPointerUp: (event: ReactPointerEvent) => void;
@@ -246,11 +249,17 @@ export function useTimer(
     reset,
     touchHandlers: {
       onPointerDown: (event: ReactPointerEvent) => {
+        // A locked clock takes no part in the gesture at all. Swallowing the
+        // default here is what stops a finger that lands on the digits from
+        // scrolling the page, and with nothing to start there is nothing to
+        // stop it for.
+        if (isLocked) return;
         event.preventDefault();
         primeBeep();
         dispatch({ type: 'press', at: monotonicNow() });
       },
       onPointerUp: (event: ReactPointerEvent) => {
+        if (isLocked) return;
         event.preventDefault();
         // The release that stops the clock hands the screen back in the same
         // commit, so the press surface is gone before the tap's click is

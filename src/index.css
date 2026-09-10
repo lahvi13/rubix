@@ -714,6 +714,13 @@ button[disabled] {
 .timer.is-locked {
   cursor: default;
   opacity: 0.75;
+  /*
+   * Back to being page. The clock forbids the browser its own gestures so
+   * that a hold arms the timer instead of scrolling; with nothing left to
+   * arm, that only meant a drag begun on the digits went nowhere — and the
+   * digits sit in the middle of a screen that now scrolls.
+   */
+  touch-action: auto;
 }
 
 .timer {

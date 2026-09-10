@@ -335,9 +335,11 @@ describe('DrillScreen', () => {
     render(<DrillScreen />);
     await screen.findByText(SCRAMBLE);
 
-    expect(
-      screen.queryByAltText('The cross after the scramble, as you will hold it'),
-    ).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByAltText('The cross after the scramble, as you will hold it'),
+      ).not.toBeInTheDocument();
+    });
     // The words are the fallback, so what the moves are performed on — a cube
     // whose cross is solved, not a solved cube — is still said somewhere.
     expect(screen.getByText(/The cross never leaves the bottom/)).toBeInTheDocument();
