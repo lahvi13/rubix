@@ -203,15 +203,18 @@ interface ScrambleLineProps {
   current: DrillItem | null;
 }
 
-/** What to perform before the attempt, or why there is nothing to perform. */
+/**
+ * What to perform before the attempt, or why there is nothing to perform.
+ *
+ * Nothing here can fail or arrive late any more: both scrambles are drawn from
+ * the app's own cube, so the only ways to have nothing to show are a set still
+ * loading and a case whose setup does not parse.
+ */
 function ScrambleLine({ drill, current }: ScrambleLineProps) {
-  if (drill.scrambleError !== null) {
-    return <p className="drill__hint">{strings.scramble.failed}</p>;
-  }
   if (drill.cases === undefined) return <p className="drill__hint">{strings.trainer.loading}</p>;
   if (current === null) return <p className="drill__hint">{strings.drill.empty}</p>;
   if (current.scramble === '') {
-    return <p className="drill__hint">{strings.scramble.loading}</p>;
+    return <p className="drill__hint">{strings.drill.empty}</p>;
   }
 
   return (

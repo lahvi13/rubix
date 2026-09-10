@@ -6,9 +6,9 @@ import { addDrillSolve, loadDrillPool } from '../../../db/repositories/drill-rep
 import { deleteSolve, setPenalty } from '../../../db/repositories/solve-repository';
 import { togglePenalty } from '../../../domain/solve/penalty';
 import { CROSS_SET_ID } from '../../../db/seed/packs';
+import { crossScramble } from '../../../domain/drill/cross-scramble';
 import { drillScramble } from '../../../domain/drill/scramble';
 import { pickNextCase } from '../../../domain/drill/selection';
-import { useScramble } from '../../../hooks/use-scramble';
 import { useTimer, type CompletedAttempt, type TimerView } from '../../../hooks/use-timer';
 import { now } from '../../../lib/clock';
 import { reportError, watchWrite } from '../../../lib/errors';
@@ -21,7 +21,6 @@ const PUZZLE = '333';
 export interface DrillItem {
   algCase: AlgCase;
   algorithm: Algorithm | null;
-  /** Empty while a cross scramble is still being generated. */
   scramble: string;
 }
 
@@ -44,9 +43,8 @@ export interface DrillView {
   /** The cases actually being drilled — the selection, or the whole set. */
   pool: CaseWithAlg[] | undefined;
   current: DrillItem | null;
-  /** Cross is drilled from a real scramble, so it has no case to recognise. */
+  /** Cross is drilled from a scramble, so it has no case to recognise. */
   isCross: boolean;
-  scrambleError: string | null;
   timer: TimerView;
   /** The case, its algorithm and its statistics are on show. */
   isRevealed: boolean;
@@ -94,9 +92,14 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   const cases = data?.cases;
   const pool = data?.pool;
 
-  // Only the cross needs cubing.js, and asking for a scramble is what loads
-  // it — so the other sets never do.
-  const scramble = useScramble(PUZZLE, isCross);
+  /*
+   * The cross gets its own scramble, drawn here rather than fetched from
+   * cubing.js. A random-state scramble solves a problem the cross does not
+   * have — it takes a solved cube to a random state, and this drill starts
+   * from a solved cross — so the whole library, worker and all, was being
+   * loaded to produce twenty turns where sixteen do (see cross-scramble.ts).
+   */
+  const [crossWalk, setCrossWalk] = useState(() => crossScramble(systemRandom));
 
   const [pick, setPick] = useState<DrillItem | null>(null);
   /**
@@ -115,9 +118,9 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     return {
       algCase: crossCase.algCase,
       algorithm: null,
-      scramble: scramble.scramble ?? '',
+      scramble: crossWalk.text,
     };
-  }, [isCross, pick, pool, scramble.scramble]);
+  }, [crossWalk, isCross, pick, pool]);
 
   const advance = useCallback(
     (previousId: string | null) => {
@@ -209,18 +212,17 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   const next = useCallback(() => {
     reset();
     if (isCross) {
-      scramble.next();
+      setCrossWalk(crossScramble(systemRandom));
       return;
     }
     advance(currentRef.current?.algCase.id ?? null);
-  }, [advance, isCross, reset, scramble]);
+  }, [advance, isCross, reset]);
 
   return {
     cases,
     pool,
     current,
     isCross,
-    scrambleError: isCross ? scramble.error : null,
     timer,
     isRevealed,
     gaveUp: shownAnswer?.gaveUp ?? false,

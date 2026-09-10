@@ -6,19 +6,27 @@ import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState, FACELETS } from '../../../domain/cube/state';
 import { setSetting } from '../../../db/repositories/settings-repository';
 import { seedPacks } from '../../../db/seed/seed';
+import { CROSS_SCRAMBLE_LENGTH } from '../../../domain/drill/cross-scramble';
 import { DrillScreen } from './DrillScreen';
 
-// A real scramble, so the cross drill has a cross worth solving: this one has
-// three shortest solutions, which is what the alternatives are read from.
-const { SCRAMBLE } = vi.hoisted(() => ({
-  SCRAMBLE: "B' U2 B' R2 B' L2 D2 B' L2 B D2 F R' B L F2 D' F' L R2 U2",
-}));
-
-// The real client spins up a module worker, which jsdom cannot run.
-vi.mock('../../../lib/scramble-client', () => ({
-  requestScramble: () => Promise.resolve(SCRAMBLE),
-}));
 vi.mock('cubing/twisty', () => ({}));
+
+/**
+ * The cross scramble the drill drew, once it is on screen.
+ *
+ * Read rather than dictated: it is drawn from the app's own cube now, so a
+ * test that knew it in advance would be testing a scramble nobody was given.
+ */
+async function shownScramble(): Promise<string> {
+  const line = await waitFor(() => {
+    const node = document.querySelector('.drill__scramble .drill__moves');
+    if (node?.textContent == null || node.textContent.trim() === '') {
+      throw new Error('no scramble on screen yet');
+    }
+    return node;
+  });
+  return line.textContent?.trim() ?? '';
+}
 
 /** Hold past the threshold, release to start, press again to stop. */
 async function attempt(user: ReturnType<typeof userEvent.setup>, solveMs: number): Promise<void> {
@@ -216,7 +224,8 @@ describe('DrillScreen', () => {
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
 
-    expect(await screen.findByText(SCRAMBLE)).toBeInTheDocument();
+    const scramble = await shownScramble();
+    expect(scramble.split(' ')).toHaveLength(CROSS_SCRAMBLE_LENGTH);
     // Nothing to pick from and nothing to look up.
     await openSetup(user);
     expect(screen.queryByRole('button', { name: /^Cases/ })).not.toBeInTheDocument();
@@ -225,7 +234,7 @@ describe('DrillScreen', () => {
 
     const solve = await db.solves.toCollection().first();
     expect(solve?.caseId).toBe('cross');
-    expect(solve?.scramble).toBe(SCRAMBLE);
+    expect(solve?.scramble).toBe(scramble);
   });
 
   it('inspects the cross, because planning it is the point', async () => {
@@ -235,7 +244,7 @@ describe('DrillScreen', () => {
     let clock = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    await shownScramble();
 
     // A tap starts the countdown rather than the solve.
     await user.keyboard('[Space>]');
@@ -312,7 +321,7 @@ describe('DrillScreen', () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    const scramble = await shownScramble();
 
     await user.click(screen.getByRole('button', { name: 'Show me' }));
 
@@ -321,14 +330,14 @@ describe('DrillScreen', () => {
     // scrambled: cross down, no turn at all.
     const solution = heading.parentElement?.querySelector('.drill__moves')?.textContent ?? '';
     expect(solution).not.toBe('');
-    expect(isCrossSolvedAfter(SCRAMBLE, '', solution)).toBe(true);
+    expect(isCrossSolvedAfter(scramble, '', solution)).toBe(true);
   });
 
   it('asks which side is in front before the attempt, because the picture needs it', async () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    await shownScramble();
 
     // The grip decides the colours of the cross drawn above as well as the
     // moves written below, and the picture is read before the clock runs.
@@ -339,7 +348,7 @@ describe('DrillScreen', () => {
   it('names the four fronts for a cube held cross down', async () => {
     await setSetting('trainer.drillSetId', 'cross');
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    await shownScramble();
 
     // Front, right, back, left of the cube as it was scrambled — cross down,
     // which is how it is held for the whole drill.
@@ -351,7 +360,7 @@ describe('DrillScreen', () => {
   it('draws the cross the scramble lands on, and claims nothing else', async () => {
     await setSetting('trainer.drillSetId', 'cross');
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    await shownScramble();
 
     // Only the cross: the rest of the reader's cube is whatever the last
     // attempt left there, so drawing it would be an invention. And only here —
@@ -366,7 +375,7 @@ describe('DrillScreen', () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.showScramblePreview', false);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    await shownScramble();
 
     await waitFor(() => {
       expect(
@@ -383,7 +392,7 @@ describe('DrillScreen', () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    const scramble = await shownScramble();
 
     await user.click(screen.getByRole('button', { name: 'Show me' }));
     await screen.findByRole('heading', { name: /Shortest cross/ });
@@ -391,7 +400,7 @@ describe('DrillScreen', () => {
     const alternatives = screen.getAllByRole('listitem').map((node) => node.textContent ?? '');
     expect(alternatives.length).toBeGreaterThan(0);
     for (const alternative of alternatives) {
-      expect(isCrossSolvedAfter(SCRAMBLE, '', alternative)).toBe(true);
+      expect(isCrossSolvedAfter(scramble, '', alternative)).toBe(true);
     }
   });
 
@@ -400,7 +409,7 @@ describe('DrillScreen', () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    const scramble = await shownScramble();
 
     await user.click(screen.getByRole('button', { name: 'Show me' }));
     await screen.findByRole('heading', { name: /Shortest cross/ });
@@ -423,7 +432,7 @@ describe('DrillScreen', () => {
     expect(shown()).toBe(alternative);
     expect(listed()).toContain(first);
     // Still a shortest cross for the cube as it is held, not just a swap of text.
-    expect(isCrossSolvedAfter(SCRAMBLE, '', shown())).toBe(true);
+    expect(isCrossSolvedAfter(scramble, '', shown())).toBe(true);
   });
 
   it('rewrites the cross for the side you say is in front', async () => {
@@ -431,7 +440,7 @@ describe('DrillScreen', () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    const scramble = await shownScramble();
     await user.click(screen.getByRole('button', { name: 'Show me' }));
     await screen.findByRole('heading', { name: /Shortest cross/ });
 
@@ -443,7 +452,7 @@ describe('DrillScreen', () => {
           ?.querySelector('.drill__moves')?.textContent ?? '';
       // Red is the left of a cube held cross down, so it comes round the
       // other way, and the moves have to follow.
-      expect(isCrossSolvedAfter(SCRAMBLE, "y'", solution)).toBe(true);
+      expect(isCrossSolvedAfter(scramble, "y'", solution)).toBe(true);
     });
   });
 
@@ -479,7 +488,7 @@ describe('DrillScreen', () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    await shownScramble();
 
     // Nothing drilled yet, nothing to offer.
     await openSetup(user);
@@ -510,7 +519,7 @@ describe('DrillScreen', () => {
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
     render(<DrillScreen />);
-    await screen.findByText(SCRAMBLE);
+    await shownScramble();
 
     await attempt(user, 8000);
     await user.click(await screen.findByRole('button', { name: 'DNF' }));
