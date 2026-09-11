@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { AlgCase, AlgSet, Algorithm } from '../../../db/types';
 import { listCasesWithAlgs, listSets } from '../../../db/repositories/alg-repository';
+import { costsASlot } from '../../../domain/alg/cost';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState, type CubeState } from '../../../domain/cube/state';
 import { diagramFor } from '../case-view';
@@ -11,6 +12,14 @@ export interface TrainerCase {
   algorithm: Algorithm | null;
   /** The cube as the case is met, worked out from the case's setup. */
   state: CubeState;
+  /**
+   * What is worth knowing about the algorithm being drilled without opening
+   * the case. Both are about the reader's own choices, which is why neither is
+   * a property of the case: one says they made one, the other says what it
+   * costs.
+   */
+  isOwnAlgorithm: boolean;
+  costsASlot: boolean;
 }
 
 export interface CaseGroup {
@@ -42,10 +51,17 @@ export function useSetCases(setId: string | null): CaseGroup[] | undefined {
   for (const entry of cases) {
     const name = entry.algCase.group ?? '';
     const group = groups.find((candidate) => candidate.name === name);
+    const moves = entry.active === null ? null : parseAlg(entry.active.moves);
     const trainerCase: TrainerCase = {
       algCase: entry.algCase,
       algorithm: entry.active,
       state: stateOf(entry.algCase.setupAlg, diagramFor(setId ?? '', name).orientation),
+      isOwnAlgorithm: entry.active?.source === 'user',
+      // Judged on the case as its algorithm is written, not as it is drawn:
+      // the picture is turned a quarter for the colours, and a solution read
+      // off that cube would be answering about the slot next door.
+      costsASlot:
+        moves?.ok === true && costsASlot(stateOf(entry.algCase.setupAlg), moves.moves),
     };
 
     if (group) group.cases.push(trainerCase);

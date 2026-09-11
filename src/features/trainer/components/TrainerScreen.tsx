@@ -205,6 +205,7 @@ export function TrainerScreen() {
                 diagram={diagramFor(setId ?? '', group.name)}
                 skin={skin}
                 showAlg={showAlgs}
+                showMarks
                 triggers={definitions}
                 onOpen={() => setOpenCase({ id: entry.algCase.id, group: group.name })}
               />

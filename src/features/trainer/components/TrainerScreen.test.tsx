@@ -208,6 +208,49 @@ describe('TrainerScreen', () => {
     });
   });
 
+  it('marks the cards whose algorithm is the reader’s own doing', async () => {
+    const user = userEvent.setup();
+    const first = render(<TrainerScreen />);
+
+    // Nothing is marked while every case is on the algorithm it shipped with.
+    expect(await screen.findByRole('button', { name: 'F2L 1' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'F2L 1' }));
+    const detail = await screen.findByRole('dialog', { name: 'F2L 1' });
+    await user.type(within(detail).getByLabelText(/Your own algorithm/), "R U R' U'");
+    await user.click(within(detail).getByRole('button', { name: 'Add' }));
+    await waitFor(async () => {
+      expect((await getActiveAlgorithm('f2l-1'))?.source).toBe('user');
+    });
+
+    first.unmount();
+    render(<TrainerScreen />);
+
+    // The dot is a colour; what it means is what the card is called.
+    expect(
+      await screen.findByRole('button', { name: 'F2L 1 your own algorithm' }),
+    ).toBeInTheDocument();
+  });
+
+  it('marks a card whose algorithm takes a slot apart', async () => {
+    const user = userEvent.setup();
+    const first = render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'F2L 7' }));
+    const detail = await screen.findByRole('dialog', { name: 'F2L 7' });
+    await user.click(within(detail).getByRole('radio', { name: "y2 U2 L' U L U S' L S" }));
+    await waitFor(async () => {
+      expect((await getActiveAlgorithm('f2l-7'))?.id).toBe('f2l-7-pack-slot-1');
+    });
+
+    first.unmount();
+    render(<TrainerScreen />);
+
+    expect(
+      await screen.findByRole('button', { name: 'F2L 7 breaks another slot' }),
+    ).toBeInTheDocument();
+  });
+
   it('keeps the two-look sets out of the list of sets', async () => {
     render(<TrainerScreen />);
 

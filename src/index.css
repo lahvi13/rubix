@@ -315,6 +315,24 @@ body {
 }
 
 /*
+ * Read out but not drawn. For the places where a mark carries its meaning in
+ * colour or shape: the colour is the quick way to see it, this is the only way
+ * to hear it. Not `display: none`, which would take it out of the page for a
+ * screen reader as well.
+ */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
  * Buttons.
  *
  * One shape for every one of them: a quiet outline, a muted label, a thumb's
@@ -2160,6 +2178,7 @@ button[disabled] {
 }
 
 .case-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2182,6 +2201,38 @@ button[disabled] {
 .case-card:hover,
 .case-card:focus-visible {
   border-color: var(--accent);
+}
+
+/*
+ * The corner the cube leaves empty: drawn from a corner, it comes nowhere near
+ * the top right, and the name above it is centred.
+ */
+.case-card__marks {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+}
+
+.case-card__mark {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: var(--radius-pill);
+}
+
+/* Green for a choice made, the colour a chosen thing wears everywhere here. */
+.case-card__mark.is-own {
+  background: var(--accent);
+}
+
+/*
+ * Amber, not red. Red in this app is the colour of something with no way back;
+ * an algorithm that takes a slot apart is a price, and one worth paying while
+ * the slot is not built yet.
+ */
+.case-card__mark.is-slot {
+  background: var(--warn);
 }
 
 .case-card__diagram {
@@ -2911,6 +2962,15 @@ button[disabled] {
 .variants__source {
   font-size: var(--text-2xs);
   color: var(--muted);
+}
+
+/*
+ * The one reason that is a warning rather than a note. Louder than the rest of
+ * the list because it is the only one that says what an algorithm costs, and
+ * it has to be read before the radio beside it is tapped rather than after.
+ */
+.variants__source.is-slot {
+  color: var(--warn);
 }
 
 /* One per variant, in a list of them: the quietest button in the app. */

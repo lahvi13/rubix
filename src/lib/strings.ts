@@ -298,6 +298,10 @@ export const strings = {
     /* Said as a cost rather than a warning: it is a real solution, often the
        shortest one, and it is only wrong if the slot it breaks was built. */
     packAlgSlot: 'built in · breaks another slot',
+    /* What a dot on a card means, for whoever cannot see the dot. Written as a
+       phrase that finishes the case's name, because that is where it lands. */
+    markOwn: 'your own algorithm',
+    markCostsSlot: 'breaks another slot',
     ownAlg: 'yours',
     ownAlgPlaceholder: "Your own algorithm, e.g. R U R' U'",
     addAlg: 'Add',

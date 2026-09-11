@@ -217,7 +217,13 @@ export function CaseDetail({
               />
               <span className="variants__moves">{algorithm.moves}</span>
             </label>
-            <span className="variants__source">
+            <span
+              className={
+                algorithm.source === 'pack' && packAlgKind(algorithm.id) === 'slot'
+                  ? 'variants__source is-slot'
+                  : 'variants__source'
+              }
+            >
               {algorithm.source === 'pack'
                 ? PACK_LABELS[packAlgKind(algorithm.id)]
                 : strings.trainer.ownAlg}
