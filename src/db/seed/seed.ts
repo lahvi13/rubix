@@ -141,6 +141,10 @@ function planSeed(current: CurrentState): SeedChanges {
           packAlgId(entry.id, 'other', position),
           moves,
         ]),
+        ...(entry.multiSlot ?? []).map((moves, position) => [
+          packAlgId(entry.id, 'slot', position),
+          moves,
+        ]),
       ] as [string, string][];
 
       for (const [extraId, moves] of extras) {

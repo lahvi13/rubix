@@ -12,7 +12,12 @@ const totalAlgorithms = PACKS.reduce(
   (count, pack) =>
     count +
     pack.cases.reduce(
-      (own, entry) => own + 1 + (entry.alt === undefined ? 0 : 1) + (entry.others?.length ?? 0),
+      (own, entry) =>
+        own +
+        1 +
+        (entry.alt === undefined ? 0 : 1) +
+        (entry.others?.length ?? 0) +
+        (entry.multiSlot?.length ?? 0),
       0,
     ),
   0,

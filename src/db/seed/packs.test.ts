@@ -82,6 +82,23 @@ const edgesOriented = (state: CubeStateOf): boolean =>
     return state[index] === 'U';
   });
 
+/**
+ * Whether an algorithm really answers the case it is offered on.
+ *
+ * Two standards, because two kinds of case are in these packs. A last-layer
+ * case is only answered by a solved cube. A case in the layers below — F2L,
+ * and the guide's first two steps — owes nothing to the last layer: the job is
+ * the pair and the layers under it, and what the top is left looking like is
+ * the next step's problem. Either way the cube is stood up first, because an
+ * algorithm is allowed to turn it.
+ */
+function answers(entry: PackCase, moves: Move[]): boolean {
+  const before = caseState(entry);
+  const after = canonicalise(applyAlg(before, moves));
+  const isLastLayerCase = wrongOutside(before, isTopLayer) === 0;
+  return isLastLayerCase ? isSolved(after) : wrongOutside(after, isTopLayer) === 0;
+}
+
 /** The same case with a different U turn is the same case. */
 function aufKey(state: CubeStateOf, project: (state: CubeStateOf) => string): string {
   const quarter = movesOf('U');
@@ -115,9 +132,9 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
   });
 
   it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
-    '%s is solved by its own algorithm',
+    '%s is answered by its own algorithm',
     (_name, entry) => {
-      expect(isSolved(applyAlg(caseState(entry), movesOf(entry.alg)))).toBe(true);
+      expect(answers(entry, movesOf(entry.alg))).toBe(true);
     },
   );
 
@@ -144,8 +161,24 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
   )('%s is another way through the same case', (_name, entry, moves) => {
     // The point of an extra is that it is a different solution, not a differently
     // written one — and that it really does solve the case it is offered on.
-    expect(isSolved(applyAlg(caseState(entry), movesOf(moves)))).toBe(true);
+    expect(answers(entry, movesOf(moves))).toBe(true);
     expect(moves).not.toBe(entry.alg);
+  });
+
+  it.each(
+    pack.cases.flatMap((entry) =>
+      (entry.multiSlot ?? []).map(
+        (moves, index) => [`${entry.name} slot #${index + 1}`, entry, moves] as const,
+      ),
+    ),
+  )('%s inserts the pair and costs a slot to do it', (_name, entry, moves) => {
+    const after = canonicalise(applyAlg(caseState(entry), movesOf(moves)));
+
+    // Both halves matter. It has to work — the pair goes in — and it has to
+    // really cost something, or it is being warned about for nothing and the
+    // warning stops meaning anything.
+    expect(wrongOutside(after, (index) => !isFrontRightSlot(index))).toBe(0);
+    expect(wrongOutside(after, isTopLayer)).toBeGreaterThan(0);
   });
 
   it.each(pack.cases.map((entry) => [entry.name, entry] as const))(

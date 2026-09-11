@@ -289,6 +289,9 @@ export const strings = {
     packAlg: 'built in',
     packAlgGrip: 'built in · turned',
     packAlgOther: 'built in · another way',
+    /* Said as a cost rather than a warning: it is a real solution, often the
+       shortest one, and it is only wrong if the slot it breaks was built. */
+    packAlgSlot: 'built in · breaks another slot',
     ownAlg: 'yours',
     ownAlgPlaceholder: "Your own algorithm, e.g. R U R' U'",
     addAlg: 'Add',

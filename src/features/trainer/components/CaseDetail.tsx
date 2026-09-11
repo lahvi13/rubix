@@ -25,6 +25,7 @@ const PACK_LABELS: Record<PackAlgKind, string> = {
   main: strings.trainer.packAlg,
   grip: strings.trainer.packAlgGrip,
   other: strings.trainer.packAlgOther,
+  slot: strings.trainer.packAlgSlot,
 };
 
 /** A case's place in a set: which one, and under which heading. */

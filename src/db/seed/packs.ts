@@ -34,6 +34,12 @@ export interface PackCase {
    * who has not learned to push the middle layer yet.
    */
   others?: readonly string[];
+  /**
+   * Solutions that cost a slot somebody has already built. Worth knowing —
+   * they are often the shortest way through — but never the one on offer by
+   * default, and the case sheet says what they cost.
+   */
+  multiSlot?: readonly string[];
 }
 
 export interface AlgPack {
@@ -51,25 +57,27 @@ export const PACK_METHOD_ID = 'cfop';
  * the trainer reads them back to say what it is offering, so the shape of them
  * is named here rather than spelled out at both ends.
  */
-export type PackAlgKind = 'main' | 'grip' | 'other';
+export type PackAlgKind = 'main' | 'grip' | 'other' | 'slot';
 
 const KIND_SUFFIX: Record<PackAlgKind, string> = {
   main: '-pack',
   grip: '-pack-grip',
   other: '-pack-other',
+  slot: '-pack-slot',
 };
 
 export function packAlgId(caseId: string, kind: PackAlgKind, index = 0): string {
   // Numbered from one, and only where there can be more than one: an id is
   // read by people often enough for that to be worth the branch.
-  return kind === 'other'
-    ? `${caseId}${KIND_SUFFIX.other}-${index + 1}`
+  return kind === 'other' || kind === 'slot'
+    ? `${caseId}${KIND_SUFFIX[kind]}-${index + 1}`
     : `${caseId}${KIND_SUFFIX[kind]}`;
 }
 
 /** What kind of built-in algorithm this is. Meaningless for a user's own. */
 export function packAlgKind(algorithmId: string): PackAlgKind {
   if (algorithmId.endsWith(KIND_SUFFIX.grip)) return 'grip';
+  if (algorithmId.includes(KIND_SUFFIX.slot)) return 'slot';
   if (algorithmId.includes(KIND_SUFFIX.other)) return 'other';
   return 'main';
 }
