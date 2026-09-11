@@ -42,6 +42,13 @@ export interface PackCase {
    * default, and the case sheet says what they cost.
    */
   multiSlot?: readonly string[];
+  /**
+   * Solutions that orient the last layer and leave it permuted differently
+   * from the rest of the list. For OLL that is the whole job — where the
+   * pieces end up is the next step's business — but every other algorithm in
+   * these packs hands back a solved cube, so this one says that it will not.
+   */
+  orientOnly?: readonly string[];
 }
 
 export interface AlgPack {
@@ -59,26 +66,28 @@ export const PACK_METHOD_ID = 'cfop';
  * the trainer reads them back to say what it is offering, so the shape of them
  * is named here rather than spelled out at both ends.
  */
-export type PackAlgKind = 'main' | 'grip' | 'other' | 'slot';
+export type PackAlgKind = 'main' | 'grip' | 'other' | 'slot' | 'orient';
 
 const KIND_SUFFIX: Record<PackAlgKind, string> = {
   main: '-pack',
   grip: '-pack-grip',
   other: '-pack-other',
   slot: '-pack-slot',
+  orient: '-pack-orient',
 };
 
 export function packAlgId(caseId: string, kind: PackAlgKind, index = 0): string {
   // Numbered from one, and only where there can be more than one: an id is
   // read by people often enough for that to be worth the branch.
-  return kind === 'other' || kind === 'slot'
-    ? `${caseId}${KIND_SUFFIX[kind]}-${index + 1}`
-    : `${caseId}${KIND_SUFFIX[kind]}`;
+  return kind === 'main' || kind === 'grip'
+    ? `${caseId}${KIND_SUFFIX[kind]}`
+    : `${caseId}${KIND_SUFFIX[kind]}-${index + 1}`;
 }
 
 /** What kind of built-in algorithm this is. Meaningless for a user's own. */
 export function packAlgKind(algorithmId: string): PackAlgKind {
   if (algorithmId.endsWith(KIND_SUFFIX.grip)) return 'grip';
+  if (algorithmId.includes(KIND_SUFFIX.orient)) return 'orient';
   if (algorithmId.includes(KIND_SUFFIX.slot)) return 'slot';
   if (algorithmId.includes(KIND_SUFFIX.other)) return 'other';
   return 'main';

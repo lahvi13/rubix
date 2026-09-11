@@ -181,6 +181,23 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
     expect(wrongOutside(after, isTopLayer)).toBeGreaterThan(0);
   });
 
+  it.each(
+    pack.cases.flatMap((entry) =>
+      (entry.orientOnly ?? []).map(
+        (moves, index) => [`${entry.name} orient #${index + 1}`, entry, moves] as const,
+      ),
+    ),
+  )('%s orients the last layer and stops there', (_name, entry, moves) => {
+    const after = canonicalise(applyAlg(caseState(entry), movesOf(moves)));
+
+    // All three matter. The top comes up in one colour, nothing under it is
+    // disturbed, and it does not go on to solve — one that solves is a
+    // different offer and belongs in the list above, not behind a warning.
+    expect(isOriented(after)).toBe(true);
+    expect(wrongOutside(after, isTopLayer)).toBe(0);
+    expect(isSolved(after)).toBe(false);
+  });
+
   it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
     '%s leaves the cube upright',
     (_name, entry) => {

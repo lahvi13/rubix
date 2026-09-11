@@ -17,7 +17,8 @@ const totalAlgorithms = PACKS.reduce(
         1 +
         (entry.alt === undefined ? 0 : 1) +
         (entry.others?.length ?? 0) +
-        (entry.multiSlot?.length ?? 0),
+        (entry.multiSlot?.length ?? 0) +
+        (entry.orientOnly?.length ?? 0),
       0,
     ),
   0,

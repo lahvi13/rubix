@@ -298,6 +298,10 @@ export const strings = {
     /* Said as a cost rather than a warning: it is a real solution, often the
        shortest one, and it is only wrong if the slot it breaks was built. */
     packAlgSlot: 'built in · breaks another slot',
+    /* Not a fault: orienting is all an OLL algorithm owes. Said because every
+       other algorithm in the app hands back a solved cube and this one will
+       not, which is a surprise worth heading off. */
+    packAlgOrient: 'built in · orients only',
     /* What a dot on a card means, for whoever cannot see the dot. Written as a
        phrase that finishes the case's name, because that is where it lands. */
     markOwn: 'your own algorithm',

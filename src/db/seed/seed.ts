@@ -145,6 +145,10 @@ function planSeed(current: CurrentState): SeedChanges {
           packAlgId(entry.id, 'slot', position),
           moves,
         ]),
+        ...(entry.orientOnly ?? []).map((moves, position) => [
+          packAlgId(entry.id, 'orient', position),
+          moves,
+        ]),
       ] as [string, string][];
 
       for (const [extraId, moves] of extras) {

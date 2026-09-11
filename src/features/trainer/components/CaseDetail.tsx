@@ -26,6 +26,7 @@ const PACK_LABELS: Record<PackAlgKind, string> = {
   grip: strings.trainer.packAlgGrip,
   other: strings.trainer.packAlgOther,
   slot: strings.trainer.packAlgSlot,
+  orient: strings.trainer.packAlgOrient,
 };
 
 /** A case's place in a set: which one, and under which heading. */
@@ -83,9 +84,10 @@ export function CaseDetail({
    */
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   const [showRotationAlgs] = useSetting('trainer.showRotationAlgs');
-  // The algorithm leaves the cube solved, which is the one thing on this
-  // screen nobody came to look at, so the case comes back by itself. Kept
-  // stable: the player subscribes to it.
+  // What the algorithm leaves behind — a solved cube, or an oriented last
+  // layer waiting for the next step — is the one thing on this screen nobody
+  // came to look at, so the case comes back by itself. Kept stable: the player
+  // subscribes to it.
   const stopPlaying = useCallback(() => setPlaying(false), []);
   const stats = useCaseStat(caseId);
   const recognition = useRecognitionStat(caseId);
