@@ -36,7 +36,7 @@ export interface Diagram {
  * left puts red beside green there, which is as far apart as two adjacent
  * faces get in every skin and both themes.
  */
-const F2L_ORIENTATION = "y'";
+export const F2L_ORIENTATION = "y'";
 
 /**
  * How each set is best looked at. Two-look sets differ per step: the first

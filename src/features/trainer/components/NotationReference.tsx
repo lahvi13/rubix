@@ -3,6 +3,7 @@ import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
+import { F2L_ORIENTATION } from '../case-view';
 
 interface NotationReferenceProps {
   skin: CubeSkin;
@@ -17,7 +18,10 @@ const ROWS: readonly (readonly string[])[] = [
   ['U', "U'", 'U2', 'u', "u'", 'y'],
   ['F', "F'", 'F2', 'f', "f'", 'z'],
   ['L', "L'", 'L2', 'l', "l'", 'M'],
-  ['B', "B'", 'B2', 'b', "b'", "M'"],
+  // The last column is the three rotations and the three slices; M' used to
+  // take this place and S had none, which left one of the three unexplained
+  // while another was shown twice.
+  ['B', "B'", 'B2', 'b', "b'", 'S'],
   ['D', "D'", 'D2', 'd', "d'", 'E'],
 ];
 
@@ -55,7 +59,13 @@ function wideAlias(token: string): string {
   return `${token} · ${wide[1]?.toUpperCase() ?? ''}w${wide[2] ?? ''}`;
 }
 
+/**
+ * The cube stood the way the trainer stands it — red in front, green on the
+ * right — and then the one move. Held in front of you differently from the
+ * cases it explains, the reference would be teaching a letter on one cube and
+ * using it on another.
+ */
 function stateAfter(token: string) {
-  const parsed = parseAlg(token);
+  const parsed = parseAlg(`${F2L_ORIENTATION} ${token}`);
   return parsed.ok ? applyAlg(solvedState(), parsed.moves) : solvedState();
 }
