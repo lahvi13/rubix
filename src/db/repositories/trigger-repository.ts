@@ -4,6 +4,15 @@ import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 
 /** Highlight colours a trigger can be given. Distinct at a glance, dark-friendly. */
+/**
+ * What a trigger can be highlighted in. Twelve rather than eight, because a
+ * reader with a dozen triggers wants a dozen colours — two of them sharing one
+ * is two things that look like the same thing inside an algorithm, which is
+ * the one job the colour has.
+ *
+ * All of them are light enough to read as text on the dark theme and dark
+ * enough on the light one; the highlight is mixed down from them either way.
+ */
 export const TRIGGER_COLOURS = [
   '#4ade80',
   '#38bdf8',
@@ -13,6 +22,10 @@ export const TRIGGER_COLOURS = [
   '#22d3ee',
   '#f97316',
   '#e879f9',
+  '#2dd4bf',
+  '#facc15',
+  '#fb7185',
+  '#818cf8',
 ] as const;
 
 /**
@@ -33,14 +46,18 @@ export async function listEnabledTriggers(): Promise<Trigger[]> {
   return triggers.filter((trigger) => trigger.isEnabled === 1);
 }
 
-export async function createTrigger(name: string, moves: string): Promise<Trigger> {
+export async function createTrigger(
+  name: string,
+  moves: string,
+  colour: string = TRIGGER_COLOURS[0],
+): Promise<Trigger> {
   const timestamp = now();
   const trigger: Trigger = {
     id: createId(),
     name: name.trim(),
     moves: moves.trim(),
     source: 'user',
-    colour: TRIGGER_COLOURS[0],
+    colour,
     isEnabled: 1,
     createdAt: timestamp,
     updatedAt: timestamp,

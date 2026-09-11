@@ -14,7 +14,7 @@ export interface TriggersView {
   triggers: Trigger[];
   /** Parsed and longest first, ready for segmenting an algorithm. */
   definitions: TriggerDefinition[];
-  create: (name: string, moves: string) => Promise<void>;
+  create: (name: string, moves: string, colour: string) => Promise<void>;
   rename: (id: string, name: string) => Promise<void>;
   rewrite: (id: string, moves: string) => Promise<void>;
   recolour: (id: string, colour: string) => Promise<void>;
@@ -28,8 +28,8 @@ export function useTriggers(): TriggersView {
   return {
     triggers,
     definitions: toDefinitions(triggers),
-    create: async (name, moves) => {
-      await createTrigger(name, moves);
+    create: async (name, moves, colour) => {
+      await createTrigger(name, moves, colour);
     },
     rename: async (id, name) => updateTrigger(id, { name }),
     rewrite: async (id, moves) => updateTrigger(id, { moves }),

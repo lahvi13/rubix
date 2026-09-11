@@ -25,4 +25,9 @@ export const TRIGGER_PACK: readonly PackTrigger[] = [
   { id: 'trigger-insert-right', name: 'Right insert', moves: "R U R'", colour: '#38bdf8' },
   { id: 'trigger-insert-left', name: 'Left insert', moves: "L' U' L", colour: '#c084fc' },
   { id: 'trigger-insert-front', name: 'Front insert', moves: "F' U' F", colour: '#f472b6' },
+  // The two with a wide turn in place of the outer one. They are the same
+  // shape in the hand and a different thing on the cube, so they are named
+  // rather than left to read as a typo of the one above.
+  { id: 'trigger-fat-sexy', name: 'Fat sexy', moves: "r U R' U'", colour: '#2dd4bf' },
+  { id: 'trigger-fat-sledgehammer', name: 'Fat sledgehammer', moves: "r' F R F'", colour: '#facc15' },
 ];
