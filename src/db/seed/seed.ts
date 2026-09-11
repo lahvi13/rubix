@@ -61,8 +61,12 @@ interface CurrentState {
   triggers: Map<string, Trigger>;
   /** Ids the user has deleted; the pack must leave them alone. */
   buried: Set<string>;
-  /** Cases where a user algorithm is the one being drilled. */
-  userChoice: Set<string>;
+  /**
+   * Cases where the reader has picked something other than the pack's own
+   * answer — one they wrote, or another of the built-in ones. Either way it is
+   * a choice, and the seed must not take it back.
+   */
+  chosen: Set<string>;
 }
 
 async function readCurrent(): Promise<CurrentState> {
@@ -82,9 +86,14 @@ async function readCurrent(): Promise<CurrentState> {
     algorithms: byId(algorithms),
     triggers: byId(triggers),
     buried: new Set(tombstones.map((stone) => stone.id)),
-    userChoice: new Set(
+    // Judged by which row is active rather than by who wrote it. Picking a
+    // second built-in algorithm is as much a choice as typing one in, and
+    // counting only the typed ones left the pack free to switch its own answer
+    // back on at the next start — two rows active at once, and which of them
+    // the screen showed came down to the order they came back in.
+    chosen: new Set(
       algorithms
-        .filter((row) => row.source === 'user' && row.isActive === 1)
+        .filter((row) => row.isActive === 1 && row.id !== `${row.caseId}-pack`)
         .map((row) => row.caseId),
     ),
   };
@@ -130,7 +139,7 @@ function planSeed(current: CurrentState): SeedChanges {
       if (current.buried.has(algorithmId)) continue;
 
       const existingAlgorithm = current.algorithms.get(algorithmId);
-      const algorithm = buildAlgorithm(entry, existingAlgorithm, current.userChoice.has(entry.id));
+      const algorithm = buildAlgorithm(entry, existingAlgorithm, current.chosen.has(entry.id));
       if (hasChanged(existingAlgorithm, algorithm)) changes.algorithms.push(algorithm);
 
       // Beside the pack's own answer: the same solution with the cube turned
@@ -250,19 +259,21 @@ function buildCase(
 
 /**
  * The pack algorithm of a case has a derived id, so a later app version
- * replaces it instead of piling up duplicates. It is only active while the
- * case has no user algorithm — the user's choice outranks the pack.
+ * replaces it instead of piling up duplicates. It is only active while nothing
+ * else has been picked for the case — whatever the reader chose outranks the
+ * pack, and a case left with two active rows would show one of them and tick
+ * the other.
  */
 function buildAlgorithm(
   entry: PackCase,
   existing: Algorithm | undefined,
-  userChose: boolean,
+  somethingElseIsChosen: boolean,
 ): Algorithm {
   return {
     id: `${entry.id}-pack`,
     caseId: entry.id,
     moves: entry.alg,
-    isActive: userChose ? 0 : 1,
+    isActive: somethingElseIsChosen ? 0 : 1,
     source: 'pack',
     packVersion: 1,
     createdAt: existing?.createdAt ?? now(),

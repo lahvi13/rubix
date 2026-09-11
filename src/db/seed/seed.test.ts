@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
-import { addUserAlgorithm } from '../repositories/alg-repository';
+import { addUserAlgorithm, setActiveAlgorithm } from '../repositories/alg-repository';
 import { deleteTrigger, updateTrigger } from '../repositories/trigger-repository';
 import { CROSS_CASE_ID, CROSS_SET_ID, PACKS } from './packs';
 import { seedPacks } from './seed';
@@ -93,6 +93,34 @@ describe('seed', () => {
 
     expect((await db.algorithms.get(mine.id))?.isActive).toBe(1);
     expect((await db.algorithms.get('pll-t-pack'))?.isActive).toBe(0);
+  });
+
+  it('leaves a second built-in algorithm active when it is the one chosen', async () => {
+    await seedPacks();
+    const other = 'pll-ua-pack-other-1';
+    await setActiveAlgorithm(other);
+
+    await seedPacks();
+
+    // Picking another of the built-in ones is as much a choice as typing one
+    // in. The seed used to count only the typed ones and switch its own answer
+    // back on, which left two rows active at once — the screen then showed one
+    // of them and ticked the other.
+    expect((await db.algorithms.get(other))?.isActive).toBe(1);
+    expect((await db.algorithms.get('pll-ua-pack'))?.isActive).toBe(0);
+  });
+
+  it('puts a case with two active rows back to one', async () => {
+    await seedPacks();
+    const other = 'pll-ua-pack-other-1';
+    // What the old seed left behind, on a database that has been through it.
+    await db.algorithms.update(other, { isActive: 1 });
+    await db.algorithms.update('pll-ua-pack', { isActive: 1 });
+
+    await seedPacks();
+
+    const rows = await db.algorithms.where('caseId').equals('pll-ua').toArray();
+    expect(rows.filter((row) => row.isActive === 1).map((row) => row.id)).toEqual([other]);
   });
 
   it('keeps a custom case out of the pack', async () => {
