@@ -2868,10 +2868,18 @@ button[disabled] {
   margin-inline: calc(var(--space-4) / 2);
 }
 
-.alg__part--trigger {
-  /* A named block is one thing. It goes to the next line whole, and only a
-     block too wide for a line of its own breaks — with both halves keeping
-     their ends, see box-decoration-break below. */
+/*
+ * A block of moves that holds together: a trigger, which has a name and a
+ * colour, or a bracket the algorithm was written with, which has neither.
+ * One shape for both — same corner, same padding, same weight of line against
+ * fill — so that the only difference between them is the one that means
+ * something. Two shapes would have read as two mechanisms.
+ */
+.alg__part--trigger,
+.alg__part--group {
+  /* A block is one thing. It goes to the next line whole, and only a block too
+     wide for a line of its own breaks — with both halves keeping their ends,
+     see box-decoration-break below. */
   display: inline-block;
   max-width: 100%;
   margin-block-start: var(--space-2);
@@ -2881,47 +2889,33 @@ button[disabled] {
   vertical-align: baseline;
 }
 
+.alg__part--trigger .alg__moves,
+.alg__part--group .alg__moves {
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 .alg__part--trigger .alg__moves {
   background: color-mix(in srgb, var(--trigger-colour, var(--accent)) 26%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--trigger-colour, var(--accent)) 45%, transparent);
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-3);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
 }
 
 /*
- * A bracket nobody named. It holds together the same way a trigger does, and
- * says less: an outline in the text's own colour instead of a fill in a
- * colour of its own, because it is the author's grouping rather than a thing
- * the reader has learned by name.
+ * The bracket, in the same proportions and no colour of its own. Taken from
+ * the text rather than from --border, which is the line between two panels and
+ * on the dark theme is all but the same colour as the panel it sits on: drawn
+ * in that, the bracket was there and could not be seen.
+ *
+ * The fill does the work and the line only closes it, which is how a trigger
+ * is built too. A heavy line over a faint fill was the other way round, and
+ * beside an R or an L it landed close enough to the letter's own upright to
+ * read as part of it.
  */
-.alg__part--group {
-  display: inline-block;
-  max-width: 100%;
-  margin-block-start: var(--space-2);
-  text-align: center;
-  vertical-align: baseline;
-}
-
 .alg__part--group .alg__moves {
-  /*
-   * Both taken from the text rather than from --border, which is the line
-   * between two panels and on the dark theme is all but the same colour as the
-   * panel it sits on: the bracket was there and could not be seen. Mixed down
-   * from whatever the text is, they lighten for a dark background and darken
-   * for a light one without either being written down.
-   *
-   * A fill as well as a line, because a hairline alone was still easy to miss
-   * against a dark panel. It is a neutral — no hue at all — where a trigger's
-   * is its own colour, so the two never read as the same kind of thing.
-   */
-  background: color-mix(in srgb, var(--text) 9%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 55%, transparent);
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-3);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
+  background: color-mix(in srgb, var(--text) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 45%, transparent);
 }
 
 /*
@@ -2941,28 +2935,14 @@ button[disabled] {
   margin-inline: calc(var(--space-2) / 2);
 }
 
-.alg--compact .alg__part--trigger {
-  margin-block-start: 0;
-}
-
-.alg--compact .alg__part--trigger .alg__moves {
-  padding: 0 var(--space-1);
-}
-
+.alg--compact .alg__part--trigger,
 .alg--compact .alg__part--group {
   margin-block-start: 0;
 }
 
-/*
- * Heavier than the same block in the case sheet. A card is a thumb wide and
- * the algorithm on it is set small, so a hairline that reads perfectly well at
- * reading size all but disappears — and it is standing next to trigger blocks
- * in full colour, which makes a faint grey one look like nothing at all.
- */
+.alg--compact .alg__part--trigger .alg__moves,
 .alg--compact .alg__part--group .alg__moves {
   padding: 0 var(--space-1);
-  background: color-mix(in srgb, var(--text) 16%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 70%, transparent);
 }
 
 .alg__label {
