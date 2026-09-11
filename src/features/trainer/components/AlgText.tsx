@@ -29,9 +29,15 @@ interface AlgTextProps {
   compact?: boolean;
 }
 
+/**
+ * Each of the three kinds says which it is. Loose moves get a name of their
+ * own rather than being styled as whatever is left over: a rule written as
+ * "not a trigger" was right until there was a second kind of block, and then
+ * it silently took that one's padding away.
+ */
 function partClass(segment: AlgSegment): string {
   if (segment.trigger) return 'alg__part alg__part--trigger';
-  return segment.isGroup ? 'alg__part alg__part--group' : 'alg__part';
+  return segment.isGroup ? 'alg__part alg__part--group' : 'alg__part alg__part--loose';
 }
 
 /**

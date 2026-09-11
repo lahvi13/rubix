@@ -2954,7 +2954,9 @@ button[disabled] {
   color: color-mix(in srgb, var(--trigger-colour, var(--accent)) var(--ink-strength), var(--ink-floor));
 }
 
-.alg__part:not(.alg__part--trigger) .alg__moves {
+/* Moves that are only moves: the same height as a block beside them, and no
+   width of their own to keep them off the text either side. */
+.alg__part--loose .alg__moves {
   padding: var(--space-1) 0;
 }
 
