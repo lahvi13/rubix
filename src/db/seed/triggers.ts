@@ -36,3 +36,18 @@ export const TRIGGER_PACK: readonly PackTrigger[] = [
   { id: 'trigger-fat-sexy', name: 'Fat sexy', moves: "r U R' U'", colour: '#2dd4bf' },
   { id: 'trigger-fat-sledgehammer', name: 'Fat sledgehammer', moves: "r' F R F'", colour: '#a3e635' },
 ];
+
+const PACK_TRIGGER_IDS = new Set(TRIGGER_PACK.map((trigger) => trigger.id));
+
+/**
+ * Whether this trigger shipped with the app.
+ *
+ * Asked of the id rather than of `source`, which says something else: editing
+ * a built-in trigger makes it the reader's from then on, so that the app stops
+ * updating it. That is about who owns the wording, not about where it came
+ * from — and a built-in one that has been recoloured is still not theirs to
+ * lose.
+ */
+export function isPackTrigger(id: string): boolean {
+  return PACK_TRIGGER_IDS.has(id);
+}

@@ -33,6 +33,35 @@ describe('TriggerPanel', () => {
     });
   });
 
+  it('lets you throw away what you made and not what shipped', async () => {
+    const user = userEvent.setup();
+    render(<TriggerPanel />);
+
+    const open = async (startsWith: string) => {
+      const rows = await screen.findAllByRole('button', { expanded: false });
+      const row = rows.find((button) => (button.textContent ?? '').startsWith(startsWith));
+      expect(row).toBeDefined();
+      if (row !== undefined) await user.click(row);
+    };
+
+    // A built-in one has the tick on its line and nothing that would bury it:
+    // deleting writes a tombstone, and there would be no way back.
+    await open('Sexy move');
+    expect(screen.queryByRole('button', { name: /^Delete$/ })).toBeNull();
+    expect(screen.getByText(/switch it off with the tick/)).toBeInTheDocument();
+    await open('Sexy move');
+
+    await user.type(screen.getByPlaceholderText(/name/i), 'Mine');
+    await user.type(screen.getByPlaceholderText(/moves/i), "R U R' F'");
+    await user.click(screen.getByRole('button', { name: /add trigger/i }));
+    await waitFor(async () => {
+      expect((await listTriggers()).some((trigger) => trigger.name === 'Mine')).toBe(true);
+    });
+
+    await open('Mine');
+    expect(screen.getByRole('button', { name: /^Delete$/ })).toBeInTheDocument();
+  });
+
   it('keeps the boxes that change a trigger behind a tap', async () => {
     const user = userEvent.setup();
     render(<TriggerPanel />);

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { TRIGGER_COLOURS } from '../../../db/repositories/trigger-repository';
+import { isPackTrigger } from '../../../db/seed/triggers';
 import { ChevronIcon } from '../../../components/Icons';
 import { parseAlg } from '../../../domain/cube/notation';
 import { watchWrite } from '../../../lib/errors';
@@ -135,16 +136,29 @@ export function TriggerPanel() {
                       watchWrite(() => recolour(trigger.id, next), strings.trainer.triggerColour)
                     }
                   />
-                  <button
-                    type="button"
-                    className="is-danger trigger__delete"
-                    onClick={() => {
-                      setOpenId(null);
-                      watchWrite(() => remove(trigger.id), strings.solve.delete);
-                    }}
-                  >
-                    {strings.solve.delete}
-                  </button>
+                  {/*
+                    Only what the reader made is theirs to throw away. A
+                    built-in trigger is switched off by the tick on its line —
+                    which leaves it there to be switched back on, and leaves
+                    the app free to keep it up to date. Deleting one would
+                    bury it for good: the seed writes a tombstone so that an
+                    update cannot bring back something somebody meant to be
+                    rid of, and there would be no way back from that.
+                  */}
+                  {isPackTrigger(trigger.id) ? (
+                    <p className="trigger__note">{strings.trainer.triggerBuiltIn}</p>
+                  ) : (
+                    <button
+                      type="button"
+                      className="is-danger trigger__delete"
+                      onClick={() => {
+                        setOpenId(null);
+                        watchWrite(() => remove(trigger.id), strings.solve.delete);
+                      }}
+                    >
+                      {strings.solve.delete}
+                    </button>
+                  )}
                 </div>
               ) : null}
             </li>

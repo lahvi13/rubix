@@ -313,6 +313,9 @@ export const strings = {
     notation: 'Notation',
     notationHint: 'Each picture is a solved cube after that one move.',
     triggers: 'Triggers',
+    /* Said where the delete button would be, so its absence reads as a rule
+       rather than as something missing. */
+    triggerBuiltIn: 'Built in — switch it off with the tick rather than deleting it.',
     triggersHint:
       'Sequences highlighted inside an algorithm. Edit a built-in one and it becomes yours — updates leave it alone from then on.',
     triggerName: 'Name',
