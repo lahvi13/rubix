@@ -282,6 +282,12 @@ export const strings = {
     loading: 'Loading the cases…',
     twoLook: '2-Look',
     fullSet: 'Full',
+    /* How far into F2L the screen is. Named for what the cases are, not for
+       how good you are meant to be: the basic set is the one where every other
+       slot is already built. */
+    levelBasic: 'Basic',
+    levelAdvanced: 'Advanced',
+    levelExpert: 'Expert',
     play: 'Play',
     stop: 'Stop',
     loadingPlayer: 'Loading the cube…',

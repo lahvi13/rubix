@@ -1,5 +1,5 @@
 import type { DiagramView } from '../../components/CubeDiagram';
-import { BEGINNER_GROUPS, BEGINNER_SET_ID } from '../../db/seed/packs';
+import { BEGINNER_GROUPS, BEGINNER_SET_ID, LEVEL_BASE_SETS } from '../../db/seed/packs';
 import type { PlayerStickering } from './components/CasePlayer';
 import type { Stickering } from '../../domain/cube/views';
 
@@ -100,8 +100,9 @@ export function diagramFor(setId: string, group: string): Diagram {
   }
   // The sets where dimming earns its cost: a case down here is a piece or two
   // in a whole cube, and without the rest going quiet there is nothing to look
-  // at.
-  if (setId === 'f2l' || setId === BEGINNER_SET_ID) {
+  // at. F2L is drawn the same way however far into it the case is — the
+  // advanced and expert levels are the same picture with a second slot in it.
+  if (setId === 'f2l' || Object.hasOwn(LEVEL_BASE_SETS, setId) || setId === BEGINNER_SET_ID) {
     return {
       view: 'isometric',
       stickering: 'firstTwoLayers',

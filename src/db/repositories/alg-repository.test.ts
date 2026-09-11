@@ -29,6 +29,8 @@ describe('alg repository', () => {
       // A set to drill rather than to read, but a set all the same.
       'cross',
       'f2l',
+      'f2l-advanced',
+      'f2l-expert',
       'oll',
       'pll',
     ]);
@@ -43,6 +45,8 @@ describe('alg repository', () => {
       'cross',
       'beginner',
       'f2l',
+      'f2l-advanced',
+      'f2l-expert',
       '2look-oll',
       'oll',
       '2look-pll',

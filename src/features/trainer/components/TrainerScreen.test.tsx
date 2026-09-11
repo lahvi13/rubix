@@ -159,6 +159,55 @@ describe('TrainerScreen', () => {
     expect(await screen.findByRole('button', { name: 'F2L 1' })).toBeInTheDocument();
   });
 
+  it('offers the three levels of F2L, and only under F2L', async () => {
+    const user = userEvent.setup();
+    render(<TrainerScreen />);
+
+    expect(await screen.findByRole('button', { name: 'Basic' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Advanced' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expert' })).toBeInTheDocument();
+
+    // A level is a set in the database; it must not also stand in the row that
+    // names the sets, or F2L would appear to be three subjects.
+    const sets = screen.getAllByRole('button', { name: /^(F2L|OLL|PLL|Advanced|Expert)$/ });
+    expect(sets.filter((button) => button.textContent === 'Advanced')).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: 'PLL' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Expert' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows the advanced cases and comes back to them', async () => {
+    const user = userEvent.setup();
+    const first = render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'Advanced' }));
+    await waitFor(async () => {
+      expect(await getSetting('trainer.setId')).toBe('f2l-advanced');
+    });
+
+    first.unmount();
+    render(<TrainerScreen />);
+
+    expect(await screen.findByRole('button', { name: 'Advanced 1' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /^Advanced \d+$/ })).toHaveLength(36);
+    // The row above still says F2L: the level is how far in, not another set.
+    expect(screen.getByRole('button', { name: 'F2L' }).className).toContain('is-active');
+  });
+
+  it('drops back to the basic cases when the set is chosen again', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.setId', 'f2l-expert');
+    render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'F2L' }));
+
+    await waitFor(async () => {
+      expect(await getSetting('trainer.setId')).toBe('f2l');
+    });
+  });
+
   it('keeps the two-look sets out of the list of sets', async () => {
     render(<TrainerScreen />);
 

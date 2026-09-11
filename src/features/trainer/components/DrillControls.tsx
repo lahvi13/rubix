@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from 'react';
 import type { AlgSet } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
-import { BEGINNER_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
+import { BEGINNER_SET_ID, FULL_SETS, LEVEL_BASE_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { ChevronIcon } from '../../../components/Icons';
 import { useSetting } from '../../../hooks/use-setting';
 import { strings } from '../../../lib/strings';
+import { baseSetOf, levelName, levelsOf } from '../levels';
 
 interface DrillSetsProps {
   sets: readonly AlgSet[];
@@ -17,13 +18,18 @@ interface DrillSetsProps {
 function drillableSets(sets: readonly AlgSet[]): readonly AlgSet[] {
   // The guide's own set is not offered here: it is a route through one solve
   // rather than a set to work on, and it is drilled from there.
-  return sets.filter((set) => !Object.hasOwn(FULL_SETS, set.id) && set.id !== BEGINNER_SET_ID);
+  return sets.filter(
+    (set) =>
+      !Object.hasOwn(FULL_SETS, set.id) &&
+      !Object.hasOwn(LEVEL_BASE_SETS, set.id) &&
+      set.id !== BEGINNER_SET_ID,
+  );
 }
 
 /** Which set the drill draws from. The one row that is never folded away. */
 export function DrillSets({ sets, setId, onSet }: DrillSetsProps) {
   const [twoLookDefault] = useSetting('trainer.twoLookDefault');
-  const baseId = FULL_SETS[setId] ?? setId;
+  const baseId = baseSetOf(FULL_SETS[setId] ?? setId);
 
   return (
     <div className="trainer__sets">
@@ -78,6 +84,31 @@ export function DrillLooks({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
       >
         {strings.trainer.fullSet}
       </button>
+    </div>
+  );
+}
+
+/**
+ * How far into the set, for the sets that go further. Same switch the trainer
+ * shows, so a set is drilled at the level it was being read at.
+ */
+export function DrillLevels({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
+  const levels = levelsOf(baseSetOf(setId));
+  if (levels.length === 0) return null;
+
+  return (
+    <div className="trainer__looks">
+      {levels.map((id) => (
+        <button
+          key={id}
+          type="button"
+          className={id === setId ? 'is-active' : ''}
+          aria-pressed={id === setId}
+          onClick={() => onSet(id)}
+        >
+          {levelName(id)}
+        </button>
+      ))}
     </div>
   );
 }

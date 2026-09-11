@@ -29,7 +29,7 @@ import { AttemptActions, AttemptList } from './AttemptList';
 import { CasePool } from './CasePool';
 import { CaseStatsRow } from './CaseStats';
 import { drillSummary } from '../drill-summary';
-import { DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
+import { DrillLevels, DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
 
 interface SolveDrillProps {
   mode: DrillMode;
@@ -91,6 +91,13 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
               drill.timer.inspectionEnabled,
             )}
           >
+            <DrillLevels
+              setId={setId}
+              onSet={(next) => {
+                setSetId(next);
+                drill.reset();
+              }}
+            />
             <DrillLooks
               setId={setId}
               onSet={(next) => {

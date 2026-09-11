@@ -1,0 +1,159 @@
+{
+ "packVersion": 1,
+ "set": {
+  "id": "f2l-expert",
+  "name": "Expert"
+ },
+ "cases": [
+  {
+   "id": "f2l-exp-1",
+   "name": "Expert 1",
+   "group": "Corner is solved",
+   "alg": "R2 U' R2 U R2",
+   "setup": "R2 U' R2 U R2",
+   "alt": "y2 L2 U' L2 U L2",
+   "others": [
+    "y F' R' F2 R F"
+   ]
+  },
+  {
+   "id": "f2l-exp-2",
+   "name": "Expert 2",
+   "group": "Corner is solved",
+   "alg": "f' R' U R f",
+   "setup": "f' R' U' R f",
+   "alt": "y R' u' R u R",
+   "others": [
+    "y' L' u' L u L",
+    "y2 f' D' L D f"
+   ]
+  },
+  {
+   "id": "f2l-exp-3",
+   "name": "Expert 3",
+   "group": "Corner is solved",
+   "alg": "y L2 U L2 U' L2",
+   "setup": "y L2 U L2 U' L2 y'",
+   "alt": "y' R2 U R2 U' R2",
+   "others": [
+    "F L F2 L' F'"
+   ]
+  },
+  {
+   "id": "f2l-exp-4",
+   "name": "Expert 4",
+   "group": "Corner is solved",
+   "alg": "y f L U' L' f'",
+   "setup": "y f L U L' f' y'",
+   "alt": "y2 R u R' u' R'",
+   "others": [
+    "L u L' u' L'",
+    "y' f D R' D' f'"
+   ]
+  },
+  {
+   "id": "f2l-exp-5",
+   "name": "Expert 5",
+   "group": "Corner is solved",
+   "alg": "y L2 u' L2 u L2",
+   "setup": "y L2 u' L2 u L2 y'",
+   "alt": "y2 L2 u L2 u' L2",
+   "others": [
+    "R2 u R2 u' R2",
+    "y' R2 u' R2 u R2"
+   ]
+  },
+  {
+   "id": "f2l-exp-6",
+   "name": "Expert 6",
+   "group": "Corner is solved",
+   "alg": "y L' u' L U L' u L",
+   "setup": "y L' u' L U' L' u L y'",
+   "alt": "y' R' u' R U R' u R"
+  },
+  {
+   "id": "f2l-exp-7",
+   "name": "Expert 7",
+   "group": "Pair in the wrong slot",
+   "alg": "R' F R2 U' R2 F' R",
+   "setup": "R' F R2 U R2 F' R"
+  },
+  {
+   "id": "f2l-exp-8",
+   "name": "Expert 8",
+   "group": "Pair in the wrong slot",
+   "alg": "L F' L2 U L2 F L'",
+   "setup": "L F' L2 U' L2 F L' y' y"
+  },
+  {
+   "id": "f2l-exp-9",
+   "name": "Expert 9",
+   "group": "Pair in the wrong slot",
+   "alg": "R L U2 L' R'",
+   "setup": "R L U2 L' R'",
+   "alt": "y L' R' U2 R L"
+  },
+  {
+   "id": "f2l-exp-10",
+   "name": "Expert 10",
+   "group": "Flipped edge, corner next door",
+   "alg": "L F2 L' F U' F",
+   "setup": "F' U F' L F2 L'",
+   "others": [
+    "L F' L' U' F U' R U R'"
+   ]
+  },
+  {
+   "id": "f2l-exp-11",
+   "name": "Expert 11",
+   "group": "Flipped edge, corner next door",
+   "alg": "R' F2 R F' U F'",
+   "setup": "F U' F R' F2 R y' y",
+   "others": [
+    "R' F R U F' U L' U' L"
+   ]
+  },
+  {
+   "id": "f2l-exp-12",
+   "name": "Expert 12",
+   "group": "Flipped edge, corner next door",
+   "alg": "R' F R U' F' R U' R'",
+   "setup": "R U R' F U R' F' R"
+  },
+  {
+   "id": "f2l-exp-13",
+   "name": "Expert 13",
+   "group": "Flipped edge, corner next door",
+   "alg": "L F' L' U F L' U L",
+   "setup": "L' U' L F' U' L F L' y' y"
+  },
+  {
+   "id": "f2l-exp-14",
+   "name": "Expert 14",
+   "group": "Flipped edge, corner next door",
+   "alg": "L' U L M' U R U' r' R U' R'",
+   "setup": "R U R' r U R' U' M L' U' L"
+  },
+  {
+   "id": "f2l-exp-15",
+   "name": "Expert 15",
+   "group": "Flipped edge, corner next door",
+   "alg": "R U' R' M' U' L' U l L' U L",
+   "setup": "L' U' L l' U' L U M R U R' y' y"
+  },
+  {
+   "id": "f2l-exp-16",
+   "name": "Expert 16",
+   "group": "Other easy cases",
+   "alg": "R' F R U' F' U R U' R'",
+   "setup": "R U R' U' F U R' F' R"
+  },
+  {
+   "id": "f2l-exp-17",
+   "name": "Expert 17",
+   "group": "Other easy cases",
+   "alg": "L F' L' U F U' L' U L",
+   "setup": "L' U' L U F' U' L F L' y' y"
+  }
+ ]
+}

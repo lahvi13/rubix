@@ -6,6 +6,8 @@
 
 import beginner from './beginner.json';
 import f2l from './f2l.json';
+import f2lAdvanced from './f2l-advanced.json';
+import f2lExpert from './f2l-expert.json';
 import oll from './oll.json';
 import pll from './pll.json';
 import twoLookOll from './two-look-oll.json';
@@ -82,7 +84,16 @@ export function packAlgKind(algorithmId: string): PackAlgKind {
   return 'main';
 }
 
-export const PACKS: readonly AlgPack[] = [pll, oll, f2l, twoLookOll, twoLookPll, beginner];
+export const PACKS: readonly AlgPack[] = [
+  pll,
+  oll,
+  f2l,
+  f2lAdvanced,
+  f2lExpert,
+  twoLookOll,
+  twoLookPll,
+  beginner,
+];
 
 /**
  * The shorter route through the same step. Two-look OLL and PLL are sets of
@@ -94,6 +105,25 @@ export const PACKS: readonly AlgPack[] = [pll, oll, f2l, twoLookOll, twoLookPll,
 export const TWO_LOOK_SETS: Readonly<Record<string, string>> = {
   oll: '2look-oll',
   pll: '2look-pll',
+};
+
+/**
+ * F2L, further in. The forty-one basic cases assume every other slot is
+ * already built; these two sets are what happens when one is not — a piece of
+ * the pair sitting in a slot of its own (advanced), or both of them down there
+ * (expert). Sets rather than groups, so the screen somebody opens to look up
+ * a basic case is still forty-one cards rather than ninety-four.
+ *
+ * In the order they are offered, the basic set first.
+ */
+export const SET_LEVELS: Readonly<Record<string, readonly string[]>> = {
+  f2l: ['f2l', 'f2l-advanced', 'f2l-expert'],
+};
+
+/** Which set each level hangs off, for the row that names the sets. */
+export const LEVEL_BASE_SETS: Readonly<Record<string, string>> = {
+  'f2l-advanced': 'f2l',
+  'f2l-expert': 'f2l',
 };
 
 export const FULL_SETS: Readonly<Record<string, string>> = {
@@ -110,6 +140,8 @@ export const SET_ORDER: readonly string[] = [
   'cross',
   'beginner',
   'f2l',
+  'f2l-advanced',
+  'f2l-expert',
   '2look-oll',
   'oll',
   '2look-pll',

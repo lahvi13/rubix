@@ -20,7 +20,7 @@ import { AlgText } from './AlgText';
 import { CasePool } from './CasePool';
 import { CaseStatsRow } from './CaseStats';
 import { drillSummary } from '../drill-summary';
-import { DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
+import { DrillLevels, DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
 
 interface RecognitionDrillProps {
   mode: DrillMode;
@@ -59,6 +59,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
         <DrillSets sets={sets ?? []} setId={setId} onSet={setSetId} />
 
         <DrillSetup summary={drillSummary(setId, mode, caseIds, selectedIds)}>
+          <DrillLevels setId={setId} onSet={setSetId} />
           <DrillLooks setId={setId} onSet={setSetId} />
           <DrillModes mode={mode} onMode={onMode} canRecognise />
           <CasePool

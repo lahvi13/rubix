@@ -1,8 +1,15 @@
 import { useMemo, useState } from 'react';
 import { strings } from '../../../lib/strings';
-import { BEGINNER_SET_ID, CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
+import {
+  BEGINNER_SET_ID,
+  CROSS_SET_ID,
+  FULL_SETS,
+  LEVEL_BASE_SETS,
+  TWO_LOOK_SETS,
+} from '../../../db/seed/packs';
 import { navigate } from '../../../app/router';
 import { diagramFor } from '../case-view';
+import { baseSetOf, levelName, levelsOf } from '../levels';
 import { useAlgSets, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
@@ -26,6 +33,7 @@ export function TrainerScreen() {
   const fullSets = (sets ?? []).filter(
     (set) =>
       !Object.hasOwn(FULL_SETS, set.id) &&
+      !Object.hasOwn(LEVEL_BASE_SETS, set.id) &&
       set.id !== CROSS_SET_ID &&
       set.id !== BEGINNER_SET_ID,
   );
@@ -39,14 +47,21 @@ export function TrainerScreen() {
   const isTwoLook = chosenLook ?? twoLookDefault;
 
   // A remembered set that is no longer there — a pack gone from a restored
-  // backup — leaves the trainer on the first one rather than on nothing.
-  const baseSetId = fullSets.some((set) => set.id === rememberedSetId)
+  // backup — leaves the trainer on the first one rather than on nothing. What
+  // is remembered is the level, if the set has levels; the row above names the
+  // set that level belongs to.
+  const remembered = (sets ?? []).some((set) => set.id === rememberedSetId)
     ? rememberedSetId
-    : fullSets[0]?.id ?? null;
+    : null;
+  const baseSetId =
+    remembered === null ? fullSets[0]?.id ?? null : baseSetOf(remembered);
+  const levels = levelsOf(baseSetId);
+  const levelId =
+    levels.length === 0 ? null : levels.find((id) => id === remembered) ?? levels[0] ?? null;
   const twoLookId = baseSetId === null ? undefined : TWO_LOOK_SETS[baseSetId];
-  const setId = isTwoLook && twoLookId !== undefined ? twoLookId : baseSetId;
+  const setId = levelId ?? (isTwoLook && twoLookId !== undefined ? twoLookId : baseSetId);
 
-  const fullGroups = useSetCases(baseSetId);
+  const fullGroups = useSetCases(levelId ?? baseSetId);
   const twoLookGroups = useSetCases(twoLookId ?? null);
   const groups = isTwoLook && twoLookId !== undefined ? twoLookGroups : fullGroups;
   // Nothing has answered yet is not the same as there is nothing to show.
@@ -88,6 +103,27 @@ export function TrainerScreen() {
           </button>
         ))}
       </div>
+
+      {/* How far into the set: the cases everybody meets, and the two sets of
+          cases that only turn up once another slot is in the way. */}
+      {levels.length === 0 ? null : (
+        <div className="trainer__looks">
+          {levels.map((id) => (
+            <button
+              key={id}
+              type="button"
+              className={id === levelId ? 'is-active' : ''}
+              aria-pressed={id === levelId}
+              onClick={() => {
+                setRememberedSetId(id);
+                setOpenCase(null);
+              }}
+            >
+              {levelName(id)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {twoLookId !== undefined ? (
         <div className="trainer__looks">
