@@ -90,3 +90,41 @@ describe('triggerCoverage', () => {
     expect(triggerCoverage([])).toBe(0);
   });
 });
+
+describe('brackets the algorithm was written with', () => {
+  const sexy: TriggerDefinition = {
+    id: 'sexy',
+    name: 'Sexy move',
+    moves: moves("R U R' U'"),
+  };
+
+  const shape = (text: string, triggers: readonly TriggerDefinition[] = []): string => {
+    const parsed = parseAlg(text);
+    if (!parsed.ok) throw new Error(`unparsable: ${text}`);
+    return segmentAlg(parsed.moves, triggers, parsed.groups)
+      .map((segment) => {
+        const written = segment.moves.map((move) => move.text).join(' ');
+        if (segment.trigger) return `<${segment.trigger.name}>`;
+        return segment.isGroup ? `(${written})` : written;
+      })
+      .join(' ');
+  };
+
+  it('shows the brackets where nothing is named', () => {
+    expect(shape("(R U R' U) (R U2 R')")).toBe("(R U R' U) (R U2 R')");
+  });
+
+  it('lets a trigger win the moves it covers', () => {
+    // The bracket and the trigger are the same four moves; drawing both would
+    // say the same thing twice, and only one of them has a name.
+    expect(shape("(R U R' U') (R U2 R')", [sexy])).toBe("<Sexy move> (R U2 R')");
+  });
+
+  it('keeps the loose moves either side of a bracket', () => {
+    expect(shape("U (R U R') D")).toBe("U (R U R') D");
+  });
+
+  it('has nothing to say about an algorithm without brackets', () => {
+    expect(shape("R U R' U2 R U R'")).toBe("R U R' U2 R U R'");
+  });
+});

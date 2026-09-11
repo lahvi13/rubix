@@ -34,29 +34,55 @@ const WIDE_BY_LOWERCASE: Record<string, MoveFamily> = {
   b: 'Bw',
 };
 
+/**
+ * A bracket the algorithm was written with, as the moves it holds: `[start,
+ * end)`, the way a slice is written.
+ */
+export type MoveGroup = readonly [start: number, end: number];
+
 export type ParseResult =
-  | { ok: true; moves: Move[] }
+  | { ok: true; moves: Move[]; groups: MoveGroup[] }
   | { ok: false; token: string; index: number };
 
 /**
- * Splits on whitespace; parentheses are grouping only and are dropped, because
- * every published algorithm uses them for readability, not for repetition.
+ * Splits on whitespace. Brackets are grouping rather than repetition — that is
+ * what every published algorithm uses them for — and they are kept, because
+ * the grouping is half of how an algorithm is remembered: `(R U R' U) (R U2
+ * R')` is two things to hold in the hand, not seven moves to recite.
+ *
+ * A bracket that never closes, or one that closes having never opened, is
+ * simply not a group; the moves inside it still parse. Nothing about the cube
+ * depends on them, so there is nothing to refuse.
  */
 export function parseAlg(text: string): ParseResult {
   const tokens = text
-    .replace(/[()[\]]/g, ' ')
+    .replace(/[()[\]]/g, (bracket) => ` ${bracket} `)
     .replace(/[’‘`´]/g, "'")
-    .replace(/’/g, "'")
     .split(/\s+/)
     .filter((token) => token !== '');
 
   const moves: Move[] = [];
+  const groups: MoveGroup[] = [];
+  const open: number[] = [];
+
   for (const [index, token] of tokens.entries()) {
+    if (token === '(' || token === '[') {
+      open.push(moves.length);
+      continue;
+    }
+    if (token === ')' || token === ']') {
+      const start = open.pop();
+      // A group of nothing is not a group; nor is a stray closing bracket.
+      if (start !== undefined && moves.length > start) groups.push([start, moves.length]);
+      continue;
+    }
+
     const move = parseMove(token);
     if (move === null) return { ok: false, token, index };
     moves.push(move);
   }
-  return { ok: true, moves };
+
+  return { ok: true, moves, groups };
 }
 
 export function parseMove(token: string): Move | null {
@@ -102,8 +128,28 @@ export function formatMove(move: Move): string {
   return move.amount === -1 ? `${family}'` : family;
 }
 
-export function formatAlg(moves: readonly Move[]): string {
-  return moves.map(formatMove).join(' ');
+/**
+ * Written out, with the brackets it was written with. Only groups that sit
+ * inside the moves are drawn, and nesting is left alone rather than reproduced
+ * — one bracket around a bracket helps nobody read anything.
+ */
+export function formatAlg(moves: readonly Move[], groups: readonly MoveGroup[] = []): string {
+  const opens = new Set<number>();
+  const closes = new Set<number>();
+  for (const [start, end] of groups) {
+    if (start < 0 || end > moves.length || end <= start) continue;
+    if (opens.has(start) || closes.has(end)) continue;
+    opens.add(start);
+    closes.add(end);
+  }
+
+  const out: string[] = [];
+  moves.forEach((move, index) => {
+    const text = formatMove(move);
+    out.push(opens.has(index) ? `(${text}` : text);
+    if (closes.has(index + 1)) out[out.length - 1] += ')';
+  });
+  return out.join(' ');
 }
 
 /** Reversed order, every turn the other way — the setup for a case. */

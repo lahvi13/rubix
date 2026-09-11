@@ -62,7 +62,7 @@ export function CaseDetail({
   onOpen,
   onClose,
 }: CaseDetailProps) {
-  const { algCase, algorithms, active, moves, choose, addVariant, removeVariant, rename, forgetRecognition } =
+  const { algCase, algorithms, active, moves, groups, choose, addVariant, removeVariant, rename, forgetRecognition } =
     useCaseDetail(caseId);
   const [replayToken, setReplayToken] = useState(0);
   // The sheet used to be keyed by case id so that stepping to the next one
@@ -198,6 +198,7 @@ export function CaseDetail({
 
       <AlgText
         moves={moves}
+        groups={groups}
         triggers={triggers}
         onPlay={play}
         playingMove={isPlaying ? playingMove : null}

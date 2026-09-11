@@ -4,7 +4,7 @@
  * remember, which is the difference between learning a case and drilling it.
  */
 
-import { isSameMove, type Move } from '../cube/notation';
+import { isSameMove, type Move, type MoveGroup } from '../cube/notation';
 
 export interface TriggerDefinition {
   id: string;
@@ -19,6 +19,12 @@ export interface AlgSegment {
   moves: Move[];
   /** The trigger these moves are, or null for moves that are just moves. */
   trigger: TriggerDefinition | null;
+  /**
+   * A bracket the algorithm was written with, holding moves no trigger
+   * claimed. Nobody named it, so it has no colour and no caption — it is only
+   * the shape the author remembered it in.
+   */
+  isGroup?: boolean;
 }
 
 /**
@@ -31,14 +37,16 @@ export interface AlgSegment {
 export function segmentAlg(
   moves: readonly Move[],
   triggers: readonly TriggerDefinition[],
+  groups: readonly MoveGroup[] = [],
 ): AlgSegment[] {
   const segments: AlgSegment[] = [];
   let loose: Move[] = [];
+  let looseAt = 0;
   let index = 0;
 
   const flushLoose = (): void => {
     if (loose.length === 0) return;
-    segments.push({ moves: loose, trigger: null });
+    segments.push(...bracketed(loose, looseAt, groups));
     loose = [];
   };
 
@@ -53,12 +61,45 @@ export function segmentAlg(
     }
 
     const move = moves[index];
-    if (move) loose.push(move);
+    if (move) {
+      if (loose.length === 0) looseAt = index;
+      loose.push(move);
+    }
     index += 1;
   }
 
   flushLoose();
   return segments;
+}
+
+/**
+ * A run of unnamed moves, cut at the brackets the author wrote around them.
+ *
+ * Triggers come first and brackets fill in: a bracket that a trigger already
+ * covers has nothing left to say, and two ways of chunking the same moves
+ * drawn over each other would say neither.
+ */
+function bracketed(
+  loose: readonly Move[],
+  at: number,
+  groups: readonly MoveGroup[],
+): AlgSegment[] {
+  const inside = groups
+    .filter(([start, end]) => start >= at && end <= at + loose.length)
+    .sort((a, b) => a[0] - b[0]);
+
+  const out: AlgSegment[] = [];
+  let cut = at;
+  for (const [start, end] of inside) {
+    if (start < cut) continue;
+    if (start > cut) out.push({ moves: [...loose.slice(cut - at, start - at)], trigger: null });
+    out.push({ moves: [...loose.slice(start - at, end - at)], trigger: null, isGroup: true });
+    cut = end;
+  }
+  if (cut < at + loose.length) {
+    out.push({ moves: [...loose.slice(cut - at)], trigger: null });
+  }
+  return out;
 }
 
 function matchesAt(moves: readonly Move[], start: number, pattern: readonly Move[]): boolean {

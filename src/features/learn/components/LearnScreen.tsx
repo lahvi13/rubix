@@ -281,7 +281,7 @@ function KeyCase({ entry, diagram, skin, triggers, onOpen }: KeyCaseProps) {
           skin={skin}
           label={null}
         />
-        {parsed?.ok ? <AlgText moves={parsed.moves} triggers={triggers} /> : null}
+        {parsed?.ok ? <AlgText moves={parsed.moves} groups={parsed.groups} triggers={triggers} /> : null}
       </span>
     </button>
   );

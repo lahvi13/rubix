@@ -76,7 +76,7 @@ export function CaseCard({
         skin={skin}
         label={null}
       />
-      {parsed?.ok ? <AlgText moves={parsed.moves} triggers={triggers} compact /> : null}
+      {parsed?.ok ? <AlgText moves={parsed.moves} groups={parsed.groups} triggers={triggers} compact /> : null}
     </button>
   );
 }

@@ -9,7 +9,7 @@ import {
   setCaseLabel,
 } from '../../../db/repositories/alg-repository';
 import { deleteCaseRecognitions } from '../../../db/repositories/recognition-repository';
-import { parseAlg, type Move } from '../../../domain/cube/notation';
+import { parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 
 export interface CaseDetailView {
   algCase: AlgCase | null;
@@ -17,6 +17,8 @@ export interface CaseDetailView {
   active: Algorithm | null;
   /** The active algorithm's moves, or an empty list while it loads. */
   moves: Move[];
+  /** The brackets it was written with, for the same reason. */
+  groups: MoveGroup[];
   isLoading: boolean;
   choose: (algorithmId: string) => Promise<void>;
   addVariant: (moves: string) => Promise<void>;
@@ -43,6 +45,7 @@ export function useCaseDetail(caseId: string | null): CaseDetailView {
     algorithms,
     active,
     moves: parsed?.ok ? parsed.moves : [],
+    groups: parsed?.ok ? parsed.groups : [],
     isLoading: caseId !== null && data === undefined,
     choose: setActiveAlgorithm,
     addVariant: async (moves) => {

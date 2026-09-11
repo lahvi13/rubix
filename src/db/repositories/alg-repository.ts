@@ -12,7 +12,9 @@ import { createId } from '../../lib/uuid';
  */
 function normaliseMoves(moves: string): string {
   const parsed = parseAlg(moves);
-  return parsed.ok ? formatAlg(parsed.moves) : moves.trim();
+  // Brackets travel with it: where somebody put them is how they remember the
+  // algorithm, and it is not the app's to tidy away.
+  return parsed.ok ? formatAlg(parsed.moves, parsed.groups) : moves.trim();
 }
 
 export interface CaseWithAlg {

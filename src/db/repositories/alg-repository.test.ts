@@ -104,8 +104,11 @@ describe('alg repository', () => {
     const mine = await addUserAlgorithm('oll-2', "F R U R' U' F' Fw R U R' U' Fw'");
     expect(mine.moves).toBe("F R U R' U' F' f R U R' U' f'");
 
+    // The spelling is the app's; the brackets are the writer's. Where somebody
+    // put them is how they hold the algorithm, and tidying them away would be
+    // throwing out the half of it that is theirs.
     await updateUserAlgorithm(mine.id, "(Rw U R') U'");
-    expect((await db.algorithms.get(mine.id))?.moves).toBe("r U R' U'");
+    expect((await db.algorithms.get(mine.id))?.moves).toBe("(r U R') U'");
   });
 
   it('keeps text it cannot read as typed, so nothing is silently lost', async () => {
