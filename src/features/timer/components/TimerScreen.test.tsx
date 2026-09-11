@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
+import { setSetting } from '../../../db/repositories/settings-repository';
 import { resetSheetHistory } from '../../../lib/sheet-history';
 import { TimerScreen } from './TimerScreen';
 
@@ -77,6 +78,8 @@ describe('TimerScreen', () => {
 
   it('still reacts to the space bar when a button holds focus', async () => {
     const user = userEvent.setup();
+    // The countdown is what proves the key arrived, so it has to be switched on.
+    await setSetting('timer.inspectionEnabled', true);
     render(<TimerScreen />);
     await findScramble();
 
@@ -86,7 +89,6 @@ describe('TimerScreen', () => {
     await user.keyboard('[Space>]');
     await user.keyboard('[/Space]');
 
-    // Inspection is on by default, so a tap starts the countdown at 15.
     expect(await screen.findByText('15')).toBeInTheDocument();
   });
 
@@ -303,6 +305,8 @@ describe('TimerScreen', () => {
     let clock = 0;
     const tick = (ms: number) => (clock += ms);
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    // The attempt below is the one that starts with a tap to inspect.
+    await setSetting('timer.inspectionEnabled', true);
 
     const { container } = render(<TimerScreen />);
     await findScramble();

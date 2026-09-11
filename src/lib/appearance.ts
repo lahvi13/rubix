@@ -28,12 +28,18 @@ export interface Appearance {
   clockFace: ClockFace;
 }
 
+/*
+ * What a device that has never been told otherwise looks like. Not the same
+ * list as the stylesheet's own defaults below: `set()` drops an attribute only
+ * when it matches what a bare `:root` already does, and those two answers are
+ * allowed to differ.
+ */
 export const DEFAULT_APPEARANCE: Appearance = {
-  theme: 'system',
+  theme: 'dark',
   font: 'sans',
   textSize: 'medium',
-  clockSize: 'medium',
-  clockFace: 'match',
+  clockSize: 'large',
+  clockFace: 'digital',
 };
 
 /** Must match --bg in index.css: this is the same surface, painted by the browser. */

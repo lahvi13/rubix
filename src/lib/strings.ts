@@ -435,6 +435,7 @@ export const strings = {
     sizeSmall: 'Small',
     sizeMedium: 'Medium',
     sizeLarge: 'Large',
+    skin: 'Colours',
     skinHint: 'Colours for every case diagram in the app.',
     twistyMode: 'Cube preview',
     previewFlat: 'Flat',

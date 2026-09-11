@@ -120,6 +120,7 @@ export function SettingsScreen() {
         />
         <p className="data-section__hint">{strings.settings.clockFaceHint}</p>
 
+        <span className="settings-label">{strings.settings.skin}</span>
         <p className="data-section__hint">{strings.settings.skinHint}</p>
 
         <div className="skins">
@@ -151,6 +152,54 @@ export function SettingsScreen() {
           onChange={setTwistyMode}
         />
         <p className="data-section__hint">{strings.settings.twistyModeHint}</p>
+      </section>
+
+      <section className="data-section">
+        <h2 className="data-section__title">{strings.settings.timer}</h2>
+
+        <div className="settings-row">
+          <span>{strings.settings.holdThreshold}</span>
+          <div className="settings-row__choices">
+            {HOLD_THRESHOLDS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={holdThresholdMs === value ? 'is-active' : ''}
+                onClick={() => setHoldThresholdMs(value)}
+              >
+                {value === 0 ? strings.settings.holdOff : `${value} ms`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={inspectionEnabled}
+            onChange={(event) => setInspectionEnabled(event.target.checked)}
+          />
+          {strings.timer.inspectionToggleLabel}
+        </label>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={isPreviewShown}
+            onChange={(event) => setPreviewShown(event.target.checked)}
+          />
+          {strings.settings.showScramblePreview}
+        </label>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={splitMode === 'phases'}
+            onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
+          />
+          {strings.settings.splitMode}
+        </label>
+        <p className="data-section__hint">{strings.settings.splitModeHint}</p>
       </section>
 
       <section className="data-section">
@@ -206,53 +255,6 @@ export function SettingsScreen() {
         <p className="data-section__hint">{strings.settings.showLearnHint}</p>
       </section>
 
-      <section className="data-section">
-        <h2 className="data-section__title">{strings.settings.timer}</h2>
-
-        <div className="settings-row">
-          <span>{strings.settings.holdThreshold}</span>
-          <div className="settings-row__choices">
-            {HOLD_THRESHOLDS.map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={holdThresholdMs === value ? 'is-active' : ''}
-                onClick={() => setHoldThresholdMs(value)}
-              >
-                {value === 0 ? strings.settings.holdOff : `${value} ms`}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={inspectionEnabled}
-            onChange={(event) => setInspectionEnabled(event.target.checked)}
-          />
-          {strings.timer.inspectionToggleLabel}
-        </label>
-
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={isPreviewShown}
-            onChange={(event) => setPreviewShown(event.target.checked)}
-          />
-          {strings.settings.showScramblePreview}
-        </label>
-
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={splitMode === 'phases'}
-            onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
-          />
-          {strings.settings.splitMode}
-        </label>
-        <p className="data-section__hint">{strings.settings.splitModeHint}</p>
-      </section>
     </main>
   );
 }

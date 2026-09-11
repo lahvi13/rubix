@@ -12,6 +12,12 @@ describe('TrainerScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
     await seedPacks();
+    // Almost every case here is reached by the card's name, and the algorithm
+    // printed on the card is part of that name. Pinned, so changing what a
+    // fresh install shows does not silently rename all 41 of them. The look is
+    // pinned for the same reason: two-look PLL has its own case ids.
+    await setSetting('trainer.showAlgs', false);
+    await setSetting('trainer.twoLookDefault', false);
   });
 
   it('says what is drilled and which cases to work on', async () => {
@@ -135,6 +141,18 @@ describe('TrainerScreen', () => {
       expect(screen.getAllByRole('button', { name: /^(I|L|Dot|Sune|Anti-Sune|H|Pi|T|U|Bowtie)$/ })).toHaveLength(10);
     });
     expect(screen.getByRole('heading', { name: '1 / Edges' })).toBeInTheDocument();
+  });
+
+  it('opens on the look the settings ask for', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.twoLookDefault', true);
+    render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'PLL' }));
+
+    // Six cases under two-look PLL, twenty-one under the full set.
+    expect(await screen.findByRole('button', { name: 'Y' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ja' })).not.toBeInTheDocument();
   });
 
   it('comes back to the set that was last looked at', async () => {
