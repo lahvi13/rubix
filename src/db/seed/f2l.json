@@ -1,5 +1,5 @@
 {
- "packVersion": 2,
+ "packVersion": 3,
  "set": {
   "id": "f2l",
   "name": "F2L"
@@ -12,7 +12,7 @@
    "alg": "F' U2 F U F' U' F",
    "alt": "y' R' U2 R U R' U' R",
    "others": [
-    "y L' U2 L U L' U' L"
+    "y (L' U2 L) U (L' U' L)"
    ]
   },
   {
@@ -21,7 +21,7 @@
    "group": "Cross colour on top",
    "alg": "R U' R' U2 R U R'",
    "others": [
-    "U2 R U R' U R U' R'",
+    "U2 (R U R') U (R U' R')",
     "y F R U2 R' F'"
    ]
   },
@@ -29,7 +29,7 @@
    "id": "f2l-3",
    "name": "F2L 3",
    "group": "Cross colour on top",
-   "alg": "R U2 R' U' R U R'"
+   "alg": "(R U2 R') U' (R U R')"
   },
   {
    "id": "f2l-4",
@@ -37,7 +37,7 @@
    "group": "Cross colour on top",
    "alg": "U R U2 R2 F R F'",
    "others": [
-    "U R U2 R' U R U' R'"
+    "U (R U2 R') U (R U' R')"
    ]
   },
   {
@@ -47,7 +47,7 @@
    "alg": "U' F' U2 F2 R' F' R",
    "alt": "y' U' R' U2 R U2 R' U2 R",
    "others": [
-    "y U' L' U2 L U' L' U L"
+    "y U' (L' U2 L) U' (L' U L)"
    ]
   },
   {
@@ -57,7 +57,7 @@
    "alg": "U2 F' U' F2 R' F' R",
    "alt": "y' R' U R U2 R' U' R",
    "others": [
-    "y U2 L' U' L U' L' U L",
+    "y U2 (L' U' L) U' (L' U L)",
     "F' L' U2 L F"
    ]
   },
@@ -68,10 +68,10 @@
    "alg": "U2 F2 U2 F U F' U F2",
    "alt": "y' U2 R2 U2 R U R' U R2",
    "others": [
-    "y U' L' U L U L' U L U' L' U L",
-    "y U' F' L F L' U' L' U' L",
-    "U' R U R2 F R F' R U' R'",
-    "F U R U' R' F' R U' R'"
+    "y U' (L' U L) U (L' U L U' L' U L)",
+    "y U' (F' L F L') U' (L' U' L)",
+    "U' R U (R2' F R F') (R U' R')",
+    "F (U R U' R') F' (R U' R')"
    ],
    "multiSlot": [
     "y2 U2 L' U L U S' L S"
@@ -83,13 +83,13 @@
    "group": "Cross colour on top",
    "alg": "U2 R2 U2 R' U' R U' R2",
    "others": [
-    "U R U' R' U' R U' R' U R U' R'",
-    "U F R' F' R U R U R'",
-    "y U L' U' L2 F' L' F L' U L",
-    "y F' U' L' U L F L' U L"
+    "U (R U' R') U' (R U' R' U R U' R')",
+    "U (F R' F' R) U (R U R')",
+    "y U L' U' (L2 F' L' F) (L' U L)",
+    "y F' (U' L' U L) F (L' U L)"
    ],
    "multiSlot": [
-    "U2 L F' L' F R U R'",
+    "U2 (L F' L' F) (R U R')",
     "y' U2 R U' R' U' S R' S'"
    ]
   },
@@ -100,14 +100,14 @@
    "alg": "F' U' F",
    "alt": "y' R' U' R",
    "others": [
-    "y L' U' L"
+    "y (L' U' L)"
    ]
   },
   {
    "id": "f2l-10",
    "name": "F2L 10",
    "group": "Cross colour on the side",
-   "alg": "R U R'"
+   "alg": "(R U R')"
   },
   {
    "id": "f2l-11",
@@ -116,14 +116,14 @@
    "alg": "F R' F' R",
    "alt": "y' U2 R' U2 R",
    "others": [
-    "y U' L' U L"
+    "y U' (L' U L)"
    ]
   },
   {
    "id": "f2l-12",
    "name": "F2L 12",
    "group": "Cross colour on the side",
-   "alg": "U R U' R'"
+   "alg": "U (R U' R')"
   },
   {
    "id": "f2l-13",
@@ -133,8 +133,8 @@
    "alt": "y' R U2 R2 U' R2 U' R'",
    "others": [
     "y L U2 L2 U' L2 U' L'",
-    "y L' U L U' L' U L U2 L' U L",
-    "U' R U2 R' U y L' U' L"
+    "y (L' U L) U' (L' U L) U2 (L' U L)",
+    "U' (R U2 R') U y (L' U' L)"
    ],
    "multiSlot": [
     "y L U2 L2 U' L"
@@ -146,13 +146,13 @@
    "group": "Cross colour on the side",
    "alg": "F' U F U2 R U R'",
    "others": [
-    "M U L F' L' U' M'",
-    "y L' U L y' U2 R U R'",
-    "y' R2 F R F' R U2 R' U R",
-    "y2 f' L f U2 L U L'"
+    "M U (L F' L') U' M'",
+    "y (L' U L) y' U2 (R U R')",
+    "y' (R2' F R F' R) U2 (R' U R)",
+    "y2 (f' L f) U2 (L U L')"
    ],
    "multiSlot": [
-    "U' R' U R U' R U R'"
+    "U' (R' U R) U' (R U R')"
    ]
   },
   {
@@ -161,7 +161,7 @@
    "group": "Cross colour on the side",
    "alg": "F2 U2 R' F2 R U2 F2",
    "others": [
-    "U' R U2 R' U2 R U' R'",
+    "U' (R U2 R') U2 (R U' R')",
     "y l U2 L2 U' L2 U' l'"
    ]
   },
@@ -172,13 +172,13 @@
    "alg": "R U' R' U2 F' U' F",
    "alt": "y' R' U R' U2 R2 U R2 U R2",
    "others": [
-    "y M U' R' F R U M'",
-    "R U' R' y U2 L' U' L",
-    "y2 L2 F' L' F L' U2 L U' L'",
-    "y' f R' f' U2 R' U' R"
+    "y M U' (R' F R) U M'",
+    "(R U' R') y U2 (L' U' L)",
+    "y2 (L2 F' L' F L') U2 (L U' L')",
+    "y' (f R' f') U2 R' U' R"
    ],
    "multiSlot": [
-    "y U L U' L' U L' U' L"
+    "y U (L U' L') U (L' U' L)"
    ]
   },
   {
@@ -187,7 +187,7 @@
    "group": "Cross colour on the side",
    "alg": "R' U2 R2 U R2 U R",
    "others": [
-    "R U' R' U R U' R' U2 R U' R'",
+    "(R U' R') U (R U' R') U2 (R U' R')",
     "y U L' U2 L U' y' R U R'"
    ],
    "multiSlot": [
@@ -201,7 +201,7 @@
    "alg": "R2 U2 F R2 F' U2 R2",
    "alt": "y' U R' U2 R U R' U2 R",
    "others": [
-    "y U L' U2 L U2 L' U L",
+    "y U (L' U2 L) U2 (L' U L)",
     "r' U2 R2 U R2 U r"
    ]
   },
@@ -211,7 +211,7 @@
    "group": "Cross colour on the side",
    "alg": "F' U' F2 R' F' R2 U R'",
    "others": [
-    "U' R U' R' U R U R'"
+    "U' (R U' R') U (R U R')"
    ]
   },
   {
@@ -221,7 +221,7 @@
    "alg": "R' U' R F R' F' U R",
    "alt": "y' U R' U' R U R' U2 R",
    "others": [
-    "y U L' U' L U2 L' U L",
+    "y U (L' U' L) U2 (L' U L)",
     "U' r U' R' U R U r'"
    ]
   },
@@ -232,8 +232,8 @@
    "alg": "U F' U' F U' F' U' F",
    "alt": "y' U R' U' R U' R' U' R",
    "others": [
-    "y U L' U' L U' L' U' L",
-    "y U2 L' U L U L' U' L"
+    "y U (L' U' L) U' (L' U' L)",
+    "y U2 (L' U L) U (L' U' L)"
    ],
    "multiSlot": [
     "y L U' L2 U' L"
@@ -243,7 +243,7 @@
    "id": "f2l-22",
    "name": "F2L 22",
    "group": "Cross colour on the side",
-   "alg": "U' R U R' U2 R U' R'",
+   "alg": "U' (R U R') U2 (R U' R')",
    "others": [
     "y U l' U L U' L' U' l"
    ]
@@ -255,16 +255,16 @@
    "alg": "U2 F2 U' F U' F' U2 F2",
    "alt": "y' U2 R2 U' R U' R' U2 R2",
    "others": [
-    "y U L' U L U' L' U' L"
+    "y U (L' U L) U' (L' U' L)"
    ]
   },
   {
    "id": "f2l-24",
    "name": "F2L 24",
    "group": "Cross colour on the side",
-   "alg": "U2 R U' R' U' R U R'",
+   "alg": "U2 (R U' R') U' (R U R')",
    "others": [
-    "U' R U R' U R U R'"
+    "U' (R U R') U (R U R')"
    ],
    "multiSlot": [
     "R' U R2 U R'"
@@ -277,7 +277,7 @@
    "alg": "F' U F2 R' F' R",
    "alt": "y' R' U R U2 R' U2 R",
    "others": [
-    "y L' U L U' L' U L"
+    "y (L' U L) U' (L' U L)"
    ]
   },
   {
@@ -286,7 +286,7 @@
    "group": "Corner in the slot",
    "alg": "F' U2 F R U2 R'",
    "others": [
-    "R U' R' U R U' R'"
+    "(R U' R') U (R U' R')"
    ]
   },
   {
@@ -296,7 +296,7 @@
    "alg": "F' U2 F U2 R U R'",
    "others": [
     "U2 R' F R F' R U R'",
-    "U' R' F' R U R U' R' F",
+    "U' (R' F' R) (U R U' R') F",
     "U2 F' R U R' U' R' F R",
     "y U2 L' U L F' L F L'",
     "y2 U2 M U L U' M' U L'",
@@ -324,8 +324,8 @@
    "group": "Corner in the slot",
    "alg": "U' F R' F' R2 U R'",
    "others": [
-    "R U R' U' R U R'",
-    "y M' U' L' U L U' L' U l",
+    "(R U R') U' (R U R')",
+    "y M' (U' L' U L) (U' L' U l)",
     "y L F' L' F L F' L' F"
    ]
   },
@@ -337,7 +337,7 @@
    "alt": "y' U2 R' U2 R U2 R' U' R",
    "others": [
     "y U L' U' L U L' U' L",
-    "U M' U R U' R' U R U' r'",
+    "U M' (U R U' R') (U R U' r')",
     "U R' F R F' R' F R F'"
    ]
   },
@@ -347,10 +347,10 @@
    "group": "Edge in the slot",
    "alg": "F' U F R U2 R'",
    "others": [
-    "U' R' F R F' R U' R'",
-    "R U' R' F' U2 F",
+    "U' (R' F R F') (R U' R')",
+    "(R U' R') (F' U2 F)",
     "y' R' U R' F R F' R",
-    "y' U' R' U2 R f R f'"
+    "y' U' (R' U2 R) (f R f')"
    ]
   },
   {
@@ -367,11 +367,11 @@
    "id": "f2l-33",
    "name": "F2L 33",
    "group": "Edge in the slot",
-   "alg": "U R U R' U2 R U R'",
+   "alg": "U (R U R') U2 (R U R')",
    "alt": "y' U R' U R U R' U2 R",
    "others": [
-    "U' R U2 R' U R U R'",
-    "y U L' U L U2 L' U L"
+    "U' (R U2 R') U (R U R')",
+    "y U (L' U L) U2 (L' U L)"
    ]
   },
   {
@@ -381,8 +381,8 @@
    "alg": "U' R U' R' U2 R U' R'",
    "alt": "y' U R' U2 R U' R' U' R",
    "others": [
-    "y U' L' U' L U2 L' U' L",
-    "y U L' U2 L U' L' U' L"
+    "y U' (L' U' L) U2 (L' U' L)",
+    "y U (L' U2 L) U' (L' U' L)"
    ]
   },
   {
@@ -391,31 +391,31 @@
    "group": "Edge in the slot",
    "alg": "U2 F' U' F U R U' R'",
    "others": [
-    "U F' U' F U' R U R'",
-    "y U2 L' U' L F' L F L'",
-    "y U' M' U' L' U l L' U L",
-    "y' U2 R' U' R y U R U' R'",
+    "U (F' U' F) U' (R U R')",
+    "y U2 (L' U' L) (F' L F L')",
+    "y U' M' (U' L' U l) (L' U L)",
+    "y' U2 (R' U' R) y U (R U' R')",
     "y' U2 R' U' M U' R U M'",
-    "y2 U f' L' f U' L U L'"
+    "y2 U (f' L' f) U' (L U L')"
    ],
    "multiSlot": [
-    "y U' L U F' L' F L' U L"
+    "y U' (L U F' L' F) (L' U L)"
    ]
   },
   {
    "id": "f2l-36",
    "name": "F2L 36",
    "group": "Edge in the slot",
-   "alg": "U2 R U R' F R' F' R",
+   "alg": "U2 (R U R') (F R' F' R)",
    "others": [
-    "y U' F U F' U L' U' L",
-    "U M' U R U' r' R U' R'",
-    "y2 U2 L U L' y' U' L' U L",
+    "y U' (F U F') U (L' U' L)",
+    "U M' (U R U' r') (R U' R')",
+    "y2 U2 (L U L') y' U' (L' U L)",
     "y2 U2 L U M U L' U' M'",
-    "y' U' f R f' U R' U' R"
+    "y' U' (f R f') U (R' U' R)"
    ],
    "multiSlot": [
-    "U R' U' F R F' R U' R'"
+    "U (R' U' F R F') (R U' R')"
    ]
   },
   {
@@ -424,8 +424,8 @@
    "group": "Pair in the slot",
    "alg": "R F U R U' R' F' U' R'",
    "others": [
-    "y L' U L F R U2 R' F'",
-    "F' L' U2 L F R U R'",
+    "y (L' U L) (F R U2' R' F')",
+    "(F' L' U2 L F) (R U R')",
     "y' R2 F' U' F U R U' R",
     "y2 L U' L U F U' F' L2"
    ]
@@ -436,8 +436,8 @@
    "group": "Pair in the slot",
    "alg": "R U F R U R' U' F' R'",
    "others": [
-    "R U' R' F' L' U2 L F",
-    "y F R U2 R' F' L' U' L",
+    "(R U' R') (F' L' U2 L F)",
+    "y (F R U2' R' F') (L' U' L)",
     "y2 L2 F U F' U' L' U L'",
     "y' R' U R' U' F' U F R2"
    ]
@@ -449,7 +449,7 @@
    "alg": "R2 U2 F R' F' U2 R' U2 R'",
    "alt": "y' R2 U2 R U R' U R U2 R",
    "others": [
-    "R U' R' U R U2 R' U R U' R'",
+    "(R U' R') U (R U2 R' U R U' R')",
     "y L' U L U L' U' L U2 L' U L"
    ]
   },
@@ -460,8 +460,8 @@
    "alg": "R2 U2 F R2 F' U2 R' U R'",
    "others": [
     "y L2 U2 F' L2 F U2 L U' L",
-    "y' f R' f' U R' U2 R U R' U2 R",
-    "y2 f' L f U' L U2 L' U' L U2 L'"
+    "y' (f R' f') U (R' U2' R) U (R' U2' R)",
+    "y2 (f' L f) U' (L U2 L') U' (L U2 L')"
    ]
   },
   {
@@ -472,7 +472,7 @@
    "alt": "y' R' U2 R' U' R U' R' U2 R2",
    "others": [
     "y L' U L U' L' U2 L U' L' U L",
-    "R U' R' U' R U R' U2 R U' R'"
+    "(R U' R') U' (R U R' U2 R U' R')"
    ]
   }
  ]

@@ -1,5 +1,5 @@
 {
- "packVersion": 1,
+ "packVersion": 2,
  "set": {
   "id": "f2l-advanced",
   "name": "Advanced"
@@ -23,14 +23,14 @@
    "id": "f2l-adv-3",
    "name": "Advanced 3",
    "group": "Edge in the wrong slot",
-   "alg": "U2 R' U R U' S R S'",
+   "alg": "U2 (R' U R) U' (S R S')",
    "setup": "S R' S' U R' U' R U2"
   },
   {
    "id": "f2l-adv-4",
    "name": "Advanced 4",
    "group": "Edge in the wrong slot",
-   "alg": "y U2 L U' L' U S' L' S",
+   "alg": "y U2 (L U' L') U (S' L' S)",
    "setup": "y S' L S U' L U L' U2 y'"
   },
   {
@@ -86,21 +86,21 @@
    "id": "f2l-adv-11",
    "name": "Advanced 11",
    "group": "Edge in the wrong slot",
-   "alg": "U' L' U' L R U' R'",
+   "alg": "U' (L' U' L) (R U' R')",
    "setup": "R U R' L' U L U"
   },
   {
    "id": "f2l-adv-12",
    "name": "Advanced 12",
    "group": "Edge in the wrong slot",
-   "alg": "U R U R' L' U L",
+   "alg": "U (R U R') (L' U L)",
    "setup": "L' U' L R U' R' U'"
   },
   {
    "id": "f2l-adv-13",
    "name": "Advanced 13",
    "group": "Edge in the wrong slot",
-   "alg": "F U2 F' R U R'",
+   "alg": "(F U2 F') (R U R')",
    "setup": "R U' R' F U2 F'",
    "alt": "y L U2 L' F U F'",
    "others": [
@@ -122,25 +122,25 @@
    "id": "f2l-adv-15",
    "name": "Advanced 15",
    "group": "Edge in the wrong slot",
-   "alg": "U R U R' L U L'",
+   "alg": "U (R U R') (L U L')",
    "setup": "L U' L' R U' R' U'"
   },
   {
    "id": "f2l-adv-16",
    "name": "Advanced 16",
    "group": "Edge in the wrong slot",
-   "alg": "y U' L' U' L R' U' R",
+   "alg": "y U' (L' U' L) (R' U' R)",
    "setup": "y R' U R L' U L U y'"
   },
   {
    "id": "f2l-adv-17",
    "name": "Advanced 17",
    "group": "Edge in the wrong slot",
-   "alg": "U2 F' L U L' F",
+   "alg": "U2 F' (L U L') F",
    "setup": "F' L U' L' F U2",
-   "alt": "y U2 L' B U B' L",
+   "alt": "y U2 L' (B U B') L",
    "others": [
-    "y' U2 R' F U F' R",
+    "y' U2 R' (F U F') R",
     "y2 U2 f' U L U' f"
    ]
   },
@@ -148,11 +148,11 @@
    "id": "f2l-adv-18",
    "name": "Advanced 18",
    "group": "Edge in the wrong slot",
-   "alg": "y U2 F R' U' R F'",
+   "alg": "y U2' F (R' U' R) F'",
    "setup": "y F R' U R F' U2 y'",
-   "alt": "y2 U2 L F' U' F L'",
+   "alt": "y2 U2' L (F' U' F) L'",
    "others": [
-    "U2 R B' U' B R'",
+    "U2' R (B' U' B) R'",
     "y' U2 f U' R' U f'"
    ]
   },
@@ -160,21 +160,21 @@
    "id": "f2l-adv-19",
    "name": "Advanced 19",
    "group": "Corner in the right slot",
-   "alg": "U R U' R' L' U L",
+   "alg": "U (R U' R') (L' U L)",
    "setup": "L' U' L R U R' U'"
   },
   {
    "id": "f2l-adv-20",
    "name": "Advanced 20",
    "group": "Corner in the right slot",
-   "alg": "y L' U2 L U' L U L'",
+   "alg": "y (L' U2 L) U' (L U L')",
    "setup": "y L U' L' U L' U2 L y'"
   },
   {
    "id": "f2l-adv-21",
    "name": "Advanced 21",
    "group": "Corner in the right slot",
-   "alg": "U2 R U' R' U L' U' L",
+   "alg": "U2 (R U' R') U (L' U' L)",
    "setup": "L' U L U' R U R' U2"
   },
   {
@@ -188,17 +188,17 @@
    "id": "f2l-adv-23",
    "name": "Advanced 23",
    "group": "Corner in the right slot",
-   "alg": "R U R' U' L' U L",
+   "alg": "(R U R') U' (L' U L)",
    "setup": "L' U' L U R U' R'",
-   "alt": "y S' L S"
+   "alt": "y (S' L S)"
   },
   {
    "id": "f2l-adv-24",
    "name": "Advanced 24",
    "group": "Corner in the right slot",
-   "alg": "U' R U R' F U F'",
+   "alg": "U' (R U R') (F U F')",
    "setup": "F U' F' R U' R' U",
-   "alt": "y U' F U F' L U L'"
+   "alt": "y U' (F U F') (L U L')"
   },
   {
    "id": "f2l-adv-25",
@@ -211,14 +211,14 @@
    "id": "f2l-adv-26",
    "name": "Advanced 26",
    "group": "Corner in the left slot",
-   "alg": "R U2 R' U R' U' R",
+   "alg": "(R U2 R') U (R' U' R)",
    "setup": "R' U R U' R U2 R'"
   },
   {
    "id": "f2l-adv-27",
    "name": "Advanced 27",
    "group": "Corner in the left slot",
-   "alg": "F R' F' R U R' U2 R",
+   "alg": "(F R' F' R) U (R' U2 R)",
    "setup": "R' U2 R U' R' F R F'"
   },
   {
@@ -232,59 +232,59 @@
    "id": "f2l-adv-29",
    "name": "Advanced 29",
    "group": "Corner in the left slot",
-   "alg": "S R' S'",
+   "alg": "(S R' S')",
    "setup": "S R S'",
-   "alt": "y L' U' L U R U' R'"
+   "alt": "y (L' U' L) U (R U' R')"
   },
   {
    "id": "f2l-adv-30",
    "name": "Advanced 30",
    "group": "Corner in the left slot",
-   "alg": "y U F U' F' R' U' R",
+   "alg": "y U (F U' F') (R' U' R)",
    "setup": "y R' U R F U F' U' y'"
   },
   {
    "id": "f2l-adv-31",
    "name": "Advanced 31",
    "group": "Corner in the opposite slot",
-   "alg": "U' F' U F L U2 L'",
+   "alg": "U' (F' U F) (L U2 L')",
    "setup": "L U2 L' F' U' F U",
-   "alt": "y U' L' U L U' f R' f'"
+   "alt": "y U' (L' U L) U' (f R' f')"
   },
   {
    "id": "f2l-adv-32",
    "name": "Advanced 32",
    "group": "Corner in the opposite slot",
-   "alg": "U R U' R' U f' L f",
+   "alg": "U (R U' R') U (f' L f)",
    "setup": "f' L' f U' R U R' U'",
-   "alt": "y U F U' F' R' U2 R"
+   "alt": "y U (F U' F') (R' U2 R)"
   },
   {
    "id": "f2l-adv-33",
    "name": "Advanced 33",
    "group": "Corner in the opposite slot",
-   "alg": "R U' R' L U2 L'",
+   "alg": "(R U' R') (L U2 L')",
    "setup": "L U2 L' R U R'"
   },
   {
    "id": "f2l-adv-34",
    "name": "Advanced 34",
    "group": "Corner in the opposite slot",
-   "alg": "R U R' f' L f",
+   "alg": "(R U R') (f' L f)",
    "setup": "f' L' f R U' R'"
   },
   {
    "id": "f2l-adv-35",
    "name": "Advanced 35",
    "group": "Corner in the opposite slot",
-   "alg": "R U' R' U L U L'",
+   "alg": "(R U' R') U (L U L')",
    "setup": "L U' L' U' R U R'"
   },
   {
    "id": "f2l-adv-36",
    "name": "Advanced 36",
    "group": "Corner in the opposite slot",
-   "alg": "R' F R F' L U2 L'",
+   "alg": "(R' F R F') (L U2 L')",
    "setup": "L U2 L' F R' F' R"
   }
  ]

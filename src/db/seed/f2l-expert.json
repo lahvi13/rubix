@@ -1,5 +1,5 @@
 {
- "packVersion": 1,
+ "packVersion": 2,
  "set": {
   "id": "f2l-expert",
   "name": "Expert"
@@ -67,7 +67,7 @@
    "id": "f2l-exp-6",
    "name": "Expert 6",
    "group": "Corner is solved",
-   "alg": "y L' u' L U L' u L",
+   "alg": "y (L' u' L) U (L' u L)",
    "setup": "y L' u' L U' L' u L y'",
    "alt": "y' R' u' R U R' u R"
   },
@@ -89,9 +89,9 @@
    "id": "f2l-exp-9",
    "name": "Expert 9",
    "group": "Pair in the wrong slot",
-   "alg": "R L U2 L' R'",
+   "alg": "R (L U2 L') R'",
    "setup": "R L U2 L' R'",
-   "alt": "y L' R' U2 R L"
+   "alt": "y L' (R' U2 R) L"
   },
   {
    "id": "f2l-exp-10",
@@ -100,7 +100,7 @@
    "alg": "L F2 L' F U' F",
    "setup": "F' U F' L F2 L'",
    "others": [
-    "L F' L' U' F U' R U R'"
+    "(L F' L' U' F) U' (R U R')"
    ]
   },
   {
@@ -117,7 +117,7 @@
    "id": "f2l-exp-12",
    "name": "Expert 12",
    "group": "Flipped edge, corner next door",
-   "alg": "R' F R U' F' R U' R'",
+   "alg": "(R' F R U' F') (R U' R')",
    "setup": "R U R' F U R' F' R"
   },
   {
@@ -131,7 +131,7 @@
    "id": "f2l-exp-14",
    "name": "Expert 14",
    "group": "Flipped edge, corner next door",
-   "alg": "L' U L M' U R U' r' R U' R'",
+   "alg": "(L' U L) (M' U R U' r') (R U' R')",
    "setup": "R U R' r U R' U' M L' U' L"
   },
   {
@@ -145,7 +145,7 @@
    "id": "f2l-exp-16",
    "name": "Expert 16",
    "group": "Other easy cases",
-   "alg": "R' F R U' F' U R U' R'",
+   "alg": "(R' F R U' F') U (R U' R')",
    "setup": "R U R' U' F U R' F' R"
   },
   {
