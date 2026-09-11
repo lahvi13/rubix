@@ -298,7 +298,11 @@ function buildTrigger(
     name: packTrigger.name,
     moves: packTrigger.moves,
     source: 'pack',
-    colour: existing?.colour ?? packTrigger.colour,
+    // The pack's, not what is already there. A trigger somebody has recoloured
+    // is theirs from that moment — updateTrigger says so — and this function is
+    // never reached for one of those, so the colour in the row can only ever be
+    // a pack colour from an older version.
+    colour: packTrigger.colour,
     isEnabled: existing?.isEnabled ?? 1,
     createdAt: existing?.createdAt ?? now(),
     updatedAt: now(),

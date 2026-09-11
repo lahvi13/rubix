@@ -2905,7 +2905,14 @@ button[disabled] {
 }
 
 .alg__part--group .alg__moves {
-  box-shadow: inset 0 0 0 1px var(--border);
+  /*
+   * Taken from the text rather than from --border, which is the line between
+   * two panels and on the dark theme is all but the same colour as the panel
+   * it sits on: the bracket was there and could not be seen. Mixed down from
+   * whatever the text is, it lightens for a dark background and darkens for a
+   * light one without either being written down.
+   */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 42%, transparent);
   border-radius: var(--radius-sm);
   padding: var(--space-1) var(--space-3);
   -webkit-box-decoration-break: clone;
