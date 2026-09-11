@@ -12,6 +12,22 @@ import {
   setActiveAlgorithm,
   updateUserAlgorithm,
 } from './alg-repository';
+import { PACKS } from '../seed/packs';
+
+/** How many algorithms a case ships with, counted from the pack itself. */
+function packAlgorithms(caseId: string): number {
+  for (const pack of PACKS) {
+    const entry = pack.cases.find((candidate) => candidate.id === caseId);
+    if (entry === undefined) continue;
+    return (
+      1 +
+      (entry.alt === undefined ? 0 : 1) +
+      (entry.others?.length ?? 0) +
+      (entry.multiSlot?.length ?? 0)
+    );
+  }
+  throw new Error(`no such case: ${caseId}`);
+}
 
 describe('alg repository', () => {
   beforeEach(async () => {
@@ -65,7 +81,9 @@ describe('alg repository', () => {
     const mine = await addUserAlgorithm('pll-t', "R U R' U' R' F R2 U' R' U' R U R' F'");
 
     expect((await getActiveAlgorithm('pll-t'))?.id).toBe(mine.id);
-    expect(await listAlgorithms('pll-t')).toHaveLength(2);
+    // One more than the case shipped with, however many that is: the packs
+    // gain algorithms and the point here is that nothing was replaced.
+    expect(await listAlgorithms('pll-t')).toHaveLength(packAlgorithms('pll-t') + 1);
   });
 
   it('keeps exactly one variant active when switching back', async () => {

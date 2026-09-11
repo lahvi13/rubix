@@ -1,114 +1,232 @@
 {
-  "packVersion": 1,
-  "set": { "id": "pll", "name": "PLL" },
-  "cases": [
-    { "id": "pll-aa", "name": "Aa", "group": "Corners only", "alg": "R' F R' B2 R F' R' B2 R2" },
-    { "id": "pll-ab", "name": "Ab", "group": "Corners only", "alg": "R2 B2 R F R' B2 R F' R" },
-    {
-      "id": "pll-e",
-      "name": "E",
-      "group": "Corners only",
-      "alg": "R2 U R' U' y R U R' U' R U R' U' R U R' y' R U' R2"
-    },
-    {
-      "id": "pll-ua",
-      "name": "Ua",
-      "group": "Edges only",
-      "alg": "M2 U M U2 M' U M2",
-      "others": ["R U' R U R U R U' R' U' R2"]
-    },
-    {
-      "id": "pll-ub",
-      "name": "Ub",
-      "group": "Edges only",
-      "alg": "M2 U' M U2 M' U' M2",
-      "others": ["R2 U R U R' U' R' U' R' U R'"]
-    },
-    { "id": "pll-z", "name": "Z", "group": "Edges only", "alg": "M2 U M2 U M' U2 M2 U2 M' U2" },
-    { "id": "pll-h", "name": "H", "group": "Edges only", "alg": "M2 U M2 U2 M2 U M2" },
-    {
-      "id": "pll-t",
-      "name": "T",
-      "group": "Adjacent corner swap",
-      "alg": "R U R' U' R' F R2 U' R' U' R U R' F'"
-    },
-    {
-      "id": "pll-f",
-      "name": "F",
-      "group": "Adjacent corner swap",
-      "alg": "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R"
-    },
-    {
-      "id": "pll-ja",
-      "name": "Ja",
-      "group": "Adjacent corner swap",
-      "alg": "L' U' L F L' U' L U L F' L2 U L U"
-    },
-    {
-      "id": "pll-jb",
-      "name": "Jb",
-      "group": "Adjacent corner swap",
-      "alg": "R U R' F' R U R' U' R' F R2 U' R' U'"
-    },
-    {
-      "id": "pll-ra",
-      "name": "Ra",
-      "group": "Adjacent corner swap",
-      "alg": "R U' R' U' R U R D R' U' R D' R' U2 R'"
-    },
-    {
-      "id": "pll-rb",
-      "name": "Rb",
-      "group": "Adjacent corner swap",
-      "alg": "R' U2 R U2 R' F R U R' U' R' F' R2 U'"
-    },
-    {
-      "id": "pll-ga",
-      "name": "Ga",
-      "group": "Adjacent corner swap",
-      "alg": "R2 U R' U R' U' R U' R2 U' D R' U R D'"
-    },
-    {
-      "id": "pll-gb",
-      "name": "Gb",
-      "group": "Adjacent corner swap",
-      "alg": "R' U' R U D' R2 U R' U R U' R U' R2 D"
-    },
-    {
-      "id": "pll-gc",
-      "name": "Gc",
-      "group": "Adjacent corner swap",
-      "alg": "R2 U' R U' R U R' U R2 U D' R U' R' D"
-    },
-    {
-      "id": "pll-gd",
-      "name": "Gd",
-      "group": "Adjacent corner swap",
-      "alg": "R U R' U' D R2 U' R U' R' U R' U R2 D'"
-    },
-    {
-      "id": "pll-v",
-      "name": "V",
-      "group": "Diagonal corner swap",
-      "alg": "R' U R' U' R D' R' D R' U D' R2 U' R2 D R2"
-    },
-    {
-      "id": "pll-y",
-      "name": "Y",
-      "group": "Diagonal corner swap",
-      "alg": "F R U' R' U' R U R' F' R U R' U' R' F R F'"
-    },
-    {
-      "id": "pll-na",
-      "name": "Na",
-      "group": "Diagonal corner swap",
-      "alg": "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'"
-    },
-    {
-      "id": "pll-nb",
-      "name": "Nb",
-      "group": "Diagonal corner swap",
-      "alg": "R' U R U' R' F' U' F R U R' F R' F' R U' R"
-    }
-  ]
+ "packVersion": 2,
+ "set": {
+  "id": "pll",
+  "name": "PLL"
+ },
+ "cases": [
+  {
+   "id": "pll-aa",
+   "name": "Aa",
+   "group": "Corners only",
+   "alg": "R' F R' B2 R F' R' B2 R2",
+   "others": [
+    "y' x L2 D2 (L' U' L) D2 (L' U L')",
+    "y2 x' (L' U L') D2 (L U' L') D2 L2",
+    "x (R' U R') D2 (R U' R') D2 R2",
+    "y x' R2 D2 (R' U' R) D2 (R' U R')"
+   ]
+  },
+  {
+   "id": "pll-ab",
+   "name": "Ab",
+   "group": "Corners only",
+   "alg": "R2 B2 R F R' B2 R F' R",
+   "others": [
+    "y' x (L U' L) D2 (L' U L) D2 L2",
+    "y2 x' L2 D2 (L U L') D2 (L U' L)",
+    "x R2 D2 (R U R') D2 (R U' R)",
+    "y x' (R U' R) D2 (R' U R) D2 R2"
+   ]
+  },
+  {
+   "id": "pll-e",
+   "name": "E",
+   "group": "Corners only",
+   "alg": "R2 U R' U' y R U R' U' R U R' U' R U R' y' R U' R2",
+   "others": [
+    "y x' (L' U L D') (L' U' L D) (L' U' L D') (L' U L D)",
+    "y x' (R U' R' D) (R U R' D') (R U R' D) (R U' R' D')",
+    "y R2 D R' U R D' R' U R D R' U' R D' R' U' R'",
+    "y R U R D R' U R D' R' U' R D R' U' R D' R2",
+    "y R' U' R' D' R U' R' D R U R' D' R U R' D R2",
+    "y R2 D' R U' R' D R U' R' D' R U R' D R U R"
+   ]
+  },
+  {
+   "id": "pll-ua",
+   "name": "Ua",
+   "group": "Edges only",
+   "alg": "M2 U M U2 M' U M2",
+   "others": [
+    "R U' R U R U R U' R' U' R2",
+    "y2 M2 U M' U2 M U M2",
+    "U2 R U R' U R' U' R2 U' R' U R' U R",
+    "y' R2 U' S' U2 S U' R2"
+   ]
+  },
+  {
+   "id": "pll-ub",
+   "name": "Ub",
+   "group": "Edges only",
+   "alg": "M2 U' M U2 M' U' M2",
+   "others": [
+    "R2 U R U R' U' R' U' R' U R'",
+    "y2 M2 U' M' U2 M U' M2",
+    "y2 R’ U R’ U’ R3 U’ R’ U R U R2",
+    "y' R2 U’ S R2 S’ R2 U R2"
+   ]
+  },
+  {
+   "id": "pll-z",
+   "name": "Z",
+   "group": "Edges only",
+   "alg": "M2 U M2 U M' U2 M2 U2 M' U2",
+   "others": [
+    "U' M U M2 U M2 U M U2 M2",
+    "U' M' U M2 U M2 U M' U2 M2",
+    "U' M2 U2 M U M2 U M2 U M"
+   ]
+  },
+  {
+   "id": "pll-h",
+   "name": "H",
+   "group": "Edges only",
+   "alg": "M2 U M2 U2 M2 U M2"
+  },
+  {
+   "id": "pll-t",
+   "name": "T",
+   "group": "Adjacent corner swap",
+   "alg": "R U R' U' R' F R2 U' R' U' R U R' F'",
+   "others": [
+    "y2 U2 R U R' U' R' F R2 U' R' U F' L' U L"
+   ]
+  },
+  {
+   "id": "pll-f",
+   "name": "F",
+   "group": "Adjacent corner swap",
+   "alg": "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",
+   "others": [
+    "y' U R2 F R F' R' U' F' U F R2 U R' U' R",
+    "U' R' U R U' R2 F' U' F U R F R' F' R2"
+   ]
+  },
+  {
+   "id": "pll-ja",
+   "name": "Ja",
+   "group": "Adjacent corner swap",
+   "alg": "L' U' L F L' U' L U L F' L2 U L U",
+   "others": [
+    "y2 x (R2 F R F') R U2 (r' U r) U2",
+    "y2 U' R' U L' U2 R U' R' U2 R L"
+   ]
+  },
+  {
+   "id": "pll-jb",
+   "name": "Jb",
+   "group": "Adjacent corner swap",
+   "alg": "R U R' F' R U R' U' R' F R2 U' R' U'",
+   "others": [
+    "y U' (R U R' F') (R U R' U') R' F R2 U' R'",
+    "U R U R2' F' R U R U' R' F R U' R'"
+   ]
+  },
+  {
+   "id": "pll-ra",
+   "name": "Ra",
+   "group": "Adjacent corner swap",
+   "alg": "R U' R' U' R U R D R' U' R D' R' U2 R'",
+   "others": [
+    "R U R' F' R U2 R' U2 R' F R U R U2 R'"
+   ]
+  },
+  {
+   "id": "pll-rb",
+   "name": "Rb",
+   "group": "Adjacent corner swap",
+   "alg": "R' U2 R U2 R' F R U R' U' R' F' R2 U'",
+   "others": [
+    "U R2 F R (U R U' R') F' R U2 R' U2 R",
+    "y U' R' U2 R U2 R' F R U R' U' R' F' R2",
+    "y U' R' U2 R' D' R U' R' D R U R U' R' U' R"
+   ]
+  },
+  {
+   "id": "pll-ga",
+   "name": "Ga",
+   "group": "Adjacent corner swap",
+   "alg": "R2 U R' U R' U' R U' R2 U' D R' U R D'",
+   "others": [
+    "y U' R2 u R' U R' U' R u' R2 F' U F"
+   ]
+  },
+  {
+   "id": "pll-gb",
+   "name": "Gb",
+   "group": "Adjacent corner swap",
+   "alg": "R' U' R U D' R2 U R' U R U' R U' R2 D",
+   "others": [
+    "y' U R' d' F R2 u R' U R U' R u' R2",
+    "U F' U' F R2 u R' U R U' R u' R2"
+   ]
+  },
+  {
+   "id": "pll-gc",
+   "name": "Gc",
+   "group": "Adjacent corner swap",
+   "alg": "R2 U' R U' R U R' U R2 U D' R U' R' D",
+   "others": [
+    "y' U R2' u' R U' R U R' u R2 f R' f'",
+    "y U R2 F2 R U2 R U2 R' F (R U R' U') R' F R2",
+    "y2 L2' U' L U' L U L' U L2' D' U L U' L' D"
+   ]
+  },
+  {
+   "id": "pll-gd",
+   "name": "Gd",
+   "group": "Adjacent corner swap",
+   "alg": "R U R' U' D R2 U' R U' R' U R' U R2 D'",
+   "others": [
+    "y' U' L U L' B2 D' R U' R' U R' u R2"
+   ]
+  },
+  {
+   "id": "pll-v",
+   "name": "V",
+   "group": "Diagonal corner swap",
+   "alg": "R' U R' U' R D' R' D R' U D' R2 U' R2 D R2",
+   "others": [
+    "y R U' (R U R') D R D' R (U' D) R2 U R2 D' R2",
+    "y F' U F' U' R' F' R2 U' R' U R' F R F",
+    "y R2 D R2' U' R2 U D' R' D R' D' R U' R' U R'",
+    "R' U R U' R' f' U' R U2 R' U' R U' R' f R",
+    "R' U R' U' y R' F' R2 U' R' U R' F R F",
+    "R' U R' U' R D' R' D R' U D' R2 U' R2' D R2",
+    "R2' D' R2 U R2' U' D R D' R D R' U R U' R",
+    "R' U R U' x' U R U2' R' U' R U' R' U2 R U R' U'",
+    "z D' R2 D R2 U R' D' R U' R U R' D R U'"
+   ]
+  },
+  {
+   "id": "pll-y",
+   "name": "Y",
+   "group": "Diagonal corner swap",
+   "alg": "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+   "others": [
+    "F R' F R2 U' R' U' R U R' F' R U R' U' F'"
+   ]
+  },
+  {
+   "id": "pll-na",
+   "name": "Na",
+   "group": "Diagonal corner swap",
+   "alg": "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'",
+   "others": [
+    "R F U' R' U R U F' R2' F' R U R U' R' F"
+   ]
+  },
+  {
+   "id": "pll-nb",
+   "name": "Nb",
+   "group": "Diagonal corner swap",
+   "alg": "R' U R U' R' F' U' F R U R' F R' F' R U' R",
+   "others": [
+    "r' D' F (r U' r') F' D (r2 U r' U') (r' F r F')",
+    "R' U R U' R' F' U' F R U R' U' R U' f R f'",
+    "U D' R2 D R D' R2 U R' D U2 R' U2 R U2 R"
+   ]
+  }
+ ]
 }

@@ -91,7 +91,7 @@ describe('TrainerScreen', () => {
     // Both are built in, and the list has to say which is which: one is the
     // pack's answer, the other a different solution offered beside it.
     expect(within(detail).getByText('built in')).toBeInTheDocument();
-    expect(within(detail).getByText('built in · another way')).toBeInTheDocument();
+    expect(within(detail).getAllByText('built in · another way').length).toBeGreaterThan(0);
 
     // It is not hidden by the setting that hides the rotation variants, and
     // picking it makes it the one that gets drilled.
@@ -113,7 +113,10 @@ describe('TrainerScreen', () => {
     await user.type(within(detail).getByLabelText(/Your own algorithm/), 'R U Q');
 
     expect(within(detail).getByRole('button', { name: 'Add' })).toBeDisabled();
-    expect(await db.algorithms.where('caseId').equals('pll-t').count()).toBe(1);
+    // Nothing was written: the case still has only what it shipped with.
+    const stored = await db.algorithms.where('caseId').equals('pll-t').toArray();
+    expect(stored.length).toBeGreaterThan(0);
+    expect(stored.filter((algorithm) => algorithm.source === 'user')).toHaveLength(0);
   });
 
   it('offers the short route through OLL and PLL, and only those', async () => {
