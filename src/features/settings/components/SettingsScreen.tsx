@@ -44,7 +44,12 @@ const CLOCK_FACE_LABELS: Record<ClockFace, string> = {
   digital: strings.settings.clockFaceDigital,
 };
 
-const HOLD_THRESHOLDS = [0, 200, 300, 500] as const;
+/**
+ * Three, not four: a row of them has to fit a phone beside its own label, and
+ * nobody can feel the difference between 200 ms and 300 ms anyway. 500 is
+ * roughly what a stackmat asks for.
+ */
+const HOLD_THRESHOLDS: readonly number[] = [0, 300, 500];
 
 export function SettingsScreen() {
   const [theme, setTheme] = useSetting('ui.theme');
@@ -65,6 +70,12 @@ export function SettingsScreen() {
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
 
   const previewState = previewCube();
+  // A threshold that is no longer offered — 200 ms was, and a backup from
+  // another device can carry anything — stays chosen, and stays visible, until
+  // somebody picks again.
+  const thresholds = HOLD_THRESHOLDS.includes(holdThresholdMs)
+    ? HOLD_THRESHOLDS
+    : [...HOLD_THRESHOLDS, holdThresholdMs].sort((a, b) => a - b);
 
   return (
     <main className="screen screen--scroll">
@@ -152,6 +163,18 @@ export function SettingsScreen() {
           onChange={setTwistyMode}
         />
         <p className="data-section__hint">{strings.settings.twistyModeHint}</p>
+
+        {/* Not about the trainer, whatever the guide points at: this is what
+            the menu has in it, which is the first thing anybody sees. */}
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={showLearn}
+            onChange={(event) => setShowLearn(event.target.checked)}
+          />
+          {strings.settings.showLearn}
+        </label>
+        <p className="data-section__hint">{strings.settings.showLearnHint}</p>
       </section>
 
       <section className="data-section">
@@ -160,7 +183,7 @@ export function SettingsScreen() {
         <div className="settings-row">
           <span>{strings.settings.holdThreshold}</span>
           <div className="settings-row__choices">
-            {HOLD_THRESHOLDS.map((value) => (
+            {thresholds.map((value) => (
               <button
                 key={value}
                 type="button"
@@ -243,16 +266,6 @@ export function SettingsScreen() {
           {strings.settings.showRotationAlgs}
         </label>
         <p className="data-section__hint">{strings.settings.showRotationAlgsHint}</p>
-
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={showLearn}
-            onChange={(event) => setShowLearn(event.target.checked)}
-          />
-          {strings.settings.showLearn}
-        </label>
-        <p className="data-section__hint">{strings.settings.showLearnHint}</p>
       </section>
 
     </main>
