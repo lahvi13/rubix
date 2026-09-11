@@ -28,6 +28,36 @@ async function shownScramble(): Promise<string> {
   return line.textContent?.trim() ?? '';
 }
 
+/**
+ * A cross drill with its answer on show, drawn on a scramble that has more
+ * than one shortest solution.
+ *
+ * Which cross the drill hands out is not the test's to choose — it is drawn
+ * where the reader's is drawn — and close to a third of them have a single
+ * shortest solution and so nothing to list beside it. Rather than dictating a
+ * scramble nobody was given, this draws again until it gets one of the rest.
+ */
+async function shownWithAlternatives(
+  user: ReturnType<typeof userEvent.setup>,
+): Promise<{ scramble: string; alternatives: string[] }> {
+  for (let draw = 0; draw < 12; draw += 1) {
+    const view = render(<DrillScreen />);
+    const scramble = await shownScramble();
+
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+    await screen.findByRole('heading', { name: /Shortest cross/ });
+
+    const alternatives = screen
+      .queryAllByRole('listitem')
+      .map((node) => node.textContent?.trim() ?? '');
+    if (alternatives.length > 0) return { scramble, alternatives };
+
+    view.unmount();
+  }
+
+  throw new Error('twelve crosses drawn, every one with a single shortest solution');
+}
+
 /** Hold past the threshold, release to start, press again to stop. */
 async function attempt(user: ReturnType<typeof userEvent.setup>, solveMs: number): Promise<void> {
   let clock = 0;
@@ -391,14 +421,8 @@ describe('DrillScreen', () => {
     const user = userEvent.setup();
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
-    render(<DrillScreen />);
-    const scramble = await shownScramble();
+    const { scramble, alternatives } = await shownWithAlternatives(user);
 
-    await user.click(screen.getByRole('button', { name: 'Show me' }));
-    await screen.findByRole('heading', { name: /Shortest cross/ });
-
-    const alternatives = screen.getAllByRole('listitem').map((node) => node.textContent ?? '');
-    expect(alternatives.length).toBeGreaterThan(0);
     for (const alternative of alternatives) {
       expect(isCrossSolvedAfter(scramble, '', alternative)).toBe(true);
     }
@@ -408,11 +432,7 @@ describe('DrillScreen', () => {
     const user = userEvent.setup();
     await setSetting('trainer.drillSetId', 'cross');
     await setSetting('timer.inspectionEnabled', false);
-    render(<DrillScreen />);
-    const scramble = await shownScramble();
-
-    await user.click(screen.getByRole('button', { name: 'Show me' }));
-    await screen.findByRole('heading', { name: /Shortest cross/ });
+    const { scramble, alternatives } = await shownWithAlternatives(user);
 
     const shown = () =>
       screen.getByRole('heading', { name: /Shortest cross/ }).parentElement
@@ -421,7 +441,7 @@ describe('DrillScreen', () => {
       screen.getAllByRole('listitem').map((node) => node.textContent?.trim() ?? '');
 
     const first = shown();
-    const [alternative] = listed();
+    const [alternative] = alternatives;
     expect(alternative).toBeDefined();
     if (alternative === undefined) return;
 
