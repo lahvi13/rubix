@@ -1,0 +1,6 @@
+# Every file under /assets/ carries a content hash in its name, so a given URL
+# never changes: let browsers keep it for a year without asking again. Nothing
+# else is listed — index.html and sw.js must always be revalidated, or an
+# update would never reach anyone.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
