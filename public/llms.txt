@@ -1,0 +1,19 @@
+# Rubix
+
+> A free timer and trainer for the 3×3 cube that runs in the browser and works offline once opened. No account and no ads; solves are kept only on the device, and the one copy elsewhere is a backup file the user exports.
+
+Rubix is for anybody between their first solved cube and a fast average. It covers only the 3×3 for now, and its interface is in English. It installs as an app from the browser: a button on Android, and Share → Add to Home Screen on iPhone and iPad.
+
+## Features
+
+- [Timer](https://rubix.lahvi.cz/#/timer): WCA random-state scrambles with a picture of the scrambled cube, hold-to-start, optional 15-second inspection with automatic +2 and DNF, and solves timed phase by phase (cross, F2L, OLL, PLL).
+- [Learn](https://rubix.lahvi.cz/#/learn): a beginner's method in seven steps, each with the one algorithm it needs and every case one tap away.
+- [Trainer](https://rubix.lahvi.cz/#/trainer): the F2L, OLL and PLL cases, including two-look OLL and PLL, each playable on an animated cube.
+- [Drill](https://rubix.lahvi.cz/#/drill): practise chosen cases against the clock, or only recognising them.
+- [Stats](https://rubix.lahvi.cz/#/stats): averages (ao5 to ao100), personal bests, trend, practice streak and time distribution.
+- [Data](https://rubix.lahvi.cz/#/data): JSON backup and restore, CSV export, and import from csTimer.
+
+## About
+
+- [About](https://rubix.lahvi.cz/#/about): what the app is, how to install it, where the data lives, the version, and contact.
+- Most of the algorithms come from J Perm ([jperm.net](https://jperm.net/)); the beginner method follows [badmephisto.com](http://badmephisto.com); scrambles and the 3D cube are [cubing.js](https://js.cubing.net/cubing/).
