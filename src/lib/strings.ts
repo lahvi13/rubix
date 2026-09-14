@@ -299,10 +299,11 @@ export const strings = {
   },
   learn: {
     intro:
-      'Seven steps from a scrambled cube to a solved one. Nothing here is quick, and none of it is wasted: a faster method replaces the last four steps and keeps the first three. The pictures stand the cube the way the trainer does — the cross goes on the bottom, and the layer left over is the one on top.',
+      'Seven steps from a scrambled cube to a solved one. A faster method later replaces the last four and keeps the first three. The pictures hold the cube the way the trainer does: the cross on the bottom, the last layer on top.',
+    explanations: 'Explanations',
+    stepsNav: 'Steps',
     hide: 'Hide this guide from the menu',
-    hideHint:
-      'It is here for a first cube. Once you can get through one without reading, this takes it out of the menu; Settings puts it back, and nothing it points at moves.',
+    hideHint: 'Once you can solve a cube without reading, take this out of the menu. Settings puts it back.',
     source: 'The method and the order of its steps follow the beginner guide at',
     sourceLink: 'badmephisto.com',
     loading: 'Loading the cases…',
@@ -312,31 +313,31 @@ export const strings = {
     steps: {
       cross: {
         title: 'Cross',
-        text: 'Four edges of the bottom colour, each one under the centre it matches. There is nothing to learn by heart here and no algorithm that helps: bring an edge to the top layer, turn the top until it is over its own centre, and drop it in with two turns of that face. It is worth doing slowly and wrongly a few dozen times before going on — every later step assumes the cross is already there.',
+        text: 'Four edges of the bottom colour, each under the centre it matches. No algorithm helps here: bring an edge to the top layer, turn the top until it is over its own centre, and drop it in with two turns of that face. Get it easy before going on — every later step assumes the cross.',
       },
       corners: {
         title: 'Bottom layer corners',
-        text: 'A corner belongs between the three centres whose colours it wears. Turn the top until the corner sits directly above its gap, then use the algorithm that matches which way the cross colour is pointing. A corner already down in the bottom layer but the wrong way round is dealt with the same way: any of these three lifts it back to the top, and then it goes in properly.',
+        text: 'A corner belongs between the three centres whose colours it wears. Turn the top until it sits above its gap, then use the algorithm for the way the cross colour points. A corner already in the bottom layer but twisted comes back up with any of the three.',
       },
       middle: {
         title: 'Middle layer edges',
-        text: 'Any top-layer edge without the last-layer colour on it belongs in the middle. Turn the top until that edge is on the right with its side colour matching the centre below it; the colour facing up then says which slot it goes into — the one in front of you, or the one behind. Both algorithms are R and U and nothing else, so the cube never has to leave your hands. An edge already in the middle the wrong way round is sent back up by either one, and goes in properly on the second try.',
+        text: 'A top-layer edge without the top colour on it belongs in the middle. Turn the top until it is on the right, its side colour over the matching centre; the colour facing up says which slot it goes into — front or back. An edge in the middle the wrong way round comes back up with either algorithm.',
       },
       edgeOrientation: {
         title: 'Last layer cross',
-        text: 'Now the top face, edges first. Only the top colour matters here; where the pieces belong is a later problem. A line becomes a cross with the first algorithm, an L with the second, and a dot — no edge showing the top colour at all — with the first and then the second. The letter f is F with the middle slice turning along with the front face, which is the only difference between the two.',
+        text: 'The top face, edges first — only the top colour matters, not where the pieces go. A line becomes a cross with the first algorithm, an L with the second, and a dot with the first and then the second. Lower-case f turns the middle slice along with F.',
       },
       cornerOrientation: {
         title: 'Last layer face',
-        text: 'The whole top face in one colour, with one algorithm and a little patience. Hold the cube as one of the three pictures below shows, run it, and look again — every case is one of the three, and none of them takes more than three goes. The seven cases behind the button each finish it in a single go, for when you want them.',
+        text: 'The whole top face with one algorithm. Hold the cube as one of the three pictures shows, run it, and look again; none takes more than three goes. The button has the seven cases, each done in a single go.',
       },
       cornerPermutation: {
         title: 'Corners home',
-        text: 'The face is done and the pieces are still in the wrong places; corners go first. Look along each side for headlights — two corners of the same colour with a stranger between them. This algorithm leaves every edge exactly where it is, so nothing it does can spoil the step after it.',
+        text: 'The face is done; now the pieces go home, corners first. Look along each side for headlights — two corners showing the same colour. The algorithm leaves every edge where it is.',
       },
       edgePermutation: {
         title: 'Edges home',
-        text: 'Only the edges are left, and one algorithm does all of them. Turn the top until one side is a solid block of colour: that side is finished, and the other three edges go round. It moves no corner at all, so what you have just done stays done.',
+        text: 'Only the edges are left. Turn the top until one side is a solid block of colour: that side is finished, and the other three edges go round. No corner moves.',
       },
     },
     holds: {

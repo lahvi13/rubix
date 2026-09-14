@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { CROSS_SET_ID } from '../../../db/seed/packs';
 import { caseTitle } from '../../../domain/alg/case-name';
@@ -21,7 +21,11 @@ import {
   type Diagram,
   type TrainerCase,
 } from '../../trainer';
+import { useCurrentStep } from '../hooks/use-current-step';
 import { LEARN_STEPS, holdState, type LearnStep } from '../steps';
+
+const anchorOf = (step: LearnStep) => `learn-${step.id}`;
+const STEP_IDS = LEARN_STEPS.map(anchorOf);
 
 /** Which case sheet is open, and which set and group it belongs to. */
 interface OpenCase {
@@ -48,10 +52,13 @@ export function LearnScreen() {
   const [openCase, setOpenCase] = useState<OpenCase | null>(null);
   const [showNotation, setShowNotation] = useState(false);
   const [showLearn, setShowLearn] = useSetting('ui.showLearn');
+  const [isExplained, setExplained] = useSetting('ui.learnExplanations');
+  const nav = useRef<HTMLElement>(null);
+  const [current, jumpTo] = useCurrentStep(STEP_IDS, nav);
 
   return (
     <main className="screen screen--scroll learn">
-      <p className="learn__intro">{strings.learn.intro}</p>
+      {isExplained ? <p className="learn__intro">{strings.learn.intro}</p> : null}
 
       <div className="learn__tools">
         <button
@@ -62,13 +69,50 @@ export function LearnScreen() {
         >
           {strings.trainer.notation}
         </button>
+        <button
+          type="button"
+          className={isExplained ? 'is-active' : ''}
+          aria-pressed={isExplained}
+          onClick={() => setExplained(!isExplained)}
+        >
+          {strings.learn.explanations}
+        </button>
       </div>
 
       {showNotation ? <NotationReference skin={skin} /> : null}
 
-      {/* Offered before the guide rather than after it: somebody who does not
-          need this page should be able to say so and never see it again, and
-          the way back is one line further down. */}
+      {/* Numbers, not names: seven names do not fit across a phone, and the
+          numbers are the ones every step is headed with. */}
+      <nav ref={nav} className="learn__nav" aria-label={strings.learn.stepsNav}>
+        {LEARN_STEPS.map((step, index) => (
+          <button
+            key={step.id}
+            type="button"
+            className={index === current ? 'is-active' : ''}
+            aria-label={step.title}
+            aria-current={index === current ? 'true' : undefined}
+            onClick={() => jumpTo(index)}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </nav>
+
+      {LEARN_STEPS.map((step, index) => (
+        <StepSection
+          key={step.id}
+          id={anchorOf(step)}
+          number={index + 1}
+          step={step}
+          isExplained={isExplained}
+          skin={skin}
+          triggers={definitions}
+          onOpen={(id, setId, group) => setOpenCase({ id, setId, group })}
+        />
+      ))}
+
+      {/* After the guide, not before it: the top of the page belongs to the
+          steps, and Settings has the same switch for whoever looks there. */}
       <div className="learn__dismiss">
         <label className="toggle">
           <input
@@ -78,19 +122,10 @@ export function LearnScreen() {
           />
           {strings.learn.hide}
         </label>
-        <p className="learn__caption learn__caption--left">{strings.learn.hideHint}</p>
+        {isExplained ? (
+          <p className="learn__caption learn__caption--left">{strings.learn.hideHint}</p>
+        ) : null}
       </div>
-
-      {LEARN_STEPS.map((step, index) => (
-        <StepSection
-          key={step.id}
-          number={index + 1}
-          step={step}
-          skin={skin}
-          triggers={definitions}
-          onOpen={(id, setId, group) => setOpenCase({ id, setId, group })}
-        />
-      ))}
 
       <p className="learn__credit">
         {strings.learn.source}{' '}
@@ -113,14 +148,17 @@ export function LearnScreen() {
 }
 
 interface StepSectionProps {
+  id: string;
   number: number;
   step: LearnStep;
+  /** Whether the step says what it is about, or only shows it. */
+  isExplained: boolean;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
   onOpen: (caseId: string, setId: string, group: string) => void;
 }
 
-function StepSection({ number, step, skin, triggers, onOpen }: StepSectionProps) {
+function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: StepSectionProps) {
   const groups = useSetCases(step.setId);
   // Two steps keep their quicker version in another set altogether, so which
   // level is on show decides what is drawn.
@@ -143,14 +181,14 @@ function StepSection({ number, step, skin, triggers, onOpen }: StepSectionProps)
   const isLoading = groups === undefined || (step.advanced !== null && advancedGroups === undefined);
 
   return (
-    <section className="learn__step">
+    <section id={id} className="learn__step">
       <h2 className="learn__title">
         <span className="learn__number" aria-hidden="true">
           {number}
         </span>
         {step.title}
       </h2>
-      <p className="learn__text">{step.text}</p>
+      {isExplained ? <p className="learn__text">{step.text}</p> : null}
 
       {isCross ? (
         <figure className="learn__figure">
@@ -162,7 +200,9 @@ function StepSection({ number, step, skin, triggers, onOpen }: StepSectionProps)
             skin={skin}
             label={null}
           />
-          <figcaption className="learn__caption">{strings.learn.crossCaption}</figcaption>
+          {isExplained ? (
+            <figcaption className="learn__caption">{strings.learn.crossCaption}</figcaption>
+          ) : null}
         </figure>
       ) : isLoading ? (
         <p className="learn__caption">{strings.learn.loading}</p>

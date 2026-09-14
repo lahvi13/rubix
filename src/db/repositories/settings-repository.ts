@@ -37,6 +37,12 @@ export interface SettingValues {
    * one more thing between them and the timer.
    */
   'ui.showLearn': boolean;
+  /**
+   * Whether the guide explains its steps or only shows them. The prose is for
+   * the first cube; after that the page is looked up, and the words stand
+   * between the reader and the algorithm they came back for.
+   */
+  'ui.learnExplanations': boolean;
   /** Which route through the last layer the trainer opens on. */
   'trainer.twoLookDefault': boolean;
   /** Print the algorithm on every card, not just in the case sheet. */
@@ -139,6 +145,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.twistyMode': '3D',
   'ui.cubeSkin': 'classic',
   'ui.showLearn': true,
+  'ui.learnExplanations': true,
   'trainer.twoLookDefault': true,
   'trainer.showAlgs': true,
   'trainer.showRotationAlgs': true,

@@ -120,6 +120,45 @@ describe('LearnScreen', () => {
     expect(screen.getByText(strings.trainer.notationHint)).toBeInTheDocument();
   });
 
+  it('folds the explanations away and keeps what the steps show', async () => {
+    const user = userEvent.setup();
+    render(<LearnScreen />);
+    await settled();
+
+    const text = LEARN_STEPS[0]?.text ?? '';
+    expect(screen.getByText(text)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: strings.learn.explanations }));
+
+    await waitFor(() => {
+      expect(screen.queryByText(text)).not.toBeInTheDocument();
+    });
+    expect(screen.queryByText(strings.learn.intro)).not.toBeInTheDocument();
+    // How to hold the cube for the repeats is the page as a cheat sheet, not
+    // an explanation of it.
+    expect(screen.getByText(strings.learn.holds.noneOriented)).toBeInTheDocument();
+    expect(await getSetting('ui.learnExplanations')).toBe(false);
+  });
+
+  it('goes to a step from the row of numbers', async () => {
+    const user = userEvent.setup();
+    const scrolled: Element[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this);
+    };
+    render(<LearnScreen />);
+    await settled();
+
+    const nav = screen.getByRole('navigation', { name: strings.learn.stepsNav });
+    await user.click(within(nav).getByRole('button', { name: 'Corners home' }));
+
+    expect(scrolled).toEqual([sectionFor('6Corners home')]);
+    expect(within(nav).getByRole('button', { name: 'Corners home' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+  });
+
   it('lets a reader who is past it take the page out of the menu', async () => {
     const user = userEvent.setup();
     render(<LearnScreen />);

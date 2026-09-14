@@ -4514,6 +4514,7 @@ input[type='radio'] {
 /* The beginner's guide */
 
 .learn {
+  --learn-nav-height: calc(2.5rem + var(--space-3) * 2);
   padding-bottom: var(--space-7);
 }
 
@@ -4529,10 +4530,45 @@ input[type='radio'] {
   color: var(--muted);
 }
 
+/* On a phone the cube and the moves need the width more than the card needs
+   its margin. */
 .learn__step {
   background: var(--surface);
   border-radius: var(--radius-lg);
-  padding: var(--space-6);
+  padding: var(--space-5);
+  scroll-margin-top: calc(var(--header-height) + var(--learn-nav-height) + var(--space-4));
+}
+
+@media (min-width: 34rem) {
+  .learn__step {
+    padding: var(--space-6);
+  }
+}
+
+/*
+ * The steps by number, pinned under the header: the guide is looked up far
+ * more often than it is read, and what is looked up is one step. Seven equal
+ * slots fit a phone without scrolling sideways. The pinned row paints its
+ * padding, never a margin, or the steps sliding under would show through.
+ */
+.learn__nav {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  display: flex;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: 0 auto var(--space-4);
+  padding-block: var(--space-3);
+  background: var(--bg);
+}
+
+.learn__nav button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  font-variant-numeric: tabular-nums;
 }
 
 /* The number is the step; the words are what it is called. */
