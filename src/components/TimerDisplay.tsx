@@ -1,6 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { TimerState } from '../domain/timer/timer-machine';
 import { INSPECTION_LIMIT_MS } from '../domain/solve/penalty';
+import { useHasKeyboard } from '../hooks/use-has-keyboard';
 import { formatInspection, formatMsParts } from '../lib/format';
 import { strings } from '../lib/strings';
 
@@ -71,6 +72,7 @@ export function TimerDisplay({
   touchHandlers,
 }: TimerDisplayProps) {
   const isInspecting = inspectionMs !== null;
+  const hasKeyboard = useHasKeyboard();
   const modifier = armed || finishArmed ? 'armed' : state.status;
 
   return (
@@ -114,7 +116,7 @@ export function TimerDisplay({
         ) : locked ? (
           strings.timer.locked
         ) : (
-          hintFor(state, armed, finishArmed, byPhase, inspectionEnabled)
+          hintFor(state, armed, finishArmed, byPhase, inspectionEnabled, hasKeyboard)
         )}
       </p>
     </div>
@@ -173,14 +175,16 @@ function hintFor(
   finishArmed: boolean,
   byPhase: boolean,
   inspectionEnabled: boolean,
+  hasKeyboard: boolean,
 ): string {
+  const gesture = hasKeyboard ? strings.timer.keys : strings.timer;
   if (armed) return strings.timer.releaseToStart;
   if (finishArmed) return strings.timer.releaseToFinish;
-  if (state.status === 'running') return byPhase ? strings.timer.tapToEndPhase : '';
-  if (state.status === 'inspecting') return strings.timer.holdToStartInspection;
+  if (state.status === 'running') return byPhase ? gesture.tapToEndPhase : '';
+  if (state.status === 'inspecting') return gesture.holdToStartInspection;
   if (state.status === 'holding') {
-    if (state.inspectionStartedAt !== null) return strings.timer.holdToStartInspection;
-    return inspectionEnabled ? strings.timer.releaseToInspect : strings.timer.holdToStart;
+    if (state.inspectionStartedAt !== null) return gesture.holdToStartInspection;
+    return inspectionEnabled ? strings.timer.releaseToInspect : gesture.holdToStart;
   }
-  return inspectionEnabled ? strings.timer.inspectionHint : strings.timer.holdToStart;
+  return inspectionEnabled ? gesture.inspectionHint : gesture.holdToStart;
 }

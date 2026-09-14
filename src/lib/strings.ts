@@ -23,6 +23,13 @@ export const strings = {
     releaseToStart: 'Release to start',
     releaseToInspect: 'Release to inspect',
     inspectionHint: 'Tap to inspect',
+    /* The same hints where the timer runs on the space bar. */
+    keys: {
+      holdToStart: 'Hold Space to start',
+      holdToStartInspection: 'Hold Space, then release to start',
+      inspectionHint: 'Press Space to inspect',
+      tapToEndPhase: 'Space ends the phase · hold to finish',
+    },
     /* Said where the hint lives, because the clock refusing to start is
        otherwise indistinguishable from the clock being broken. */
     locked: 'Answer shown — Next case to go again',
@@ -102,6 +109,7 @@ export const strings = {
     confirmDelete: 'Delete?',
     confirmDeleteLabel: 'Delete this solve — tap again to confirm',
     empty: 'No solves yet. Hold to start.',
+    emptyKeys: 'No solves yet. Hold Space to start.',
     autoPenalty: 'from inspection',
   },
   undo: {
@@ -421,6 +429,7 @@ export const strings = {
     poolHint: 'Tick the cases to drill. Nothing ticked means the whole set.',
     poolDone: 'Done',
     caseHint: 'Perform it, then hold to start.',
+    caseHintKeys: 'Perform it, then hold Space to start.',
     /*
      * The one instruction that has to be right, because the drill's whole
      * shape rests on it: what these moves are performed on is a cube whose
@@ -431,6 +440,8 @@ export const strings = {
      */
     crossHint:
       'Hold the cube cross face down, perform it, and hold to start. The cross never leaves the bottom.',
+    crossHintKeys:
+      'Hold the cube cross face down, perform it, and hold Space to start. The cross never leaves the bottom.',
     /* Shown once, where somebody arriving at the drill will read it. */
     crossFirst:
       'Solve the cross first — after that every scramble carries on from where the last one left you, so there is never a cube to rebuild.',

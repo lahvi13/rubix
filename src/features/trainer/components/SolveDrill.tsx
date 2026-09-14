@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { ChevronIcon } from '../../../components/Icons';
 import { TimerDisplay } from '../../../components/TimerDisplay';
+import { useHasKeyboard } from '../../../hooks/use-has-keyboard';
 import { formatAlg, parseAlg, type Move } from '../../../domain/cube/notation';
 import { CROSS_HOLDS, crossSolutions, warmCrossSolver } from '../../../domain/cube/cross-solver';
 import { CROSS_CASE_ID } from '../../../db/seed/packs';
@@ -218,6 +219,7 @@ interface ScrambleLineProps {
  * loading and a case whose setup does not parse.
  */
 function ScrambleLine({ drill, current }: ScrambleLineProps) {
+  const hasKeyboard = useHasKeyboard();
   if (drill.cases === undefined) return <p className="drill__hint">{strings.trainer.loading}</p>;
   if (current === null) return <p className="drill__hint">{strings.drill.empty}</p>;
   if (current.scramble === '') {
@@ -228,7 +230,13 @@ function ScrambleLine({ drill, current }: ScrambleLineProps) {
     <>
       <p className="drill__moves">{current.scramble}</p>
       <p className="drill__hint">
-        {drill.isCross ? strings.drill.crossHint : strings.drill.caseHint}
+        {drill.isCross
+          ? hasKeyboard
+            ? strings.drill.crossHintKeys
+            : strings.drill.crossHint
+          : hasKeyboard
+            ? strings.drill.caseHintKeys
+            : strings.drill.caseHint}
       </p>
     </>
   );

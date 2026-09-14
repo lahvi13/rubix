@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
+import { useHasKeyboard } from '../../../hooks/use-has-keyboard';
 import type { PullHandlers } from '../../../hooks/use-pull';
 import { SolvePhases } from '../../splits';
 import { finalMs } from '../../../domain/solve/final-time';
@@ -88,6 +89,7 @@ export const SolveList = memo(function SolveList({
    * down, because that is the only time a drag on it is a gesture.
    */
   const list = useRef<HTMLOListElement>(null);
+  const hasKeyboard = useHasKeyboard();
   const isDown = pull !== undefined;
   useEffect(() => {
     if (isDown && list.current !== null) list.current.scrollTop = 0;
@@ -96,7 +98,9 @@ export const SolveList = memo(function SolveList({
   const phaseKeys = phases.map((phase) => phase.key);
 
   if (solves.length === 0) {
-    return <p className="solves__empty">{strings.solve.empty}</p>;
+    return (
+      <p className="solves__empty">{hasKeyboard ? strings.solve.emptyKeys : strings.solve.empty}</p>
+    );
   }
 
   // Read once for the whole list: every row is asking the same question.
