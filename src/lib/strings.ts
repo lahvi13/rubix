@@ -51,6 +51,11 @@ export const strings = {
     recordPhases: (phases: string) => `Best ${phases}`,
     /** Between the names of phases that were all best on the same solve. */
     recordPhaseJoin: ' · ',
+    /*
+     * Beside a beaten goal, in place of the records' star: a goal within reach
+     * is beaten often, and it must not be mistaken for the rarer thing.
+     */
+    goalMark: '✓',
   },
   splits: {
     bestPhase: (phase: string) => `Best ${phase} of this session`,

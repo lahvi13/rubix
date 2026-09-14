@@ -56,13 +56,22 @@ export function standardDeviation(finals: readonly (number | null)[]): number | 
 }
 
 /**
- * Fraction 0..1 of solves faster than a goal; null for no solves. Strictly
- * faster, because "sub 1:30" is the goal and a 1:30.00 is not sub it. A DNF
- * is a solve that did not make it, so it stays in the count.
+ * Fraction 0..1 of solves faster than a goal; null for no solves. A DNF is a
+ * solve that did not make it, so it stays in the count.
  */
 export function shareUnder(finals: readonly (number | null)[], goalMs: number): number | null {
   if (finals.length === 0) return null;
-  return finals.filter((value) => value !== null && value < goalMs).length / finals.length;
+  return finals.filter((value) => beatsGoal(value, goalMs)).length / finals.length;
+}
+
+/**
+ * Whether one final time beat a goal. Strictly faster, because "sub 1:30" is
+ * the goal and a 1:30.00 is not sub it; a DNF never does. The one rule behind
+ * both the share on the stats screen and the note under a finished time, so
+ * the two can never disagree about the same solve.
+ */
+export function beatsGoal(finalMs: number | null, goalMs: number): boolean {
+  return finalMs !== null && finalMs < goalMs;
 }
 
 /** Fraction 0..1 of solves carrying the given penalty; null for no solves. */

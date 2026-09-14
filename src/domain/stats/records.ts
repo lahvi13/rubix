@@ -10,6 +10,7 @@
 
 import type { Solve } from '../../db/types';
 import { finalMs, isDnf } from '../solve/final-time';
+import { beatsGoal } from './distribution';
 import { bestPhasesIn, type Bests } from './phases';
 
 export type ResultRecord =
@@ -47,4 +48,29 @@ export function resultRecord(
 
   const phases = bestPhasesIn(solve, phaseKeys, bests);
   return phases.length === 0 ? null : { kind: 'phase', phases };
+}
+
+/** A record, or failing one, the goal the time beat. */
+export type ResultNote = ResultRecord | { kind: 'goal'; goalMs: number };
+
+/**
+ * What to say under a finished time: its record if it holds one, and only
+ * otherwise that it beat the goal. A goal within reach is beaten often — that
+ * is what chasing one looks like — so it must never talk over the rarer thing,
+ * and a personal best that is also under the goal is a personal best.
+ *
+ * `goalMs` is null while no goal is set. Judged on the final time, by the rule
+ * the stats screen counts with (`beatsGoal`), so a +2 can cost it and a DNF
+ * never has it.
+ */
+export function resultNote(
+  solve: Solve,
+  phaseKeys: readonly string[],
+  bests: Bests,
+  globalPbMs: number | null,
+  goalMs: number | null,
+): ResultNote | null {
+  const record = resultRecord(solve, phaseKeys, bests, globalPbMs);
+  if (record !== null) return record;
+  return goalMs !== null && beatsGoal(finalMs(solve), goalMs) ? { kind: 'goal', goalMs } : null;
 }

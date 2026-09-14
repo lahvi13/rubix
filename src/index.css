@@ -786,7 +786,7 @@ button[disabled] {
  * like the rest of the app's records — the star, and the two colours the
  * lists already use for them — so that it is recognised rather than read.
  */
-.timer__record {
+.timer__note {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -794,8 +794,18 @@ button[disabled] {
 }
 
 /* The one record above a session's own; the lists give it the same colour. */
-.timer__record.is-pb {
+.timer__note.is-pb {
   color: var(--record);
+}
+
+/*
+ * A beaten goal, said in the same voice but without the records' colour. A
+ * goal within reach is beaten on a good share of solves — that is what
+ * chasing one looks like — and a line that lit up like a record every other
+ * time would stop meaning anything, the records along with it.
+ */
+.timer__note.is-goal {
+  color: var(--text);
 }
 
 .timer--holding .timer__value {

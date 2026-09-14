@@ -2,8 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import type { MethodPhase, Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { bestPhasesIn } from '../../../domain/stats/phases';
-import { resultRecord, type ResultRecord } from '../../../domain/stats/records';
+import { resultNote, type ResultNote } from '../../../domain/stats/records';
 import { now } from '../../../lib/clock';
+import { formatGoal } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { reportError } from '../../../lib/errors';
 import { SolveDetailSheet } from '../../history';
@@ -20,24 +21,34 @@ import { useSetting } from '../../../hooks/use-setting';
 import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
 import { ScramblePanel } from './ScramblePanel';
 import { SolveList } from './SolveList';
-import { TimerDisplay, type RecordNote } from '../../../components/TimerDisplay';
+import { TimerDisplay, type TimerNote } from '../../../components/TimerDisplay';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
 const EMPTY_PHASES: never[] = [];
 
 /**
- * A record put into words. The phase tier is the only one that needs the
- * method: `resultRecord` deals in phase keys, and nobody wants to read one.
+ * A note put into words. The phase tier is the only one that needs the
+ * method: `resultNote` deals in phase keys, and nobody wants to read one.
  */
-function noteFor(record: ResultRecord, phases: readonly MethodPhase[]): RecordNote {
-  if (record.kind === 'pb') return { tier: 'pb', label: strings.timer.recordPb };
-  if (record.kind === 'session') return { tier: 'session', label: strings.timer.recordSession };
-  const named = record.phases.map(
-    (key) => phases.find((phase) => phase.key === key)?.label ?? key,
-  );
+function noteFor(note: ResultNote, phases: readonly MethodPhase[]): TimerNote {
+  const star = strings.history.star;
+  if (note.kind === 'pb') return { tier: 'pb', mark: star, label: strings.timer.recordPb };
+  if (note.kind === 'session') {
+    return { tier: 'session', mark: star, label: strings.timer.recordSession };
+  }
+  if (note.kind === 'goal') {
+    // Named the way the stats screen names it, so the goal reads as one thing.
+    return {
+      tier: 'goal',
+      mark: strings.timer.goalMark,
+      label: strings.stats.goalName(formatGoal(note.goalMs)),
+    };
+  }
+  const named = note.phases.map((key) => phases.find((phase) => phase.key === key)?.label ?? key);
   return {
     tier: 'phase',
+    mark: star,
     label: strings.timer.recordPhases(named.join(strings.timer.recordPhaseJoin)),
   };
 }
@@ -47,6 +58,8 @@ export function TimerScreen() {
   const scramble = useScramble(PUZZLE);
   const { solves, changePenalty, remove } = useRecentSolves(session?.id ?? null);
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
+  // Set on the stats screen; 0 there means no goal.
+  const [goalSetting] = useSetting('stats.goalMs');
   const methodPhases = usePhases(session?.methodId ?? null);
 
   // Empty means the plain timer. The phases come from the session's method,
@@ -165,17 +178,12 @@ export function TimerScreen() {
 
   // What that time turned out to be worth. Read from records that already
   // count it, so a solve that has just become the best IS the best.
-  const record = useMemo(
-    () =>
-      shownSolve === null
-        ? null
-        : resultRecord(shownSolve, listedPhaseKeys, records.bests, records.globalPbMs),
-    [shownSolve, listedPhaseKeys, records],
-  );
-  const recordNote = useMemo(
-    () => (record === null ? null : noteFor(record, methodPhases)),
-    [record, methodPhases],
-  );
+  const goalMs = goalSetting > 0 ? goalSetting : null;
+  const timerNote = useMemo(() => {
+    if (shownSolve === null) return null;
+    const note = resultNote(shownSolve, listedPhaseKeys, records.bests, records.globalPbMs, goalMs);
+    return note === null ? null : noteFor(note, methodPhases);
+  }, [shownSolve, listedPhaseKeys, records, goalMs, methodPhases]);
   // The same ring the lists draw round a phase that is the fastest it has
   // been, on the bar of the solve that just happened.
   const shownBestPhases = useMemo(
@@ -263,7 +271,7 @@ export function TimerScreen() {
           finishArmed={timer.finishArmed}
           byPhase={timer.phaseIndex !== null}
           resultShown={resultVisible}
-          record={recordNote}
+          note={timerNote}
           inspectionCues={timer.inspectionCues}
           inspectionEnabled={timer.inspectionEnabled}
           touchHandlers={timer.touchHandlers}

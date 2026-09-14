@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Penalty } from '../../db/types';
 import {
+  beatsGoal,
   histogram,
   histogramPosition,
   penaltyRate,
@@ -174,6 +175,17 @@ describe('shareUnder', () => {
     ['keeps a DNF in the count as a miss', [80_000, null], 90_000, 0.5],
   ])('%s', (_, finals, goalMs, expected) => {
     expect(shareUnder(finals, goalMs)).toBe(expected);
+  });
+});
+
+describe('beatsGoal', () => {
+  it.each<[string, number | null, number, boolean]>([
+    ['a time under the goal beats it', 89_990, 90_000, true],
+    ['a time equal to the goal does not — sub 1:30 is not 1:30', 90_000, 90_000, false],
+    ['a time over the goal does not', 95_000, 90_000, false],
+    ['a DNF never does', null, 90_000, false],
+  ])('%s', (_, finalMs, goalMs, expected) => {
+    expect(beatsGoal(finalMs, goalMs)).toBe(expected);
   });
 });
 

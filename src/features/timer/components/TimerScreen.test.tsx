@@ -604,6 +604,33 @@ describe('TimerScreen', () => {
     }
   });
 
+  it('says a finished time beat the goal, but never over a record', async () => {
+    await setSetting('stats.goalMs', 15_000);
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await findScramble();
+
+    // Under the goal as well, but a personal best is the thing that happened.
+    await keyboardSolve(user, tick, 12_000);
+    expect(await screen.findByText('Personal best')).toBeInTheDocument();
+    expect(screen.queryByText(/^Sub /)).not.toBeInTheDocument();
+
+    await user.click(await screen.findByRole('button', { name: 'Next scramble' }));
+    await keyboardSolve(user, tick, 14_000);
+    expect(await screen.findByText('Sub 15')).toBeInTheDocument();
+
+    await user.click(await screen.findByRole('button', { name: 'Next scramble' }));
+    await keyboardSolve(user, tick, 16_000);
+    await waitFor(async () => {
+      expect(await db.solves.count()).toBe(3);
+    });
+    expect(screen.queryByText('Sub 15')).not.toBeInTheDocument();
+  });
+
   it('creates the default session on first render', async () => {
     render(<TimerScreen />);
 

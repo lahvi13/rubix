@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Penalty, Solve, Split } from '../../db/types';
 import { bestsOf } from './phases';
-import { resultRecord } from './records';
+import { resultNote, resultRecord } from './records';
 
 const PHASES = ['cross', 'f2l', 'oll', 'pll'];
 
@@ -73,5 +73,43 @@ describe('resultRecord', () => {
 
   it('has nothing to say about a session of one DNF', () => {
     expect(recordOf([solve(9000, [], 'dnf')], null)).toBeNull();
+  });
+});
+
+/** The note for the last solve of a session, with a goal of 15.00 unless told otherwise. */
+function noteOf(session: Solve[], globalPbMs: number | null, goalMs: number | null = 15_000) {
+  const landed = session[session.length - 1];
+  if (landed === undefined) throw new Error('a session with nothing in it has nothing to land');
+  return resultNote(landed, PHASES, bestsOf(session, PHASES), globalPbMs, goalMs);
+}
+
+describe('resultNote', () => {
+  it('names the goal when the time beat it and holds no record', () => {
+    expect(noteOf([solve(12_000), solve(14_000)], 12_000)).toEqual({ kind: 'goal', goalMs: 15_000 });
+  });
+
+  it.each<[string, Solve[], number | null, string]>([
+    ['a personal best', [solve(14_000), solve(12_000)], 12_000, 'pb'],
+    ['a session best', [solve(14_000), solve(13_000)], 9000, 'session'],
+    [
+      'a best phase',
+      [solve(12_000, [2000, 6000, 9000]), solve(14_000, [1500, 7000, 10_000])],
+      9000,
+      'phase',
+    ],
+  ])('lets %s speak over a beaten goal', (_, session, globalPbMs, kind) => {
+    expect(noteOf(session, globalPbMs)?.kind).toBe(kind);
+  });
+
+  it.each<[string, Solve, string | null]>([
+    ['a time equal to the goal has not beaten it', solve(15_000), null],
+    ['a +2 is judged on the time with the two seconds in it', solve(14_000, [], 'plus2'), null],
+    ['a DNF never beats it', solve(14_000, [], 'dnf'), null],
+  ])('%s', (_, landed, expected) => {
+    expect(noteOf([solve(10_000), landed], 10_000)?.kind ?? null).toBe(expected);
+  });
+
+  it('says nothing about a goal that is not set', () => {
+    expect(noteOf([solve(12_000), solve(14_000)], 12_000, null)).toBeNull();
   });
 });
