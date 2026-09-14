@@ -215,10 +215,10 @@ describe('HistoryScreen', () => {
     await waitFor(async () => {
       expect((await db.solves.get(solve.id))?.penalty).toBe('plus2');
     });
-    // Shown twice: in the row and in the drawer header. They are two live
-    // queries, so one lands a tick after the other.
+    // Shown twice, marked as a +2: in the row and in the drawer header. They
+    // are two live queries, so one lands a tick after the other.
     await waitFor(() => {
-      expect(screen.getAllByText('14.34')).toHaveLength(2);
+      expect(screen.getAllByText('14.34+')).toHaveLength(2);
     });
   });
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
-import { formatClock, formatDate, formatTime } from '../../../lib/format';
+import { formatClock, formatDate, formatResult } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 
 interface AttemptActionsProps {
@@ -84,7 +84,7 @@ export function AttemptList({
       <ul className="attempts">
         {attempts.slice(0, limit).map((solve) => (
           <li key={solve.id} className="attempts__row">
-            <span className="attempts__time">{formatTime(finalMs(solve))}</span>
+            <span className="attempts__time">{formatResult(finalMs(solve), solve.penalty)}</span>
             <span className="attempts__when">
               {formatDate(solve.createdAt)} {formatClock(solve.createdAt)}
             </span>

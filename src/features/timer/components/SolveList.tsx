@@ -6,7 +6,7 @@ import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { togglePenalty } from '../../../domain/solve/penalty';
 import { now } from '../../../lib/clock';
-import { formatTime, formatWhen } from '../../../lib/format';
+import { formatResult, formatWhen } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 
 interface SolveListProps {
@@ -206,7 +206,7 @@ function SolveTime({ solve, bests, globalPbMs }: SolveTimeProps) {
         isPb ? 'solves__time is-best is-record' : isBest ? 'solves__time is-best' : 'solves__time'
       }
     >
-      {formatTime(resultMs)}
+      {formatResult(resultMs, solve.penalty)}
       {isPb || isBest ? (
         <span
           className={isPb ? 'history__best is-record' : 'history__best'}

@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   formatAxisMs,
   formatClock,
+  formatDate,
+  formatDay,
   formatInspection,
   formatIsoDate,
   formatMs,
   formatMsParts,
+  formatResult,
   formatTime,
   formatWhen,
 } from './format';
@@ -62,6 +65,41 @@ describe('formatMsParts', () => {
     [61050, '1:01', '05'],
   ])('splits %i into %s and %s', (ms, seconds, hundredths) => {
     expect(formatMsParts(ms)).toEqual({ seconds, hundredths });
+  });
+});
+
+describe('formatResult', () => {
+  it.each([
+    [12_340, 'none', '12.34'],
+    [14_340, 'plus2', '14.34+'],
+    [62_000, 'plus2', '1:02.00+'],
+    [null, 'dnf', 'DNF'],
+    // A DNF has no time to mark, whatever else the solve carried.
+    [null, 'plus2', 'DNF'],
+  ] as const)('%s with %s is %s', (ms, penalty, expected) => {
+    expect(formatResult(ms, penalty)).toBe(expected);
+  });
+});
+
+describe('formatDay', () => {
+  const noon = new Date(2026, 8, 14, 12, 0).getTime();
+
+  it.each([
+    ['this morning', new Date(2026, 8, 14, 0, 5), 'Today'],
+    ['late last night', new Date(2026, 8, 13, 23, 55), 'Yesterday'],
+    ['the start of yesterday', new Date(2026, 8, 13, 0, 0), 'Yesterday'],
+  ])('%s', (_, when, expected) => {
+    expect(formatDay(when.getTime(), noon)).toBe(expected);
+  });
+
+  it('dates anything older', () => {
+    const before = new Date(2026, 8, 12, 23, 59).getTime();
+    expect(formatDay(before, noon)).toBe(formatDate(before));
+  });
+
+  it('counts yesterday across the start of a month', () => {
+    const first = new Date(2026, 9, 1, 8, 0).getTime();
+    expect(formatDay(new Date(2026, 8, 30, 20, 0).getTime(), first)).toBe('Yesterday');
   });
 });
 

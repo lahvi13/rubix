@@ -1,5 +1,6 @@
 import { Sheet } from '../../../components/Sheet';
-import { formatDate } from '../../../lib/format';
+import { now } from '../../../lib/clock';
+import { formatDay } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import type { SolveDay } from '../hooks/use-solve-days';
 
@@ -51,7 +52,7 @@ export function DayPicker({ days, selected, onPick, onClose }: DayPickerProps) {
                 onClose();
               }}
             >
-              <span className="day__name">{formatDate(day.at)}</span>
+              <span className="day__name">{formatDay(day.at, now())}</span>
               <span className="day__count">{strings.sessions.solveCount(day.count)}</span>
             </button>
           </li>

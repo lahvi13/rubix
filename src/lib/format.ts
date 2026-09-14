@@ -1,3 +1,6 @@
+import type { Penalty } from '../db/types';
+import { strings } from './strings';
+
 const MS_PER_SECOND = 1000;
 const MS_PER_MINUTE = 60 * MS_PER_SECOND;
 
@@ -49,6 +52,16 @@ export function formatMsParts(ms: number): { seconds: string; hundredths: string
 /** null means DNF everywhere in the app. */
 export function formatTime(ms: number | null): string {
   return ms === null ? 'DNF' : formatMs(ms);
+}
+
+/**
+ * A solve's result as a list writes it: the time with its +2 already in, and
+ * a mark saying so — the csTimer way. Without the mark a +2 is a clean solve
+ * two seconds slower, which is exactly what it is not.
+ */
+export function formatResult(resultMs: number | null, penalty: Penalty): string {
+  if (resultMs === null) return formatTime(null);
+  return penalty === 'plus2' ? `${formatMs(resultMs)}+` : formatMs(resultMs);
 }
 
 /**
@@ -106,6 +119,23 @@ function isSameDay(a: Date, b: Date): boolean {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
   );
+}
+
+/**
+ * A day as a heading names it. The two a reader looks for most are said in
+ * words, since "14. 9. 2026" has to be worked out against the calendar before
+ * it means this morning.
+ */
+export function formatDay(timestamp: number, at: number): string {
+  const when = new Date(timestamp);
+  const now = new Date(at);
+  // The day before by the calendar, not 24 hours back: a clock change makes
+  // one day in the year 23 hours long and another 25.
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+
+  if (isSameDay(when, now)) return strings.history.today;
+  if (isSameDay(when, yesterday)) return strings.history.yesterday;
+  return formatDate(timestamp);
 }
 
 export function formatDateTime(timestamp: number): string {

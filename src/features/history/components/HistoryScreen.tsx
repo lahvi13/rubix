@@ -4,7 +4,7 @@ import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { now } from '../../../lib/clock';
-import { dayKey, formatDate, formatTime, formatWhen } from '../../../lib/format';
+import { dayKey, formatClock, formatDay, formatResult } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { SolvePhases, usePhases } from '../../splits';
@@ -26,6 +26,7 @@ export function HistoryScreen() {
   const history = useHistory(session?.id ?? null, PUZZLE, phaseKeys);
   const tags = useTags();
   const days = useSolveDays(session?.id ?? null);
+  const at = now();
   const [openId, setOpenId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [isMoveOpen, setMoveOpen] = useState(false);
@@ -114,7 +115,7 @@ export function HistoryScreen() {
           >
             {history.filters.day === undefined
               ? strings.history.days
-              : formatDate(days.find((day) => day.key === history.filters.day)?.at ?? 0)}
+              : formatDay(days.find((day) => day.key === history.filters.day)?.at ?? 0, at)}
           </button>
         ) : null}
         {tags.tags.map((tag) => (
@@ -192,7 +193,7 @@ export function HistoryScreen() {
             return (
               <Fragment key={solve.id}>
                 {startsDay ? (
-                  <li className="history__day">{formatDate(solve.createdAt)}</li>
+                  <li className="history__day">{formatDay(solve.createdAt, at)}</li>
                 ) : null}
                 <HistoryRow
                   solve={solve}
@@ -278,7 +279,6 @@ function HistoryRow({
   onToggleSelected,
   onOpen,
 }: HistoryRowProps) {
-  const at = now();
   const resultMs = finalMs(solve);
   // A DNF has no result, so it cannot be the best one however small its rawMs.
   const isBest = resultMs !== null && resultMs === bests.totalMs;
@@ -307,7 +307,7 @@ function HistoryRow({
             isPb ? 'history__time is-best is-record' : isBest ? 'history__time is-best' : 'history__time'
           }
         >
-          {formatTime(resultMs)}
+          {formatResult(resultMs, solve.penalty)}
           {/* One star, in the colour of the strongest thing it is. A phase
               best is not starred here: its own block is ringed on the bar
               below, which says which phase rather than only that one of
@@ -323,7 +323,8 @@ function HistoryRow({
           ) : null}
         </span>
         <span className="history__meta">
-          {formatWhen(solve.createdAt, at)}
+          {/* The clock alone: the heading above already says which day. */}
+          {formatClock(solve.createdAt)}
           {/* Both wear the text's full strength rather than the meta's grey:
               they say the solve has something on it, and at the muted weight
               beside a timestamp they were being missed. Not a colour of their

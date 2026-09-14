@@ -6,7 +6,7 @@ import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { parseTimeInput } from '../../../domain/solve/parse-time';
 import { togglePenalty } from '../../../domain/solve/penalty';
-import { formatDateTime, formatMs, formatTime } from '../../../lib/format';
+import { formatDateTime, formatMs, formatResult } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { SplitEditor } from '../../splits';
 
@@ -85,7 +85,7 @@ export function SolveDetail({
           isPb ? 'detail__result is-best is-record' : isBest ? 'detail__result is-best' : 'detail__result'
         }
       >
-        {formatTime(resultMs)}
+        {formatResult(resultMs, solve.penalty)}
         {isPb || isBest ? (
           <span
             className={isPb ? 'history__best is-record' : 'history__best'}

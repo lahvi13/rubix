@@ -188,6 +188,8 @@ export const strings = {
     filterRecords: 'Filter records',
     filterDay: 'Filter by day',
     days: 'Days',
+    today: 'Today',
+    yesterday: 'Yesterday',
     allDays: 'All days',
     noDays: 'Nothing has been timed into this session yet.',
     editTags: 'Edit tags',
