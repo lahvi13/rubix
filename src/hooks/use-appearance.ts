@@ -46,11 +46,12 @@ function useAppearanceSettings(): Appearance {
   const [textSize] = useSetting('ui.textSize');
   const [clockSize] = useSetting('ui.clockSize');
   const [clockFace] = useSetting('ui.clockFace');
+  const [cubeSkin] = useSetting('ui.cubeSkin');
 
   // One object, stable while the settings are, so applying it is not a thing
   // that happens on every render of the whole app.
   return useMemo(
-    () => ({ theme, font, textSize, clockSize, clockFace }),
-    [theme, font, textSize, clockSize, clockFace],
+    () => ({ theme, font, textSize, clockSize, clockFace, cubeSkin }),
+    [theme, font, textSize, clockSize, clockFace, cubeSkin],
   );
 }

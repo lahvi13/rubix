@@ -140,8 +140,17 @@ function arrowFor(definition: CubeSkinDefinition, theme: ResolvedTheme): ArrowSt
     : { fill: definition.outline, band: definition.pale, build: 'dark' };
 }
 
+function definitionById(id: string): CubeSkinDefinition {
+  return CUBE_SKINS.find((skin) => skin.id === id) ?? CUBE_SKINS[0] ?? FALLBACK;
+}
+
+/** The six stickers alone, which is all the phase colours are taken from. */
+export function facesOf(id: string): Readonly<Record<Face, string>> {
+  return definitionById(id).faces;
+}
+
 export function skinById(id: string, theme: ResolvedTheme): CubeSkin {
-  const definition = CUBE_SKINS.find((skin) => skin.id === id) ?? CUBE_SKINS[0] ?? FALLBACK;
+  const definition = definitionById(id);
   return {
     id: definition.id,
     name: definition.name,

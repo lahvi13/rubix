@@ -3,19 +3,37 @@
  * from Method.phases and a method the app has never heard of must still get a
  * readable bar.
  *
- * The colours themselves live in the stylesheet, one variable per slot, so
- * that both themes can pick their own version of "the white cross" — see the
- * --phase-* tokens in index.css.
+ * Each slot is a face of the cube, and the colour is whatever that face wears
+ * in the skin the reader picked — see lib/phase-palette.ts, which turns a skin
+ * into the --phase-* variables these hand out.
  */
 
-const FIRST_SLOT = 'first';
-const LAST_SLOT = 'last';
-const MIDDLE_SLOTS = ['mid-1', 'mid-2', 'mid-3', 'mid-4'];
+import type { Face } from '../domain/cube/notation';
 
-function slot(index: number, count: number): string {
-  if (index <= 0) return FIRST_SLOT;
-  if (index >= count - 1) return LAST_SLOT;
-  return MIDDLE_SLOTS[(index - 1) % MIDDLE_SLOTS.length] ?? LAST_SLOT;
+export type PhaseSlot = 'first' | 'mid-1' | 'mid-2' | 'mid-3' | 'mid-4' | 'last';
+
+const MIDDLE_SLOTS: readonly PhaseSlot[] = ['mid-1', 'mid-2', 'mid-3', 'mid-4'];
+
+export const PHASE_SLOTS: readonly PhaseSlot[] = ['first', ...MIDDLE_SLOTS, 'last'];
+
+/**
+ * The cross is solved on the white face and the last layer is the yellow one,
+ * so the ramp reads first-to-last the way the cube does. The faces are named
+ * as the skins hold the cube — yellow up — which puts white at D.
+ */
+export const SLOT_FACE: Record<PhaseSlot, Face> = {
+  first: 'D',
+  'mid-1': 'F',
+  'mid-2': 'R',
+  'mid-3': 'B',
+  'mid-4': 'L',
+  last: 'U',
+};
+
+function slot(index: number, count: number): PhaseSlot {
+  if (index <= 0) return 'first';
+  if (index >= count - 1) return 'last';
+  return MIDDLE_SLOTS[(index - 1) % MIDDLE_SLOTS.length] ?? 'last';
 }
 
 /** The phase as ink: text, a line, a block small enough to read as a mark. */

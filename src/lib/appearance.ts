@@ -2,8 +2,12 @@
  * What the app looks like, on the document. The stylesheet does the work — a
  * palette through `light-dark()`, a face and two sizes behind attributes on
  * the root element — so all that happens here is setting those attributes,
- * plus the browser-chrome colour, which CSS cannot reach.
+ * plus two things CSS cannot reach: the browser-chrome colour, and the phase
+ * colours, which come out of the chosen cube skin.
  */
+
+import { facesOf } from './cube-skins';
+import { phasePalette } from './phase-palette';
 
 export const THEMES = ['system', 'light', 'dark'] as const;
 export const FONTS = ['sans', 'mono', 'system'] as const;
@@ -26,6 +30,12 @@ export interface Appearance {
   clockSize: Size;
   /** What the clock is set in: the app's face, monospace, or seven segments. */
   clockFace: ClockFace;
+  /**
+   * The cube skin, here only for the phase colours it lends the rest of the
+   * app: a bar painted in the default before the database answers would flash
+   * to the reader's own skin a tick later.
+   */
+  cubeSkin: string;
 }
 
 /*
@@ -40,6 +50,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   textSize: 'medium',
   clockSize: 'large',
   clockFace: 'digital',
+  cubeSkin: 'classic',
 };
 
 /** Must match --bg in index.css: this is the same surface, painted by the browser. */
@@ -88,7 +99,7 @@ export function watchSystemTheme(onChange: (prefersDark: boolean) => void): () =
 export function applyAppearance(appearance: Appearance): void {
   // A value written by a newer version can be anything, and it would end up on
   // the document either way; the defaults are the only shape we know.
-  const { theme, font, textSize, clockSize, clockFace } = sanitised(appearance);
+  const { theme, font, textSize, clockSize, clockFace, cubeSkin } = sanitised(appearance);
   const root = document.documentElement;
 
   // The default of each is what the stylesheet already says, and leaving the
@@ -98,9 +109,24 @@ export function applyAppearance(appearance: Appearance): void {
   set(root, 'textSize', textSize, 'medium');
   set(root, 'clockSize', clockSize, 'medium');
   set(root, 'clockFace', clockFace, 'match');
+  paintPhases(root, cubeSkin);
 
   const meta = document.querySelector('meta[name="theme-color"]');
   meta?.setAttribute('content', CHROME_COLOUR[resolveTheme(theme, prefersDark())]);
+}
+
+/**
+ * The skin last written, so a theme flip — which calls this again with the
+ * same skin — does not redo it. The palette is already a light-dark() pair.
+ */
+let paintedSkin: string | null = null;
+
+function paintPhases(root: HTMLElement, cubeSkin: string): void {
+  if (cubeSkin === paintedSkin) return;
+  for (const [name, value] of Object.entries(phasePalette(facesOf(cubeSkin)))) {
+    root.style.setProperty(name, value);
+  }
+  paintedSkin = cubeSkin;
 }
 
 function set(root: HTMLElement, key: string, value: string, fallback: string): void {
@@ -140,5 +166,8 @@ function sanitised(value: unknown): Appearance {
     textSize: isSize(stored.textSize) ? stored.textSize : DEFAULT_APPEARANCE.textSize,
     clockSize: isSize(stored.clockSize) ? stored.clockSize : DEFAULT_APPEARANCE.clockSize,
     clockFace: isClockFace(stored.clockFace) ? stored.clockFace : DEFAULT_APPEARANCE.clockFace,
+    // Any string: an id this version does not know draws the default skin,
+    // the same answer the diagrams give it.
+    cubeSkin: typeof stored.cubeSkin === 'string' ? stored.cubeSkin : DEFAULT_APPEARANCE.cubeSkin,
   };
 }
