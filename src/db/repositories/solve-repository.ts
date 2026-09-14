@@ -143,12 +143,20 @@ export async function listSolvesChronological(sessionId: string): Promise<Solve[
 }
 
 /**
- * Every freestyle solve of a puzzle, from every session, archived ones too —
- * oldest first. The global PB already counts all of them, and a view of "all
- * my solves" that left some out would disagree with it.
+ * Every freestyle solve of a puzzle from the sessions still in use, oldest
+ * first. An archived session is one put away, and the numbers over "all my
+ * sessions" should not keep counting it. The personal best still does — see
+ * deleteSession for why a best must not move when the list is tidied.
  */
 export async function listPuzzleSolvesChronological(puzzle: Puzzle): Promise<Solve[]> {
-  return db.solves.where('[mode+puzzle]').equals(['freestyle', puzzle]).sortBy('createdAt');
+  const archived = new Set(
+    await db.sessions.where('[mode+isArchived]').equals(['freestyle', 1]).primaryKeys(),
+  );
+  const solves = await db.solves
+    .where('[mode+puzzle]')
+    .equals(['freestyle', puzzle])
+    .sortBy('createdAt');
+  return archived.size === 0 ? solves : solves.filter((solve) => !archived.has(solve.sessionId));
 }
 
 /**

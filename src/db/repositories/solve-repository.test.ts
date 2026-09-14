@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
-import { createSession, getOrCreateActiveSession } from './session-repository';
+import {
+  createSession,
+  getOrCreateActiveSession,
+  setSessionArchived,
+} from './session-repository';
 import {
   addSolve,
   deleteSolve,
@@ -162,6 +166,17 @@ describe('stats queries', () => {
 
     const solves = await listPuzzleSolvesChronological('333');
     expect(solves.map((solve) => solve.rawMs)).toEqual([3000, 1000, 2000]);
+  });
+
+  it('leaves archived sessions out of the solves across sessions, but not out of the PB', async () => {
+    const archived = await createSession('Old', '333', 'freestyle');
+    await addSolve(await makeSolve(archived.id, 5000));
+    await setSessionArchived(archived.id, true);
+    await addSolve(await makeSolve(sessionId, 12_000));
+
+    const solves = await listPuzzleSolvesChronological('333');
+    expect(solves.map((solve) => solve.rawMs)).toEqual([12_000]);
+    expect(await getGlobalPbSingle('333')).toBe(5000);
   });
 
   it('finds the global PB across sessions and applies the +2', async () => {
