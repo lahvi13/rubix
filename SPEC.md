@@ -4,8 +4,23 @@ Offline PWA trenažér na Rubikovu kostku pro speedcubing.
 
 ## 1. Cíle a hranice
 
-**Cíl:** osobní trenažér — timer, historie, statistiky, drill algoritmů, fázové splity.
-Používá autor a pár známých, distribuce přes URL na Cloudflare.
+**Cíl:** trenažér na 3×3 pro cubery od prvního složení po rychlý průměr — timer, historie,
+statistiky, drill algoritmů, fázové splity, průvodce pro začátečníky. **Veřejná aplikace**,
+zdarma a bez účtů, distribuce přes URL na Cloudflare (sdílí se veřejně, např. na Redditu).
+Původně to byl osobní nástroj pro autora a pár známých; z veřejného provozu plyne:
+
+- **adresa je trvalá.** IndexedDB patří originu, takže změna domény znamená, že každý
+  uživatel přijde o data, pokud předtím neexportuje. Doména se nemění
+- **verzová podlaha prohlížeče se hlídá**, ne předpokládá: `lib/browser-support.ts` ověří,
+  že prohlížeč umí CSS, na kterém aplikace stojí (dnes iOS 17.5+, viz IOS-CHECKLIST.md),
+  a starší dostane srozumitelnou hlášku místo bezbarvé stránky. Co podlahu posune,
+  přidá se tam
+- **ztráta dat je největší riziko.** Safari maže data neinstalované stránky po týdnu bez
+  návštěvy, proto timer na iOS po pár solvech vyzve k přidání na plochu; připomínka
+  zálohy hlídá zbytek
+- **zpětná vazba** jde přes mail na obrazovce About (předmět nese verzi a commit)
+- **jen 3×3 a jen anglicky.** Další disciplína se přidává až na výslovnou poptávku;
+  datový model (`puzzle`) s ní počítá
 
 **Non-goals (platí pro celý projekt):**
 
@@ -858,6 +873,7 @@ formátů žije v `src/db/migrations/import/`.
 | 9 | **Nastavení** | timer, vzhled, kalibrace mikrofonu s live meterem |
 | 10 | **Data** | export (JSON záloha + CSV solvů), import (preview + merge/replace), import z csTimeru, smazání všech dat, troubleshooting |
 | 11 | **Learn** | průvodce metodou pro začátečníky: sedm kroků jednoho složení, každý s jedním algoritmem a přepínačem na všechny případy kroku; skrytelná v nastavení |
+| 12 | **About** | co aplikace je a pro koho, instalace (Android tlačítko, iOS postup), kde jsou data, verze s kontrolou updatu, sdílení odkazu, kontakt, poděkování |
 
 Navigace: **hamburger menu** v hlavičce se všemi routami; hlavička ukazuje název
 aktuální obrazovky. Je **přišpendlená k hornímu okraji** — cesta ze stránky musí
