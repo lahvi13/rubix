@@ -680,6 +680,11 @@ export const strings = {
     failed: 'Could not import the csTimer file',
     importedSession: 'csTimer',
   },
+  unsupportedBrowser: {
+    title: 'This browser is too old for Rubix',
+    message:
+      'Update the browser to its latest version and open the page again. On an iPhone or iPad that means iOS 17.5 or newer.',
+  },
   errors: {
     saveSolve: 'Could not save the solve',
     noSession: 'No active session',
