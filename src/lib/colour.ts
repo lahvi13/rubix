@@ -108,8 +108,3 @@ export function shiftToContrast(
 function rounded({ r, g, b }: Rgb): Rgb {
   return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
 }
-
-/** Whichever of the two is easier to read on `ground`. */
-export function readableOn(ground: Rgb, first: Rgb, second: Rgb): Rgb {
-  return contrast(first, ground) >= contrast(second, ground) ? first : second;
-}

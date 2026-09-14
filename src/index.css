@@ -103,7 +103,9 @@
    */
 
   /*
-   * What a share written inside its own phase's block is set in. The far end
+   * What a share written across a grey block — several phases whose boundary
+   * was never recorded — is set in; a phase's own block picks its lettering in
+   * lib/phase-palette.ts. The far end
    * of the page's own ground rather than --bg itself: the ink it lies on is
    * only just dark enough to carry text, and the few percent between the page
    * and white is the margin that keeps the number readable.
@@ -3881,7 +3883,7 @@ input[type='radio'] {
   overflow: hidden;
   font-size: var(--text-2xs);
   font-weight: 700;
-  color: var(--phase-share-ink);
+  color: var(--phase-ink, var(--phase-share-ink));
 }
 
 /*

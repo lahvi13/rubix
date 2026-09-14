@@ -2,7 +2,7 @@ import { memo, useMemo, type CSSProperties } from 'react';
 import type { MethodPhase, Split } from '../../../db/types';
 import { phaseSegments, phaseShares } from '../../../domain/solve/splits';
 import { formatMs } from '../../../lib/format';
-import { phaseColour } from '../../../lib/phase-colours';
+import { phaseColour, phaseInkColour } from '../../../lib/phase-colours';
 
 /**
  * How much of the solve the bar spells out. One component with three
@@ -32,6 +32,7 @@ interface PhaseBarProps {
 /** React's style type does not know about custom properties; this one does. */
 interface SegmentStyle extends CSSProperties {
   '--phase': string;
+  '--phase-ink'?: string;
 }
 
 /**
@@ -73,6 +74,13 @@ export const PhaseBar = memo(function PhaseBar({
       ? phaseColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
       : 'var(--muted)';
 
+  // A block of several phases is grey, and the stylesheet's own lettering
+  // already suits it.
+  const inkOf = (segment: { phases: string[] }) =>
+    segment.phases.length === 1
+      ? phaseInkColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
+      : undefined;
+
   return (
     <div className={`phase-bar phase-bar--${detail}`}>
       <div className="phase-bar__track">
@@ -82,6 +90,7 @@ export const PhaseBar = memo(function PhaseBar({
             // basis keeps a sliver of it visible.
             flexGrow: Math.max(segment.ms, 1),
             '--phase': colourOf(segment),
+            '--phase-ink': inkOf(segment),
           };
           const share = shares[index] ?? 0;
           return (

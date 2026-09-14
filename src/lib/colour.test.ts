@@ -4,7 +4,6 @@ import {
   luminance,
   mix,
   parseHex,
-  readableOn,
   shiftToContrast,
   toHex,
   type Rgb,
@@ -106,18 +105,5 @@ describe('shiftToContrast', () => {
 
   it('settles for the far end when even that falls short', () => {
     expect(shiftToContrast(WHITE, WHITE, hex('#eeeeee'), 4)).toEqual(hex('#eeeeee'));
-  });
-});
-
-describe('readableOn', () => {
-  it.each([
-    // The classic red: pale lettering carries it better than dark.
-    ['#d63a3a', WHITE],
-    ['#f2d024', hex('#0f1115')],
-    ['#25b05a', hex('#0f1115')],
-    // The high-contrast skin's red is brighter, and flips.
-    ['#ff2d2d', hex('#0f1115')],
-  ])('on %s', (ground, expected) => {
-    expect(readableOn(hex(ground), WHITE, hex('#0f1115'))).toEqual(expected);
   });
 });

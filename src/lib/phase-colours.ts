@@ -20,13 +20,18 @@ export const PHASE_SLOTS: readonly PhaseSlot[] = ['first', ...MIDDLE_SLOTS, 'las
  * The cross is solved on the white face and the last layer is the yellow one,
  * so the ramp reads first-to-last the way the cube does. The faces are named
  * as the skins hold the cube — yellow up — which puts white at D.
+ *
+ * The two in between are the pair the trainer shows an F2L case from, green
+ * and red. Orange was the second once, and it sat against the yellow of the
+ * last layer in every bar: the two warmest faces, told apart worst of any
+ * pair, and on paper a burnt orange beside a mustard.
  */
 export const SLOT_FACE: Record<PhaseSlot, Face> = {
   first: 'D',
   'mid-1': 'F',
-  'mid-2': 'R',
-  'mid-3': 'B',
-  'mid-4': 'L',
+  'mid-2': 'L',
+  'mid-3': 'R',
+  'mid-4': 'B',
   last: 'U',
 };
 
@@ -39,6 +44,14 @@ function slot(index: number, count: number): PhaseSlot {
 /** The phase as ink: text, a line, a block small enough to read as a mark. */
 export function phaseColour(index: number, count: number): string {
   return `var(--phase-${slot(index, count)})`;
+}
+
+/**
+ * What text written on the phase's own block is set in — pale on some faces,
+ * dark on others, whichever of the two the face carries better.
+ */
+export function phaseInkColour(index: number, count: number): string {
+  return `var(--phase-ink-${slot(index, count)})`;
 }
 
 /**
