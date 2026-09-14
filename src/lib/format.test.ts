@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   formatAxisMs,
+  formatBytes,
   formatClock,
   formatDate,
   formatDay,
@@ -121,6 +122,21 @@ describe('formatWhen', () => {
   it('adds the year once the solve is from another one', () => {
     const lastYear = new Date(2025, 8, 4, 9, 5).getTime();
     expect(formatWhen(lastYear, noon)).toContain('2025');
+  });
+});
+
+describe('formatBytes', () => {
+  it.each<[number, string]>([
+    [0, '1 KB'],
+    [300, '1 KB'],
+    [52_000, '51 KB'],
+    [1024 * 1024 - 1, '1.0 MB'],
+    [1024 * 1024, '1.0 MB'],
+    [2.44 * 1024 * 1024, '2.4 MB'],
+    [14.6 * 1024 * 1024, '15 MB'],
+    [3 * 1024 * 1024 * 1024, '3.0 GB'],
+  ])('%i bytes read as %s', (bytes, expected) => {
+    expect(formatBytes(bytes)).toBe(expected);
   });
 });
 

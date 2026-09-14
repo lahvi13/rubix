@@ -3725,9 +3725,28 @@ button[disabled] {
   color: var(--danger);
 }
 
+/* Wraps: at phone width three buttons side by side squeeze their labels. */
 .data-section__row {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
+}
+
+/* What there is to lose, read at full strength — it is the reason to press export. */
+.backup-status {
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.backup-status__refused {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
 }
 
 /* What an import could not take, said plainly rather than as a table. */
@@ -3744,12 +3763,6 @@ button[disabled] {
   overflow-wrap: anywhere;
 }
 
-.data-section input[type='file'] {
-  font: inherit;
-  font-size: var(--text-sm);
-  color: var(--muted);
-  max-width: 100%;
-}
 
 .import-modes {
   display: flex;
@@ -3985,14 +3998,27 @@ input[type='radio'] {
 
 /* Troubleshooting */
 
-.diagnostics__state {
-  margin: 0 0 var(--space-4);
-  font-size: var(--text-lg);
-  color: var(--accent);
+/*
+ * The line the folded section leaves behind: the two things worth knowing
+ * without unfolding it. Full width with the chevron at its end, like the drill's
+ * case pool, so it reads as a way in.
+ */
+.diagnostics__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: start;
+  font-size: var(--text-sm);
 }
 
-.diagnostics__state.is-bad {
+.diagnostics__bad {
   color: var(--danger);
+}
+
+.diagnostics__tools {
+  margin-top: var(--space-5);
 }
 
 .diagnostics__log {

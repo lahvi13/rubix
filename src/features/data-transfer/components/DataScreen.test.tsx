@@ -6,6 +6,7 @@ import { createSession } from '../../../db/repositories/session-repository';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { buildExportFile, clearAllData } from '../../../db/repositories/transfer-repository';
 import { seedPacks } from '../../../db/seed/seed';
+import { forgetErrors, logQuietly } from '../../../lib/errors';
 import CSTIMER_PHASES from '../../../test/fixtures/cstimer-export-phases.txt?raw';
 import { DataScreen } from './DataScreen';
 
@@ -31,6 +32,33 @@ async function exportedFile(): Promise<File> {
 describe('DataScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
+  });
+
+  it('keeps the troubleshooting tools folded while nothing has failed', async () => {
+    forgetErrors();
+    const user = userEvent.setup();
+
+    render(<DataScreen />);
+    const toggle = screen.getByRole('button', { name: /nothing has failed/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: 'Reconnect the database' })).not.toBeInTheDocument();
+
+    await user.click(toggle);
+    expect(screen.getByRole('button', { name: 'Reconnect the database' })).toBeInTheDocument();
+  });
+
+  it('unfolds the troubleshooting tools when a failure is logged', async () => {
+    forgetErrors();
+    logQuietly('Could not save the solve', new Error('QuotaExceededError'));
+
+    render(<DataScreen />);
+
+    expect(screen.getByRole('button', { name: /1 failure logged/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(screen.getByText(/QuotaExceededError/)).toBeInTheDocument();
+    forgetErrors();
   });
 
   it('previews a file first and only writes after the import is confirmed', async () => {
@@ -80,6 +108,9 @@ describe('DataScreen', () => {
 
     expect(await screen.findByText(/^rubix-\d{4}-\d{2}-\d{2}\.json$/)).toBeInTheDocument();
     expect(click).toHaveBeenCalled();
+    expect(
+      await screen.findByText('Last backup: Today. Nothing has changed since.'),
+    ).toBeInTheDocument();
 
     click.mockRestore();
     vi.unstubAllGlobals();

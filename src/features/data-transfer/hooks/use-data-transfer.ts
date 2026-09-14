@@ -15,6 +15,7 @@ import {
 import { solvesToCsv } from '../../../domain/transfer/csv';
 import type { ExportData, ExportFile } from '../../../domain/transfer/types';
 import { parseExportFile, type ImportProblem } from '../../../domain/transfer/validate';
+import { useSetting } from '../../../hooks/use-setting';
 import { downloadText } from '../../../lib/download';
 import { reportError } from '../../../lib/errors';
 import { now } from '../../../lib/clock';
@@ -57,6 +58,7 @@ export function useDataTransfer(appVersion: string): DataTransferView {
   const [state, setState] = useState<TransferState>({ status: 'idle' });
   const [notice, setNotice] = useState<TransferNotice | null>(null);
   const [mode, setMode] = useState<ImportMode>('merge');
+  const [, setLastExportAt] = useSetting('data.lastExportAt');
 
   const exportToFile = async (): Promise<void> => {
     setNotice(null);
@@ -66,6 +68,7 @@ export function useDataTransfer(appVersion: string): DataTransferView {
       // Compact: this is a backup, not a document, and an indented file is
       // roughly twice the size for the same content.
       downloadText(filename, JSON.stringify(file));
+      setLastExportAt(file.exportedAt);
       setNotice({ kind: 'exported', filename });
     } catch (cause) {
       reportError(strings.data.exportFailed, cause);

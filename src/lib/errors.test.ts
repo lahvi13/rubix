@@ -158,4 +158,11 @@ describe('watched writes', () => {
     expect(lastError()).toBeNull();
     expect(recentErrors()[0]?.message).toBe('the connection was closed');
   });
+
+  it('drops the routine closes an earlier version filled the log with', () => {
+    logQuietly('Database unavailable', new Error('the connection was closed — reconnecting'));
+    logQuietly('Save solve', new Error('QuotaExceededError'));
+
+    expect(recentErrors().map((error) => error.message)).toEqual(['QuotaExceededError']);
+  });
 });

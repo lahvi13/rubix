@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronIcon } from '../../../components/Icons';
 import { Notice } from '../../../components/Notice';
 import {
   hasChanges,
@@ -10,8 +11,10 @@ import type { SkipReason, SkippedRow } from '../../../domain/transfer/cstimer';
 import { TRANSFER_TABLES } from '../../../domain/transfer/types';
 import type { ImportProblem } from '../../../domain/transfer/validate';
 import { useDatabaseHealth } from '../../../hooks/use-database-health';
-import { formatDateTime } from '../../../lib/format';
+import { now } from '../../../lib/clock';
+import { formatBytes, formatDateTime, formatDay } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
+import { useBackupStatus } from '../hooks/use-backup-status';
 import { useConfirmDelay } from '../hooks/use-confirm-delay';
 import { useCsTimerImport, type CsTimerState } from '../hooks/use-cstimer-import';
 import { useDataTransfer, type TransferNotice } from '../hooks/use-data-transfer';
@@ -48,6 +51,7 @@ export function DataScreen() {
       <section className="data-section">
         <h2 className="data-section__title">{strings.data.exportTitle}</h2>
         <p className="data-section__hint">{strings.data.exportHint}</p>
+        <BackupStatusLines />
         <div className="data-section__row">
           <button type="button" className="is-primary" onClick={() => void exportToFile()}>
             {strings.data.exportAction}
@@ -65,16 +69,10 @@ export function DataScreen() {
         <h2 className="data-section__title">{strings.data.importTitle}</h2>
         <p className="data-section__hint">{strings.data.importHint}</p>
 
-        <input
-          type="file"
+        <FileButton
+          label={strings.data.chooseFile}
           accept="application/json,.json"
-          aria-label={strings.data.chooseFile}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            // Cleared so picking the same file again still fires a change.
-            event.target.value = '';
-            if (file) void loadFile(file);
-          }}
+          onFile={(file) => void loadFile(file)}
         />
 
         {state.status === 'failed' ? (
@@ -176,6 +174,84 @@ export function DataScreen() {
 }
 
 /**
+ * How much there is to lose, said next to the button that saves it. With no
+ * sync, a backup nobody remembers taking is the likeliest way to lose months.
+ */
+function BackupStatusLines() {
+  const { lastExportAt, changedSince, storage, keepStorage } = useBackupStatus();
+  const [isRefused, setRefused] = useState(false);
+
+  return (
+    <ul className="backup-status">
+      {changedSince === undefined ? null : (
+        <li>
+          {lastExportAt === null
+            ? `${strings.data.noBackup}${changedSince > 0 ? ` ${strings.data.onlyHere(changedSince)}` : ''}`
+            : `${strings.data.lastBackup(formatDay(lastExportAt, now()))} ${strings.data.changedSince(changedSince)}`}
+        </li>
+      )}
+      {storage === null || storage.isPersisted === null ? null : (
+        <li>
+          {storage.isPersisted ? strings.data.storageKept : strings.data.storageMayClear}
+          {storage.usageBytes === null
+            ? null
+            : ` ${strings.data.storageUsage(formatBytes(storage.usageBytes))}`}
+        </li>
+      )}
+      {storage?.isPersisted === false ? (
+        <li>
+          <button
+            type="button"
+            onClick={() => void keepStorage().then((isGranted) => setRefused(!isGranted))}
+          >
+            {strings.data.keepStorage}
+          </button>
+          {isRefused ? <p className="backup-status__refused">{strings.data.keepStorageRefused}</p> : null}
+        </li>
+      ) : null}
+    </ul>
+  );
+}
+
+/**
+ * The app's own button in front of the browser's file input, which draws
+ * "Choose File · No file chosen" in whatever style the browser likes. The
+ * input stays in the page, labelled, because it is what does the picking.
+ */
+function FileButton({
+  label,
+  accept,
+  onFile,
+}: {
+  label: string;
+  accept: string;
+  onFile: (file: File) => void;
+}) {
+  const input = useRef<HTMLInputElement>(null);
+
+  return (
+    <>
+      <button type="button" onClick={() => input.current?.click()}>
+        {label}
+      </button>
+      <input
+        ref={input}
+        type="file"
+        hidden
+        accept={accept}
+        aria-label={label}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          // Cleared so picking the same file again still fires a change.
+          event.target.value = '';
+          if (file) onFile(file);
+        }}
+      />
+    </>
+  );
+}
+
+/**
  * Bringing a history over from csTimer. Kept apart from the app's own restore:
  * it reads a foreign file, it can only ever add, and what it cannot take —
  * a 6×6 session, a row csTimer wrote in a way this app cannot read — has to be
@@ -189,15 +265,10 @@ function CsTimerSection() {
       <h2 className="data-section__title">{strings.cstimer.title}</h2>
       <p className="data-section__hint">{strings.cstimer.hint}</p>
 
-      <input
-        type="file"
+      <FileButton
+        label={strings.cstimer.chooseFile}
         accept=".txt,.json,.csv,text/plain,text/csv,application/json"
-        aria-label={strings.cstimer.chooseFile}
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          event.target.value = '';
-          if (file) void loadFile(file);
-        }}
+        onFile={(file) => void loadFile(file)}
       />
 
       {state.status === 'reading' ? (
@@ -353,54 +424,84 @@ const SHOWN_SKIPPED = 5;
 function Troubleshooting() {
   const { isOpen, errors, reconnect, survey, clearErrors } = useDatabaseHealth();
   const [outcome, setOutcome] = useState<string | null>(null);
+  const hasFailures = errors.length > 0;
+  const [isExpanded, setExpanded] = useState(hasFailures);
+
+  // Folded while there is nothing to see, and unfolded by a failure that turns
+  // up while the screen is open. A connection that is merely closed does not
+  // unfold it: the phone closes it all the time and the next read reopens it,
+  // and one that really cannot come back logs a failure of its own.
+  useEffect(() => {
+    if (hasFailures) setExpanded(true);
+  }, [hasFailures]);
 
   return (
     <section className="data-section">
       <h2 className="data-section__title">{strings.diagnostics.title}</h2>
-      <p className="data-section__hint">{strings.diagnostics.hint}</p>
+      <button
+        type="button"
+        className="diagnostics__toggle"
+        aria-expanded={isExpanded}
+        onClick={() => setExpanded((expanded) => !expanded)}
+      >
+        <span>
+          <span className={isOpen ? undefined : 'diagnostics__bad'}>
+            {isOpen ? strings.diagnostics.databaseOpen : strings.diagnostics.databaseClosed}
+          </span>
+          {' · '}
+          <span className={hasFailures ? 'diagnostics__bad' : undefined}>
+            {strings.diagnostics.failures(errors.length)}
+          </span>
+        </span>
+        <ChevronIcon up={isExpanded} />
+      </button>
 
-      <p className={isOpen ? 'diagnostics__state' : 'diagnostics__state is-bad'}>
-        {isOpen ? strings.diagnostics.databaseOpen : strings.diagnostics.databaseClosed}
-      </p>
+      {isExpanded ? (
+        <div className="diagnostics__tools">
+          <p className="data-section__hint">{strings.diagnostics.hint}</p>
 
-      <div className="data-section__row">
-        <button
-          type="button"
-          onClick={() => {
-            void reconnect().then((ok) =>
-              setOutcome(ok ? strings.diagnostics.reconnected : strings.diagnostics.stillBroken),
-            );
-          }}
-        >
-          {strings.diagnostics.reconnect}
-        </button>
-        <button type="button" onClick={() => window.location.reload()}>
-          {strings.diagnostics.reload}
-        </button>
-        <button type="button" onClick={() => void survey().then(setOutcome)}>
-          {strings.diagnostics.survey}
-        </button>
-      </div>
-      {outcome === null ? null : <p className="data-section__hint diagnostics__outcome">{outcome}</p>}
+          <div className="data-section__row">
+            <button
+              type="button"
+              onClick={() => {
+                void reconnect().then((ok) =>
+                  setOutcome(ok ? strings.diagnostics.reconnected : strings.diagnostics.stillBroken),
+                );
+              }}
+            >
+              {strings.diagnostics.reconnect}
+            </button>
+            <button type="button" onClick={() => window.location.reload()}>
+              {strings.diagnostics.reload}
+            </button>
+            <button type="button" onClick={() => void survey().then(setOutcome)}>
+              {strings.diagnostics.survey}
+            </button>
+          </div>
+          {outcome === null ? null : (
+            <p className="data-section__hint diagnostics__outcome">{outcome}</p>
+          )}
 
-      <h3 className="data-section__subtitle">{strings.diagnostics.recent}</h3>
-      {errors.length === 0 ? (
-        <p className="data-section__hint">{strings.diagnostics.none}</p>
-      ) : (
-        <>
-          <ul className="diagnostics__log">
-            {errors.map((error) => (
-              <li key={`${error.at}-${error.message}`}>
-                <span className="diagnostics__when">{formatDateTime(error.at)}</span>
-                {error.context}: {error.message}
-              </li>
-            ))}
-          </ul>
-          <button type="button" onClick={clearErrors}>
-            {strings.diagnostics.clear}
-          </button>
-        </>
-      )}
+          <h3 className="data-section__subtitle">{strings.diagnostics.recent}</h3>
+          {hasFailures ? (
+            <>
+              <ul className="diagnostics__log">
+                {errors.map((error) => (
+                  <li key={`${error.at}-${error.message}`}>
+                    <span className="diagnostics__when">{formatDateTime(error.at)}</span>
+                    {error.context}: {error.message}
+                  </li>
+                ))}
+              </ul>
+              <button type="button" onClick={clearErrors}>
+                {strings.diagnostics.clear}
+              </button>
+            </>
+          ) : (
+            <p className="data-section__hint">{strings.diagnostics.none}</p>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

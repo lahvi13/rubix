@@ -201,6 +201,27 @@ export function formatIsoDateTime(timestamp: number): string {
   return `${formatIsoDate(timestamp)} ${clock}`;
 }
 
+const BYTES_PER_KB = 1024;
+const BYTES_PER_MB = 1024 * BYTES_PER_KB;
+const BYTES_PER_GB = 1024 * BYTES_PER_MB;
+
+/**
+ * A size as a reader weighs it: one decimal while it is small enough for the
+ * decimal to matter, none after. Never "0 KB" — something is stored.
+ */
+export function formatBytes(bytes: number): string {
+  // Decided on the rounded figure, or a size just short of a megabyte reads "1024 KB".
+  const kb = Math.max(1, Math.round(bytes / BYTES_PER_KB));
+  if (kb < 1024) return `${kb} KB`;
+  const mb = bytes / BYTES_PER_MB;
+  if (Math.round(mb) < 1024) return `${roughly(mb)} MB`;
+  return `${roughly(bytes / BYTES_PER_GB)} GB`;
+}
+
+function roughly(value: number): string {
+  return value < 10 ? value.toFixed(1) : String(Math.round(value));
+}
+
 export { MS_PER_MINUTE, MS_PER_SECOND };
 /**
  * The day a timestamp falls on, in the reader's own timezone, as something

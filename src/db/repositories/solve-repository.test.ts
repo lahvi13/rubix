@@ -7,6 +7,7 @@ import {
 } from './session-repository';
 import {
   addSolve,
+  countSolvesChangedSince,
   deleteSolve,
   deleteSolves,
   getGlobalPbSingle,
@@ -95,6 +96,20 @@ describe('solve repository', () => {
     expect(await db.solves.get(solve.id)).toBeUndefined();
     const tombstone = await db.tombstones.get(solve.id);
     expect(tombstone?.table).toBe('solves');
+  });
+
+  it.each([
+    ['nothing backed up yet', 0, 3],
+    ['a backup between the writes', 200, 2],
+    // Strictly after: a backup taken in the same millisecond already holds it.
+    ['a backup at the last write', 900, 0],
+  ])('counts the solves changed since %s', async (_, backupAt, expected) => {
+    for (const updatedAt of [100, 500, 900]) {
+      const solve = await addSolve(await makeSolve(sessionId, 1000));
+      await db.solves.update(solve.id, { updatedAt });
+    }
+
+    expect(await countSolvesChangedSince(backupAt)).toBe(expected);
   });
 });
 

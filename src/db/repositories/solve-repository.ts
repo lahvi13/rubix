@@ -196,6 +196,15 @@ export async function countSolves(sessionId: string): Promise<number> {
 }
 
 /**
+ * Solves a backup taken at `timestamp` would not have as they are now: new,
+ * edited, moved or imported since. Counted on the index, not read — the data
+ * screen asks again after every write, and the answer is a number.
+ */
+export async function countSolvesChangedSince(timestamp: number): Promise<number> {
+  return db.solves.where('updatedAt').above(timestamp).count();
+}
+
+/**
  * How many solves carry a tag, across every session. Asked before a tag is
  * deleted: deleting one strips it from all of them, and the number is the
  * only warning of how much that touches.

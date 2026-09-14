@@ -25,6 +25,15 @@ let last: AppError | null = null;
 const LOG_KEY = 'rubix.errors';
 const LOG_SIZE = 8;
 
+/**
+ * Entries earlier versions wrote for something that stopped being a failure.
+ * A routine close filled the whole log on a phone; dropping it on read clears
+ * the log the update finds, without a migration for a convenience.
+ */
+const RETIRED_MESSAGES: ReadonlySet<string> = new Set([
+  'the connection was closed — reconnecting',
+]);
+
 export function reportError(context: string, cause: unknown): void {
   const message = describe(cause);
   last = { context, message, at: Date.now() };
@@ -57,7 +66,7 @@ export function recentErrors(): AppError[] {
   try {
     const stored: unknown = JSON.parse(window.localStorage.getItem(LOG_KEY) ?? '[]');
     if (!Array.isArray(stored)) return [];
-    return stored.filter(isAppError);
+    return stored.filter(isAppError).filter((error) => !RETIRED_MESSAGES.has(error.message));
   } catch {
     return [];
   }

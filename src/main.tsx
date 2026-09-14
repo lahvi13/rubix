@@ -7,6 +7,7 @@ import { seedPacks } from './db/seed/seed';
 import { installGlobalErrorHandlers, reportError } from './lib/errors';
 import { strings } from './lib/strings';
 import { applyAppearance, cachedAppearance } from './lib/appearance';
+import { requestPersistentStorage } from './lib/storage';
 import { loadSettings } from './hooks/use-setting';
 import './index.css';
 
@@ -27,9 +28,7 @@ applyAppearance(cachedAppearance());
 // Between backups, solves exist only in IndexedDB. Persistent storage tells
 // the browser this origin's data must survive disk pressure; installed PWAs
 // and engaged sites get it without any prompt.
-if ('storage' in navigator && typeof navigator.storage.persist === 'function') {
-  void navigator.storage.persist().catch(() => {});
-}
+void requestPersistentStorage();
 
 // The built-in algorithm packs are put in place before anything reads them.
 // An upsert keyed by id, so this is also how a new version ships a fix.

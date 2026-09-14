@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import { installWriteWatchdog, logQuietly, reportError } from '../lib/errors';
+import { installWriteWatchdog, reportError } from '../lib/errors';
 import { now } from '../lib/clock';
 import { strings } from '../lib/strings';
 import type {
@@ -178,12 +178,12 @@ db.on('blocked', () => {
   reportError(strings.errors.database, new Error(strings.errors.databaseBlocked));
 });
 
-// A connection can go away for reasons the user need not hear about — the
-// phone freezing the app in the background is one. It is logged either way,
-// because it is the first thing worth knowing afterwards, but it only becomes
-// a banner if the way back fails.
+// A connection can go away for reasons the user need not hear about — Android
+// takes it from a backgrounded app every few minutes. Not logged: the log keeps
+// only a handful of entries, and a routine close pushed the real failures out
+// of it. Nothing is lost by that — a reopen that fails reports itself, and a
+// write the close interrupted is logged by the watchdog that retries it.
 db.on('close', () => {
-  logQuietly(strings.errors.database, new Error(strings.errors.databaseClosed));
   void ensureDatabaseOpen();
 });
 

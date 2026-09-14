@@ -547,6 +547,20 @@ export const strings = {
     exportCsvAction: 'Solves as CSV',
     exportCsvHint:
       'One row per solve — time, penalty, scramble, phases — for a spreadsheet. Nothing reads it back, so it is a copy to look at, not a backup.',
+    lastBackup: (day: string) => `Last backup: ${day}.`,
+    noBackup: 'No backup from this device yet.',
+    changedSince: (count: number) =>
+      count === 0
+        ? 'Nothing has changed since.'
+        : `${count} ${count === 1 ? 'solve' : 'solves'} added or changed since.`,
+    onlyHere: (count: number) =>
+      `${count} ${count === 1 ? 'solve exists' : 'solves exist'} only on this device.`,
+    storageKept: 'The browser keeps this data even when the device runs low on space.',
+    storageMayClear: 'The browser may clear this data when the device runs low on space.',
+    storageUsage: (size: string) => `The app and its data take ${size}.`,
+    keepStorage: 'Ask the browser to keep it',
+    keepStorageRefused:
+      'The browser said no. Browsers tend to agree once the app is installed — until then, a backup is the only sure copy.',
     exported: 'Backup saved as',
     exportedCsv: 'Solves saved as',
     importTitle: 'Restore',
@@ -649,7 +663,6 @@ export const strings = {
     database: 'Database unavailable',
     databaseStuck: 'the database stopped answering — reload the app',
     databaseBlocked: 'another window of the app is holding the database — close it and reload',
-    databaseClosed: 'the connection was closed — reconnecting',
     notResponding: 'the database did not answer in time — reload the app',
     mainThreadBusy: 'the app was too busy to write it; it will land in a moment',
     databaseSurvey: 'What was stuck',
@@ -660,8 +673,12 @@ export const strings = {
   diagnostics: {
     title: 'Troubleshooting',
     hint: 'What to try when the app stops reacting to taps or a screen comes up empty.',
-    databaseOpen: 'Database: connected',
-    databaseClosed: 'Database: not connected',
+    databaseOpen: 'Database connected',
+    databaseClosed: 'Database not connected',
+    failures: (count: number) =>
+      count === 0
+        ? 'nothing has failed'
+        : `${count} ${count === 1 ? 'failure' : 'failures'} logged`,
     reconnect: 'Reconnect the database',
     survey: 'Check what is stuck',
     reload: 'Reload the app',

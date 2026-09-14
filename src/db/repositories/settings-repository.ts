@@ -105,6 +105,11 @@ export interface SettingValues {
    * than solve by solve. Months of progress are a question about days.
    */
   'stats.trendByDay': boolean;
+  /**
+   * When this device last wrote a backup, 0 for never. Device-local: a backup
+   * restored elsewhere says nothing about whether that device is backed up.
+   */
+  'data.lastExportAt': number;
 }
 
 export const DRILL_MODES = ['solve', 'recognise'] as const;
@@ -145,11 +150,12 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.scope': 'all',
   'stats.goalMs': 0,
   'stats.trendByDay': false,
+  'data.lastExportAt': 0,
 };
 
 export type SettingKey = keyof SettingValues;
 
-const DEVICE_LOCAL_PREFIXES = ['audio.', 'ui.theme', 'ui.textSize', 'ui.clockSize'];
+const DEVICE_LOCAL_PREFIXES = ['audio.', 'ui.theme', 'ui.textSize', 'ui.clockSize', 'data.'];
 
 function isDeviceLocal(key: string): Flag {
   return DEVICE_LOCAL_PREFIXES.some((prefix) => key.startsWith(prefix)) ? 1 : 0;
