@@ -100,7 +100,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.textSize': 'medium',
   'ui.clockSize': 'large',
   'ui.clockFace': 'digital',
-  'ui.twistyMode': '2D',
+  'ui.twistyMode': '3D',
   'ui.cubeSkin': 'classic',
   'ui.showLearn': true,
   'trainer.twoLookDefault': true,
