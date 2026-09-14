@@ -40,6 +40,16 @@ export function formatAxisMs(ms: number, axisMaxMs: number): string {
   return Number.isInteger(seconds) ? String(seconds) : seconds.toFixed(1);
 }
 
+/** A day key as a short date for an axis or a readout: "14. 9." in Czech, "9/14" in English. */
+export function formatDayKey(key: string, withYear = false): string {
+  const [year = 0, month = 1, day = 1] = key.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString([], {
+    day: 'numeric',
+    month: 'numeric',
+    year: withYear ? 'numeric' : undefined,
+  });
+}
+
 /**
  * A goal the way it is said out loud — "sub 1:30", "sub 45" — with the
  * hundredths only when the goal really has some.

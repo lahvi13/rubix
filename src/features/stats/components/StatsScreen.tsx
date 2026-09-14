@@ -11,7 +11,7 @@ import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseAverages, usePhases } from '../../splits';
 import { useAllSessions } from '../hooks/use-all-sessions';
 import type { Average, AverageWindow } from '../../../domain/stats/averages';
-import { useSessionStats, type WindowAt } from '../hooks/use-session-stats';
+import { PRACTICE_DAYS, useSessionStats, type WindowAt } from '../hooks/use-session-stats';
 import { AverageSheet } from './AverageSheet';
 import { GoalSection } from './GoalSection';
 import { RecordsSection } from './RecordsSection';
@@ -28,6 +28,12 @@ const HistogramChart = lazy(() =>
 );
 const TrendChart = lazy(() =>
   import('../charts/TrendChart').then((module) => ({ default: module.TrendChart })),
+);
+const DailyTrendChart = lazy(() =>
+  import('../charts/DailyTrendChart').then((module) => ({ default: module.DailyTrendChart })),
+);
+const PracticeChart = lazy(() =>
+  import('../charts/PracticeChart').then((module) => ({ default: module.PracticeChart })),
 );
 const PhaseTrendChart = lazy(() =>
   import('../charts/PhaseTrendChart').then((module) => ({ default: module.PhaseTrendChart })),
@@ -133,6 +139,7 @@ export function StatsScreen() {
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
   const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
   const [, setGoalMs] = useSetting('stats.goalMs');
+  const [isByDay, setByDay] = useSetting('stats.trendByDay');
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
   const [openWindow, setOpenWindow] = useState<{ n: AverageWindow; at: WindowAt } | null>(
@@ -278,6 +285,75 @@ export function StatsScreen() {
               onOpenWindow={(n, endIndex) => setOpenWindow({ n, at: { endIndex } })}
             />
 
+            {stats.trend.length > 0 || stats.days.length > 1 ? (
+              <section className="chart-card">
+                <h2 className="stats__section-title">{strings.stats.trend}</h2>
+                <div className="chart-modes" role="group" aria-label={strings.stats.trend}>
+                  <button
+                    type="button"
+                    className={isByDay ? undefined : 'is-active'}
+                    aria-pressed={!isByDay}
+                    onClick={() => setByDay(false)}
+                  >
+                    {strings.stats.bySolve}
+                  </button>
+                  <button
+                    type="button"
+                    className={isByDay ? 'is-active' : undefined}
+                    aria-pressed={isByDay}
+                    onClick={() => setByDay(true)}
+                  >
+                    {strings.stats.byDay}
+                  </button>
+                </div>
+                <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
+                  {isByDay ? (
+                    <DailyTrendChart days={stats.days} goalMs={stats.goal?.goalMs ?? null} />
+                  ) : stats.trend.length > 0 ? (
+                    <TrendChart
+                      points={stats.trend}
+                      bestMs={stats.bestAo12Ms}
+                      fenceMs={stats.trendFenceMs}
+                      goalMs={stats.goal?.goalMs ?? null}
+                    />
+                  ) : (
+                    // Without a filled window there is no line and no axis
+                    // worth drawing.
+                    <p className="detail__hint">{strings.stats.trendNeedsSolves}</p>
+                  )}
+                </Suspense>
+              </section>
+            ) : null}
+
+            <section className="chart-card">
+              <h2 className="stats__section-title">{strings.stats.practice}</h2>
+              <dl className="practice__figures">
+                <div>
+                  <dt>{strings.stats.streak}</dt>
+                  <dd>{strings.stats.dayCount(stats.practice.streak)}</dd>
+                </div>
+                <div>
+                  <dt>{strings.stats.daysPractised}</dt>
+                  <dd>{strings.stats.daysOf(stats.practice.activeDays, PRACTICE_DAYS)}</dd>
+                </div>
+                <div>
+                  <dt>{strings.stats.solvesLabel}</dt>
+                  <dd>{stats.practice.solveCount}</dd>
+                </div>
+              </dl>
+              <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
+                <PracticeChart days={stats.practice.days} />
+              </Suspense>
+              <p className="chart-note">{strings.stats.practiceNote(PRACTICE_DAYS)}</p>
+            </section>
+
+            <section className="chart-card">
+              <h2 className="stats__section-title">{strings.stats.distribution}</h2>
+              <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
+                <HistogramChart bins={stats.histogramBins} currentAoMs={stats.currentAo12Ms} />
+              </Suspense>
+            </section>
+
             <PhaseAverages
               rows={stats.phaseRows}
               phases={phases}
@@ -323,28 +399,6 @@ export function StatsScreen() {
               </section>
             ) : null}
 
-            <section className="chart-card">
-              <h2 className="stats__section-title">{strings.stats.distribution}</h2>
-              <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
-                <HistogramChart bins={stats.histogramBins} currentAoMs={stats.currentAo12Ms} />
-              </Suspense>
-            </section>
-
-            {/* Without a filled window there is no line and no axis worth
-                drawing; the averages table above already says so. */}
-            {stats.trend.length > 0 ? (
-              <section className="chart-card">
-                <h2 className="stats__section-title">{strings.stats.trend}</h2>
-                <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
-                  <TrendChart
-                    points={stats.trend}
-                    bestMs={stats.bestAo12Ms}
-                    fenceMs={stats.trendFenceMs}
-                    goalMs={stats.goal?.goalMs ?? null}
-                  />
-                </Suspense>
-              </section>
-            ) : null}
           </>
         )}
       </div>

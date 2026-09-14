@@ -39,6 +39,17 @@ import {
   type PhaseTrendPoint,
 } from '../../../domain/stats/phases';
 import { recordProgression } from '../../../domain/stats/progression';
+import {
+  calendarDays,
+  dayNumber,
+  practiceStreak,
+  summariseDays,
+} from '../../../domain/stats/daily';
+import { now } from '../../../lib/clock';
+import { dayKey } from '../../../lib/format';
+
+/** The practice chart's reach, in calendar days ending today. */
+export const PRACTICE_DAYS = 30;
 
 /** How far back "lately" reaches when a goal is measured against current form. */
 export const GOAL_RECENT_SOLVES = 50;
@@ -105,6 +116,26 @@ export interface TrendPoint {
   singleMs: number | null;
 }
 
+export interface DayPoint {
+  /** Whole days, so the axis keeps the gaps between days of practice. */
+  day: number;
+  dayKey: string;
+  count: number;
+  meanMs: number | null;
+  bestMs: number | null;
+}
+
+export interface PracticeStats {
+  /** The last PRACTICE_DAYS calendar days, oldest first, zeros included. */
+  days: { day: number; dayKey: string; count: number }[];
+  /** Days in a row with a solve, ending today (or yesterday, if today is still to come). */
+  streak: number;
+  /** Days of the window with at least one solve. */
+  activeDays: number;
+  /** Solves in the window. */
+  solveCount: number;
+}
+
 export interface GoalStats {
   goalMs: number;
   /** Fraction of every solve that beat it. */
@@ -152,6 +183,9 @@ export interface SessionStats {
   phaseTrend: PhaseTrendPoint[];
   /** null while no goal is set. */
   goal: GoalStats | null;
+  /** Every day with a solve, oldest first — the trend read by the calendar. */
+  days: DayPoint[];
+  practice: PracticeStats;
   /** The window behind an average, or null where there is no number to explain. */
   averageWindow: (n: AverageWindow, at: WindowAt) => AverageWindowView | null;
   /** Every time the record fell, newest first. */
@@ -209,6 +243,16 @@ export function useSessionStats(
 
     const currentAo12 = currentAverage(finals, TREND_WINDOW);
     const records = new Map<RecordKind, RecordEntry[]>();
+
+    const summaries = summariseDays(
+      solves.map((solve, index) => ({ dayKey: dayKey(solve.createdAt), finalMs: finals[index] ?? null })),
+    );
+    const countByDay = new Map(summaries.map((summary) => [summary.dayKey, summary.count]));
+    const recentDays = calendarDays(dayKey(now()), PRACTICE_DAYS).map((key) => ({
+      day: dayNumber(key),
+      dayKey: key,
+      count: countByDay.get(key) ?? 0,
+    }));
     const bestAo12 = bestAverage(finals, TREND_WINDOW);
 
     return {
@@ -230,6 +274,13 @@ export function useSessionStats(
       histogramBins: histogram(finals),
       trend,
       trendFenceMs: upperFence(trend.map((point) => point.singleMs)),
+      days: summaries.map((summary) => ({ ...summary, day: dayNumber(summary.dayKey) })),
+      practice: {
+        days: recentDays,
+        streak: practiceStreak(new Set(countByDay.keys()), dayKey(now())),
+        activeDays: recentDays.filter((day) => day.count > 0).length,
+        solveCount: recentDays.reduce((sum, day) => sum + day.count, 0),
+      },
       recordsFor: (kind) => {
         // Kept per kind: an ao100 rolled over thousands of solves is work,
         // and only the kind on screen is ever asked for.

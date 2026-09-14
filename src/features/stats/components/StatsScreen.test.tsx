@@ -20,6 +20,12 @@ vi.mock('../charts/HistogramChart', () => ({
 vi.mock('../charts/TrendChart', () => ({
   TrendChart: () => <div data-testid="trend-chart" />,
 }));
+vi.mock('../charts/DailyTrendChart', () => ({
+  DailyTrendChart: () => <div data-testid="daily-trend-chart" />,
+}));
+vi.mock('../charts/PracticeChart', () => ({
+  PracticeChart: () => <div data-testid="practice-chart" />,
+}));
 
 async function seedSolve(sessionId: string, rawMs: number) {
   return addSolve({
@@ -155,6 +161,29 @@ describe('StatsScreen', () => {
     // 10 and 11 beat it; 12 only equals it, and the DNF is a miss.
     expect(screen.getAllByText('40%')).toHaveLength(2);
     expect(await getSetting('stats.goalMs')).toBe(12_000);
+  });
+
+  it('counts today towards the practice streak', async () => {
+    for (const rawMs of [10_000, 11_000, 12_000]) await seedSolve(sessionId, rawMs);
+
+    render(<StatsScreen />);
+
+    expect(await screen.findByText('1 day')).toBeInTheDocument();
+    expect(screen.getByText('1 of 30')).toBeInTheDocument();
+    expect(await screen.findByTestId('practice-chart')).toBeInTheDocument();
+  });
+
+  it('reads the trend by day when asked, and remembers it', async () => {
+    for (let i = 0; i < 12; i += 1) await seedSolve(sessionId, 10_000 + i * 100);
+    const user = userEvent.setup();
+
+    render(<StatsScreen />);
+    expect(await screen.findByTestId('trend-chart')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'By day' }));
+
+    expect(await screen.findByTestId('daily-trend-chart')).toBeInTheDocument();
+    expect(await getSetting('stats.trendByDay')).toBe(true);
   });
 
   it('draws the rolling ao12 once the window has filled', async () => {

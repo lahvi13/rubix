@@ -1996,6 +1996,27 @@ button[disabled] {
   text-underline-offset: 0.25em;
 }
 
+/* Three figures over the practice chart, read before the bars are. */
+.practice__figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0 0 var(--space-5);
+}
+
+.practice__figures dt {
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.practice__figures dd {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-2xl);
+}
+
 .goal__form {
   display: flex;
   flex-wrap: wrap;

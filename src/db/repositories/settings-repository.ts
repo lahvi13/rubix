@@ -89,6 +89,11 @@ export interface SettingValues {
   'stats.allSessions': boolean;
   /** The time the reader is chasing — "sub 1:30" is 90000. 0 means none set. */
   'stats.goalMs': number;
+  /**
+   * Read the trend by the calendar — one point per day practised — rather
+   * than solve by solve. Months of progress are a question about days.
+   */
+  'stats.trendByDay': boolean;
 }
 
 export const DRILL_MODES = ['solve', 'recognise'] as const;
@@ -124,6 +129,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.phaseTrendSmoothed': false,
   'stats.allSessions': true,
   'stats.goalMs': 0,
+  'stats.trendByDay': false,
 };
 
 export type SettingKey = keyof SettingValues;
