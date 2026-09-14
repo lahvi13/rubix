@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "rubix",
   "compatibility_date": "2026-09-01",
-  // Production is served from the custom domain https://rubix.aix.cz only.
+  // Production is served from the custom domain https://rubix.lahvi.cz only.
   // Keeping the origin stable matters: IndexedDB is scoped to it.
   "workers_dev": false,
   // Per-branch preview URLs — used to test PWA behaviour on a phone before merging.
