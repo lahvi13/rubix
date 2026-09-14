@@ -43,13 +43,32 @@ export function phaseAverageTable(
   phaseKeys: readonly string[],
 ): PhaseAverageRow[] {
   const measured = measuredSolves(solves);
-  return PHASE_AVERAGE_WINDOWS.map((n) => phaseAverageRow(measured, phaseKeys, n));
+  const lengths = lengthsBySolve(measured, phaseKeys);
+  return PHASE_AVERAGE_WINDOWS.map((n) => phaseAverageRow(measured, phaseKeys, n, lengths));
+}
+
+/** A solve's phase lengths, in method order; null where a boundary is missing. */
+type PhaseLengths = ReadonlyMap<Solve, readonly (number | null)[]>;
+
+/**
+ * Every phase length of every solve, worked out once. The table reads them
+ * six rows by four columns over, and splitting each solve afresh for every
+ * cell was most of what the stats screen spent on a session of thousands.
+ */
+function lengthsBySolve(solves: readonly Solve[], phaseKeys: readonly string[]): PhaseLengths {
+  return new Map(
+    solves.map((solve) => [
+      solve,
+      phaseDurations(solve.splits, phaseKeys, solve.rawMs).map((duration) => duration.ms),
+    ]),
+  );
 }
 
 function phaseAverageRow(
   measured: readonly Solve[],
   phaseKeys: readonly string[],
   n: PhaseWindow,
+  lengths: PhaseLengths,
 ): PhaseAverageRow {
   const empty: PhaseAverageRow = {
     n,
@@ -69,7 +88,7 @@ function phaseAverageRow(
     // so this row is the only one whose columns are not meant to add up.
     return {
       n,
-      phases: phaseKeys.map((phase) => bestOfPhase(kept, phaseKeys, phase)),
+      phases: phaseKeys.map((phase, order) => bestOfPhase(kept, lengths, phase, order)),
       totalMs: leastOf(kept.map(finalMs)),
     };
   }
@@ -80,7 +99,7 @@ function phaseAverageRow(
     // boundary recorded the columns add up to the number on the right. A
     // solve carrying a +2 is the one exception: the penalty is not part of
     // any phase.
-    phases: phaseKeys.map((phase) => averageOfPhase(kept, phaseKeys, phase)),
+    phases: phaseKeys.map((phase, order) => averageOfPhase(kept, lengths, phase, order)),
     totalMs: n === 'all' ? meanOf(kept.map(finalMs)) : windowAverage(finals),
   };
 }
@@ -96,36 +115,32 @@ function trimmed(window: readonly Solve[]): Solve[] {
 
 function averageOfPhase(
   solves: readonly Solve[],
-  phaseKeys: readonly string[],
+  lengths: PhaseLengths,
   phase: string,
+  order: number,
 ): PhaseAverage {
-  const lengths = lengthsOfPhase(solves, phaseKeys, phase);
-  return { phase, ms: meanOf(lengths), count: lengths.length };
+  const known = lengthsOfPhase(solves, lengths, order);
+  return { phase, ms: meanOf(known), count: known.length };
 }
 
 /** Known lengths of one phase across the given solves. Unknown ones are skipped. */
-function lengthsOfPhase(
-  solves: readonly Solve[],
-  phaseKeys: readonly string[],
-  phase: string,
-): number[] {
-  const lengths: number[] = [];
+function lengthsOfPhase(solves: readonly Solve[], lengths: PhaseLengths, order: number): number[] {
+  const known: number[] = [];
   for (const solve of solves) {
-    const duration = phaseDurations(solve.splits, phaseKeys, solve.rawMs).find(
-      (entry) => entry.phase === phase,
-    );
-    if (duration?.ms != null) lengths.push(duration.ms);
+    const ms = lengths.get(solve)?.[order];
+    if (ms != null) known.push(ms);
   }
-  return lengths;
+  return known;
 }
 
 function bestOfPhase(
   solves: readonly Solve[],
-  phaseKeys: readonly string[],
+  lengths: PhaseLengths,
   phase: string,
+  order: number,
 ): PhaseAverage {
-  const lengths = lengthsOfPhase(solves, phaseKeys, phase);
-  return { phase, ms: leastOf(lengths), count: lengths.length };
+  const known = lengthsOfPhase(solves, lengths, order);
+  return { phase, ms: leastOf(known), count: known.length };
 }
 
 function leastOf(values: readonly (number | null)[]): number | null {
@@ -166,10 +181,11 @@ export interface Bests {
  */
 export function bestsOf(solves: readonly Solve[], phaseKeys: readonly string[]): Bests {
   const kept = measuredSolves(solves).filter((solve) => !isDnf(solve));
+  const lengths = lengthsBySolve(kept, phaseKeys);
   return {
     totalMs: leastOf(solves.map(finalMs)),
-    phaseMs: phaseKeys.map((phase) =>
-      leastOf(lengthsOfPhase(kept, phaseKeys, phase).filter((ms) => ms > 0)),
+    phaseMs: phaseKeys.map((_, order) =>
+      leastOf(lengthsOfPhase(kept, lengths, order).filter((ms) => ms > 0)),
     ),
   };
 }
