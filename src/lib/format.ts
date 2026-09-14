@@ -27,8 +27,9 @@ export function formatMs(ms: number): string {
  * an axis that reads "40.00, 50.00, 1:00.00" makes the reader work out twice
  * which of those is bigger.
  *
- * Over a minute the whole axis is `m:ss`; under it, seconds with one decimal
- * only when the steps need one.
+ * Over a minute the whole axis is `m:ss`; under it, seconds with only the
+ * decimals the tick needs. The axis steps by a quarter second too, and one
+ * decimal rounded those ticks into an uneven 1.3, 1.5, 1.8.
  */
 export function formatAxisMs(ms: number, axisMaxMs: number): string {
   if (axisMaxMs >= MS_PER_MINUTE) {
@@ -37,7 +38,8 @@ export function formatAxisMs(ms: number, axisMaxMs: number): string {
     return `${minutes}:${String(totalSeconds % 60).padStart(2, '0')}`;
   }
   const seconds = ms / MS_PER_SECOND;
-  return Number.isInteger(seconds) ? String(seconds) : seconds.toFixed(1);
+  if (Number.isInteger(seconds)) return String(seconds);
+  return Number.isInteger(seconds * 10) ? seconds.toFixed(1) : seconds.toFixed(2);
 }
 
 const DATE_FORMATS = {

@@ -156,6 +156,8 @@ describe('formatAxisMs', () => {
     // Under a minute the axis reads in seconds; a whole step keeps no decimal.
     [40_000, 55_000, '40'],
     [12_500, 20_000, '12.5'],
+    [1250, 2500, '1.25'],
+    [1750, 2500, '1.75'],
     [0, 20_000, '0'],
     // Once anything on the axis passes a minute, every tick is m:ss — this is
     // the mix the axes used to show: "40.00" next to "1:00.00".
