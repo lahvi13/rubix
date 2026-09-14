@@ -64,14 +64,69 @@ export function bestAverage(finals: readonly (number | null)[], n: number): Aver
 export function bestAverageStart(finals: readonly (number | null)[], n: number): number | null {
   let bestStart: number | null = null;
   let bestMs = Number.POSITIVE_INFINITY;
-  for (let start = 0; start + n <= finals.length; start += 1) {
-    const average = windowAverage(finals.slice(start, start + n));
+  windowAverages(finals, n).forEach((average, start) => {
     if (average !== 'dnf' && average < bestMs) {
       bestMs = average;
       bestStart = start;
     }
-  }
+  });
   return bestStart;
+}
+
+/**
+ * The average of every window of n in a row, indexed by where the window
+ * starts; empty below the window size. Each equals windowAverage over the
+ * same slice.
+ *
+ * One window slides instead of each being sorted afresh: a solve goes into a
+ * sorted copy and the oldest one comes out. Sorting every window of an ao100
+ * over five thousand solves took a phone's main thread for a quarter of a
+ * second after every solve, and the best ao50 and ao100 are asked for each
+ * time the stats move.
+ */
+export function windowAverages(finals: readonly (number | null)[], n: number): (number | 'dnf')[] {
+  if (n <= 0 || finals.length < n) return [];
+  const trim = trimCount(n);
+  // A DNF sorts past every time, which is exactly where the trim wants it.
+  const sorted: number[] = [];
+  const averages: (number | 'dnf')[] = [];
+  finals.forEach((value, index) => {
+    insertSorted(sorted, value ?? Number.POSITIVE_INFINITY);
+    const leaving = index - n;
+    if (leaving >= 0) removeSorted(sorted, finals[leaving] ?? Number.POSITIVE_INFINITY);
+    if (index >= n - 1) averages.push(keptMean(sorted, trim));
+  });
+  return averages;
+}
+
+function keptMean(sorted: readonly number[], trim: number): number | 'dnf' {
+  let sum = 0;
+  for (let rank = trim; rank < sorted.length - trim; rank += 1) {
+    const value = sorted[rank] ?? Number.POSITIVE_INFINITY;
+    if (value === Number.POSITIVE_INFINITY) return 'dnf';
+    sum += value;
+  }
+  return Math.round(sum / (sorted.length - 2 * trim));
+}
+
+/** The first position whose value is not less than the one given. */
+function lowerBound(sorted: readonly number[], value: number): number {
+  let low = 0;
+  let high = sorted.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if ((sorted[middle] ?? Number.POSITIVE_INFINITY) < value) low = middle + 1;
+    else high = middle;
+  }
+  return low;
+}
+
+function insertSorted(sorted: number[], value: number): void {
+  sorted.splice(lowerBound(sorted, value), 0, value);
+}
+
+function removeSorted(sorted: number[], value: number): void {
+  sorted.splice(lowerBound(sorted, value), 1);
 }
 
 /**
@@ -101,9 +156,9 @@ export function rollingAverage(
   finals: readonly (number | null)[],
   n: number,
 ): (number | null)[] {
+  const averages = windowAverages(finals, n);
   return finals.map((_, index) => {
-    if (index + 1 < n) return null;
-    const average = windowAverage(finals.slice(index + 1 - n, index + 1));
-    return average === 'dnf' ? null : average;
+    const average = averages[index + 1 - n];
+    return average === undefined || average === 'dnf' ? null : average;
   });
 }

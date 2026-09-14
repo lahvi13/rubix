@@ -6,6 +6,7 @@ import {
   rollingAverage,
   trimCount,
   trimmedMask,
+  windowAverages,
   windowAverage,
   type Average,
 } from './averages';
@@ -121,6 +122,33 @@ describe('trimmedMask', () => {
     expect(mask.filter(Boolean)).toHaveLength(6);
     expect(mask.slice(0, 3)).toEqual([true, true, true]);
     expect(mask.slice(47)).toEqual([true, true, true]);
+  });
+});
+
+describe('windowAverages', () => {
+  it('is empty below the window size', () => {
+    expect(windowAverages([1000, 2000], 5)).toEqual([]);
+  });
+
+  it('gives each window, by where it starts', () => {
+    expect(windowAverages([1000, 2000, 3000, 4000, 5000, 6000], 5)).toEqual([3000, 4000]);
+  });
+
+  // The sliding window has to agree with sorting every window afresh, which
+  // is what windowAverage does — across DNFs, ties and every trim size.
+  it.each([5, 12, 50, 100])('matches windowAverage over every window of ao%i', (n) => {
+    let seed = n;
+    const random = () => {
+      seed = (seed * 16_807) % 2_147_483_647;
+      return seed / 2_147_483_647;
+    };
+    const finals = Array.from({ length: 400 }, () =>
+      random() < 0.06 ? null : 10_000 + Math.floor(random() * 40) * 250,
+    );
+    const expected = finals
+      .slice(0, finals.length - n + 1)
+      .map((_, start) => windowAverage(finals.slice(start, start + n)));
+    expect(windowAverages(finals, n)).toEqual(expected);
   });
 });
 
