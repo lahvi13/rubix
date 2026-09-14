@@ -18,6 +18,12 @@ interface CubeDiagramProps {
    */
   label: string | null;
   className?: string;
+  /**
+   * Load at once rather than when scrolled to. For a picture that is on
+   * screen from the start and is the largest thing there — lazy loading it
+   * only delays the moment the page looks ready.
+   */
+  isEager?: boolean;
 }
 
 /**
@@ -39,6 +45,7 @@ export const CubeDiagram = memo(function CubeDiagram({
   skin,
   label,
   className,
+  isEager = false,
 }: CubeDiagramProps) {
   return (
     <img
@@ -48,7 +55,7 @@ export const CubeDiagram = memo(function CubeDiagram({
       draggable={false}
       // Fifty-seven pictures arriving at once are fifty-seven decodes; off the
       // main thread, and only for the ones actually on screen.
-      loading="lazy"
+      loading={isEager ? 'eager' : 'lazy'}
       decoding="async"
     />
   );

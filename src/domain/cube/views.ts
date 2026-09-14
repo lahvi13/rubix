@@ -41,7 +41,12 @@ export type Stickering =
    * middle layer is not built, and drawing one of its edges floating in the top
    * layer says look at me about a piece that does not matter yet.
    */
-  | 'bottomLayer';
+  | 'bottomLayer'
+  /**
+   * No colours at all: the shape of a cube, standing in for one that is not
+   * known yet — the scramble still being generated.
+   */
+  | 'blank';
 
 export type Cell = Face | null;
 
@@ -145,6 +150,8 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       return pieceSize(index) === 1 || isCrossEdge(state, index) ? colour : null;
     case 'bottomLayer':
       return pieceSize(index) === 1 || isBottomPiece(state, index) ? colour : null;
+    case 'blank':
+      return null;
     case 'firstTwoLayers':
       // By piece rather than by place: a last-layer piece that has dropped
       // into the slot is what makes the slot a hole, and painting it in its

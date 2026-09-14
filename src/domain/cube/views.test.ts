@@ -191,6 +191,14 @@ describe('isometricView', () => {
   });
 });
 
+describe('the blank stickering', () => {
+  it('draws every sticker grey, whatever the state', () => {
+    const view = isometricView(after("R U R' U'"), 'blank');
+
+    expect([...view.top, ...view.front, ...view.right].every((sticker) => sticker === null)).toBe(true);
+  });
+});
+
 describe('the cross stickering', () => {
   it('shows the four bottom edges and every centre, and nothing else', () => {
     const view = netView(solvedState(), 'cross');

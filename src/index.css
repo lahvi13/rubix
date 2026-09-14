@@ -505,6 +505,31 @@ button[disabled] {
   visibility: hidden;
 }
 
+/* The loading line over an invisible scramble, so the rows are held before
+   the moves arrive. */
+.scramble__placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* No width of its own in ch: the grid inside is measured in the scramble's
+     larger type, and this box would come out narrower and wrap an extra row. */
+  width: 100%;
+}
+
+.scramble__placeholder > * {
+  grid-area: 1 / 1;
+}
+
+.scramble__placeholder .scramble__moves {
+  visibility: hidden;
+}
+
+.scramble__loading {
+  font-size: var(--text-md);
+  font-weight: 400;
+  color: var(--muted);
+}
+
 .scramble__text {
   margin: 0;
   max-width: 40ch;

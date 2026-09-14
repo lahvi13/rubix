@@ -61,6 +61,7 @@ export const ScramblePanel = memo(function ScramblePanel({
         // trainer's yellow-top view would be a different cube.
         skin={withWhiteTop(skin)}
         label={strings.scramble.label}
+        isEager
       />
     );
 
@@ -73,10 +74,25 @@ export const ScramblePanel = memo(function ScramblePanel({
       ) : (
         <>
           {scramble === null ? (
-            <p className="scramble__text">{strings.scramble.loading}</p>
+            <ScramblePlaceholder />
           ) : (
             <ScrambleMoves scramble={scramble} playingMove={playingMove} />
           )}
+          {scramble === null && isPreviewShown ? (
+            /* A grey cube in the box the scramble's cube will take, so the
+               screen looks finished while the scramble is still computed. */
+            <div className="scramble__stage" aria-hidden="true">
+              <CubeDiagram
+                className="scramble__preview"
+                state={solvedState()}
+                view={mode === '3D' ? 'isometric' : 'net'}
+                stickering="blank"
+                skin={skin}
+                label={null}
+                isEager
+              />
+            </div>
+          ) : null}
           {scramble === null || !isPreviewShown ? null : (
             /* The cube is the button. A label under it needed a line of its
                own on a screen that has none to spare, and it sat under the
@@ -132,6 +148,28 @@ function ScrambleMoves({
         </span>
       ))}
     </p>
+  );
+}
+
+/** A scramble's worth of moves: 3×3 random-state scrambles run 19 to 21. */
+const PLACEHOLDER_MOVES = Array.from({ length: 20 }, () => 'R2 ');
+
+/**
+ * What stands in while the first scramble is generated: the words, over an
+ * invisible grid of as many rows as a scramble fills. A one-line "generating"
+ * that the scramble then grew out of pushed the clock and the list down the
+ * screen a second into every visit — the largest layout shift the app had.
+ */
+function ScramblePlaceholder() {
+  return (
+    <div className="scramble__placeholder">
+      <p className="scramble__text scramble__moves" aria-hidden="true">
+        {PLACEHOLDER_MOVES.map((move, index) => (
+          <span key={index}>{move}</span>
+        ))}
+      </p>
+      <p className="scramble__text scramble__loading">{strings.scramble.loading}</p>
+    </div>
   );
 }
 
