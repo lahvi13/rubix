@@ -98,7 +98,7 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
                 <ChartTooltip
                   title={`${strings.stats.solveIndex} ${String(label)}`}
                   rows={rows}
-                  note={isSmoothed ? strings.splits.smoothingOn : undefined}
+                  note={isSmoothed ? strings.splits.smoothingTooltip : undefined}
                 />
               );
             }}

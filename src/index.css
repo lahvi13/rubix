@@ -1357,12 +1357,14 @@ button[disabled] {
    detail's big number read like the history's rows, or the mark would have
    to be learnt again on each screen. */
 .solves__time.is-best,
-.detail__result.is-best {
+.detail__result.is-best,
+.stat-card__value.is-best {
   color: var(--accent);
 }
 
 .solves__time.is-record,
-.detail__result.is-record {
+.detail__result.is-record,
+.stat-card__value.is-record {
   color: var(--record);
 }
 
@@ -1864,15 +1866,21 @@ button[disabled] {
 }
 
 /*
- * Six cards, so the grid comes out even at two, three or six across and no
- * card is ever left alone on the last row. `auto-fit` rather than `auto-fill`:
- * an empty track at the end stretches the cards that exist instead of leaving
- * a gap where a seventh used to be.
+ * Six slots — six cards for a session, five over every session with the PB
+ * across two — so the columns are two or three and nothing else. Left to
+ * auto-fit, the desktop width came out at five across and left the last card
+ * alone on a row of its own.
  */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
+}
+
+@media (min-width: 34rem) {
+  .stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .stat-card {
@@ -1924,8 +1932,8 @@ button[disabled] {
   color: var(--muted);
 }
 
-.stat-card--highlight .stat-card__value {
-  color: var(--accent);
+.stat-card--wide {
+  grid-column: span 2;
 }
 
 .stats__section-title {
@@ -1951,6 +1959,15 @@ button[disabled] {
   border-bottom: 1px solid var(--border);
 }
 
+/* Flush with the section title above, so both tables start where it does. */
+.averages-table tr > :first-child {
+  padding-inline-start: 0;
+}
+
+.averages-table tr > :last-child {
+  padding-inline-end: 0;
+}
+
 .averages-table tbody th {
   text-align: left;
   font-weight: 400;
@@ -1970,6 +1987,14 @@ button[disabled] {
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   scroll-margin-top: var(--header-height);
+}
+
+/* Recharts makes the plot focusable so the keyboard can walk its points, and a
+   tap focuses it too — which left the browser's ring drawn round the plot as
+   if it were a frame. The ring stays for the keyboard, where it means
+   something. */
+.chart-card :focus:not(:focus-visible) {
+  outline: none;
 }
 
 /*
@@ -4119,19 +4144,34 @@ input[type='radio'] {
   color: var(--muted);
 }
 
-/* Phases plus a total is more columns than a phone has room for. */
+/* Phases plus a total is more columns than a phone has room for. The scroll
+   is the last resort, not the layout: a table that has to be pushed sideways
+   to find its total is a table read in two halves. */
 .table-scroll {
   overflow-x: auto;
 }
 
+/* Tight on a phone. Slow solves write F2L and the total in minutes, and at the
+   large text size those two columns alone were what pushed the total off. */
 .averages-table--phases {
-  font-size: var(--text-md);
+  font-size: var(--text-sm);
 }
 
 .averages-table--phases th,
 .averages-table--phases td {
-  padding: var(--space-3) var(--space-3);
+  padding: var(--space-3) var(--space-2);
   white-space: nowrap;
+}
+
+@media (min-width: 34rem) {
+  .averages-table--phases {
+    font-size: var(--text-md);
+  }
+
+  .averages-table--phases th,
+  .averages-table--phases td {
+    padding-inline: var(--space-3);
+  }
 }
 
 .averages-table__total {

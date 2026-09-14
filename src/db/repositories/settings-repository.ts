@@ -81,6 +81,12 @@ export interface SettingValues {
    * has to be asked for rather than arrived at.
    */
   'stats.phaseTrendSmoothed': boolean;
+  /**
+   * The stats screen reads every session at once unless told otherwise. A
+   * session is how the timer groups an evening; progress is read over months,
+   * and it was being read one session at a time.
+   */
+  'stats.allSessions': boolean;
 }
 
 export const DRILL_MODES = ['solve', 'recognise'] as const;
@@ -114,6 +120,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.chartWindow': 100,
   'stats.phaseTrendMode': 'stacked',
   'stats.phaseTrendSmoothed': false,
+  'stats.allSessions': true,
 };
 
 export type SettingKey = keyof SettingValues;

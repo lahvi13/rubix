@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import type { Puzzle } from '../../../db/types';
 import {
   getGlobalPbSolve,
+  listPuzzleSolvesChronological,
   listSolvesChronological,
 } from '../../../db/repositories/solve-repository';
 import { getSetting, SETTING_DEFAULTS } from '../../../db/repositories/settings-repository';
@@ -35,6 +36,9 @@ import {
 /** The trend chart tracks rolling ao12 (SPEC 3.4). */
 const TREND_WINDOW = 12;
 
+/** Whose solves: one session's, or every freestyle solve of the puzzle. */
+export type StatsSource = { kind: 'session'; sessionId: string | null } | { kind: 'all' };
+
 export interface WindowStats {
   n: AverageWindow;
   current: Average;
@@ -42,7 +46,7 @@ export interface WindowStats {
 }
 
 export interface TrendPoint {
-  /** 1-based solve index within the session — the chart's x axis. */
+  /** 1-based solve index within the solves being read — the chart's x axis. */
   index: number;
   aoMs: number | null;
 }
@@ -82,17 +86,21 @@ export interface SessionStats {
 
 /**
  * Everything the stats screen shows, recomputed live. Nothing here is stored;
- * the whole object is derived from the session's solves on every write.
+ * the whole object is derived from the solves on every write.
  */
 export function useSessionStats(
-  sessionId: string | null,
+  /** null while it is not yet known whose solves to read. */
+  source: StatsSource | null,
   puzzle: Puzzle,
   phaseKeys: readonly string[] = [],
 ): SessionStats | null {
-  const solves = useLiveQuery(
-    async () => (sessionId ? listSolvesChronological(sessionId) : []),
-    [sessionId],
-  );
+  const kind = source?.kind ?? null;
+  const sessionId = source?.kind === 'session' ? source.sessionId : null;
+  const solves = useLiveQuery(async () => {
+    if (kind === null) return undefined;
+    if (kind === 'all') return listPuzzleSolvesChronological(puzzle);
+    return sessionId === null ? [] : listSolvesChronological(sessionId);
+  }, [kind, sessionId, puzzle]);
   const globalPb = useLiveQuery(() => getGlobalPbSolve(puzzle), [puzzle]);
   const chartWindow = useLiveQuery(() => getSetting('stats.chartWindow'), []);
 

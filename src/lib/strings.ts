@@ -72,9 +72,13 @@ export const strings = {
     measuredNote: (measured: number, total: number) =>
       `${measured} of ${total} solves were timed by phase; the rest were timed as a whole.`,
     trendAxes: (count: number) =>
-      `Along the bottom: the ${count} phase-timed solves of this session, oldest first.`,
-    smoothing: 'Mean of 5',
-    smoothingOn: 'Rolling mean over the last five solves.',
+      `Along the bottom: the last ${count} phase-timed solves, oldest first.`,
+    smoothing: 'Smooth',
+    /** Under the chart, where there is room to say why. */
+    smoothingOn:
+      'Smoothed: each point is the mean of that solve and the four before it, so one lucky or slow solve does not jump out.',
+    /** In the readout, which has to stay narrow enough for a phone. */
+    smoothingTooltip: 'Mean of this solve and the four before it.',
     smoothingOff: 'Each solve as it was timed.',
     modeStacked: 'Stacked',
     modeSeparate: 'Separate',
@@ -127,6 +131,10 @@ export const strings = {
   },
   stats: {
     empty: 'No solves in this session yet.',
+    emptyAll: 'No solves yet.',
+    scope: 'Which solves',
+    allSessions: 'All sessions',
+    thisSession: 'This session',
     solves: 'solves',
     averages: 'Averages',
     current: 'Current',
@@ -149,7 +157,7 @@ export const strings = {
     solveIndex: 'Solve',
     /** Axis captions, so a chart can be read without the table above it. */
     distributionAxes: 'Each bar is a range of solve times; height is how many solves fell in it.',
-    trendAxes: 'Average of the twelve solves ending at each point, along the session.',
+    trendAxes: 'Average of the twelve solves ending at each point, oldest first.',
     andUp: 'and up',
     bestAo12: 'Best ao12',
     containsCurrent: 'Current ao12 falls here',

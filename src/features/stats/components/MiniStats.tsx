@@ -14,7 +14,7 @@ interface MiniStatsProps {
  * Memoised because the host screen repaints on animation frames while timing.
  */
 export const MiniStats = memo(function MiniStats({ sessionId, puzzle }: MiniStatsProps) {
-  const stats = useSessionStats(sessionId, puzzle);
+  const stats = useSessionStats({ kind: 'session', sessionId }, puzzle);
   if (stats === null || stats.solveCount === 0) return null;
 
   const ao5 = stats.windows.find((window) => window.n === 5)?.current ?? null;

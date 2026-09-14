@@ -8,6 +8,7 @@ import {
   getGlobalPbSingle,
   listRecentSolves,
   listSolves,
+  listPuzzleSolvesChronological,
   listSolvesChronological,
   moveSolves,
   restoreSolves,
@@ -149,6 +150,17 @@ describe('stats queries', () => {
     await addSolve(await makeSolve(sessionId, 2000));
 
     const solves = await listSolvesChronological(sessionId);
+    expect(solves.map((solve) => solve.rawMs)).toEqual([3000, 1000, 2000]);
+  });
+
+  it('lists every freestyle solve of a puzzle across sessions, oldest first', async () => {
+    await addSolve(await makeSolve(sessionId, 3000));
+    await addSolve(await makeSolve('other-session', 1000));
+    await addSolve({ ...(await makeSolve(sessionId, 4000)), mode: 'drill' });
+    await addSolve({ ...(await makeSolve(sessionId, 5000)), puzzle: '222' });
+    await addSolve(await makeSolve(sessionId, 2000));
+
+    const solves = await listPuzzleSolvesChronological('333');
     expect(solves.map((solve) => solve.rawMs)).toEqual([3000, 1000, 2000]);
   });
 

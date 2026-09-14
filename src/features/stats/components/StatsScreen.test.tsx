@@ -8,6 +8,7 @@ import {
   getActiveSession,
   getOrCreateActiveSession,
 } from '../../../db/repositories/session-repository';
+import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import { addSolve, updateSolve } from '../../../db/repositories/solve-repository';
 import { StatsScreen } from './StatsScreen';
 
@@ -44,10 +45,35 @@ describe('StatsScreen', () => {
 
   it('shows the empty state before the first solve', async () => {
     render(<StatsScreen />);
-    expect(await screen.findByText('No solves in this session yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No solves yet.')).toBeInTheDocument();
+  });
+
+  it('reads every session by default, and one when asked', async () => {
+    const elsewhere = await createSession('Evening', '333', 'freestyle');
+    await seedSolve(elsewhere.id, 10_000);
+    await activateSession(sessionId);
+    await seedSolve(sessionId, 20_000);
+    await seedSolve(sessionId, 30_000);
+    const user = userEvent.setup();
+
+    render(<StatsScreen />);
+
+    expect(await screen.findByText('3 solves')).toBeInTheDocument();
+    // Mean and median agree over 10, 20 and 30.
+    expect(screen.getAllByText('20.00')).toHaveLength(2);
+    // Over every session the session best would only repeat the PB.
+    expect(screen.queryByText('Session best')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'This session' }));
+
+    expect(await screen.findByText(/2 solves/)).toBeInTheDocument();
+    expect(screen.getAllByText('25.00')).toHaveLength(2);
+    expect(screen.getByText('Session best')).toBeInTheDocument();
+    expect(await getSetting('stats.allSessions')).toBe(false);
   });
 
   it('shows PB, averages and rates computed from the session', async () => {
+    await setSetting('stats.allSessions', false);
     for (const rawMs of [10_000, 11_000, 12_000, 13_000, 14_000]) {
       await seedSolve(sessionId, rawMs);
     }
@@ -90,6 +116,7 @@ describe('StatsScreen', () => {
     await seedSolve(elsewhere.id, 5000);
     await activateSession(sessionId);
     await seedSolve(sessionId, 12_000);
+    await setSetting('stats.allSessions', false);
     const user = userEvent.setup();
 
     render(<StatsScreen />);
@@ -110,7 +137,7 @@ describe('StatsScreen', () => {
   it('leaves a best that has no solve behind it unpressable', async () => {
     render(<StatsScreen />);
 
-    await screen.findByText('No solves in this session yet.');
+    await screen.findByText('No solves yet.');
     expect(screen.queryByRole('button', { name: /PB single/i })).not.toBeInTheDocument();
   });
 

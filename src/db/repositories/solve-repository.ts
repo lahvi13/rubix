@@ -143,6 +143,15 @@ export async function listSolvesChronological(sessionId: string): Promise<Solve[
 }
 
 /**
+ * Every freestyle solve of a puzzle, from every session, archived ones too —
+ * oldest first. The global PB already counts all of them, and a view of "all
+ * my solves" that left some out would disagree with it.
+ */
+export async function listPuzzleSolvesChronological(puzzle: Puzzle): Promise<Solve[]> {
+  return db.solves.where('[mode+puzzle]').equals(['freestyle', puzzle]).sortBy('createdAt');
+}
+
+/**
  * The best single a puzzle has ever seen, across all freestyle sessions, and
  * the solve it belongs to. The compound index skips DNFs and drills entirely,
  * and the fold keeps one row rather than materialising every solve.
