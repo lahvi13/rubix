@@ -112,6 +112,8 @@ export interface SettingValues {
   'data.lastExportAt': number;
   /** How big that backup file was, 0 when unknown. */
   'data.lastExportBytes': number;
+  /** When the backup reminder was last put off, 0 for never. */
+  'data.backupReminderSnoozedAt': number;
 }
 
 export const DRILL_MODES = ['solve', 'recognise'] as const;
@@ -154,6 +156,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.trendByDay': false,
   'data.lastExportAt': 0,
   'data.lastExportBytes': 0,
+  'data.backupReminderSnoozedAt': 0,
 };
 
 export type SettingKey = keyof SettingValues;

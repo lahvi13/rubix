@@ -614,6 +614,12 @@ export const strings = {
     deletedAll: 'All data deleted.',
     deleteFailed: 'Could not delete the data',
   },
+  backupReminder: {
+    sinceBackup: (count: number) => `${count} solves are not in your last backup.`,
+    never: (count: number) => `${count} solves exist only on this device, with no backup.`,
+    backUp: 'Back up',
+    later: 'Not now',
+  },
   cstimer: {
     title: 'From csTimer',
     hint: 'Takes a csTimer export: the JSON from Export/Import (csTimer names it .txt) or one session exported as CSV. Every csTimer session arrives as a session of its own — nothing is mixed into the one you are timing into.',

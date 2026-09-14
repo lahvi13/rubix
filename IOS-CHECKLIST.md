@@ -60,15 +60,28 @@ Deploy first, then check what production actually serves — the header shows
     screen. It must come up, show a scramble, and time a solve.
 15. Time three solves, close from the switcher, wait a few minutes, reopen.
     They must still be there.
-16. Data → Export data: check that a file **actually comes out** (iOS opens the
-    share sheet, or saves to Files). The export is a plain `<a download>` on a
-    blob URL, which is the shakiest thing in the app on iOS.
-17. If there is the patience for it, check a week later that the solves are
+16. Data → Export data, **from the home-screen app, not a tab**: check that a
+    file **actually comes out** (iOS opens the share sheet, or saves to Files).
+    The export is a plain `<a download>` on a blob URL, which is the shakiest
+    thing in the app on iOS — a standalone web app has no download bar to put
+    it in. The line under the section title must change to "Last backup: Today
+    · … KB".
+17. Right after the export, "Send it somewhere…" must be there. Tap it: the
+    share sheet opens, and Mail or Files takes a `rubix-YYYY-MM-DD.txt`. If
+    the download in step 16 did nothing, this is the way out on iOS — worth
+    knowing before anyone relies on it.
+18. Data → Restore → Choose a file: pick that `.txt` from Files. The preview
+    must come up with the solves in it ("The file changes nothing here." is
+    right when restoring onto the same phone).
+19. The storage line in the Backup section: from the home-screen app it should
+    say the browser **keeps** the data. "May clear" there means `persist()` was
+    refused even for an installed app, and the export is all there is.
+20. If there is the patience for it, check a week later that the solves are
     still there.
 
 ## Updates
 
-18. After the next deploy: launch from the home screen. Within the hour, or on
+21. After the next deploy: launch from the home screen. Within the hour, or on
     returning to the foreground, "A new version is available." must appear, and
     the version in the header must change after Reload.
 

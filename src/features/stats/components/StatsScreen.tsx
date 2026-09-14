@@ -8,6 +8,7 @@ import {
 import { useSetting } from '../../../hooks/use-setting';
 import { formatAverage, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
+import { BackupReminder } from '../../data-transfer';
 import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseAverages, usePhases } from '../../splits';
@@ -191,6 +192,7 @@ export function StatsScreen() {
   return (
     <main className="screen screen--scroll">
       <div className="stats">
+        <BackupReminder />
         <div>
           <div className="chart-modes" role="group" aria-label={strings.stats.scope}>
             {STATS_SCOPES.map((candidate) => (
