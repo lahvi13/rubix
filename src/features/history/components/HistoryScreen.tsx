@@ -212,8 +212,10 @@ export function HistoryScreen() {
         </div>
       ) : null}
 
-      {history.solves.length === 0 ? (
-        <p className="solves__empty">{strings.history.empty}</p>
+      {history.solves.length === 0 && history.isLoading ? null : history.solves.length === 0 ? (
+        <p className="solves__empty">
+          {history.isFiltered ? strings.history.empty : strings.history.noSolves}
+        </p>
       ) : (
         <ol className={isSelecting ? 'history is-selecting' : 'history'}>
           {history.solves.map((solve, index) => {

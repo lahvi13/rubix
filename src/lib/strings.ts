@@ -227,6 +227,7 @@ export const strings = {
   },
   history: {
     empty: 'Nothing matches these filters.',
+    noSolves: 'No solves in this session yet.',
     loadMore: 'Load more',
     detailTitle: 'Solve detail',
     close: 'Close',
@@ -543,7 +544,7 @@ export const strings = {
   data: {
     exportTitle: 'Backup',
     exportHint:
-      'Writes every session, solve, tag and setting into one file. Settings that belong to this device, like microphone calibration, stay here.',
+      'Writes every session, solve, tag and setting into one file. Settings that belong to this device, like the theme and the text size, stay here.',
     exportAction: 'Export data',
     exportFailed: 'Could not export the data',
     exportCsvAction: 'Solves as CSV',

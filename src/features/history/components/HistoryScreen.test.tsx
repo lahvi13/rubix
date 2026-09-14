@@ -13,6 +13,7 @@ import {
   updateSolve,
 } from '../../../db/repositories/solve-repository';
 import { resetSheetHistory } from '../../../lib/sheet-history';
+import { strings } from '../../../lib/strings';
 import { HistoryScreen } from './HistoryScreen';
 
 async function seedSolve(sessionId: string, rawMs: number) {
@@ -99,6 +100,16 @@ describe('HistoryScreen', () => {
     // Out of the mode, the same tap opens the solve again.
     await user.click(screen.getByText('12.34'));
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('says an empty session is empty, and blames the filter only when there is one', async () => {
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    expect(await screen.findByText(strings.history.noSolves)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Filter by DNF' }));
+    expect(await screen.findByText(strings.history.empty)).toBeInTheDocument();
   });
 
   it('counts the session, and what a filter leaves of it', async () => {
