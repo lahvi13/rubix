@@ -12,12 +12,14 @@ import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
+import { useScrollMemory } from './use-scroll-memory';
 import { ErrorBanner } from './ErrorBanner';
 import { UndoBar } from './UndoBar';
 import { UpdatePrompt } from './UpdatePrompt';
 
 export function App() {
   const route = useRoute();
+  useScrollMemory(route);
   const [isMenuOpen, setMenuOpen] = useState(false);
   // A screen that lived through a lost connection holds dead live queries; the
   // key mounts it again once the database is back.
