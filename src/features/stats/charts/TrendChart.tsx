@@ -121,7 +121,9 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
             />
           )}
           {goalMs === null ? null : (
-            <ReferenceLine y={goalMs} stroke="var(--text)" strokeDasharray="2 4" strokeWidth={1} />
+            // Solid, where the best ao12 is dashed: the two often sit a second
+            // apart, and in the same dash they read as one line.
+            <ReferenceLine y={goalMs} stroke="var(--text)" strokeOpacity={0.6} strokeWidth={1.5} />
           )}
           {bestMs === null ? null : (
             <ReferenceLine
@@ -164,7 +166,14 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
             : [{ label: strings.stats.bestAo12, colour: 'var(--warn)', isReference: true }]),
           ...(goalMs === null
             ? []
-            : [{ label: strings.stats.goalSeries, colour: 'var(--text)', isReference: true }]),
+            : [
+                {
+                  label: strings.stats.goalSeries,
+                  colour: 'var(--text)',
+                  isReference: true,
+                  isSolid: true,
+                },
+              ]),
         ]}
       />
       <p className="chart-note">{strings.stats.trendAxes}</p>

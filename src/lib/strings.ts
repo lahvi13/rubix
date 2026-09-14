@@ -161,9 +161,15 @@ export const strings = {
     dailyAxes:
       'Each point is a day you practised: the line is its mean, the dot its best solve. The bottom counts calendar days, so a break shows as a stretch with no points.',
     practice: 'Practice',
+    /** The section links under the header; short, so the row fits a phone. */
+    sections: 'Sections',
+    navDistribution: 'Distribution',
+    toTop: 'Back to the top',
+    toTopMark: '↑',
     streak: 'Streak',
     dayCount: (count: number) => (count === 1 ? '1 day' : `${count} days`),
     daysPractised: 'Days practised',
+    solvesInDays: (days: number) => `Solves in ${days} days`,
     daysOf: (active: number, total: number) => `${active} of ${total}`,
     practiceNote: (days: number) => `Solves per day over the last ${days} days.`,
     trendSeries: 'ao12',

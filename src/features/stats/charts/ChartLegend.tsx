@@ -9,6 +9,8 @@ export interface LegendEntry {
   edgeColour?: string;
   /** A dashed swatch, for a series drawn as a reference rather than as data. */
   isReference?: boolean;
+  /** A reference drawn as a solid rule rather than dashed. */
+  isSolid?: boolean;
   /** A round swatch, for a series drawn as scattered dots. */
   isDot?: boolean;
 }
@@ -32,7 +34,9 @@ export function ChartLegend({ entries }: ChartLegendProps) {
           <span
             className={
               entry.isReference
-                ? 'chart-legend__swatch is-reference'
+                ? entry.isSolid
+                  ? 'chart-legend__swatch is-reference is-solid'
+                  : 'chart-legend__swatch is-reference'
                 : entry.isDot
                   ? 'chart-legend__swatch is-dot'
                   : 'chart-legend__swatch'

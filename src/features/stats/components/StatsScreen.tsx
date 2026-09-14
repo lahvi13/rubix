@@ -22,6 +22,7 @@ import {
 import { AverageSheet } from './AverageSheet';
 import { GoalSection } from './GoalSection';
 import { RecordsSection } from './RecordsSection';
+import { SectionNav, type NavSection } from './SectionNav';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
@@ -173,6 +174,17 @@ export function StatsScreen() {
   // when they differ — a PB set in a session since archived, or before the
   // latest hundred.
   const hasBestCard = scope === 'session' || stats.sessionBestMs !== stats.globalPbMs;
+  const hasTrend = stats.trend.length > 0 || stats.days.length > 1;
+  const hasPhases = stats.measuredCount > 0 && phases.length > 0;
+  // No link to the averages: they are half a screen under the cards, and the
+  // row has to fit a phone without being scrolled sideways to find the phases.
+  const sections: NavSection[] = [
+    { id: 'stats-records', label: strings.stats.records },
+    ...(hasTrend ? [{ id: 'stats-trend', label: strings.stats.trend }] : []),
+    { id: 'stats-practice', label: strings.stats.practice },
+    { id: 'stats-distribution', label: strings.stats.navDistribution },
+    ...(hasPhases ? [{ id: 'stats-phases', label: strings.splits.title }] : []),
+  ];
   const windowView =
     openWindow === null ? null : stats.averageWindow(openWindow.n, openWindow.at);
 
@@ -224,6 +236,8 @@ export function StatsScreen() {
           </p>
         ) : (
           <>
+            <SectionNav sections={sections} />
+
             <div className="stat-cards">
               {/* Both open the solve behind them, and neither switches session:
                   the all-time best is often another session's, and being moved
@@ -267,7 +281,7 @@ export function StatsScreen() {
 
             <GoalSection goal={stats.goal} solveCount={stats.solveCount} onChange={setGoalMs} />
 
-            <section>
+            <section id="stats-averages">
               <h2 className="stats__section-title">{strings.stats.averages}</h2>
               <table className="averages-table">
                 <thead>
@@ -298,15 +312,17 @@ export function StatsScreen() {
               </table>
             </section>
 
-            <RecordsSection
-              recordsFor={stats.recordsFor}
-              globalPbMs={stats.globalPbMs}
-              onOpenSolve={setOpenSolveId}
-              onOpenWindow={(n, endIndex) => setOpenWindow({ n, at: { endIndex } })}
-            />
+            <div id="stats-records">
+              <RecordsSection
+                recordsFor={stats.recordsFor}
+                globalPbMs={stats.globalPbMs}
+                onOpenSolve={setOpenSolveId}
+                onOpenWindow={(n, endIndex) => setOpenWindow({ n, at: { endIndex } })}
+              />
+            </div>
 
-            {stats.trend.length > 0 || stats.days.length > 1 ? (
-              <section className="chart-card">
+            {hasTrend ? (
+              <section id="stats-trend" className="chart-card">
                 <h2 className="stats__section-title">{strings.stats.trend}</h2>
                 <div className="chart-modes" role="group" aria-label={strings.stats.trend}>
                   <button
@@ -345,7 +361,7 @@ export function StatsScreen() {
               </section>
             ) : null}
 
-            <section className="chart-card">
+            <section id="stats-practice" className="chart-card">
               <h2 className="stats__section-title">{strings.stats.practice}</h2>
               <dl className="practice__figures">
                 <div>
@@ -357,7 +373,7 @@ export function StatsScreen() {
                   <dd>{strings.stats.daysOf(stats.practice.activeDays, PRACTICE_DAYS)}</dd>
                 </div>
                 <div>
-                  <dt>{strings.stats.solvesLabel}</dt>
+                  <dt>{strings.stats.solvesInDays(PRACTICE_DAYS)}</dt>
                   <dd>{stats.practice.solveCount}</dd>
                 </div>
               </dl>
@@ -367,19 +383,23 @@ export function StatsScreen() {
               <p className="chart-note">{strings.stats.practiceNote(PRACTICE_DAYS)}</p>
             </section>
 
-            <section className="chart-card">
+            <section id="stats-distribution" className="chart-card">
               <h2 className="stats__section-title">{strings.stats.distribution}</h2>
               <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
                 <HistogramChart bins={stats.histogramBins} currentAoMs={stats.currentAo12Ms} />
               </Suspense>
             </section>
 
-            <PhaseAverages
-              rows={stats.phaseRows}
-              phases={phases}
-              measuredCount={stats.measuredCount}
-              solveCount={stats.solveCount}
-            />
+            {hasPhases ? (
+              <div id="stats-phases">
+                <PhaseAverages
+                  rows={stats.phaseRows}
+                  phases={phases}
+                  measuredCount={stats.measuredCount}
+                  solveCount={stats.solveCount}
+                />
+              </div>
+            ) : null}
 
             {stats.phaseTrend.length > 0 ? (
               <section className="chart-card">

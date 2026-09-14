@@ -101,6 +101,11 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
           />
           <YAxis
             {...AXIS_PROPS}
+            // The axis is built from what is being read — the means, when
+            // smoothed. The raw underlay can reach past it, and without this
+            // recharts quietly grew the plot for it and left the ticks stopping
+            // two thirds of the way up.
+            allowDataOverflow
             domain={axis.domain}
             ticks={axis.ticks}
             tickFormatter={axis.format}

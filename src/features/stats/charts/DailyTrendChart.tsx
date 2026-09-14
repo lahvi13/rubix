@@ -89,7 +89,9 @@ export function DailyTrendChart({ days, goalMs }: DailyTrendChartProps) {
             />
           )}
           {goalMs === null ? null : (
-            <ReferenceLine y={goalMs} stroke="var(--text)" strokeDasharray="2 4" strokeWidth={1} />
+            // Solid, where the best ao12 is dashed: the two often sit a second
+            // apart, and in the same dash they read as one line.
+            <ReferenceLine y={goalMs} stroke="var(--text)" strokeOpacity={0.6} strokeWidth={1.5} />
           )}
           <Line
             dataKey="bestMs"
@@ -118,7 +120,14 @@ export function DailyTrendChart({ days, goalMs }: DailyTrendChartProps) {
           { label: strings.stats.dailyBest, colour: 'var(--muted)', isDot: true },
           ...(goalMs === null
             ? []
-            : [{ label: strings.stats.goalSeries, colour: 'var(--text)', isReference: true }]),
+            : [
+                {
+                  label: strings.stats.goalSeries,
+                  colour: 'var(--text)',
+                  isReference: true,
+                  isSolid: true,
+                },
+              ]),
         ]}
       />
       <p className="chart-note">{strings.stats.dailyAxes}</p>

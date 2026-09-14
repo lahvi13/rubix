@@ -1857,12 +1857,46 @@ button[disabled] {
 
 
 .stats {
+  --stats-nav-height: calc(2rem + var(--space-3) * 2);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
   max-width: 48rem;
   margin: 0 auto;
   width: 100%;
+}
+
+/*
+ * The section links, pinned under the header. One row of small pills and no
+ * more: it takes that height off every screenful, so a row that wraps would be
+ * charging twice. Too many for the width, it scrolls sideways instead.
+ */
+.stats-nav {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* The pinned row paints its padding, never a margin: the cards sliding
+     under would show through a gap. */
+  margin-block: calc(var(--space-6) * -1) 0;
+  padding-block: var(--space-3);
+  background: var(--bg);
+}
+
+.stats-nav button {
+  flex: none;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  padding: 0 var(--space-4);
+  min-height: 2rem;
+}
+
+/* A linked section stops below both the header and the pinned links. */
+.stats [id^='stats-'] {
+  scroll-margin-top: calc(var(--header-height) + var(--stats-nav-height) + var(--space-4));
 }
 
 /*
@@ -2000,6 +2034,7 @@ button[disabled] {
 .practice__figures {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
   gap: var(--space-4);
   margin: 0 0 var(--space-5);
 }
@@ -2224,6 +2259,10 @@ button[disabled] {
   border-width: 2px 0 0;
   border-top-style: dashed;
   border-radius: 0;
+}
+
+.chart-legend__swatch.is-reference.is-solid {
+  border-top-style: solid;
 }
 
 .chart-note {
