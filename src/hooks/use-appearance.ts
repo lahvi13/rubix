@@ -8,7 +8,7 @@ import {
   type Appearance,
   type ResolvedTheme,
 } from '../lib/appearance';
-import { useSetting } from './use-setting';
+import { useSetting, useSettingsLoaded } from './use-setting';
 
 /**
  * The look of the app, applied. Reading the pieces is like any other setting;
@@ -17,13 +17,18 @@ import { useSetting } from './use-setting';
  */
 export function useAppearance(): void {
   const appearance = useAppearanceSettings();
+  const isLoaded = useSettingsLoaded();
 
   useEffect(() => {
+    // Until the settings are in, these are the defaults and not the reader's
+    // choices: applied, they would repaint over the look put on the document
+    // before the first frame, and be cached as the look of the next start.
+    if (!isLoaded) return;
     applyAppearance(appearance);
     cacheAppearance(appearance);
     if (appearance.theme !== 'system') return;
     return watchSystemTheme(() => applyAppearance(appearance));
-  }, [appearance]);
+  }, [appearance, isLoaded]);
 }
 
 /**

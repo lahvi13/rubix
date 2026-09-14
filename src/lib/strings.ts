@@ -654,6 +654,7 @@ export const strings = {
     mainThreadBusy: 'the app was too busy to write it; it will land in a moment',
     databaseSurvey: 'What was stuck',
     seed: 'Could not load the algorithm packs',
+    settings: 'Could not read the settings',
     dismiss: 'Dismiss',
   },
   diagnostics: {

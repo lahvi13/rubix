@@ -7,7 +7,15 @@ import { seedPacks } from './db/seed/seed';
 import { installGlobalErrorHandlers, reportError } from './lib/errors';
 import { strings } from './lib/strings';
 import { applyAppearance, cachedAppearance } from './lib/appearance';
+import { loadSettings } from './hooks/use-setting';
 import './index.css';
+
+/**
+ * How long the first render waits for the settings. A database being upgraded
+ * after an update can take a while; one that hangs must not keep the app, and
+ * its troubleshooting screen, from appearing at all.
+ */
+const SETTINGS_WAIT_MS = 1500;
 
 installGlobalErrorHandlers();
 
@@ -36,10 +44,15 @@ onDatabaseReconnect(seed);
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing #root element');
 
-createRoot(container).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </StrictMode>,
-);
+// The settings are read before anything is drawn, so nothing is drawn with the
+// defaults and redrawn with the reader's choices a moment later — the theme
+// least of all. The page behind is already painted in the cached look.
+void loadSettings(SETTINGS_WAIT_MS).then(() => {
+  createRoot(container).render(
+    <StrictMode>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </StrictMode>,
+  );
+});

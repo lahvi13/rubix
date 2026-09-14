@@ -1,3 +1,4 @@
+import { liveQuery } from 'dexie';
 import { db } from '../schema';
 import type { Flag } from '../types';
 import { now } from '../../lib/clock';
@@ -155,6 +156,57 @@ function isValueFor<K extends SettingKey>(key: K, value: unknown): value is Sett
   const fallback = SETTING_DEFAULTS[key];
   if (Array.isArray(fallback)) return Array.isArray(value);
   return typeof value === typeof fallback;
+}
+
+/** What is stored, key by key, before any of it is checked against a type. */
+export type StoredSettings = ReadonlyMap<string, unknown>;
+
+/**
+ * Every setting, as one snapshot that follows the table. One watch for the
+ * whole app rather than a query per key: a screen opened later reads what is
+ * already known, instead of drawing the defaults while a query of its own is
+ * on the way and redrawing with the reader's choices a few frames after.
+ */
+export function watchSettings(
+  onChange: (stored: StoredSettings) => void,
+  onError: (cause: unknown) => void,
+): () => void {
+  let previous: StoredSettings = new Map();
+  const subscription = liveQuery(() => db.settings.toArray()).subscribe({
+    next: (rows) => {
+      const next = new Map<string, unknown>();
+      for (const row of rows) {
+        const before = previous.get(row.key);
+        // A list comes back from IndexedDB as a new array on every read. The
+        // one already handed out is kept, or everything holding a list setting
+        // would redraw whenever any setting at all is written.
+        next.set(row.key, isSameValue(before, row.value) ? before : row.value);
+      }
+      previous = next;
+      onChange(next);
+    },
+    error: onError,
+  });
+  return () => subscription.unsubscribe();
+}
+
+export function readSetting<K extends SettingKey>(
+  stored: StoredSettings,
+  key: K,
+): SettingValues[K] {
+  const value = stored.get(key);
+  return isValueFor(key, value) ? value : SETTING_DEFAULTS[key];
+}
+
+/** Settings are primitives or flat lists of them; nothing deeper to compare. */
+function isSameValue(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  return (
+    Array.isArray(a) &&
+    Array.isArray(b) &&
+    a.length === b.length &&
+    a.every((item, index) => Object.is(item, b[index]))
+  );
 }
 
 export async function setSetting(key: string, value: unknown): Promise<void> {
