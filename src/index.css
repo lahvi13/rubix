@@ -4099,17 +4099,45 @@ input[type='radio'] {
   gap: 0;
 }
 
-/* The other way round: the list pulled up over the cube, to be read. */
-.screen--browsing {
-  grid-template-rows: 0 0 1fr;
-  gap: 0;
+.screen--solving .scramble-slot,
+.screen--solving .solves-slot {
+  overflow: hidden;
 }
 
-.screen--solving .scramble-slot,
-.screen--solving .solves-panel,
-.screen--browsing .scramble-slot,
-.screen--browsing .timer-slot {
-  overflow: hidden;
+/*
+ * The other way round: the list pulled up over the cube, to be read. Not by
+ * giving it the rows — a layout can only swap, and the screen used to change
+ * from one to the other in a single frame. The rows stay as they are, and the
+ * list is lifted out of its slot and slid up over them (`useSheetMotion`).
+ * The scramble and the clock underneath never move, so there is nothing on
+ * screen that jumps; there is only the list, travelling.
+ */
+.screen:has(> .solves-slot) {
+  position: relative;
+}
+
+/* On its way up it starts a peek's height from the top and full height, so
+   most of it is below the screen; that part is not the page's to scroll to. */
+.screen:has(> .solves-slot > .is-sheet) {
+  overflow-y: clip;
+}
+
+.solves-slot {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+}
+
+/* Over the screen's content box exactly — the space the rows used to hand it —
+   and opaque, since what it covers is still laid out underneath. */
+.solves-panel.is-sheet {
+  position: absolute;
+  z-index: 1;
+  inset-block: var(--space-6) max(var(--space-6), env(safe-area-inset-bottom));
+  inset-inline: max(var(--space-6), env(safe-area-inset-left))
+    max(var(--space-6), env(safe-area-inset-right));
+  background: var(--bg);
 }
 
 /*

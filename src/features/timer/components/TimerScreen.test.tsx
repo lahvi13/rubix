@@ -566,6 +566,44 @@ describe('TimerScreen', () => {
     expect(await db.solves.count()).toBe(0);
   });
 
+  it('slides the list over the screen, and drops it into its slot only once it is down', async () => {
+    // jsdom has no Web Animations; a slide here is one that finishes when told.
+    const slides: { finish: () => void }[] = [];
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      value: () => {
+        let finish = () => {};
+        const finished = new Promise<void>((resolve) => (finish = resolve));
+        slides.push({ finish });
+        return { finished, cancel: () => {} };
+      },
+    });
+
+    try {
+      const user = userEvent.setup();
+      const { container } = render(<TimerScreen />);
+      await findScramble();
+      const panel = () => container.querySelector('.solves-panel');
+
+      await user.click(screen.getByRole('button', { name: 'More solves' }));
+      expect(panel()).toHaveClass('is-sheet');
+      expect(slides).toHaveLength(1);
+
+      await user.click(screen.getByRole('button', { name: 'Back to the timer', expanded: true }));
+      // Closed as far as the screen is concerned — but still over it, on its way
+      // down. Dropped now, it would be a peek sliding from the top, with the
+      // clock showing beneath it for the length of the slide.
+      expect(container.querySelector('.screen--browsing')).toBeNull();
+      expect(panel()).toHaveClass('is-sheet');
+      expect(slides).toHaveLength(2);
+
+      await act(async () => slides[1]?.finish());
+      expect(panel()).not.toHaveClass('is-sheet');
+    } finally {
+      Reflect.deleteProperty(HTMLElement.prototype, 'animate');
+    }
+  });
+
   it('creates the default session on first render', async () => {
     render(<TimerScreen />);
 

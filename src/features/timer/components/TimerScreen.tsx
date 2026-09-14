@@ -11,6 +11,7 @@ import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseBar, PhaseRun, usePhases } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
+import { useSheetMotion } from '../hooks/use-sheet-motion';
 import { useScramble } from '../../../hooks/use-scramble';
 import { useBackToClose } from '../../../hooks/use-back-to-close';
 import { usePull } from '../../../hooks/use-pull';
@@ -131,6 +132,10 @@ export function TimerScreen() {
   );
   const records = useSessionRecords(session?.id ?? null, PUZZLE, listedPhaseKeys);
   const showBrowsing = isBrowsing && status === 'idle';
+  const { panel: sheetPanel, slot: sheetSlot, isSheet } = useSheetMotion(
+    showBrowsing,
+    status === 'idle',
+  );
 
   // Derived, not synchronized: the result stays up only while the machine is
   // at rest with a finished time. Starting the next attempt (or cancelling,
@@ -220,7 +225,9 @@ export function TimerScreen() {
             : 'screen'
       }
     >
-      <div className="scramble-slot">
+      {/* Under the list while it is up, so out of reach entirely rather than
+          only out of sight: nothing covered should take a Tab or be read out. */}
+      <div className="scramble-slot" inert={showBrowsing}>
         <ScramblePanel
           scramble={scramble.scramble}
           error={scramble.error}
@@ -247,7 +254,7 @@ export function TimerScreen() {
 
       {/* One grid cell, so the phase bar stays with the number it belongs to
           instead of being pushed to the bottom by the stretching timer. */}
-      <div className="timer-slot">
+      <div className="timer-slot" inert={showBrowsing}>
         <TimerDisplay
           state={timer.state}
           displayMs={timer.displayMs}
@@ -289,83 +296,96 @@ export function TimerScreen() {
         <div className="timer-overlay" aria-hidden="true" {...timer.touchHandlers} />
       ) : null}
 
-      <section className={isEngaged ? 'solves-panel solves-panel--hidden' : 'solves-panel'}>
-        {/* A grip, only while the list is up. The list itself cannot carry the
-            gesture: the browser claims a drag on a scrolling element after a
-            dozen pixels, long before one could be told from a scroll. This is
-            not scrollable, so the whole drag arrives — and it takes a tap as
-            well, for the reader who does not think to pull it. */}
-        {showBrowsing ? (
-          <button
-            type="button"
-            className="solves-panel__grip"
-            aria-label={strings.solve.collapseList}
-            onClick={handleListCollapsed}
-            {...pullDown}
+      {/* The slot keeps the list's place in the grid while the list itself is
+          lifted out of it and slid over the screen. */}
+      <div className="solves-slot" ref={sheetSlot}>
+        <section
+          ref={sheetPanel}
+          className={
+            isEngaged
+              ? 'solves-panel solves-panel--hidden'
+              : isSheet
+                ? 'solves-panel is-sheet'
+                : 'solves-panel'
+          }
+        >
+          {/* A grip, only while the list is up. The list itself cannot carry the
+              gesture: the browser claims a drag on a scrolling element after a
+              dozen pixels, long before one could be told from a scroll. This is
+              not scrollable, so the whole drag arrives — and it takes a tap as
+              well, for the reader who does not think to pull it. */}
+          {showBrowsing ? (
+            <button
+              type="button"
+              className="solves-panel__grip"
+              aria-label={strings.solve.collapseList}
+              onClick={handleListCollapsed}
+              {...pullDown}
+            />
+          ) : null}
+          <h2 className="solves-panel__title">
+            {/* The session name doubles as the way into session switching. */}
+            <button
+              type="button"
+              className="solves-panel__session"
+              title={strings.sessions.switchSession}
+              onClick={() => setPickerOpen(true)}
+            >
+              {session?.name ?? strings.appName}
+            </button>
+            · {solves.length}
+            {/* The list is a peek by default; this pulls it up over the cube. */}
+            <button
+              type="button"
+              className="solves-panel__more"
+              aria-expanded={showBrowsing}
+              aria-label={showBrowsing ? strings.solve.collapseList : strings.solve.expandList}
+              onClick={() => setBrowsing((open) => !open)}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d={showBrowsing ? 'M7 10l5 5 5-5' : 'M7 14l5-5 5 5'} />
+              </svg>
+            </button>
+            {/* Both switches set up the next attempt, and with the list up over
+                the cube there is no next attempt in sight — this is a screen for
+                reading what has already been timed. They come back with it. */}
+            {showBrowsing ? null : (
+              <span className="solves-panel__toggles">
+                <label className="toggle solves-panel__toggle">
+                  <input
+                    type="checkbox"
+                    checked={timer.inspectionEnabled}
+                    onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
+                    aria-label={strings.timer.inspectionToggleLabel}
+                  />
+                  {strings.timer.inspectionToggle}
+                </label>
+                <label className="toggle solves-panel__toggle">
+                  <input
+                    type="checkbox"
+                    checked={splitMode === 'phases'}
+                    disabled={methodPhases.length === 0}
+                    onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
+                    aria-label={strings.timer.phaseToggleLabel}
+                  />
+                  {strings.timer.phaseToggle}
+                </label>
+              </span>
+            )}
+          </h2>
+          <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
+          <SolveList
+            solves={solves}
+            phases={methodPhases}
+            bests={records.bests}
+            globalPbMs={records.globalPbMs}
+            pull={showBrowsing ? undefined : pullUp}
+            onOpen={setOpenSolveId}
+            onChangePenalty={handleChangePenalty}
+            onDelete={handleDelete}
           />
-        ) : null}
-        <h2 className="solves-panel__title">
-          {/* The session name doubles as the way into session switching. */}
-          <button
-            type="button"
-            className="solves-panel__session"
-            title={strings.sessions.switchSession}
-            onClick={() => setPickerOpen(true)}
-          >
-            {session?.name ?? strings.appName}
-          </button>
-          · {solves.length}
-          {/* The list is a peek by default; this pulls it up over the cube. */}
-          <button
-            type="button"
-            className="solves-panel__more"
-            aria-expanded={showBrowsing}
-            aria-label={showBrowsing ? strings.solve.collapseList : strings.solve.expandList}
-            onClick={() => setBrowsing((open) => !open)}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d={showBrowsing ? 'M7 10l5 5 5-5' : 'M7 14l5-5 5 5'} />
-            </svg>
-          </button>
-          {/* Both switches set up the next attempt, and with the list up over
-              the cube there is no next attempt in sight — this is a screen for
-              reading what has already been timed. They come back with it. */}
-          {showBrowsing ? null : (
-            <span className="solves-panel__toggles">
-              <label className="toggle solves-panel__toggle">
-                <input
-                  type="checkbox"
-                  checked={timer.inspectionEnabled}
-                  onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
-                  aria-label={strings.timer.inspectionToggleLabel}
-                />
-                {strings.timer.inspectionToggle}
-              </label>
-              <label className="toggle solves-panel__toggle">
-                <input
-                  type="checkbox"
-                  checked={splitMode === 'phases'}
-                  disabled={methodPhases.length === 0}
-                  onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
-                  aria-label={strings.timer.phaseToggleLabel}
-                />
-                {strings.timer.phaseToggle}
-              </label>
-            </span>
-          )}
-        </h2>
-        <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
-        <SolveList
-          solves={solves}
-          phases={methodPhases}
-          bests={records.bests}
-          globalPbMs={records.globalPbMs}
-          pull={showBrowsing ? undefined : pullUp}
-          onOpen={setOpenSolveId}
-          onChangePenalty={handleChangePenalty}
-          onDelete={handleDelete}
-        />
-      </section>
+        </section>
+      </div>
 
       {openSolveId === null ? null : (
         <SolveDetailSheet
