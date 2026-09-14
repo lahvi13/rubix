@@ -45,13 +45,13 @@ function chunk(type, data) {
   return Buffer.concat([length, body, crc]);
 }
 
-function encodePng(size, pixelAt) {
-  const raw = Buffer.alloc(size * (size * 3 + 1));
+function encodePng(width, height, pixelAt) {
+  const raw = Buffer.alloc(height * (width * 3 + 1));
   let offset = 0;
-  for (let y = 0; y < size; y += 1) {
+  for (let y = 0; y < height; y += 1) {
     raw[offset] = 0; // filter type: none
     offset += 1;
-    for (let x = 0; x < size; x += 1) {
+    for (let x = 0; x < width; x += 1) {
       const [r, g, b] = pixelAt(x, y);
       raw[offset] = r;
       raw[offset + 1] = g;
@@ -61,8 +61,8 @@ function encodePng(size, pixelAt) {
   }
 
   const header = Buffer.alloc(13);
-  header.writeUInt32BE(size, 0);
-  header.writeUInt32BE(size, 4);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
   header[8] = 8; // bit depth
   header[9] = 2; // colour type: truecolour
 
@@ -151,9 +151,27 @@ const icons = [
 ];
 
 for (const [name, size, padRatio] of icons) {
-  writeFileSync(join(publicDir, name), encodePng(size, cubeFace(size, padRatio)));
+  writeFileSync(join(publicDir, name), encodePng(size, size, cubeFace(size, padRatio)));
   console.log(`wrote public/${name}`);
 }
+
+/*
+ * The picture a link to the app is shown with on Reddit, Discord or in a
+ * message: 1200×630 is the size they all crop to. The same face, centred, and
+ * no lettering — the title and description travel as text beside it, and a
+ * name baked into pixels would outlive a rename.
+ */
+const OG_WIDTH = 1200;
+const OG_HEIGHT = 630;
+const ogFace = cubeFace(OG_HEIGHT, 0.2);
+const ogOffset = Math.round((OG_WIDTH - OG_HEIGHT) / 2);
+writeFileSync(
+  join(publicDir, 'og-image.png'),
+  encodePng(OG_WIDTH, OG_HEIGHT, (x, y) =>
+    x < ogOffset || x >= ogOffset + OG_HEIGHT ? BACKGROUND : ogFace(x - ogOffset, y),
+  ),
+);
+console.log('wrote public/og-image.png');
 
 writeFileSync(join(publicDir, 'favicon.svg'), faceSvg());
 console.log('wrote public/favicon.svg');

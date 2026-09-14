@@ -42,7 +42,7 @@ export default defineConfig({
         id: '/',
         name: 'Rubix',
         short_name: 'Rubix',
-        description: 'Offline speedcubing trainer',
+        description: 'Timer and trainer for the 3×3 cube',
         lang: 'en',
         theme_color: '#0f1115',
         background_color: '#0f1115',
@@ -66,6 +66,8 @@ export default defineConfig({
         // The fonts too: a face that only arrives over the network is a face
         // the app has on the first run and never again.
         globPatterns: ['**/*.{js,css,html,svg,png,wasm,woff2}'],
+        // Only link previews fetch it, and they never run the service worker.
+        globIgnores: ['og-image.png'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         // Deliberately no runtimeCaching: the analytics beacon from
         // static.cloudflareinsights.com must always reach the network. If a rule
