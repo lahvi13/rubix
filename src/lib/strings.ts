@@ -175,6 +175,7 @@ export const strings = {
     trimmed: 'not counted',
     goal: 'Goal',
     goalHint: 'Pick a time to chase, and see how often you beat it.',
+    goalFormat: 'Minutes and seconds as 1:30, or 1 30 where the keyboard has no colon.',
     goalSet: 'Set a goal',
     goalTime: 'Goal time',
     goalPlaceholder: '1:30',
@@ -213,7 +214,7 @@ export const strings = {
     detailTitle: 'Solve detail',
     close: 'Close',
     rawTime: 'Time',
-    invalidTime: 'Use 12.34 or 1:23.45',
+    invalidTime: 'Use 12.34 or 1:23.45 — or 1 23.45, without the colon',
     /** A record's mark. Never the reader's own — that one is the flag. */
     star: '★',
     /** The reader's own mark, so that it cannot be read as a record. */

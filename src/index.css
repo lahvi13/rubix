@@ -2037,7 +2037,8 @@ button[disabled] {
   border-color: var(--danger);
 }
 
-.goal__form .detail__error {
+.goal__form .detail__error,
+.goal__form .goal__format {
   flex-basis: 100%;
   margin: 0;
 }

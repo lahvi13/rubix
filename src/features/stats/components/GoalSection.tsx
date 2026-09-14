@@ -67,7 +67,11 @@ export function GoalSection({ goal, solveCount, onChange }: GoalSectionProps) {
           >
             {strings.stats.goalCancel}
           </button>
-          {isInvalid ? <p className="detail__error">{strings.history.invalidTime}</p> : null}
+          {isInvalid ? (
+            <p className="detail__error">{strings.history.invalidTime}</p>
+          ) : (
+            <p className="detail__hint goal__format">{strings.stats.goalFormat}</p>
+          )}
         </form>
       ) : goal === null ? (
         <div className="goal__empty">
