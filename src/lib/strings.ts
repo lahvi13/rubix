@@ -150,6 +150,15 @@ export const strings = {
     trend: 'Rolling ao12',
     trendSeries: 'ao12',
     singleSeries: 'Single',
+    windowTitle: (which: 'current' | 'best', n: number) =>
+      `${which === 'best' ? 'Best' : 'Current'} ao${n}`,
+    /** Why the average is not the plain mean of the times listed under it. */
+    windowTrimNote: (trim: number) =>
+      trim === 1
+        ? 'The fastest and the slowest solve are cut (in brackets); the average is the mean of the rest.'
+        : `The ${trim} fastest and ${trim} slowest solves are cut (in brackets); the average is the mean of the rest.`,
+    windowDnfNote: 'More DNFs than the trim can cut, so the average is a DNF.',
+    trimmed: 'not counted',
     histogramSeries: 'Solves',
     loadingCharts: 'Loading charts…',
     penalties: 'Penalties',

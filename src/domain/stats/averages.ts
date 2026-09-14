@@ -51,13 +51,45 @@ export function currentAverage(finals: readonly (number | null)[], n: number): A
  */
 export function bestAverage(finals: readonly (number | null)[], n: number): Average {
   if (finals.length < n) return null;
+  const start = bestAverageStart(finals, n);
+  return start === null ? 'dnf' : windowAverage(finals.slice(start, start + n));
+}
 
-  let best: number | 'dnf' = 'dnf';
+/**
+ * Where the best window of n begins, so the solves behind the number can be
+ * shown. The earliest of two equal windows, which is the one that set the
+ * record rather than one that matched it. null below the window size and when
+ * every window is a DNF — there is no best one to point at.
+ */
+export function bestAverageStart(finals: readonly (number | null)[], n: number): number | null {
+  let bestStart: number | null = null;
+  let bestMs = Number.POSITIVE_INFINITY;
   for (let start = 0; start + n <= finals.length; start += 1) {
     const average = windowAverage(finals.slice(start, start + n));
-    if (average !== 'dnf' && (best === 'dnf' || average < best)) best = average;
+    if (average !== 'dnf' && average < bestMs) {
+      bestMs = average;
+      bestStart = start;
+    }
   }
-  return best;
+  return bestStart;
+}
+
+/**
+ * Which solves of one window the trim cuts, in the window's own order — the
+ * ones a list writes in brackets. Of two equal times the earlier is cut at
+ * the fast end and the later at the slow end, so exactly trimCount go from
+ * each side however many ties there are.
+ */
+export function trimmedMask(finals: readonly (number | null)[]): boolean[] {
+  const trim = trimCount(finals.length);
+  const order = finals
+    .map((_, index) => index)
+    .sort((a, b) => compareFinals(finals[a] ?? null, finals[b] ?? null) || a - b);
+  const mask = finals.map(() => false);
+  order.forEach((index, rank) => {
+    if (rank < trim || rank >= finals.length - trim) mask[index] = true;
+  });
+  return mask;
 }
 
 /**

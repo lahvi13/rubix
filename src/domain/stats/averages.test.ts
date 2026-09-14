@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   bestAverage,
+  bestAverageStart,
   currentAverage,
   rollingAverage,
   trimCount,
+  trimmedMask,
   windowAverage,
   type Average,
 } from './averages';
@@ -85,6 +87,40 @@ describe('bestAverage', () => {
 
   it('is null below the window size', () => {
     expect(bestAverage([1000, 2000], 5)).toBeNull();
+  });
+});
+
+describe('bestAverageStart', () => {
+  it.each<[string, (number | null)[], number, number | null]>([
+    ['is null below the window size', [1000, 2000], 5, null],
+    ['is null when every window is a DNF', [null, null, 1000, null, null, 1000], 5, null],
+    ['points at the best window', [9000, 8000, 5000, 1000, 1000, 1000, 1000], 5, 2],
+    // Windows 0 and 1 both average 2000; the first one set it.
+    ['keeps the earlier of two equal windows', [2000, 2000, 2000, 2000, 2000, 2000], 5, 0],
+    // Two DNFs sink the first window; the second has one, which the trim absorbs.
+    ['skips a DNF window', [null, null, 5000, 5000, 5000, 5000, 5000], 5, 1],
+  ])('%s', (_name, finals, n, expected) => {
+    expect(bestAverageStart(finals, n)).toBe(expected);
+  });
+});
+
+describe('trimmedMask', () => {
+  it.each<[string, (number | null)[], boolean[]]>([
+    ['cuts the fastest and the slowest of five', [3000, 1000, 5000, 2000, 4000], [false, true, true, false, false]],
+    ['cuts a DNF as the slowest', [3000, null, 1000, 2000, 4000], [false, true, true, false, false]],
+    ['cuts only the later of two DNFs, which is why the average is a DNF', [null, 3000, null, 1000, 2000], [false, false, true, true, false]],
+    ['cuts the earlier of two equal fastest', [1000, 1000, 2000, 3000, 4000], [true, false, false, false, true]],
+    ['cuts the later of two equal slowest', [1000, 2000, 3000, 4000, 4000], [true, false, false, false, true]],
+  ])('%s', (_name, finals, expected) => {
+    expect(trimmedMask(finals)).toEqual(expected);
+  });
+
+  it('cuts 5% from each end of an ao50', () => {
+    const finals = Array.from({ length: 50 }, (_, index) => 10_000 + index);
+    const mask = trimmedMask(finals);
+    expect(mask.filter(Boolean)).toHaveLength(6);
+    expect(mask.slice(0, 3)).toEqual([true, true, true]);
+    expect(mask.slice(47)).toEqual([true, true, true]);
   });
 });
 

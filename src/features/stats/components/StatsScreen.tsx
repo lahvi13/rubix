@@ -10,7 +10,9 @@ import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseAverages, usePhases } from '../../splits';
 import { useAllSessions } from '../hooks/use-all-sessions';
-import { useSessionStats } from '../hooks/use-session-stats';
+import type { Average, AverageWindow } from '../../../domain/stats/averages';
+import { useSessionStats, type WindowWhich } from '../hooks/use-session-stats';
+import { AverageSheet } from './AverageSheet';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
@@ -87,6 +89,24 @@ const MODE_NOTE: Record<PhaseTrendMode, string> = {
   share: strings.splits.modeShareNote,
 };
 
+interface AverageCellProps {
+  value: Average;
+  /** Absent where there is no window behind the number to show. */
+  onOpen?: () => void;
+}
+
+/** A number in the averages table, which opens the solves it was made of. */
+function AverageCell({ value, onOpen }: AverageCellProps) {
+  if (onOpen === undefined) return <td>{formatAverage(value)}</td>;
+  return (
+    <td>
+      <button type="button" className="averages-table__open" onClick={onOpen}>
+        {formatAverage(value)}
+      </button>
+    </td>
+  );
+}
+
 function sessionBestTier(bestMs: number | null, pbMs: number | null): StatTier | undefined {
   if (bestMs === null) return undefined;
   return bestMs === pbMs ? 'record' : 'best';
@@ -112,8 +132,13 @@ export function StatsScreen() {
   const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
+  const [openWindow, setOpenWindow] = useState<{ n: AverageWindow; which: WindowWhich } | null>(
+    null,
+  );
 
   if (stats === null) return <main className="screen screen--scroll" />;
+  const windowView =
+    openWindow === null ? null : stats.averageWindow(openWindow.n, openWindow.which);
 
   return (
     <main className="screen screen--scroll">
@@ -223,8 +248,17 @@ export function StatsScreen() {
                   {stats.windows.map((window) => (
                     <tr key={window.n}>
                       <th>ao{window.n}</th>
-                      <td>{formatAverage(window.current)}</td>
-                      <td>{formatAverage(window.best)}</td>
+                      {(['current', 'best'] as const).map((which) => (
+                        <AverageCell
+                          key={which}
+                          value={window[which]}
+                          onOpen={
+                            stats.averageWindow(window.n, which) === null
+                              ? undefined
+                              : () => setOpenWindow({ n: window.n, which })
+                          }
+                        />
+                      ))}
                     </tr>
                   ))}
                 </tbody>
@@ -305,9 +339,21 @@ export function StatsScreen() {
         <SolveDetailSheet
           solveId={openSolveId}
           phases={phases}
-          solveIds={NO_SOLVES}
+          // Opened from an average, the sheet steps through that average's
+          // solves; opened from a best, there is only the one.
+          solveIds={windowView?.solves.map((solve) => solve.id) ?? NO_SOLVES}
           onOpen={setOpenSolveId}
           onClose={() => setOpenSolveId(null)}
+        />
+      )}
+
+      {/* One panel at a time: the solve takes the list's place, and closing it
+          comes back to the list rather than all the way out. */}
+      {windowView === null || openSolveId !== null ? null : (
+        <AverageSheet
+          view={windowView}
+          onOpenSolve={setOpenSolveId}
+          onClose={() => setOpenWindow(null)}
         />
       )}
 

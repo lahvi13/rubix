@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { Puzzle } from '../../../db/types';
+import type { Penalty, Puzzle } from '../../../db/types';
 import {
   getGlobalPbSolve,
   listPuzzleSolvesChronological,
@@ -11,8 +11,11 @@ import { finalMs } from '../../../domain/solve/final-time';
 import {
   AVERAGE_WINDOWS,
   bestAverage,
+  bestAverageStart,
   currentAverage,
   rollingAverage,
+  trimCount,
+  trimmedMask,
   type Average,
   type AverageWindow,
 } from '../../../domain/stats/averages';
@@ -44,6 +47,30 @@ export interface WindowStats {
   n: AverageWindow;
   current: Average;
   best: Average;
+}
+
+/** Which of a window's two averages: the latest n solves, or the best n in a row. */
+export type WindowWhich = 'current' | 'best';
+
+export interface WindowSolve {
+  id: string;
+  /** null is a DNF. */
+  resultMs: number | null;
+  penalty: Penalty;
+  /** Cut by the trim, so it is in the window but not in the average. */
+  isTrimmed: boolean;
+  createdAt: number;
+}
+
+/** The solves behind one number in the averages table. */
+export interface AverageWindowView {
+  n: AverageWindow;
+  which: WindowWhich;
+  average: Average;
+  /** How many the trim cuts from each end. */
+  trim: number;
+  /** Oldest first, as they were solved. */
+  solves: WindowSolve[];
 }
 
 export interface TrendPoint {
@@ -90,6 +117,8 @@ export interface SessionStats {
   measuredCount: number;
   /** One point per phase-timed solve — raw lengths plus the rolling mean. */
   phaseTrend: PhaseTrendPoint[];
+  /** The window behind an average, or null where there is no number to explain. */
+  averageWindow: (n: AverageWindow, which: WindowWhich) => AverageWindowView | null;
 }
 
 /**
@@ -168,6 +197,25 @@ export function useSessionStats(
       phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(solves, phaseKeys),
       measuredCount: measuredSolves(solves).length,
       phaseTrend: phaseTrend(solves, phaseKeys, window),
+      averageWindow: (n, which) => {
+        const start = which === 'current' ? finals.length - n : bestAverageStart(finals, n);
+        if (start === null || start < 0) return null;
+        const windowFinals = finals.slice(start, start + n);
+        const trimmed = trimmedMask(windowFinals);
+        return {
+          n,
+          which,
+          average: which === 'current' ? currentAverage(finals, n) : bestAverage(finals, n),
+          trim: trimCount(n),
+          solves: solves.slice(start, start + n).map((solve, offset) => ({
+            id: solve.id,
+            resultMs: windowFinals[offset] ?? null,
+            penalty: solve.penalty,
+            isTrimmed: trimmed[offset] ?? false,
+            createdAt: solve.createdAt,
+          })),
+        };
+      },
     };
   }, [solves, globalPb, chartWindow, phaseKeys]);
 }

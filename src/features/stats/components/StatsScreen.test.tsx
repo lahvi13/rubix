@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
@@ -100,6 +100,28 @@ describe('StatsScreen', () => {
     // Six solves have no ao12, so the rolling chart has nothing to draw and
     // is left out rather than shown as an empty pair of axes.
     expect(screen.queryByTestId('trend-chart')).not.toBeInTheDocument();
+  });
+
+  it('opens the solves behind an average, with the trimmed ones in brackets', async () => {
+    for (const rawMs of [12_000, 10_000, 14_000, 11_000, 13_000]) await seedSolve(sessionId, rawMs);
+    const user = userEvent.setup();
+
+    render(<StatsScreen />);
+
+    // Current and best ao5 are the same five solves: 12, 11 and 13 count.
+    const [current] = await screen.findAllByRole('button', { name: '12.00' });
+    if (current === undefined) throw new Error('no average to open');
+    await user.click(current);
+
+    const sheet = await screen.findByRole('dialog', { name: 'Current ao5' });
+    expect(within(sheet).getByText('(10.00)')).toBeInTheDocument();
+    expect(within(sheet).getByText('(14.00)')).toBeInTheDocument();
+
+    await user.click(within(sheet).getByRole('button', { name: '11.00' }));
+
+    // The solve takes the list's place and steps through the same five.
+    expect(await screen.findByText('4 / 5')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Current ao5' })).not.toBeInTheDocument();
   });
 
   it('draws the rolling ao12 once the window has filled', async () => {

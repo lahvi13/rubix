@@ -1982,6 +1982,59 @@ button[disabled] {
   color: var(--muted);
 }
 
+/* The number opens the solves it was made of. A surface, not a button: it
+   keeps the table's own look and says it can be pressed the way the session
+   name does, with a dotted underline. */
+.averages-table__open {
+  border: none;
+  padding: 0;
+  min-height: 2rem;
+  color: var(--text);
+  font-size: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--muted);
+  text-underline-offset: 0.25em;
+}
+
+.average-sheet {
+  gap: var(--space-5);
+}
+
+/* The row above holds only the close button; the heading takes back its gap,
+   as the session picker's does. */
+.average-sheet__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin: calc(var(--space-5) * -1) 0 0;
+  font-size: var(--text-xl);
+}
+
+.average-sheet__value {
+  font-size: var(--text-3xl);
+}
+
+/* Wrapped like a line of text, so an ao100 is a screenful and not a hundred
+   rows to scroll past. */
+.average-sheet__solves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0 0 var(--space-6);
+  list-style: none;
+}
+
+.average-sheet__solve {
+  color: var(--text);
+  padding-inline: var(--space-4);
+}
+
+.average-sheet__solve.is-trimmed {
+  color: var(--muted);
+}
+
 .chart-card {
   background: var(--surface);
   border-radius: var(--radius-lg);
