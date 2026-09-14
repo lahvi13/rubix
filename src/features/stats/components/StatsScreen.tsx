@@ -289,7 +289,11 @@ export function StatsScreen() {
               <section className="chart-card">
                 <h2 className="stats__section-title">{strings.stats.trend}</h2>
                 <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
-                  <TrendChart points={stats.trend} bestMs={stats.bestAo12Ms} />
+                  <TrendChart
+                    points={stats.trend}
+                    bestMs={stats.bestAo12Ms}
+                    fenceMs={stats.trendFenceMs}
+                  />
                 </Suspense>
               </section>
             ) : null}

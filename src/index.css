@@ -2031,6 +2031,12 @@ button[disabled] {
 
 /* A series drawn as a mark to beat rather than as data reads as a rule, not
    a block — the same dashes the reference line is drawn with. */
+.chart-legend__swatch.is-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+}
+
 .chart-legend__swatch.is-reference {
   height: 0;
   border-width: 2px 0 0;

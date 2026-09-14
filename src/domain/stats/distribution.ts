@@ -138,6 +138,15 @@ export function histogramPosition(bins: readonly HistogramBin[], ms: number): nu
 }
 
 /**
+ * The slowest time that still has a say in how a chart is scaled; Infinity
+ * when there are too few solves to tell an outlier from a bad day. DNFs have
+ * no time and no say.
+ */
+export function upperFence(finals: readonly (number | null)[]): number {
+  return outlierFence(countingTimes(finals));
+}
+
+/**
  * Tukey's upper fence, p75 + 1.5 × IQR. Nothing is dropped by it — it decides
  * only which times stop having a say in how wide a bin is.
  */

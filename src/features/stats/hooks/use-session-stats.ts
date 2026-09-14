@@ -22,6 +22,7 @@ import {
   sessionMean,
   sessionMedian,
   standardDeviation,
+  upperFence,
   type HistogramBin,
 } from '../../../domain/stats/distribution';
 import { pbSingle } from '../../../domain/stats/pb';
@@ -49,6 +50,8 @@ export interface TrendPoint {
   /** 1-based solve index within the solves being read — the chart's x axis. */
   index: number;
   aoMs: number | null;
+  /** The solve's own result, drawn as a dot behind the line; null is a DNF. */
+  singleMs: number | null;
 }
 
 export interface SessionStats {
@@ -73,6 +76,11 @@ export interface SessionStats {
    * index on each point already says which solve it belongs to.
    */
   trend: TrendPoint[];
+  /**
+   * Singles slower than this are left off the chart's scale — see upperFence.
+   * Infinity when every single may have its say.
+   */
+  trendFenceMs: number;
   /** The two ao12 marks the charts point at: where the session is, and its record. */
   currentAo12Ms: number | null;
   bestAo12Ms: number | null;
@@ -115,7 +123,11 @@ export function useSessionStats(
     const trendStart = Math.max(0, finals.length - window);
     const windowed = rolling
       .slice(trendStart)
-      .map((aoMs, offset) => ({ index: trendStart + offset + 1, aoMs }));
+      .map((aoMs, offset) => ({
+        index: trendStart + offset + 1,
+        aoMs,
+        singleMs: finals[trendStart + offset] ?? null,
+      }));
     const firstWithAverage = windowed.findIndex((point) => point.aoMs !== null);
     const trend = firstWithAverage < 0 ? [] : windowed.slice(firstWithAverage);
 
@@ -149,6 +161,7 @@ export function useSessionStats(
       plusTwoRate: penaltyRate(solves, 'plus2'),
       histogramBins: histogram(finals),
       trend,
+      trendFenceMs: upperFence(trend.map((point) => point.singleMs)),
       // 'dnf' is not a place on a time axis; both marks simply go unmarked.
       currentAo12Ms: typeof currentAo12 === 'number' ? currentAo12 : null,
       bestAo12Ms: typeof bestAo12 === 'number' ? bestAo12 : null,

@@ -7,6 +7,7 @@ import {
   sessionMean,
   sessionMedian,
   standardDeviation,
+  upperFence,
 } from './distribution';
 
 describe('sessionMean', () => {
@@ -161,5 +162,18 @@ describe('histogramPosition', () => {
     const middle = (fenced.length - 0.5) / fenced.length;
     expect(histogramPosition(fenced, 120_000)).toBeCloseTo(middle, 6);
     expect(histogramPosition(fenced, overflow?.startMs ?? 0)).toBeCloseTo(middle, 6);
+  });
+});
+
+describe('upperFence', () => {
+  it.each<[string, (number | null)[], number]>([
+    ['has no fence below eight solves', [10_000, 11_000, 60_000], Number.POSITIVE_INFINITY],
+    ['has no fence over DNFs alone', [null, null, null, null, null, null, null, null], Number.POSITIVE_INFINITY],
+    // p25 = 11.75, p75 = 15.25, so 15.25 + 1.5 × 3.5.
+    ['sits 1.5 IQR above the upper quartile', [10_000, 11_000, 12_000, 13_000, 14_000, 15_000, 16_000, 17_000], 20_500],
+    // The DNF is not a slow time; the eight real ones decide.
+    ['leaves DNFs out', [10_000, 11_000, 12_000, null, 13_000, 14_000, 15_000, 16_000, 17_000], 20_500],
+  ])('%s', (_, finals, expected) => {
+    expect(upperFence(finals)).toBe(expected);
   });
 });

@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import type { TrendPoint } from '../hooks/use-session-stats';
 import { timeAxis } from '../../../domain/stats/axis';
-import { formatAxisMs, formatMs } from '../../../lib/format';
+import { formatAxisMs, formatMs, formatTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { AXIS_PROPS, CHART_HEIGHT, TOOLTIP_PROPS } from './chart-theme';
 import { ChartLegend } from './ChartLegend';
@@ -20,13 +20,22 @@ interface TrendChartProps {
   points: TrendPoint[];
   /** The best ao12 of the session, drawn as the mark to beat. */
   bestMs: number | null;
+  /** Singles past this are drawn off the top rather than let stretch the scale. */
+  fenceMs: number;
 }
 
 /** Rolling ao12 over the recent window. Gaps are DNF averages — never faked. */
-export function TrendChart({ points, bestMs }: TrendChartProps) {
+export function TrendChart({ points, bestMs, fenceMs }: TrendChartProps) {
+  // The averages always fit. A single fits unless it is past the fence: one
+  // three-minute solve in a session of ninety-second ones would otherwise
+  // flatten the line the chart is for into the bottom third of it.
+  const singles = points
+    .map((point) => point.singleMs)
+    .filter((ms): ms is number => ms !== null && ms <= fenceMs);
   const values = points
     .map((point) => point.aoMs)
     .filter((ms): ms is number => ms !== null)
+    .concat(singles)
     .concat(bestMs === null ? [] : [bestMs]);
 
   // An empty axis has nothing to round out, and Math.min of nothing is
@@ -52,6 +61,7 @@ export function TrendChart({ points, bestMs }: TrendChartProps) {
           />
           <YAxis
             {...AXIS_PROPS}
+            allowDataOverflow
             domain={axis?.domainMs ?? ['auto', 'auto']}
             ticks={axis?.ticksMs}
             tickFormatter={(value: number) =>
@@ -61,13 +71,19 @@ export function TrendChart({ points, bestMs }: TrendChartProps) {
           />
           <Tooltip
             {...TOOLTIP_PROPS}
-            content={({ active, label, payload }) => {
-              const value = payload?.[0]?.value;
-              if (active !== true || typeof value !== 'number') return null;
+            content={({ active, label }) => {
+              const point = points.find((candidate) => candidate.index === Number(label));
+              const value = point?.aoMs;
+              if (active !== true || point === undefined || value == null) return null;
               return (
                 <ChartTooltip
                   title={`${strings.stats.solveIndex} ${String(label)}`}
                   rows={[
+                    {
+                      label: strings.stats.singleSeries,
+                      colour: 'var(--muted)',
+                      value: formatTime(point.singleMs),
+                    },
                     {
                       label: strings.stats.trendSeries,
                       colour: 'var(--accent)',
@@ -100,6 +116,16 @@ export function TrendChart({ points, bestMs }: TrendChartProps) {
               strokeWidth={1}
             />
           )}
+          {/* Behind the line, and quiet: the spread is context for the average,
+              not a second thing to read. */}
+          <Line
+            dataKey="singleMs"
+            stroke="none"
+            dot={{ r: 1.5, fill: 'var(--muted)', fillOpacity: 0.55, strokeWidth: 0 }}
+            activeDot={false}
+            connectNulls={false}
+            isAnimationActive={false}
+          />
           <Line
             dataKey="aoMs"
             stroke="var(--accent)"
@@ -115,6 +141,7 @@ export function TrendChart({ points, bestMs }: TrendChartProps) {
       </ResponsiveContainer>
       <ChartLegend
         entries={[
+          { label: strings.stats.singleSeries, colour: 'var(--muted)', isDot: true },
           { label: strings.stats.trendSeries, colour: 'var(--accent)' },
           ...(bestMs === null
             ? []

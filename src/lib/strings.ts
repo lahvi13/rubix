@@ -149,6 +149,7 @@ export const strings = {
     distribution: 'Time distribution',
     trend: 'Rolling ao12',
     trendSeries: 'ao12',
+    singleSeries: 'Single',
     histogramSeries: 'Solves',
     loadingCharts: 'Loading charts…',
     penalties: 'Penalties',
@@ -157,7 +158,8 @@ export const strings = {
     solveIndex: 'Solve',
     /** Axis captions, so a chart can be read without the table above it. */
     distributionAxes: 'Each bar is a range of solve times; height is how many solves fell in it.',
-    trendAxes: 'Average of the twelve solves ending at each point, oldest first.',
+    trendAxes:
+      'The line is the average of the twelve solves ending at each point; the dots are the solves themselves, oldest first.',
     andUp: 'and up',
     bestAo12: 'Best ao12',
     containsCurrent: 'Current ao12 falls here',
