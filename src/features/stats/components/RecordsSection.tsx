@@ -10,8 +10,6 @@ const SHOWN_AT_FIRST = 8;
 
 interface RecordsSectionProps {
   recordsFor: (kind: RecordKind) => RecordEntry[];
-  /** Over every session the newest record is the all-time one, not the session's. */
-  isAllSessions: boolean;
   globalPbMs: number | null;
   onOpenSolve: (id: string) => void;
   onOpenWindow: (n: AverageWindow, endIndex: number) => void;
@@ -24,7 +22,6 @@ interface RecordsSectionProps {
  */
 export function RecordsSection({
   recordsFor,
-  isAllSessions,
   globalPbMs,
   onOpenSolve,
   onOpenWindow,
@@ -33,12 +30,11 @@ export function RecordsSection({
   const [isExpanded, setExpanded] = useState(false);
   const records = recordsFor(kind);
   const shown = isExpanded ? records : records.slice(0, SHOWN_AT_FIRST);
-  // The history's two tiers: the newest row is the best there is, in gold when
-  // that is the best anywhere and in the accent when it is this session's.
+  // The history's two tiers: the newest row is the best of what is read, in
+  // gold only when it is the personal best itself. An average has no PB to
+  // be — archived sessions and older solves are not in the list it is from.
   const topClass =
-    isAllSessions || (kind === 'single' && records[0]?.ms === globalPbMs)
-      ? 'record is-record'
-      : 'record is-best';
+    kind === 'single' && records[0]?.ms === globalPbMs ? 'record is-record' : 'record is-best';
 
   return (
     <section>

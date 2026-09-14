@@ -75,11 +75,26 @@ describe('StatsScreen', () => {
     expect(await screen.findByText(/2 solves/)).toBeInTheDocument();
     expect(screen.getAllByText('25.00')).toHaveLength(2);
     expect(screen.getByText('Session best')).toBeInTheDocument();
-    expect(await getSetting('stats.allSessions')).toBe(false);
+    expect(await getSetting('stats.scope')).toBe('session');
+  });
+
+  it('reads only the latest hundred solves when asked', async () => {
+    // One slow solve first, then a hundred at ten seconds: the hundred leave it out.
+    await seedSolve(sessionId, 60_000);
+    for (let i = 0; i < 100; i += 1) await seedSolve(sessionId, 10_000);
+    const user = userEvent.setup();
+
+    render(<StatsScreen />);
+    await user.click(await screen.findByRole('button', { name: 'Last 100' }));
+
+    expect(await screen.findByText('Last 100 of 101 solves')).toBeInTheDocument();
+    const mean = screen.getByText('Mean').parentElement;
+    expect(mean).toHaveTextContent('10.00');
+    expect(await getSetting('stats.scope')).toBe('recent');
   });
 
   it('shows PB, averages and rates computed from the session', async () => {
-    await setSetting('stats.allSessions', false);
+    await setSetting('stats.scope', 'session');
     for (const rawMs of [10_000, 11_000, 12_000, 13_000, 14_000]) {
       await seedSolve(sessionId, rawMs);
     }
@@ -200,7 +215,7 @@ describe('StatsScreen', () => {
     await seedSolve(elsewhere.id, 5000);
     await activateSession(sessionId);
     await seedSolve(sessionId, 12_000);
-    await setSetting('stats.allSessions', false);
+    await setSetting('stats.scope', 'session');
     const user = userEvent.setup();
 
     render(<StatsScreen />);

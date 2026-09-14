@@ -1,7 +1,9 @@
 import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react';
 import {
   PHASE_TREND_MODES,
+  STATS_SCOPES,
   type PhaseTrendMode,
+  type StatsScope,
 } from '../../../db/repositories/settings-repository';
 import { useSetting } from '../../../hooks/use-setting';
 import { formatAverage, formatRate } from '../../../lib/format';
@@ -9,9 +11,14 @@ import { strings } from '../../../lib/strings';
 import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseAverages, usePhases } from '../../splits';
-import { useAllSessions } from '../hooks/use-all-sessions';
+import { useStatsScope } from '../hooks/use-stats-scope';
 import type { Average, AverageWindow } from '../../../domain/stats/averages';
-import { PRACTICE_DAYS, useSessionStats, type WindowAt } from '../hooks/use-session-stats';
+import {
+  PRACTICE_DAYS,
+  RECENT_SOLVES,
+  useSessionStats,
+  type WindowAt,
+} from '../hooks/use-session-stats';
 import { AverageSheet } from './AverageSheet';
 import { GoalSection } from './GoalSection';
 import { RecordsSection } from './RecordsSection';
@@ -115,6 +122,19 @@ function AverageCell({ value, onOpen }: AverageCellProps) {
   );
 }
 
+const SCOPE_LABEL: Record<StatsScope, string> = {
+  all: strings.stats.allSessions,
+  recent: strings.stats.recent(RECENT_SOLVES),
+  session: strings.stats.thisSession,
+};
+
+/** The second card's name: the best single of whatever is being read. */
+const BEST_LABEL: Record<StatsScope, string> = {
+  all: strings.stats.bestSingle,
+  recent: strings.stats.recentBest(RECENT_SOLVES),
+  session: strings.stats.sessionBest,
+};
+
 function sessionBestTier(bestMs: number | null, pbMs: number | null): StatTier | undefined {
   if (bestMs === null) return undefined;
   return bestMs === pbMs ? 'record' : 'best';
@@ -126,16 +146,17 @@ export function StatsScreen() {
   // phases name the columns for all of them.
   const phases = usePhases(session?.methodId ?? null);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
-  const [isAllSessions, setAllSessions] = useAllSessions();
+  const [scope, setScope] = useStatsScope();
   const stats = useSessionStats(
-    isAllSessions === undefined
+    scope === undefined
       ? null
-      : isAllSessions
-        ? { kind: 'all' }
-        : { kind: 'session', sessionId: session?.id ?? null },
+      : scope === 'session'
+        ? { kind: 'session', sessionId: session?.id ?? null }
+        : { kind: scope },
     PUZZLE,
     phaseKeys,
   );
+  const isAllSessions = scope !== 'session';
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
   const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
   const [, setGoalMs] = useSetting('stats.goalMs');
@@ -146,7 +167,12 @@ export function StatsScreen() {
     null,
   );
 
-  if (stats === null) return <main className="screen screen--scroll" />;
+  if (stats === null || scope === undefined) return <main className="screen screen--scroll" />;
+  // Across sessions the best of what is read is usually the PB itself, and a
+  // second card with the same number on it is not a second fact. It shows
+  // when they differ — a PB set in a session since archived, or before the
+  // latest hundred.
+  const hasBestCard = scope === 'session' || stats.sessionBestMs !== stats.globalPbMs;
   const windowView =
     openWindow === null ? null : stats.averageWindow(openWindow.n, openWindow.at);
 
@@ -155,22 +181,17 @@ export function StatsScreen() {
       <div className="stats">
         <div>
           <div className="chart-modes" role="group" aria-label={strings.stats.scope}>
-            <button
-              type="button"
-              className={isAllSessions ? 'is-active' : undefined}
-              aria-pressed={isAllSessions}
-              onClick={() => setAllSessions(true)}
-            >
-              {strings.stats.allSessions}
-            </button>
-            <button
-              type="button"
-              className={isAllSessions ? undefined : 'is-active'}
-              aria-pressed={!isAllSessions}
-              onClick={() => setAllSessions(false)}
-            >
-              {strings.stats.thisSession}
-            </button>
+            {STATS_SCOPES.map((candidate) => (
+              <button
+                key={candidate}
+                type="button"
+                className={candidate === scope ? 'is-active' : undefined}
+                aria-pressed={candidate === scope}
+                onClick={() => setScope(candidate)}
+              >
+                {SCOPE_LABEL[candidate]}
+              </button>
+            ))}
           </div>
           <p className="history__summary">
             {/* Only a session can be switched; over all of them the name would
@@ -190,7 +211,9 @@ export function StatsScreen() {
             )}
             <span>
               {isAllSessions ? null : '· '}
-              {stats.solveCount} {strings.stats.solves}
+              {stats.availableCount > stats.solveCount
+                ? strings.stats.solvesOf(stats.solveCount, stats.availableCount)
+                : `${stats.solveCount} ${strings.stats.solves}`}
             </span>
           </p>
         </div>
@@ -210,18 +233,16 @@ export function StatsScreen() {
                 label={strings.stats.pbSingle}
                 value={formatAverage(stats.globalPbMs)}
                 tier={stats.globalPbMs === null ? undefined : 'record'}
-                // Over every session the session best is the PB again, and a
-                // second card with the same number on it is not a second fact.
-                isWide={isAllSessions}
+                isWide={!hasBestCard}
                 onOpen={
                   stats.globalPbSolveId === null
                     ? undefined
                     : () => setOpenSolveId(stats.globalPbSolveId)
                 }
               />
-              {isAllSessions ? null : (
+              {hasBestCard ? (
                 <StatCard
-                  label={strings.stats.sessionBest}
+                  label={BEST_LABEL[scope]}
                   value={formatAverage(stats.sessionBestMs)}
                   // One colour, of the strongest thing it is — the history's rule.
                   tier={sessionBestTier(stats.sessionBestMs, stats.globalPbMs)}
@@ -231,7 +252,7 @@ export function StatsScreen() {
                       : () => setOpenSolveId(stats.sessionBestSolveId)
                   }
                 />
-              )}
+              ) : null}
               <StatCard label={strings.stats.mean} value={formatAverage(stats.meanMs)} />
               <StatCard label={strings.stats.median} value={formatAverage(stats.medianMs)} />
               <StatCard label={strings.stats.stdDev} value={formatAverage(stats.stdDevMs)} />
@@ -279,7 +300,6 @@ export function StatsScreen() {
 
             <RecordsSection
               recordsFor={stats.recordsFor}
-              isAllSessions={isAllSessions === true}
               globalPbMs={stats.globalPbMs}
               onOpenSolve={setOpenSolveId}
               onOpenWindow={(n, endIndex) => setOpenWindow({ n, at: { endIndex } })}

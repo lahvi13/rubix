@@ -57,8 +57,17 @@ export const GOAL_RECENT_SOLVES = 50;
 /** The trend chart tracks rolling ao12 (SPEC 3.4). */
 const TREND_WINDOW = 12;
 
-/** Whose solves: one session's, or every freestyle solve of the puzzle. */
-export type StatsSource = { kind: 'session'; sessionId: string | null } | { kind: 'all' };
+/** How many solves "the latest" reads across every session. */
+export const RECENT_SOLVES = 100;
+
+/**
+ * Whose solves: one session's, every freestyle solve of the sessions in use,
+ * or the latest RECENT_SOLVES of those.
+ */
+export type StatsSource =
+  | { kind: 'session'; sessionId: string | null }
+  | { kind: 'all' }
+  | { kind: 'recent' };
 
 export interface WindowStats {
   n: AverageWindow;
@@ -147,6 +156,8 @@ export interface GoalStats {
 
 export interface SessionStats {
   solveCount: number;
+  /** Every solve the source could have read — more than solveCount only for 'recent'. */
+  availableCount: number;
   windows: WindowStats[];
   sessionBestMs: number | null;
   /** The solve behind it, so the number can be opened rather than only read. */
@@ -204,17 +215,18 @@ export function useSessionStats(
 ): SessionStats | null {
   const kind = source?.kind ?? null;
   const sessionId = source?.kind === 'session' ? source.sessionId : null;
-  const solves = useLiveQuery(async () => {
+  const loaded = useLiveQuery(async () => {
     if (kind === null) return undefined;
-    if (kind === 'all') return listPuzzleSolvesChronological(puzzle);
-    return sessionId === null ? [] : listSolvesChronological(sessionId);
+    if (kind === 'session') return sessionId === null ? [] : listSolvesChronological(sessionId);
+    return listPuzzleSolvesChronological(puzzle);
   }, [kind, sessionId, puzzle]);
   const globalPb = useLiveQuery(() => getGlobalPbSolve(puzzle), [puzzle]);
   const chartWindow = useLiveQuery(() => getSetting('stats.chartWindow'), []);
   const goalMs = useLiveQuery(() => getSetting('stats.goalMs'), []);
 
   return useMemo(() => {
-    if (solves === undefined) return null;
+    if (loaded === undefined) return null;
+    const solves = kind === 'recent' ? loaded.slice(-RECENT_SOLVES) : loaded;
 
     const finals = solves.map(finalMs);
     const rolling = rollingAverage(finals, TREND_WINDOW);
@@ -245,9 +257,20 @@ export function useSessionStats(
     const records = new Map<RecordKind, RecordEntry[]>();
 
     const summaries = summariseDays(
-      solves.map((solve, index) => ({ dayKey: dayKey(solve.createdAt), finalMs: finals[index] ?? null })),
+      solves.map((solve, index) => ({
+        dayKey: dayKey(solve.createdAt),
+        finalMs: finals[index] ?? null,
+      })),
     );
-    const countByDay = new Map(summaries.map((summary) => [summary.dayKey, summary.count]));
+    // Practice is a question about the calendar, not about how many solves
+    // are being read: the latest hundred can start partway through the month.
+    const practiceDays =
+      solves === loaded
+        ? summaries
+        : summariseDays(
+            loaded.map((solve) => ({ dayKey: dayKey(solve.createdAt), finalMs: finalMs(solve) })),
+          );
+    const countByDay = new Map(practiceDays.map((summary) => [summary.dayKey, summary.count]));
     const recentDays = calendarDays(dayKey(now()), PRACTICE_DAYS).map((key) => ({
       day: dayNumber(key),
       dayKey: key,
@@ -257,6 +280,7 @@ export function useSessionStats(
 
     return {
       solveCount: solves.length,
+      availableCount: loaded.length,
       windows: AVERAGE_WINDOWS.map((n) => ({
         n,
         current: currentAverage(finals, n),
@@ -339,5 +363,5 @@ export function useSessionStats(
         };
       },
     };
-  }, [solves, globalPb, chartWindow, goalMs, phaseKeys]);
+  }, [loaded, kind, globalPb, chartWindow, goalMs, phaseKeys]);
 }

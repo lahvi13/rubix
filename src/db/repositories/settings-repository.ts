@@ -82,11 +82,12 @@ export interface SettingValues {
    */
   'stats.phaseTrendSmoothed': boolean;
   /**
-   * The stats screen reads every session at once unless told otherwise. A
-   * session is how the timer groups an evening; progress is read over months,
-   * and it was being read one session at a time.
+   * Whose solves the stats screen reads: every session in use, the latest
+   * hundred of them, or the active session. Every session by default — a
+   * session is how the timer groups an evening, progress is read over months.
+   * Replaces 'stats.allSessions', which could only say two of the three.
    */
-  'stats.allSessions': boolean;
+  'stats.scope': StatsScope;
   /** The time the reader is chasing — "sub 1:30" is 90000. 0 means none set. */
   'stats.goalMs': number;
   /**
@@ -98,6 +99,9 @@ export interface SettingValues {
 
 export const DRILL_MODES = ['solve', 'recognise'] as const;
 export type DrillMode = (typeof DRILL_MODES)[number];
+
+export const STATS_SCOPES = ['all', 'recent', 'session'] as const;
+export type StatsScope = (typeof STATS_SCOPES)[number];
 
 export const PHASE_TREND_MODES = ['stacked', 'separate', 'share'] as const;
 export type PhaseTrendMode = (typeof PHASE_TREND_MODES)[number];
@@ -127,7 +131,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.chartWindow': 100,
   'stats.phaseTrendMode': 'stacked',
   'stats.phaseTrendSmoothed': false,
-  'stats.allSessions': true,
+  'stats.scope': 'all',
   'stats.goalMs': 0,
   'stats.trendByDay': false,
 };
