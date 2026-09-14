@@ -12,13 +12,14 @@ Deploy first, then check what production actually serves — About shows
 
 ## Install
 
-1. Open in Safari, go to About — the second section is "Add to the Home
-   Screen" with the instructions.
+1. Open in Safari and time five solves: above the mini stats the timer must
+   ask to add the app to the Home Screen, and "Show me how" must open About,
+   whose second section is "Add to the Home Screen" with the instructions.
 2. Share → Add to Home Screen. **The icon must be the cube on a dark ground,
    not a screenshot of the page** and not a black square.
 3. The name under the icon should read "Rubix".
 4. Launch from the home screen: **no address bar, no Safari toolbar**. The
-   install section in About must be gone.
+   install section in About and the nudge on the timer must be gone.
 
 ## Safe areas — all of this from the home-screen app
 
@@ -106,7 +107,8 @@ install hint.
 The stylesheet uses `light-dark()` in nineteen places, which Safari only
 supports from **17.5** (May 2024). With `:has()`, `dvh` and `color-mix()` also
 in use, the real floor is **iOS 17.5+**. Below it the layout survives but the
-palette does not — the colours simply have no value.
+palette does not — the colours simply have no value, so such a browser gets a
+page saying it is too old instead of the app (`lib/browser-support.ts`).
 
 This is a known, accepted limit, not an oversight: carrying a second palette
 for older iOS is its own piece of work, and nobody has asked for it. Revisit

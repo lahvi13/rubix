@@ -191,6 +191,11 @@ export async function getGlobalPbSingle(puzzle: Puzzle): Promise<number | null> 
   return solve === null ? null : finalMs(solve);
 }
 
+/** Every solve on the device, in every session — counted, not read. */
+export async function countAllSolves(): Promise<number> {
+  return db.solves.count();
+}
+
 export async function countSolves(sessionId: string): Promise<number> {
   return db.solves.where('sessionId').equals(sessionId).count();
 }

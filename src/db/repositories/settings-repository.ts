@@ -43,6 +43,11 @@ export interface SettingValues {
    * between the reader and the algorithm they came back for.
    */
   'ui.learnExplanations': boolean;
+  /**
+   * Device-local: the nudge to put the app on an iPhone's home screen was
+   * waved away here. Another device is another Safari, with its own week.
+   */
+  'ui.installNudgeDismissed': boolean;
   /** Which route through the last layer the trainer opens on. */
   'trainer.twoLookDefault': boolean;
   /** Print the algorithm on every card, not just in the case sheet. */
@@ -146,6 +151,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.cubeSkin': 'classic',
   'ui.showLearn': true,
   'ui.learnExplanations': true,
+  'ui.installNudgeDismissed': false,
   'trainer.twoLookDefault': true,
   'trainer.showAlgs': true,
   'trainer.showRotationAlgs': true,
@@ -168,7 +174,14 @@ export const SETTING_DEFAULTS: SettingValues = {
 
 export type SettingKey = keyof SettingValues;
 
-const DEVICE_LOCAL_PREFIXES = ['audio.', 'ui.theme', 'ui.textSize', 'ui.clockSize', 'data.'];
+const DEVICE_LOCAL_PREFIXES = [
+  'audio.',
+  'ui.theme',
+  'ui.textSize',
+  'ui.clockSize',
+  'ui.installNudge',
+  'data.',
+];
 
 function isDeviceLocal(key: string): Flag {
   return DEVICE_LOCAL_PREFIXES.some((prefix) => key.startsWith(prefix)) ? 1 : 0;

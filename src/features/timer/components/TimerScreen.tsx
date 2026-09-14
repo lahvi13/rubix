@@ -7,6 +7,7 @@ import { now } from '../../../lib/clock';
 import { formatGoal } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { reportError } from '../../../lib/errors';
+import { InstallNudge } from '../../about';
 import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseBar, PhaseRun, usePhases } from '../../splits';
@@ -381,6 +382,7 @@ export function TimerScreen() {
               </span>
             )}
           </h2>
+          <InstallNudge />
           <MiniStats sessionId={session?.id ?? null} />
           <SolveList
             solves={solves}

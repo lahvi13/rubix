@@ -3681,7 +3681,8 @@ button[disabled] {
  * Outlined like a notice, because it is one; it stays until answered.
  */
 
-.backup-reminder {
+.backup-reminder,
+.install-nudge {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3693,15 +3694,22 @@ button[disabled] {
   background: var(--surface);
 }
 
-.backup-reminder__message {
+.backup-reminder__message,
+.install-nudge__message {
   margin: 0;
   font-size: var(--text-sm);
   line-height: 1.45;
 }
 
-.backup-reminder__actions {
+.backup-reminder__actions,
+.install-nudge__actions {
   display: flex;
   gap: var(--space-3);
+}
+
+/* Above the timer's mini stats, where it takes a line from the list, not the clock. */
+.install-nudge {
+  margin-bottom: var(--space-4);
 }
 
 /* Data — export, import, wipe */

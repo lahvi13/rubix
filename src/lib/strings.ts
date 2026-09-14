@@ -756,6 +756,12 @@ export const strings = {
     creditClaude: 'Built together with Claude Code —',
     creditFonts: 'Set in Inter, JetBrains Mono and DSEG7, all under the SIL Open Font License.',
   },
+  installNudge: {
+    message:
+      'Safari clears a site’s data after a week without a visit. Add Rubix to the Home Screen and your solves stay.',
+    how: 'Show me how',
+    dismiss: 'Got it',
+  },
   install: {
     title: 'Install',
     hint: 'Installed, the app opens from the home screen without the browser around it, and it keeps working with no connection at all.',
