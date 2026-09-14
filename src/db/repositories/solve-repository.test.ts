@@ -10,6 +10,7 @@ import {
   deleteSolve,
   deleteSolves,
   getGlobalPbSingle,
+  getGlobalPbSolve,
   listRecentSolves,
   listSolves,
   listPuzzleSolvesChronological,
@@ -189,6 +190,14 @@ describe('stats queries', () => {
 
     await addSolve(await makeSolve('other-session', 7000));
     expect(await getGlobalPbSingle('333')).toBe(7000);
+  });
+
+  it('gives a tie for the PB to the clean solve over the +2', async () => {
+    const clean = await addSolve(await makeSolve(sessionId, 10_000));
+    const penalised = await addSolve(await makeSolve(sessionId, 8000));
+    await updateSolve(penalised.id, { penalty: 'plus2' });
+
+    expect((await getGlobalPbSolve('333'))?.id).toBe(clean.id);
   });
 
   it('ignores DNFs, drills and other puzzles for the global PB', async () => {

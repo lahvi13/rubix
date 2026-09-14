@@ -161,30 +161,29 @@ export async function listPuzzleSolvesChronological(puzzle: Puzzle): Promise<Sol
 
 /**
  * The best single a puzzle has ever seen, across all freestyle sessions, and
- * the solve it belongs to. The compound index skips DNFs and drills entirely,
- * and the fold keeps one row rather than materialising every solve.
+ * the solve it belongs to: the fastest clean solve or the fastest +2, whichever
+ * ends up faster once the penalty is in. The index is ordered by time within
+ * each penalty, so that is two rows read — DNFs and drills are never touched.
+ * On a tie the clean solve holds it.
  *
  * The solve itself, not only the time: the history marks the row it is on and
  * the stats offer to open it, and both need to know which one it is. It may
  * well be in another session than the one being read.
  */
 export async function getGlobalPbSolve(puzzle: Puzzle): Promise<Solve | null> {
-  let best: Solve | null = null;
-  let bestMs: number | null = null;
-  await db.solves
-    .where('[puzzle+mode+penalty]')
-    .anyOf([
-      [puzzle, 'freestyle', 'none'],
-      [puzzle, 'freestyle', 'plus2'],
-    ])
-    .each((solve) => {
-      const ms = finalMs(solve);
-      if (ms !== null && (bestMs === null || ms < bestMs)) {
-        bestMs = ms;
-        best = solve;
-      }
-    });
-  return best;
+  const fastest = (penalty: Penalty) =>
+    db.solves
+      .where('[puzzle+mode+penalty+rawMs]')
+      .between([puzzle, 'freestyle', penalty, Dexie.minKey], [puzzle, 'freestyle', penalty, Dexie.maxKey])
+      .first();
+  const clean = await fastest('none');
+  const plusTwo = await fastest('plus2');
+  const cleanMs = clean === undefined ? null : finalMs(clean);
+  const plusTwoMs = plusTwo === undefined ? null : finalMs(plusTwo);
+  if (plusTwo !== undefined && plusTwoMs !== null && (cleanMs === null || plusTwoMs < cleanMs)) {
+    return plusTwo;
+  }
+  return clean ?? null;
 }
 
 export async function getGlobalPbSingle(puzzle: Puzzle): Promise<number | null> {

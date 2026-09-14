@@ -72,6 +72,19 @@ export class RubixDB extends Dexie {
           algCase.label = null;
         }),
     );
+
+    // v4 orders each penalty's solves by time, so the personal best is the
+    // first row of two ranges instead of a walk over every solve ever timed.
+    // The walk was not only slow: a live query keeps track of every key it
+    // reads, and with thousands of solves that bookkeeping, repeated after
+    // each one the timer saved, was most of the stall. Dexie fills the index
+    // for the rows already there; nothing else about a solve changes.
+    this.version(4).stores({
+      solves:
+        'id, sessionId, caseId, createdAt, updatedAt, starred, *tagIds, ' +
+        '[sessionId+createdAt], [caseId+createdAt], [mode+puzzle], [puzzle+mode+penalty], ' +
+        '[puzzle+mode+penalty+rawMs]',
+    });
   }
 }
 
