@@ -40,14 +40,33 @@ export function formatAxisMs(ms: number, axisMaxMs: number): string {
   return Number.isInteger(seconds) ? String(seconds) : seconds.toFixed(1);
 }
 
+const DATE_FORMATS = {
+  clock: { hour: '2-digit', minute: '2-digit' },
+  date: {},
+  dayMonth: { day: 'numeric', month: 'numeric' },
+  dayMonthYear: { day: 'numeric', month: 'numeric', year: 'numeric' },
+} satisfies Record<string, Intl.DateTimeFormatOptions>;
+
+const formatters = new Map<keyof typeof DATE_FORMATS, Intl.DateTimeFormat>();
+
+/**
+ * Each formatter is made once and kept. Making one is the slow part of
+ * toLocaleDateString, and the lists ask for a date on every row of every
+ * render: after a solve, with thousands in the database, that was a fifth of
+ * a second of a phone's main thread spent building the same formatter.
+ */
+function formatter(name: keyof typeof DATE_FORMATS): Intl.DateTimeFormat {
+  const known = formatters.get(name);
+  if (known !== undefined) return known;
+  const made = new Intl.DateTimeFormat([], DATE_FORMATS[name]);
+  formatters.set(name, made);
+  return made;
+}
+
 /** A day key as a short date for an axis or a readout: "14. 9." in Czech, "9/14" in English. */
 export function formatDayKey(key: string, withYear = false): string {
   const [year = 0, month = 1, day = 1] = key.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString([], {
-    day: 'numeric',
-    month: 'numeric',
-    year: withYear ? 'numeric' : undefined,
-  });
+  return formatter(withYear ? 'dayMonthYear' : 'dayMonth').format(new Date(year, month - 1, day));
 }
 
 /**
@@ -104,11 +123,11 @@ export function formatInspection(elapsedMs: number, limitMs: number): string {
 }
 
 export function formatClock(timestamp: number): string {
-  return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return formatter('clock').format(timestamp);
 }
 
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString();
+  return formatter('date').format(timestamp);
 }
 
 /**
@@ -122,12 +141,10 @@ export function formatWhen(timestamp: number, at: number): string {
 
   if (isSameDay(when, now)) return formatClock(timestamp);
 
-  const day = when.toLocaleDateString([], {
-    day: 'numeric',
-    month: 'numeric',
-    // A year is only worth the room once the list reaches back into another one.
-    year: when.getFullYear() === now.getFullYear() ? undefined : 'numeric',
-  });
+  // A year is only worth the room once the list reaches back into another one.
+  const day = formatter(
+    when.getFullYear() === now.getFullYear() ? 'dayMonth' : 'dayMonthYear',
+  ).format(when);
   return `${day} ${formatClock(timestamp)}`;
 }
 
