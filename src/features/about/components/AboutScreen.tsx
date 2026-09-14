@@ -46,6 +46,7 @@ export function AboutScreen() {
         <h2 className="data-section__title">{strings.about.title}</h2>
         <p className="data-section__hint">{strings.about.what}</p>
         <p className="data-section__hint">{strings.about.who}</p>
+        <p className="data-section__hint">{strings.about.scope}</p>
         <button type="button" onClick={share}>
           {strings.about.share}
         </button>
