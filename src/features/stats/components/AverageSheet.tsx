@@ -15,7 +15,7 @@ interface AverageSheetProps {
  * simply the mean of the five times on it.
  */
 export function AverageSheet({ view, onOpenSolve, onClose }: AverageSheetProps) {
-  const title = strings.stats.windowTitle(view.which, view.n);
+  const title = strings.stats.windowTitle(view.at, view.n);
   const first = view.solves[0]?.createdAt;
   const last = view.solves[view.solves.length - 1]?.createdAt;
 

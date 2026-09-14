@@ -13,6 +13,7 @@ import {
   bestAverage,
   bestAverageStart,
   currentAverage,
+  windowAverage,
   rollingAverage,
   trimCount,
   trimmedMask,
@@ -36,6 +37,7 @@ import {
   type PhaseAverageRow,
   type PhaseTrendPoint,
 } from '../../../domain/stats/phases';
+import { recordProgression } from '../../../domain/stats/progression';
 
 /** The trend chart tracks rolling ao12 (SPEC 3.4). */
 const TREND_WINDOW = 12;
@@ -49,8 +51,26 @@ export interface WindowStats {
   best: Average;
 }
 
-/** Which of a window's two averages: the latest n solves, or the best n in a row. */
-export type WindowWhich = 'current' | 'best';
+/**
+ * Which n solves: the latest, the best in a row, or the ones ending at a
+ * given solve — where a record in the history was set.
+ */
+export type WindowAt = 'current' | 'best' | { endIndex: number };
+
+/** A history of records is kept for singles and for every average window. */
+export type RecordKind = 'single' | AverageWindow;
+
+export interface RecordEntry {
+  ms: number;
+  /** How much faster than the record it beat; null for the first. */
+  improvementMs: number | null;
+  /** When the solve that set it was done. */
+  at: number;
+  /** That solve — for an average, the last of its window. */
+  solveId: string;
+  /** Where that solve sits among the solves being read. */
+  endIndex: number;
+}
 
 export interface WindowSolve {
   id: string;
@@ -65,7 +85,7 @@ export interface WindowSolve {
 /** The solves behind one number in the averages table. */
 export interface AverageWindowView {
   n: AverageWindow;
-  which: WindowWhich;
+  at: WindowAt;
   average: Average;
   /** How many the trim cuts from each end. */
   trim: number;
@@ -118,7 +138,9 @@ export interface SessionStats {
   /** One point per phase-timed solve — raw lengths plus the rolling mean. */
   phaseTrend: PhaseTrendPoint[];
   /** The window behind an average, or null where there is no number to explain. */
-  averageWindow: (n: AverageWindow, which: WindowWhich) => AverageWindowView | null;
+  averageWindow: (n: AverageWindow, at: WindowAt) => AverageWindowView | null;
+  /** Every time the record fell, newest first. */
+  recordsFor: (kind: RecordKind) => RecordEntry[];
 }
 
 /**
@@ -170,6 +192,7 @@ export function useSessionStats(
         : (solves.find((solve) => finalMs(solve) === sessionBestMs) ?? null);
 
     const currentAo12 = currentAverage(finals, TREND_WINDOW);
+    const records = new Map<RecordKind, RecordEntry[]>();
     const bestAo12 = bestAverage(finals, TREND_WINDOW);
 
     return {
@@ -191,21 +214,44 @@ export function useSessionStats(
       histogramBins: histogram(finals),
       trend,
       trendFenceMs: upperFence(trend.map((point) => point.singleMs)),
+      recordsFor: (kind) => {
+        // Kept per kind: an ao100 rolled over thousands of solves is work,
+        // and only the kind on screen is ever asked for.
+        const cached = records.get(kind);
+        if (cached !== undefined) return cached;
+        const series = kind === 'single' ? finals : rollingAverage(finals, kind);
+        const entries = recordProgression(series)
+          .map((step) => ({
+            ms: step.ms,
+            improvementMs: step.previousMs === null ? null : step.previousMs - step.ms,
+            at: solves[step.index]?.createdAt ?? 0,
+            solveId: solves[step.index]?.id ?? '',
+            endIndex: step.index,
+          }))
+          .reverse();
+        records.set(kind, entries);
+        return entries;
+      },
       // 'dnf' is not a place on a time axis; both marks simply go unmarked.
       currentAo12Ms: typeof currentAo12 === 'number' ? currentAo12 : null,
       bestAo12Ms: typeof bestAo12 === 'number' ? bestAo12 : null,
       phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(solves, phaseKeys),
       measuredCount: measuredSolves(solves).length,
       phaseTrend: phaseTrend(solves, phaseKeys, window),
-      averageWindow: (n, which) => {
-        const start = which === 'current' ? finals.length - n : bestAverageStart(finals, n);
-        if (start === null || start < 0) return null;
+      averageWindow: (n, at) => {
+        const start =
+          at === 'current'
+            ? finals.length - n
+            : at === 'best'
+              ? bestAverageStart(finals, n)
+              : at.endIndex + 1 - n;
+        if (start === null || start < 0 || start + n > finals.length) return null;
         const windowFinals = finals.slice(start, start + n);
         const trimmed = trimmedMask(windowFinals);
         return {
           n,
-          which,
-          average: which === 'current' ? currentAverage(finals, n) : bestAverage(finals, n),
+          at,
+          average: windowAverage(windowFinals),
           trim: trimCount(n),
           solves: solves.slice(start, start + n).map((solve, offset) => ({
             id: solve.id,

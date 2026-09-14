@@ -1996,6 +1996,53 @@ button[disabled] {
   text-underline-offset: 0.25em;
 }
 
+/* One row per time a record fell: the time, what it took off, and when. */
+.records {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-content: center;
+  align-items: baseline;
+  gap: var(--space-5);
+  width: 100%;
+  min-height: 2.75rem;
+  border: none;
+  background: var(--surface);
+  color: var(--text);
+  text-align: start;
+}
+
+.record__time {
+  font-size: var(--text-lg);
+}
+
+.record.is-best .record__time {
+  color: var(--accent);
+}
+
+.record.is-record .record__time {
+  color: var(--record);
+}
+
+.record__date {
+  min-width: 5.5rem;
+  text-align: end;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.records__more {
+  margin-top: var(--space-4);
+}
+
 .average-sheet {
   gap: var(--space-5);
 }

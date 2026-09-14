@@ -11,8 +11,9 @@ import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseAverages, usePhases } from '../../splits';
 import { useAllSessions } from '../hooks/use-all-sessions';
 import type { Average, AverageWindow } from '../../../domain/stats/averages';
-import { useSessionStats, type WindowWhich } from '../hooks/use-session-stats';
+import { useSessionStats, type WindowAt } from '../hooks/use-session-stats';
 import { AverageSheet } from './AverageSheet';
+import { RecordsSection } from './RecordsSection';
 
 const PUZZLE = '333';
 const MODE = 'freestyle';
@@ -132,13 +133,13 @@ export function StatsScreen() {
   const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
-  const [openWindow, setOpenWindow] = useState<{ n: AverageWindow; which: WindowWhich } | null>(
+  const [openWindow, setOpenWindow] = useState<{ n: AverageWindow; at: WindowAt } | null>(
     null,
   );
 
   if (stats === null) return <main className="screen screen--scroll" />;
   const windowView =
-    openWindow === null ? null : stats.averageWindow(openWindow.n, openWindow.which);
+    openWindow === null ? null : stats.averageWindow(openWindow.n, openWindow.at);
 
   return (
     <main className="screen screen--scroll">
@@ -247,7 +248,7 @@ export function StatsScreen() {
                 <tbody>
                   {stats.windows.map((window) => (
                     <tr key={window.n}>
-                      <th>ao{window.n}</th>
+                      <th scope="row">ao{window.n}</th>
                       {(['current', 'best'] as const).map((which) => (
                         <AverageCell
                           key={which}
@@ -255,7 +256,7 @@ export function StatsScreen() {
                           onOpen={
                             stats.averageWindow(window.n, which) === null
                               ? undefined
-                              : () => setOpenWindow({ n: window.n, which })
+                              : () => setOpenWindow({ n: window.n, at: which })
                           }
                         />
                       ))}
@@ -264,6 +265,14 @@ export function StatsScreen() {
                 </tbody>
               </table>
             </section>
+
+            <RecordsSection
+              recordsFor={stats.recordsFor}
+              isAllSessions={isAllSessions === true}
+              globalPbMs={stats.globalPbMs}
+              onOpenSolve={setOpenSolveId}
+              onOpenWindow={(n, endIndex) => setOpenWindow({ n, at: { endIndex } })}
+            />
 
             <PhaseAverages
               rows={stats.phaseRows}

@@ -85,10 +85,11 @@ describe('StatsScreen', () => {
     // PB single and session best agree here: the clean 10s. The two cards fill
     // from separate live queries, so wait for both.
     await waitFor(() => {
-      expect(screen.getAllByText('10.00')).toHaveLength(2);
+      expect(screen.getByRole('button', { name: /PB single/i })).toHaveTextContent('10.00');
+      expect(screen.getByRole('button', { name: /Session best/i })).toHaveTextContent('10.00');
     });
     // Current ao5 over the last five (11..14 + DNF): DNF trimmed, (12+13+14)/3.
-    expect(screen.getByText('ao5')).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'ao5' })).toBeInTheDocument();
     expect(screen.getByText('13.00')).toBeInTheDocument();
     // Not enough solves for ao12 yet.
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
@@ -122,6 +123,20 @@ describe('StatsScreen', () => {
     // The solve takes the list's place and steps through the same five.
     expect(await screen.findByText('4 / 5')).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: 'Current ao5' })).not.toBeInTheDocument();
+  });
+
+  it('lists when each record fell, newest first', async () => {
+    for (const rawMs of [12_000, 13_000, 11_000, 11_500, 9000]) await seedSolve(sessionId, rawMs);
+
+    render(<StatsScreen />);
+
+    const records = within(await screen.findByRole('list', { name: 'Records' }));
+    const rows = records.getAllByRole('button');
+    expect(rows.map((row) => row.textContent)).toEqual([
+      expect.stringMatching(/^9.00−2.00/),
+      expect.stringMatching(/^11.00−1.00/),
+      expect.stringMatching(/^12.00first/),
+    ]);
   });
 
   it('draws the rolling ao12 once the window has filled', async () => {

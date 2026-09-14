@@ -150,8 +150,8 @@ export const strings = {
     trend: 'Rolling ao12',
     trendSeries: 'ao12',
     singleSeries: 'Single',
-    windowTitle: (which: 'current' | 'best', n: number) =>
-      `${which === 'best' ? 'Best' : 'Current'} ao${n}`,
+    windowTitle: (at: 'current' | 'best' | object, n: number) =>
+      at === 'best' ? `Best ao${n}` : at === 'current' ? `Current ao${n}` : `ao${n}`,
     /** Why the average is not the plain mean of the times listed under it. */
     windowTrimNote: (trim: number) =>
       trim === 1
@@ -159,6 +159,13 @@ export const strings = {
         : `The ${trim} fastest and ${trim} slowest solves are cut (in brackets); the average is the mean of the rest.`,
     windowDnfNote: 'More DNFs than the trim can cut, so the average is a DNF.',
     trimmed: 'not counted',
+    records: 'Records',
+    recordKind: 'Which record',
+    noRecords: (n: number) => (n === 1 ? 'No records yet.' : `No ao${n} yet — it takes ${n} solves.`),
+    /** In place of the gain on the first record, which beat nothing. */
+    firstRecord: 'first',
+    allRecords: (count: number) => `Show all ${count}`,
+    fewerRecords: 'Show fewer',
     histogramSeries: 'Solves',
     loadingCharts: 'Loading charts…',
     penalties: 'Penalties',
