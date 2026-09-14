@@ -50,7 +50,13 @@
     <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png" />
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      The header, drawn before the script arrives: on a first visit over a slow
+      connection the app is several hundred kilobytes of JavaScript away, and
+      a dark empty screen for those seconds reads as broken. React replaces
+      this on its first render with the same markup, so nothing moves.
+    -->
+    <div id="root"><div class="app" aria-hidden="true"><header class="app__header"><button type="button" class="app__menu-toggle" tabindex="-1"><span>☰</span></button><h1 class="app__title">Rubix<span class="app__route"></span></h1></header></div></div>
     <script type="module" src="/src/main.tsx"></script>
     <!-- Cloudflare Web Analytics -->
     <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js"
