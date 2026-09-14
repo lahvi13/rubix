@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Area, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { PhaseTrendMode } from '../../../db/repositories/settings-repository';
 import type { MethodPhase } from '../../../db/types';
@@ -43,6 +44,7 @@ interface Row {
  *   but the balance is
  */
 export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrendChartProps) {
+  const [readout, setReadout] = useState<HTMLDivElement | null>(null);
   // With smoothing on, the first few solves have no mean; they are dropped
   // rather than drawn as a gap, so the line starts where it has something to
   // say and the axis still counts solves.
@@ -80,7 +82,15 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
     <>
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
         <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-          <XAxis dataKey="index" {...AXIS_PROPS} />
+          {/* Counted, not listed: as categories the ticks ran 5 6 7 8 9 10 12
+              14, and uneven steps read as uneven solves. */}
+          <XAxis
+            dataKey="index"
+            type="number"
+            domain={['dataMin', 'dataMax']}
+            allowDecimals={false}
+            {...AXIS_PROPS}
+          />
           <YAxis
             {...AXIS_PROPS}
             domain={axis.domain}
@@ -88,21 +98,26 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
             tickFormatter={axis.format}
             width={44}
           />
-          <Tooltip
-            {...TOOLTIP_PROPS}
-            content={({ active, label }) => {
-              const rows =
-                active === true ? tooltipRows(points, phases, Number(label), isSmoothed, mode) : [];
-              if (rows.length === 0) return null;
-              return (
-                <ChartTooltip
-                  title={`${strings.stats.solveIndex} ${String(label)}`}
-                  rows={rows}
-                  note={isSmoothed ? strings.splits.smoothingTooltip : undefined}
-                />
-              );
-            }}
-          />
+          {readout === null ? null : (
+            <Tooltip
+              {...TOOLTIP_PROPS}
+              portal={readout}
+              content={({ active, label }) => {
+                // Untouched, the readout reads the latest solve drawn.
+                const index = active === true ? Number(label) : drawn[drawn.length - 1]?.index;
+                const rows =
+                  index === undefined ? [] : tooltipRows(points, phases, index, isSmoothed, mode);
+                if (index === undefined || rows.length === 0) return null;
+                return (
+                  <ChartTooltip
+                    title={`${strings.stats.solveIndex} ${index}`}
+                    rows={rows}
+                    note={isSmoothed ? strings.splits.smoothingTooltip : undefined}
+                  />
+                );
+              }}
+            />
+          )}
 
           {mode === 'separate' && isSmoothed
             ? phases.map((phase, order) => (
@@ -149,6 +164,7 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
           )}
         </ComposedChart>
       </ResponsiveContainer>
+      <div ref={setReadout} className="chart-readout" />
       <ChartLegend entries={legend} />
     </>
   );

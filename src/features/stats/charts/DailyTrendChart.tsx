@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Line,
   LineChart,
@@ -27,6 +28,7 @@ interface DailyTrendChartProps {
  * fortnight away is a gap on the chart rather than two neighbouring points.
  */
 export function DailyTrendChart({ days, goalMs }: DailyTrendChartProps) {
+  const [readout, setReadout] = useState<HTMLDivElement | null>(null);
   const values = days
     .flatMap((day) => [day.meanMs, day.bestMs])
     .filter((ms): ms is number => ms !== null)
@@ -54,31 +56,38 @@ export function DailyTrendChart({ days, goalMs }: DailyTrendChartProps) {
             tickFormatter={(value: number) => formatAxisMs(value, axis?.domainMs[1] ?? value)}
             width={52}
           />
-          <Tooltip
-            {...TOOLTIP_PROPS}
-            content={({ active, label }) => {
-              const day = days.find((candidate) => candidate.day === Number(label));
-              if (active !== true || day === undefined) return null;
-              return (
-                <ChartTooltip
-                  title={formatDayKey(day.dayKey, true)}
-                  rows={[
-                    {
-                      label: strings.stats.dailyMean,
-                      colour: 'var(--accent)',
-                      value: day.meanMs === null ? strings.solve.dnf : formatMs(day.meanMs),
-                    },
-                    {
-                      label: strings.stats.dailyBest,
-                      colour: 'var(--muted)',
-                      value: day.bestMs === null ? strings.solve.dnf : formatMs(day.bestMs),
-                    },
-                    { label: strings.stats.solvesLabel, value: String(day.count), isSummary: true },
-                  ]}
-                />
-              );
-            }}
-          />
+          {readout === null ? null : (
+            <Tooltip
+              {...TOOLTIP_PROPS}
+              portal={readout}
+              content={({ active, label }) => {
+                // Untouched, the readout reads the latest day.
+                const day =
+                  active === true
+                    ? days.find((candidate) => candidate.day === Number(label))
+                    : days[days.length - 1];
+                if (day === undefined) return null;
+                return (
+                  <ChartTooltip
+                    title={formatDayKey(day.dayKey, true)}
+                    rows={[
+                      {
+                        label: strings.stats.dailyMean,
+                        colour: 'var(--accent)',
+                        value: day.meanMs === null ? strings.solve.dnf : formatMs(day.meanMs),
+                      },
+                      {
+                        label: strings.stats.dailyBest,
+                        colour: 'var(--muted)',
+                        value: day.bestMs === null ? strings.solve.dnf : formatMs(day.bestMs),
+                      },
+                      { label: strings.stats.solvesLabel, value: String(day.count), isSummary: true },
+                    ]}
+                  />
+                );
+              }}
+            />
+          )}
           {goalMs === null ? null : (
             <ReferenceLine y={goalMs} stroke="var(--text)" strokeDasharray="2 4" strokeWidth={1} />
           )}
@@ -102,6 +111,7 @@ export function DailyTrendChart({ days, goalMs }: DailyTrendChartProps) {
           />
         </LineChart>
       </ResponsiveContainer>
+      <div ref={setReadout} className="chart-readout" />
       <ChartLegend
         entries={[
           { label: strings.stats.dailyMean, colour: 'var(--accent)' },

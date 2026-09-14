@@ -14,29 +14,23 @@ export const AXIS_PROPS = {
   tick: AXIS_TICK,
 } as const;
 
-/** The card is the tooltip's home; it must not paint outside it. */
-export const TOOLTIP_WRAPPER_STYLE: CSSProperties = {
-  pointerEvents: 'none',
-  zIndex: 1,
-};
-
 /**
- * Recharts flips the tooltip horizontally on its own once it would leave the
- * plot area, but vertically it only clamps to that area — a tooltip taller
- * than the chart escapes upwards, off the card and under the app's sticky
- * header. Pinning y (checked per axis in recharts' getTooltipTranslateXY, so
- * x is still free to flip) keeps it inside and stops it jumping about under
- * the finger.
+ * The readout is not a box floating over the plot. On a phone the finger is
+ * already over the chart, and a box beside it — four phases, a total and a
+ * note tall — covered the very point being read and the axis saying which
+ * solve it was. Every chart hands recharts a portal instead
+ * and the readout sits in a row of its own under the plot.
+ *
+ * Kept visible when nothing is touched, because the charts then show their
+ * latest point there: a row that appeared only under a finger would push the
+ * legend about each time.
  */
-export const TOOLTIP_POSITION = { y: 0 } as const;
-
 export const TOOLTIP_PROPS = {
-  offset: 12,
-  allowEscapeViewBox: { x: false, y: false },
-  wrapperStyle: TOOLTIP_WRAPPER_STYLE,
-  position: TOOLTIP_POSITION,
   isAnimationActive: false,
-  cursor: { stroke: 'var(--border)', strokeWidth: 1 },
+  wrapperStyle: { visibility: 'visible' } satisfies CSSProperties,
+  // Stronger than the axis: with the readout moved off the plot, this line is
+  // what says where on the chart the numbers below belong.
+  cursor: { stroke: 'var(--muted)', strokeWidth: 1 },
 } as const;
 
 /** The same, for a bar chart, where the cursor is a band and not a line. */

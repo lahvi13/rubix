@@ -207,6 +207,7 @@ export const strings = {
     andUp: 'and up',
     bestAo12: 'Best ao12',
     containsCurrent: 'Current ao12 falls here',
+    touchBar: 'Touch a bar to see its range and count.',
   },
   history: {
     empty: 'Nothing matches these filters.',

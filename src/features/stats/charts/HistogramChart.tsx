@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -30,6 +31,7 @@ interface HistogramChartProps {
  * this whole module could be swapped for uPlot without touching any logic.
  */
 export function HistogramChart({ bins, currentAoMs }: HistogramChartProps) {
+  const [readout, setReadout] = useState<HTMLDivElement | null>(null);
   const axisMax = bins[bins.length - 1]?.startMs ?? 0;
   // Where the ao12 actually falls, which is not the same question as which bar
   // holds it: the bin it lands in may hold no solves at all, and a coloured
@@ -52,29 +54,37 @@ export function HistogramChart({ bins, currentAoMs }: HistogramChartProps) {
         <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
           <XAxis dataKey="label" {...AXIS_PROPS} interval="preserveStartEnd" />
           <YAxis allowDecimals={false} {...AXIS_PROPS} />
-          <Tooltip
-            {...BAR_TOOLTIP_PROPS}
-            content={({ active, payload }) => {
-              const row = active === true ? payload?.[0]?.payload : undefined;
-              if (!isRow(row)) return null;
-              return (
-                <ChartTooltip
-                  title={row.range}
-                  rows={[
-                    {
-                      label: strings.stats.histogramSeries,
-                      value: String(row.count),
-                    },
-                  ]}
-                  note={row.isCurrent ? strings.stats.containsCurrent : undefined}
-                />
-              );
-            }}
-          />
+          {readout === null ? null : (
+            <Tooltip
+              {...BAR_TOOLTIP_PROPS}
+              portal={readout}
+              content={({ active, payload }) => {
+                // Untouched, the readout reads the bar the current ao12 is in.
+                const row =
+                  active === true ? payload?.[0]?.payload : data.find((entry) => entry.isCurrent);
+                if (!isRow(row)) {
+                  return <p className="chart-readout__hint">{strings.stats.touchBar}</p>;
+                }
+                return (
+                  <ChartTooltip
+                    title={row.range}
+                    rows={[
+                      {
+                        label: strings.stats.histogramSeries,
+                        value: String(row.count),
+                      },
+                    ]}
+                    note={row.isCurrent ? strings.stats.containsCurrent : undefined}
+                  />
+                );
+              }}
+            />
+          )}
           <Bar dataKey="count" fill="var(--muted)" radius={[3, 3, 0, 0]} isAnimationActive={false} />
           {marker === null ? null : <AverageMarker position={marker} />}
         </BarChart>
       </ResponsiveContainer>
+      <div ref={setReadout} className="chart-readout" />
       <ChartLegend
         entries={[
           { label: strings.stats.histogramSeries, colour: 'var(--muted)' },

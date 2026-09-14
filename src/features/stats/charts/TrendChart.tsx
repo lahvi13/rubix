@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Line,
   LineChart,
@@ -28,6 +29,7 @@ interface TrendChartProps {
 
 /** Rolling ao12 over the recent window. Gaps are DNF averages — never faked. */
 export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps) {
+  const [readout, setReadout] = useState<HTMLDivElement | null>(null);
   // The averages always fit. A single fits unless it is past the fence: one
   // three-minute solve in a session of ninety-second ones would otherwise
   // flatten the line the chart is for into the bottom third of it.
@@ -72,45 +74,52 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
             }
             width={52}
           />
-          <Tooltip
-            {...TOOLTIP_PROPS}
-            content={({ active, label }) => {
-              const point = points.find((candidate) => candidate.index === Number(label));
-              const value = point?.aoMs;
-              if (active !== true || point === undefined || value == null) return null;
-              return (
-                <ChartTooltip
-                  title={`${strings.stats.solveIndex} ${String(label)}`}
-                  rows={[
-                    {
-                      label: strings.stats.singleSeries,
-                      colour: 'var(--muted)',
-                      value: formatTime(point.singleMs),
-                    },
-                    {
-                      label: strings.stats.trendSeries,
-                      colour: 'var(--accent)',
-                      value: formatMs(value),
-                    },
-                    // The distance to the record is the question the reference
-                    // line raises; the tooltip is where it gets a number.
-                    ...(bestMs === null
-                      ? []
-                      : [
-                          {
-                            label: strings.stats.bestAo12,
-                            value:
-                              value <= bestMs
-                                ? formatMs(bestMs)
-                                : `+${formatMs(value - bestMs)}`,
-                            isSummary: true,
-                          },
-                        ]),
-                  ]}
-                />
-              );
-            }}
-          />
+          {readout === null ? null : (
+            <Tooltip
+              {...TOOLTIP_PROPS}
+              portal={readout}
+              content={({ active, label }) => {
+                // Untouched, the readout reads the latest solve.
+                const point =
+                  active === true
+                    ? points.find((candidate) => candidate.index === Number(label))
+                    : points.findLast((candidate) => candidate.aoMs !== null);
+                const value = point?.aoMs;
+                if (point === undefined || value == null) return null;
+                return (
+                  <ChartTooltip
+                    title={`${strings.stats.solveIndex} ${point.index}`}
+                    rows={[
+                      {
+                        label: strings.stats.singleSeries,
+                        colour: 'var(--muted)',
+                        value: formatTime(point.singleMs),
+                      },
+                      {
+                        label: strings.stats.trendSeries,
+                        colour: 'var(--accent)',
+                        value: formatMs(value),
+                      },
+                      // The distance to the record is the question the reference
+                      // line raises; the tooltip is where it gets a number.
+                      ...(bestMs === null
+                        ? []
+                        : [
+                            {
+                              label: strings.stats.bestAo12,
+                              value:
+                                value <= bestMs
+                                  ? formatMs(bestMs)
+                                  : `+${formatMs(value - bestMs)}`,
+                              isSummary: true,
+                            },
+                          ]),
+                    ]}
+                  />
+                );
+              }}
+            />
+          )}
           {goalMs === null ? null : (
             <ReferenceLine y={goalMs} stroke="var(--text)" strokeDasharray="2 4" strokeWidth={1} />
           )}
@@ -145,6 +154,7 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
           />
         </LineChart>
       </ResponsiveContainer>
+      <div ref={setReadout} className="chart-readout" />
       <ChartLegend
         entries={[
           { label: strings.stats.singleSeries, colour: 'var(--muted)', isDot: true },
