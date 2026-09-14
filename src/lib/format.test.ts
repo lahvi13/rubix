@@ -4,6 +4,7 @@ import {
   formatClock,
   formatDate,
   formatDay,
+  formatGoal,
   formatInspection,
   formatIsoDate,
   formatMs,
@@ -120,6 +121,17 @@ describe('formatWhen', () => {
   it('adds the year once the solve is from another one', () => {
     const lastYear = new Date(2025, 8, 4, 9, 5).getTime();
     expect(formatWhen(lastYear, noon)).toContain('2025');
+  });
+});
+
+describe('formatGoal', () => {
+  it.each<[number, string]>([
+    [90_000, '1:30'],
+    [45_000, '45'],
+    [89_500, '1:29.50'],
+    [20_250, '20.25'],
+  ])('%i reads as %s', (ms, expected) => {
+    expect(formatGoal(ms)).toBe(expected);
   });
 });
 

@@ -23,6 +23,7 @@ import {
 import {
   histogram,
   penaltyRate,
+  shareUnder,
   sessionMean,
   sessionMedian,
   standardDeviation,
@@ -38,6 +39,9 @@ import {
   type PhaseTrendPoint,
 } from '../../../domain/stats/phases';
 import { recordProgression } from '../../../domain/stats/progression';
+
+/** How far back "lately" reaches when a goal is measured against current form. */
+export const GOAL_RECENT_SOLVES = 50;
 
 /** The trend chart tracks rolling ao12 (SPEC 3.4). */
 const TREND_WINDOW = 12;
@@ -101,6 +105,15 @@ export interface TrendPoint {
   singleMs: number | null;
 }
 
+export interface GoalStats {
+  goalMs: number;
+  /** Fraction of every solve that beat it. */
+  allRate: number | null;
+  /** The same over the latest GOAL_RECENT_SOLVES, or fewer when there are fewer. */
+  recentRate: number | null;
+  recentCount: number;
+}
+
 export interface SessionStats {
   solveCount: number;
   windows: WindowStats[];
@@ -137,6 +150,8 @@ export interface SessionStats {
   measuredCount: number;
   /** One point per phase-timed solve — raw lengths plus the rolling mean. */
   phaseTrend: PhaseTrendPoint[];
+  /** null while no goal is set. */
+  goal: GoalStats | null;
   /** The window behind an average, or null where there is no number to explain. */
   averageWindow: (n: AverageWindow, at: WindowAt) => AverageWindowView | null;
   /** Every time the record fell, newest first. */
@@ -162,6 +177,7 @@ export function useSessionStats(
   }, [kind, sessionId, puzzle]);
   const globalPb = useLiveQuery(() => getGlobalPbSolve(puzzle), [puzzle]);
   const chartWindow = useLiveQuery(() => getSetting('stats.chartWindow'), []);
+  const goalMs = useLiveQuery(() => getSetting('stats.goalMs'), []);
 
   return useMemo(() => {
     if (solves === undefined) return null;
@@ -238,6 +254,15 @@ export function useSessionStats(
       phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(solves, phaseKeys),
       measuredCount: measuredSolves(solves).length,
       phaseTrend: phaseTrend(solves, phaseKeys, window),
+      goal:
+        goalMs === undefined || goalMs <= 0
+          ? null
+          : {
+              goalMs,
+              allRate: shareUnder(finals, goalMs),
+              recentRate: shareUnder(finals.slice(-GOAL_RECENT_SOLVES), goalMs),
+              recentCount: Math.min(finals.length, GOAL_RECENT_SOLVES),
+            },
       averageWindow: (n, at) => {
         const start =
           at === 'current'
@@ -263,5 +288,5 @@ export function useSessionStats(
         };
       },
     };
-  }, [solves, globalPb, chartWindow, phaseKeys]);
+  }, [solves, globalPb, chartWindow, goalMs, phaseKeys]);
 }

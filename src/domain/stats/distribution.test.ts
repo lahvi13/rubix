@@ -6,6 +6,7 @@ import {
   penaltyRate,
   sessionMean,
   sessionMedian,
+  shareUnder,
   standardDeviation,
   upperFence,
 } from './distribution';
@@ -162,6 +163,17 @@ describe('histogramPosition', () => {
     const middle = (fenced.length - 0.5) / fenced.length;
     expect(histogramPosition(fenced, 120_000)).toBeCloseTo(middle, 6);
     expect(histogramPosition(fenced, overflow?.startMs ?? 0)).toBeCloseTo(middle, 6);
+  });
+});
+
+describe('shareUnder', () => {
+  it.each<[string, (number | null)[], number, number | null]>([
+    ['is null without solves', [], 90_000, null],
+    ['counts the solves faster than the goal', [80_000, 95_000, 85_000, 100_000], 90_000, 0.5],
+    ['does not count a time equal to the goal', [90_000, 89_990], 90_000, 0.5],
+    ['keeps a DNF in the count as a miss', [80_000, null], 90_000, 0.5],
+  ])('%s', (_, finals, goalMs, expected) => {
+    expect(shareUnder(finals, goalMs)).toBe(expected);
   });
 });
 

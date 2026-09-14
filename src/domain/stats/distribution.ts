@@ -55,6 +55,16 @@ export function standardDeviation(finals: readonly (number | null)[]): number | 
   return Math.round(Math.sqrt(variance));
 }
 
+/**
+ * Fraction 0..1 of solves faster than a goal; null for no solves. Strictly
+ * faster, because "sub 1:30" is the goal and a 1:30.00 is not sub it. A DNF
+ * is a solve that did not make it, so it stays in the count.
+ */
+export function shareUnder(finals: readonly (number | null)[], goalMs: number): number | null {
+  if (finals.length === 0) return null;
+  return finals.filter((value) => value !== null && value < goalMs).length / finals.length;
+}
+
 /** Fraction 0..1 of solves carrying the given penalty; null for no solves. */
 export function penaltyRate(
   solves: readonly Pick<Solve, 'penalty'>[],

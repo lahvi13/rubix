@@ -41,6 +41,14 @@ export function formatAxisMs(ms: number, axisMaxMs: number): string {
 }
 
 /**
+ * A goal the way it is said out loud — "sub 1:30", "sub 45" — with the
+ * hundredths only when the goal really has some.
+ */
+export function formatGoal(ms: number): string {
+  return ms % MS_PER_SECOND === 0 ? formatAxisMs(ms, ms) : formatMs(ms);
+}
+
+/**
  * The same time, split where the eye splits it: the seconds are what is read
  * at a glance and the hundredths are what is noted afterwards.
  */

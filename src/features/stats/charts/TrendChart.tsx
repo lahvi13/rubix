@@ -22,10 +22,12 @@ interface TrendChartProps {
   bestMs: number | null;
   /** Singles past this are drawn off the top rather than let stretch the scale. */
   fenceMs: number;
+  /** The reader's goal, drawn as a second line to beat; null when none is set. */
+  goalMs: number | null;
 }
 
 /** Rolling ao12 over the recent window. Gaps are DNF averages — never faked. */
-export function TrendChart({ points, bestMs, fenceMs }: TrendChartProps) {
+export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps) {
   // The averages always fit. A single fits unless it is past the fence: one
   // three-minute solve in a session of ninety-second ones would otherwise
   // flatten the line the chart is for into the bottom third of it.
@@ -36,7 +38,8 @@ export function TrendChart({ points, bestMs, fenceMs }: TrendChartProps) {
     .map((point) => point.aoMs)
     .filter((ms): ms is number => ms !== null)
     .concat(singles)
-    .concat(bestMs === null ? [] : [bestMs]);
+    .concat(bestMs === null ? [] : [bestMs])
+    .concat(goalMs === null ? [] : [goalMs]);
 
   // An empty axis has nothing to round out, and Math.min of nothing is
   // Infinity — which recharts would happily try to draw.
@@ -108,6 +111,9 @@ export function TrendChart({ points, bestMs, fenceMs }: TrendChartProps) {
               );
             }}
           />
+          {goalMs === null ? null : (
+            <ReferenceLine y={goalMs} stroke="var(--text)" strokeDasharray="2 4" strokeWidth={1} />
+          )}
           {bestMs === null ? null : (
             <ReferenceLine
               y={bestMs}
@@ -146,6 +152,9 @@ export function TrendChart({ points, bestMs, fenceMs }: TrendChartProps) {
           ...(bestMs === null
             ? []
             : [{ label: strings.stats.bestAo12, colour: 'var(--warn)', isReference: true }]),
+          ...(goalMs === null
+            ? []
+            : [{ label: strings.stats.goalSeries, colour: 'var(--text)', isReference: true }]),
         ]}
       />
       <p className="chart-note">{strings.stats.trendAxes}</p>

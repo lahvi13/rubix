@@ -13,6 +13,7 @@ import { useAllSessions } from '../hooks/use-all-sessions';
 import type { Average, AverageWindow } from '../../../domain/stats/averages';
 import { useSessionStats, type WindowAt } from '../hooks/use-session-stats';
 import { AverageSheet } from './AverageSheet';
+import { GoalSection } from './GoalSection';
 import { RecordsSection } from './RecordsSection';
 
 const PUZZLE = '333';
@@ -131,6 +132,7 @@ export function StatsScreen() {
   );
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
   const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
+  const [, setGoalMs] = useSetting('stats.goalMs');
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
   const [openWindow, setOpenWindow] = useState<{ n: AverageWindow; at: WindowAt } | null>(
@@ -235,6 +237,8 @@ export function StatsScreen() {
               />
             </div>
 
+            <GoalSection goal={stats.goal} solveCount={stats.solveCount} onChange={setGoalMs} />
+
             <section>
               <h2 className="stats__section-title">{strings.stats.averages}</h2>
               <table className="averages-table">
@@ -336,6 +340,7 @@ export function StatsScreen() {
                     points={stats.trend}
                     bestMs={stats.bestAo12Ms}
                     fenceMs={stats.trendFenceMs}
+                    goalMs={stats.goal?.goalMs ?? null}
                   />
                 </Suspense>
               </section>

@@ -87,6 +87,8 @@ export interface SettingValues {
    * and it was being read one session at a time.
    */
   'stats.allSessions': boolean;
+  /** The time the reader is chasing — "sub 1:30" is 90000. 0 means none set. */
+  'stats.goalMs': number;
 }
 
 export const DRILL_MODES = ['solve', 'recognise'] as const;
@@ -121,6 +123,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.phaseTrendMode': 'stacked',
   'stats.phaseTrendSmoothed': false,
   'stats.allSessions': true,
+  'stats.goalMs': 0,
 };
 
 export type SettingKey = keyof SettingValues;

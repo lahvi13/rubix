@@ -139,6 +139,24 @@ describe('StatsScreen', () => {
     ]);
   });
 
+  it('sets a goal and says how often it is beaten', async () => {
+    for (const rawMs of [10_000, 11_000, 12_000, 13_000]) await seedSolve(sessionId, rawMs);
+    const dnf = await seedSolve(sessionId, 9000);
+    await updateSolve(dnf.id, { penalty: 'dnf' });
+    const user = userEvent.setup();
+
+    render(<StatsScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'Set a goal' }));
+    await user.type(screen.getByRole('textbox', { name: 'Goal time' }), '12');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByText('Sub 12')).toBeInTheDocument();
+    // 10 and 11 beat it; 12 only equals it, and the DNF is a miss.
+    expect(screen.getAllByText('40%')).toHaveLength(2);
+    expect(await getSetting('stats.goalMs')).toBe(12_000);
+  });
+
   it('draws the rolling ao12 once the window has filled', async () => {
     for (let i = 0; i < 12; i += 1) await seedSolve(sessionId, 10_000 + i * 100);
 
