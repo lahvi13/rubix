@@ -381,7 +381,7 @@ export function TimerScreen() {
               </span>
             )}
           </h2>
-          <MiniStats sessionId={session?.id ?? null} puzzle={PUZZLE} />
+          <MiniStats sessionId={session?.id ?? null} />
           <SolveList
             solves={solves}
             phases={methodPhases}
