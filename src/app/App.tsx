@@ -1,4 +1,5 @@
 import { Fragment, useState } from 'react';
+import { AboutScreen } from '../features/about';
 import { DataScreen } from '../features/data-transfer';
 import { HistoryScreen } from '../features/history';
 import { LearnScreen } from '../features/learn';
@@ -52,7 +53,6 @@ export function App() {
           <span className="app__route">{strings.nav[route]}</span>
         </h1>
 
-        <span className="app__version">v{__APP_VERSION__}</span>
         {isMenuOpen ? (
           <>
             <button
@@ -63,18 +63,21 @@ export function App() {
             />
             <nav id="app-menu" className="app__menu">
               {menu.map((target) => (
-                <button
-                  key={target}
-                  type="button"
-                  className={route === target ? 'is-active' : ''}
-                  aria-current={route === target ? 'page' : undefined}
-                  onClick={() => {
-                    navigate(target);
-                    setMenuOpen(false);
-                  }}
-                >
-                  {strings.nav[target]}
-                </button>
+                <Fragment key={target}>
+                  {/* Set apart: it is about the app, not a place to use it. */}
+                  {target === 'about' ? <hr className="app__menu-rule" /> : null}
+                  <button
+                    type="button"
+                    className={route === target ? 'is-active' : ''}
+                    aria-current={route === target ? 'page' : undefined}
+                    onClick={() => {
+                      navigate(target);
+                      setMenuOpen(false);
+                    }}
+                  >
+                    {strings.nav[target]}
+                  </button>
+                </Fragment>
               ))}
             </nav>
           </>
@@ -90,6 +93,7 @@ export function App() {
         {route === 'drill' ? <DrillScreen /> : null}
         {route === 'settings' ? <SettingsScreen /> : null}
         {route === 'data' ? <DataScreen /> : null}
+        {route === 'about' ? <AboutScreen /> : null}
       </Fragment>
 
       <ErrorBanner />

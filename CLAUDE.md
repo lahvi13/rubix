@@ -156,8 +156,10 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   output `dist`, SPA fallback na `index.html`, žádný server kód. Push do `main` se sám
   zbuilduje a nasadí (Workers Builds), `npm run deploy` se ručně nespouští — ale deploy
   krok umí spadnout (viděno: 503 z CF API po úspěšném buildu), takže po pushi ověřit,
-  co produkce doopravdy servíruje. Jakou verzi zařízení běží, je vidět v hlavičce
-  aplikace (`__APP_VERSION__` z `package.json`) — service worker jinak update schová.
+  co produkce doopravdy servíruje. Jakou verzi zařízení běží, je vidět na obrazovce
+  About (`__APP_VERSION__` = verze z `package.json` · commit) — service worker jinak
+  update schová; „Check for updates“ tamtéž si ho vynutí. Verze: nová funkce zvedá
+  prostřední číslo, oprava poslední.
 - cubing.js se importuje **dynamicky** (`await import('cubing/scramble')`), aby se
   nedostal do hlavního chunku
 - **statické obrázky kostky kreslí `components/CubeDiagram.tsx`**, ne twisty:

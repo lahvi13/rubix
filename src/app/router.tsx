@@ -15,6 +15,7 @@ export const ROUTES = [
   'stats',
   'settings',
   'data',
+  'about',
 ] as const;
 export type Route = (typeof ROUTES)[number];
 

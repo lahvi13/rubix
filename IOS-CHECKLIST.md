@@ -7,18 +7,18 @@ reacts to insets and that the app runs offline, and proves nothing about the
 things only iOS does: the notch, the status bar tint, the home-screen icon, and
 the share sheet.
 
-Deploy first, then check what production actually serves — the header shows
+Deploy first, then check what production actually serves — About shows
 `__APP_VERSION__`, and a service worker otherwise hides an update.
 
 ## Install
 
-1. Open in Safari, go to Settings — the first section is "Add to the Home
+1. Open in Safari, go to About — the second section is "Add to the Home
    Screen" with the instructions.
 2. Share → Add to Home Screen. **The icon must be the cube on a dark ground,
    not a screenshot of the page** and not a black square.
 3. The name under the icon should read "Rubix".
 4. Launch from the home screen: **no address bar, no Safari toolbar**. The
-   install section in Settings must be gone.
+   install section in About must be gone.
 
 ## Safe areas — all of this from the home-screen app
 
@@ -83,7 +83,8 @@ Deploy first, then check what production actually serves — the header shows
 
 21. After the next deploy: launch from the home screen. Within the hour, or on
     returning to the foreground, "A new version is available." must appear, and
-    the version in the header must change after Reload.
+    the version on About must change after Reload. "Check for updates" on
+    About should find a fresh deploy straight away.
 
 ## What iOS cannot be made to guarantee
 

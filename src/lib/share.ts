@@ -16,7 +16,30 @@ export async function shareFile(file: File): Promise<ShareOutcome> {
     await navigator.share({ files: [file] });
     return 'shared';
   } catch (cause) {
-    // Closing the sheet without picking anything rejects too, and is no failure.
-    return cause instanceof DOMException && cause.name === 'AbortError' ? 'cancelled' : 'failed';
+    return failureOf(cause);
   }
+}
+
+export type LinkShareOutcome = ShareOutcome | 'copied';
+
+/**
+ * A link through the share sheet, or onto the clipboard where there is no
+ * sheet — desktop Firefox has none, and a link is still worth passing on.
+ */
+export async function shareLink(url: string, title: string): Promise<LinkShareOutcome> {
+  try {
+    if (typeof navigator.share === 'function') {
+      await navigator.share({ url, title });
+      return 'shared';
+    }
+    await navigator.clipboard.writeText(url);
+    return 'copied';
+  } catch (cause) {
+    return failureOf(cause);
+  }
+}
+
+// Closing the sheet without picking anything rejects too, and is no failure.
+function failureOf(cause: unknown): ShareOutcome {
+  return cause instanceof DOMException && cause.name === 'AbortError' ? 'cancelled' : 'failed';
 }

@@ -361,6 +361,13 @@ button.is-primary {
   color: var(--accent);
 }
 
+/* The browser's own link blue is drawn for a white page and reads poorly on a
+   dark one. */
+a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
 button.is-danger {
   border-color: var(--danger);
   color: var(--danger);
@@ -457,15 +464,6 @@ button[disabled] {
 /* The screen name, now that the tabs no longer say where you are. */
 .app__route {
   color: var(--text);
-}
-
-.app__version {
-  font-size: var(--text-2xs);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  color: var(--muted);
-  opacity: 0.7;
 }
 
 .screen {
@@ -1054,6 +1052,12 @@ button[disabled] {
   font-size: var(--text-lg);
   padding: var(--space-4) var(--space-5);
   text-align: start;
+}
+
+.app__menu-rule {
+  margin: var(--space-4) var(--space-5);
+  border: none;
+  border-top: 1px solid var(--border);
 }
 
 .app__menu button.is-active {
@@ -3709,6 +3713,26 @@ button[disabled] {
   padding: var(--space-6);
   margin: 0 auto var(--space-6);
   max-width: 40rem;
+}
+
+/* About */
+
+.about__version {
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  color: var(--text);
+}
+
+.about__credits {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--muted);
 }
 
 .data-section--danger {

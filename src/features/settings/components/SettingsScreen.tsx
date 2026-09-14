@@ -15,7 +15,6 @@ import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
 import { useSetting } from '../../../hooks/use-setting';
 import { useResolvedTheme } from '../../../hooks/use-appearance';
-import { InstallSection } from './InstallSection';
 
 /** A case with some colour in it, so a skin can be judged before it is chosen. */
 const PREVIEW_SETUP = "R U R' U' R' F R2 U' R' U' R U R' F'";
@@ -79,11 +78,6 @@ export function SettingsScreen() {
 
   return (
     <main className="screen screen--scroll">
-      {/* First, and only until it is done: on iOS nothing else says the app
-          can leave the browser, and the share sheet is not somewhere anyone
-          looks unprompted. */}
-      <InstallSection />
-
       <section className="data-section">
         <h2 className="data-section__title">{strings.settings.appearance}</h2>
 

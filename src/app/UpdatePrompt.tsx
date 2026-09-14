@@ -1,4 +1,5 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { connectUpdates } from '../lib/app-update';
 import { strings } from '../lib/strings';
 
 const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
@@ -14,6 +15,7 @@ export function UpdatePrompt() {
   } = useRegisterSW({
     onRegisteredSW(_url, registration) {
       if (!registration) return;
+      connectUpdates(registration, () => setNeedRefresh(true));
       // Browsers only look for a new service worker on navigation, and an
       // installed PWA can stay alive for days without one — so this banner
       // would never show. Poll, and re-check whenever the app comes back to
