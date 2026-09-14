@@ -9,7 +9,7 @@ import {
 } from '../../../db/seed/packs';
 import { navigate } from '../../../app/router';
 import { diagramFor } from '../case-view';
-import { baseSetOf, levelName, levelsOf } from '../levels';
+import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../levels';
 import { useAlgSets, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
@@ -40,6 +40,7 @@ export function TrainerScreen() {
   // Remembered rather than held for the visit: coming back from the timer to
   // the set you were working through is what the drill already does.
   const [rememberedSetId, setRememberedSetId] = useSetting('trainer.setId');
+  const [lastLevels, setLastLevels] = useSetting('trainer.lastLevels');
   const [, setDrillSetId] = useSetting('trainer.drillSetId');
   const [twoLookDefault] = useSetting('trainer.twoLookDefault');
   const [showAlgs] = useSetting('trainer.showAlgs');
@@ -92,7 +93,9 @@ export function TrainerScreen() {
             type="button"
             className={set.id === baseSetId ? 'is-active' : ''}
             onClick={() => {
-              setRememberedSetId(set.id);
+              // Back to the level last looked at in this set, not to its first:
+              // a detour through OLL is not a decision to start F2L again.
+              setRememberedSetId(entryOf(set.id, lastLevels));
               // Back to whatever the settings say; the set button is not a
               // vote on how to solve the last layer.
               setChosenLook(null);
@@ -116,6 +119,7 @@ export function TrainerScreen() {
               aria-pressed={id === levelId}
               onClick={() => {
                 setRememberedSetId(id);
+                setLastLevels(withLastLevel(lastLevels, id));
                 setOpenCase(null);
               }}
             >

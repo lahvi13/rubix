@@ -28,6 +28,20 @@ export function levelsOf(setId: string | null): readonly string[] {
   return setId === null ? [] : (SET_LEVELS[setId] ?? []);
 }
 
+/**
+ * Where picking a set in the row lands: the level last looked at in it, or the
+ * set itself when it has no levels or none has been looked at yet.
+ */
+export function entryOf(setId: string, lastLevels: readonly string[]): string {
+  return lastLevels.find((id) => baseSetOf(id) === setId) ?? setId;
+}
+
+/** The list with this level recorded as its set's last one, and no other of that set. */
+export function withLastLevel(lastLevels: readonly string[], levelId: string): string[] {
+  const base = baseSetOf(levelId);
+  return [...lastLevels.filter((id) => baseSetOf(id) !== base), levelId];
+}
+
 export function levelName(setId: string): string {
   return LABELS[setId] ?? setId;
 }

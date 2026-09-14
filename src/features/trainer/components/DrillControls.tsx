@@ -5,7 +5,7 @@ import { BEGINNER_SET_ID, FULL_SETS, LEVEL_BASE_SETS, TWO_LOOK_SETS } from '../.
 import { ChevronIcon } from '../../../components/Icons';
 import { useSetting } from '../../../hooks/use-setting';
 import { strings } from '../../../lib/strings';
-import { baseSetOf, levelName, levelsOf } from '../levels';
+import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../levels';
 
 interface DrillSetsProps {
   sets: readonly AlgSet[];
@@ -29,6 +29,7 @@ function drillableSets(sets: readonly AlgSet[]): readonly AlgSet[] {
 /** Which set the drill draws from. The one row that is never folded away. */
 export function DrillSets({ sets, setId, onSet }: DrillSetsProps) {
   const [twoLookDefault] = useSetting('trainer.twoLookDefault');
+  const [lastLevels] = useSetting('trainer.lastLevels');
   const baseId = baseSetOf(FULL_SETS[setId] ?? setId);
 
   return (
@@ -41,8 +42,12 @@ export function DrillSets({ sets, setId, onSet }: DrillSetsProps) {
           onClick={() => {
             // Same rule as the trainer: choosing a set is not a vote on how to
             // solve the last layer, so it falls back to the setting.
+            // A set with levels goes back to the one last looked at, in the
+            // trainer or here — the same row, the same person.
             const twoLook = TWO_LOOK_SETS[set.id];
-            onSet(twoLookDefault && twoLook !== undefined ? twoLook : set.id);
+            onSet(
+              twoLookDefault && twoLook !== undefined ? twoLook : entryOf(set.id, lastLevels),
+            );
           }}
         >
           {set.name}
@@ -93,6 +98,7 @@ export function DrillLooks({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
  * shows, so a set is drilled at the level it was being read at.
  */
 export function DrillLevels({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
+  const [lastLevels, setLastLevels] = useSetting('trainer.lastLevels');
   const levels = levelsOf(baseSetOf(setId));
   if (levels.length === 0) return null;
 
@@ -104,7 +110,10 @@ export function DrillLevels({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
           type="button"
           className={id === setId ? 'is-active' : ''}
           aria-pressed={id === setId}
-          onClick={() => onSet(id)}
+          onClick={() => {
+            onSet(id);
+            setLastLevels(withLastLevel(lastLevels, id));
+          }}
         >
           {levelName(id)}
         </button>

@@ -48,6 +48,15 @@ export interface SettingValues {
    * OLL — the same courtesy the drill already pays with the key below.
    */
   'trainer.setId': string;
+  /**
+   * The level last looked at in each set that has levels, as level ids — one
+   * per set. The set above holds only whichever set is open, so on the way
+   * through OLL the F2L level had nowhere to be kept, and picking F2L again
+   * landed on the basic cases instead of the advanced ones being worked on.
+   * Shared by the trainer and the drill, which put the same row in front of
+   * the same person.
+   */
+  'trainer.lastLevels': readonly string[];
   /** Which set the drill draws its cases from. */
   'trainer.drillSetId': string;
   /**
@@ -125,6 +134,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'trainer.showAlgs': true,
   'trainer.showRotationAlgs': true,
   'trainer.setId': 'f2l',
+  'trainer.lastLevels': [],
   'trainer.drillSetId': 'pll',
   'trainer.drillMode': 'solve',
   'trainer.drillCaseIds': [],

@@ -217,9 +217,27 @@ describe('TrainerScreen', () => {
     expect(screen.getByRole('button', { name: 'F2L' }).className).toContain('is-active');
   });
 
-  it('drops back to the basic cases when the set is chosen again', async () => {
+  it('goes back to the level last looked at after a detour through another set', async () => {
     const user = userEvent.setup();
-    await setSetting('trainer.setId', 'f2l-expert');
+    render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'Advanced' }));
+    await user.click(screen.getByRole('button', { name: 'OLL' }));
+    await waitFor(async () => {
+      expect(await getSetting('trainer.setId')).toBe('oll');
+    });
+
+    // Picking F2L again is not a decision to start F2L over. The setting is
+    // asserted rather than the cards: the swap is slow under fake-indexeddb.
+    await user.click(screen.getByRole('button', { name: 'F2L' }));
+    await waitFor(async () => {
+      expect(await getSetting('trainer.setId')).toBe('f2l-advanced');
+    });
+  });
+
+  it('opens a set with levels on its first level when none has been looked at', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.setId', 'oll');
     render(<TrainerScreen />);
 
     await user.click(await screen.findByRole('button', { name: 'F2L' }));
