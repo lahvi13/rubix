@@ -1085,14 +1085,33 @@ button[disabled] {
 
 /* Filters */
 
+/*
+ * One line that scrolls sideways, however many tags there are. Wrapping put
+ * a second row of chips over the list with the third tag and a row more with
+ * every few after it; the penalty and record filters come first, so they are
+ * the ones in view.
+ *
+ * Run out to the edges of the screen, so a chip that does not fit slides
+ * under the edge of the glass — which is what says the row goes on — rather
+ * than being cut off in mid-air at the gutter. The block padding is room for
+ * the focus ring, which the scroller would otherwise clip.
+ */
 .filters {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-3);
-  margin-bottom: var(--space-5);
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-6)) var(--space-4);
+  padding: var(--space-2) var(--space-6);
+  scroll-padding-inline: var(--space-6);
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
 }
 
 .filters button {
+  flex: none;
   border-radius: var(--radius-pill);
 }
 

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../../db/schema';
@@ -12,6 +12,7 @@ import {
   listSolvesChronological,
   updateSolve,
 } from '../../../db/repositories/solve-repository';
+import { resetSheetHistory } from '../../../lib/sheet-history';
 import { HistoryScreen } from './HistoryScreen';
 
 async function seedSolve(sessionId: string, rawMs: number) {
@@ -39,6 +40,8 @@ describe('HistoryScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
     sessionId = (await getOrCreateActiveSession('333', 'freestyle')).id;
+    // Picking solves holds a back entry in module state, which outlives a render.
+    resetSheetHistory();
   });
 
   it('opens the session picker from the name of the session being read', async () => {
@@ -96,6 +99,35 @@ describe('HistoryScreen', () => {
     // Out of the mode, the same tap opens the solve again.
     await user.click(screen.getByText('12.34'));
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('counts the session, and what a filter leaves of it', async () => {
+    await seedSolve(sessionId, 12_340);
+    const dnf = await seedSolve(sessionId, 9990);
+    await updateSolve(dnf.id, { penalty: 'dnf' });
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    expect(await screen.findByText(/2 solves/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Filter by DNF' }));
+    expect(await screen.findByText(/1 of 2/)).toBeInTheDocument();
+  });
+
+  it('leaves picking, not the history, on back', async () => {
+    await seedSolve(sessionId, 12_340);
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await user.click(await screen.findByRole('button', { name: 'Select' }));
+    await user.click(screen.getByText('12.34'));
+    expect(screen.getByText('1 selected')).toBeInTheDocument();
+
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(screen.queryByText('1 selected')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Select solve')).not.toBeInTheDocument();
   });
 
   it('moves a single solve out of the detail sheet', async () => {

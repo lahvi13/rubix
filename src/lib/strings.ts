@@ -180,6 +180,8 @@ export const strings = {
     startSelecting: 'Select',
     stopSelecting: 'Done',
     selected: (count: number) => `${count} selected`,
+    /** How many a filter let through, out of the whole session. */
+    matchedOf: (matched: number, total: number) => `${matched} of ${total}`,
     deleteSelected: 'Delete',
     moveTo: 'Move to…',
     moveTitle: 'Move to session',

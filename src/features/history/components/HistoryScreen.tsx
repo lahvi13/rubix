@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from 'react';
 import type { MethodPhase, Penalty, Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
+import { useBackToClose } from '../../../hooks/use-back-to-close';
 import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { now } from '../../../lib/clock';
 import { dayKey, formatClock, formatDay, formatResult } from '../../../lib/format';
@@ -55,6 +56,11 @@ export function HistoryScreen() {
     setSelecting(false);
     setSelected(new Set());
   };
+
+  // Picking covers the screen's usual meaning of a tap, so it reads as a place
+  // of its own: back gets out of it, the way it gets out of a sheet, rather
+  // than out of the history with the picks thrown away.
+  useBackToClose(stopSelecting, isSelecting);
 
   const deleteSelected = () => {
     void history.removeMany([...selected]);
@@ -168,7 +174,13 @@ export function HistoryScreen() {
             {session?.name ?? ''}
           </button>
         </span>
-        · {history.solves.length} / {history.total}
+        {/* The whole session, unless a filter is narrowing it — then how much
+            of it is left. The number loaded so far is not a count anyone
+            asked for: "Load more" at the bottom already says there is more. */}
+        ·{' '}
+        {history.isFiltered
+          ? strings.history.matchedOf(history.matchedCount, history.total)
+          : strings.sessions.solveCount(history.total)}
         {history.solves.length > 0 ? (
           <button
             type="button"

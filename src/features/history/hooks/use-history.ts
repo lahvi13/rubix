@@ -17,8 +17,13 @@ import { useSessionRecords } from '../../../hooks/use-session-records';
 const PAGE_SIZE = 50;
 
 export interface HistoryView {
+  /** What the filters let through, as far as it has been loaded. */
   solves: Solve[];
+  /** What the filters let through, loaded or not. */
+  matchedCount: number;
+  /** Every solve in the session, whatever the filters say. */
   total: number;
+  isFiltered: boolean;
   isLoading: boolean;
   hasMore: boolean;
   filters: SolveFilters;
@@ -83,7 +88,9 @@ export function useHistory(
 
   return {
     solves: matched.slice(0, limit),
+    matchedCount: matched.length,
     total: result?.total ?? 0,
+    isFiltered: Object.values(filters).some((value) => value !== undefined),
     isLoading: result === undefined,
     hasMore: matched.length > limit,
     filters,
