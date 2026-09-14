@@ -36,13 +36,6 @@ interface SegmentStyle extends CSSProperties {
 }
 
 /**
- * A share below this is a block too narrow to hold its own number at the
- * largest text size, and half a digit reads as a different number. The block
- * keeps its colour and its width; only the text goes.
- */
-const SHARE_LEGIBLE_PERCENT = 12;
-
-/**
  * The solve as a strip: one block per phase, as wide as the phase was long.
  * Phases whose boundary was never recorded share one grey block, because the
  * only thing known about them is their sum.
@@ -102,7 +95,10 @@ export const PhaseBar = memo(function PhaseBar({
               // the names do not fit next to it at this height.
               title={`${namesOf(segment)} ${formatMs(segment.ms)}`}
             >
-              {detail === 'shares' && share >= SHARE_LEGIBLE_PERCENT ? `${share}%` : null}
+              {/* Written always and hidden by the stylesheet when the block is
+                  too narrow for it: how narrow depends on the width the bar
+                  was given and the text size, not on the share alone. */}
+              {detail === 'shares' ? <span className="phase-bar__share">{share}%</span> : null}
             </span>
           );
         })}

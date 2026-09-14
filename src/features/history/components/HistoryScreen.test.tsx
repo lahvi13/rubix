@@ -58,6 +58,7 @@ describe('HistoryScreen', () => {
     const user = userEvent.setup();
 
     render(<HistoryScreen />);
+    await user.click(await screen.findByRole('button', { name: 'Select' }));
     await user.click(await screen.findByLabelText('Select solve'));
     await user.click(screen.getByRole('button', { name: 'Move to…' }));
     await user.click(await screen.findByRole('button', { name: /Evening/ }));
@@ -68,6 +69,33 @@ describe('HistoryScreen', () => {
     // Moved, not copied, and not silently switched to the destination either.
     expect(await listSolvesChronological(sessionId)).toHaveLength(0);
     expect(solve.sessionId).toBe(sessionId);
+  });
+
+  it('picks solves by tapping their rows once selecting, and forgets them on done', async () => {
+    await seedSolve(sessionId, 12_340);
+    await seedSolve(sessionId, 15_670);
+    const user = userEvent.setup();
+
+    render(<HistoryScreen />);
+    await screen.findByText('12.34');
+    expect(screen.queryByLabelText('Select solve')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Select' }));
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+
+    await user.click(screen.getByText('12.34'));
+    // A tap picks the row rather than opening it.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByText('1 selected')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeEnabled();
+
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByLabelText('Select solve')).not.toBeInTheDocument();
+    expect(screen.queryByText('1 selected')).not.toBeInTheDocument();
+
+    // Out of the mode, the same tap opens the solve again.
+    await user.click(screen.getByText('12.34'));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
 
   it('moves a single solve out of the detail sheet', async () => {

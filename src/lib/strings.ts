@@ -177,6 +177,8 @@ export const strings = {
     inspection: 'inspection',
     edited: 'edited',
     select: 'Select solve',
+    startSelecting: 'Select',
+    stopSelecting: 'Done',
     selected: (count: number) => `${count} selected`,
     deleteSelected: 'Delete',
     moveTo: 'Move to…',

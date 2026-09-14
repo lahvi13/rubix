@@ -33,6 +33,9 @@ export function HistoryScreen() {
   const [isTagPanelOpen, setTagPanelOpen] = useState(false);
   const [isDayPickerOpen, setDayPickerOpen] = useState(false);
   const moveSolves = useMoveSolves();
+  // Picking solves is a mode, not a column of checkboxes on every row: it is
+  // done now and then, and the room the boxes took was the row's.
+  const [isSelecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const open = history.solves.find((solve) => solve.id === openId) ?? null;
@@ -48,14 +51,19 @@ export function HistoryScreen() {
     });
   };
 
+  const stopSelecting = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
+
   const deleteSelected = () => {
     void history.removeMany([...selected]);
-    setSelected(new Set());
+    stopSelecting();
   };
 
   const moveSelected = (sessionId: string, name: string) => {
     void moveSolves([...selected], sessionId, name);
-    setSelected(new Set());
+    stopSelecting();
   };
 
   return (
@@ -161,18 +169,32 @@ export function HistoryScreen() {
           </button>
         </span>
         · {history.solves.length} / {history.total}
+        {history.solves.length > 0 ? (
+          <button
+            type="button"
+            className={isSelecting ? 'history__select is-active' : 'history__select'}
+            onClick={() => (isSelecting ? stopSelecting() : setSelecting(true))}
+          >
+            {isSelecting ? strings.history.stopSelecting : strings.history.startSelecting}
+          </button>
+        ) : null}
       </p>
 
       {/* Its own row rather than the summary's: two actions beside the
           session name and the counts leave nothing readable at a phone's
-          width, and the row is only there while something is selected. */}
-      {selected.size > 0 ? (
+          width, and the row is only there while solves are being picked. */}
+      {isSelecting ? (
         <div className="history__selection">
           <span>{strings.history.selected(selected.size)}</span>
-          <button type="button" onClick={() => setMoveOpen(true)}>
+          <button type="button" disabled={selected.size === 0} onClick={() => setMoveOpen(true)}>
             {strings.history.moveTo}
           </button>
-          <button type="button" className="is-danger" onClick={deleteSelected}>
+          <button
+            type="button"
+            className="is-danger"
+            disabled={selected.size === 0}
+            onClick={deleteSelected}
+          >
             {strings.history.deleteSelected}
           </button>
         </div>
@@ -181,7 +203,7 @@ export function HistoryScreen() {
       {history.solves.length === 0 ? (
         <p className="solves__empty">{strings.history.empty}</p>
       ) : (
-        <ol className="history">
+        <ol className={isSelecting ? 'history is-selecting' : 'history'}>
           {history.solves.map((solve, index) => {
             // A heading whenever the day changes. The list runs newest first,
             // so each one opens the day below it — which is what stops a long
@@ -202,6 +224,7 @@ export function HistoryScreen() {
                   bests={history.bests}
                   globalPbMs={history.globalPbMs}
                   tagColors={solve.tagIds.map((id) => tags.byId.get(id)?.color ?? '#555')}
+                  isSelecting={isSelecting}
                   isSelected={selected.has(solve.id)}
                   onToggleSelected={() => toggleSelected(solve.id)}
                   onOpen={() => setOpenId(solve.id)}
@@ -263,6 +286,7 @@ interface HistoryRowProps {
   bests: Bests;
   globalPbMs: number | null;
   tagColors: string[];
+  isSelecting: boolean;
   isSelected: boolean;
   onToggleSelected: () => void;
   onOpen: () => void;
@@ -275,6 +299,7 @@ function HistoryRow({
   bests,
   globalPbMs,
   tagColors,
+  isSelecting,
   isSelected,
   onToggleSelected,
   onOpen,
@@ -293,13 +318,31 @@ function HistoryRow({
 
   return (
     <li className={holdsBest ? 'history__row is-notable' : 'history__row'}>
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={onToggleSelected}
-        aria-label={strings.history.select}
-      />
-      <button type="button" className="history__open" onClick={onOpen}>
+      {isSelecting ? (
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={onToggleSelected}
+          aria-label={strings.history.select}
+        />
+      ) : null}
+      {/* One line, laid on the list's own columns: the bar starts and ends at
+          the same place in every row, so a phase that went well or badly can
+          be found by running an eye down the column rather than by reading. */}
+      <button
+        type="button"
+        className="history__open"
+        aria-pressed={isSelecting ? isSelected : undefined}
+        onClick={isSelecting ? onToggleSelected : onOpen}
+      >
+        {/* A stack at the row's edge rather than a run beside the clock: a
+            solve with three tags would otherwise widen the clock's column for
+            every row in the list. */}
+        <span className="history__tags">
+          {tagColors.map((color, index) => (
+            <span key={index} className="history__dot" style={{ background: color }} />
+          ))}
+        </span>
         {/* One row, one colour: the time and its star say the same thing, or
             the reader has to work out which of them outranks the other. */}
         <span
@@ -310,7 +353,7 @@ function HistoryRow({
           {formatResult(resultMs, solve.penalty)}
           {/* One star, in the colour of the strongest thing it is. A phase
               best is not starred here: its own block is ringed on the bar
-              below, which says which phase rather than only that one of
+              beside it, which says which phase rather than only that one of
               them was. */}
           {isPb || isBest ? (
             <span
@@ -322,6 +365,9 @@ function HistoryRow({
             </span>
           ) : null}
         </span>
+        {/* Which phase the solve went in, and how much of it each one took —
+            the question the history is read with. */}
+        <SolvePhases solve={solve} phases={phases} detail="shares" bestPhases={bestPhases} />
         <span className="history__meta">
           {/* The clock alone: the heading above already says which day. */}
           {formatClock(solve.createdAt)}
@@ -342,14 +388,6 @@ function HistoryRow({
             </span>
           ) : null}
         </span>
-        <span className="history__tags">
-          {tagColors.map((color, index) => (
-            <span key={index} className="history__dot" style={{ background: color }} />
-          ))}
-        </span>
-        {/* Which phase the solve went in, and how much of it each one took —
-            the question the history is read with. */}
-        <SolvePhases solve={solve} phases={phases} detail="shares" bestPhases={bestPhases} />
       </button>
     </li>
   );

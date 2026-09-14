@@ -1134,6 +1134,7 @@ button[disabled] {
  * question a hundred undated times cannot answer.
  */
 .history__day {
+  grid-column: 1 / -1;
   position: sticky;
   top: var(--header-height);
   z-index: 5;
@@ -1240,6 +1241,12 @@ button[disabled] {
   color: var(--muted);
 }
 
+/* Pushed to the far end of the summary, away from the session it would
+   otherwise read as belonging to. */
+.history__select {
+  margin-left: auto;
+}
+
 .history__selection {
   display: flex;
   flex-wrap: wrap;
@@ -1250,39 +1257,67 @@ button[disabled] {
   color: var(--muted);
 }
 
+/*
+ * The list is one grid, and every row lays itself on its columns: the
+ * selection box, the tag stack, the time, the phase bar, the clock. Shared
+ * columns are what make the bars line up — each starts and ends where the one
+ * above it does, so a phase can be compared down the list at a glance — and
+ * sized by what is in them, the time's column is as wide as the widest time
+ * on screen rather than as wide as the widest time could ever be.
+ *
+ * No column gap: the box and the tags are empty columns most of the time, and
+ * a gap beside an empty column is still a gap. Each cell keeps its own room.
+ */
 .history {
-  list-style: none;  margin: 0;
+  list-style: none;
+  margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+  row-gap: var(--space-1);
 }
 
 .history__row {
-  display: flex;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: var(--space-4);
   background: var(--surface);
   border-radius: var(--radius-md);
   padding: 0 var(--space-4);
 }
 
+.history__row > input[type='checkbox'] {
+  grid-column: 1;
+  margin: 0 var(--space-4) 0 0;
+}
+
 .history__open {
-  flex: 1;
+  grid-column: 2 / -1;
   display: grid;
-  grid-template-columns: 6rem 1fr auto;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: var(--space-4);
   background: none;
   border: none;
   color: inherit;
-  padding: var(--space-4) 0;
+  padding: var(--space-3) 0;
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
+/* Every cell names its column: a solve timed as a whole has no bar, and
+   without it the clock would slide into the bar's place. */
 .history__time {
+  grid-column: 2;
+  padding-right: var(--space-4);
+  white-space: nowrap;
+}
+
+.history__open .solve-phases {
+  grid-column: 3;
+  margin-top: 0;
+  min-width: 0;
 }
 
 /*
@@ -1360,19 +1395,32 @@ button[disabled] {
   color: var(--record);
 }
 
+/* Clocks to the left, so they stand in a column of their own and a mark
+   trails after its clock instead of pushing it out of line. */
 .history__meta {
+  grid-column: 4;
+  padding-left: var(--space-4);
+  text-align: left;
+  white-space: nowrap;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 
+/* A row is one line tall, and a stack of four dots still fits in it. */
 .history__tags {
+  grid-column: 1;
   display: flex;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.history__tags:not(:empty) {
+  margin-right: var(--space-3);
 }
 
 .history__dot {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: var(--space-3);
+  height: var(--space-3);
   border-radius: 50%;
 }
 
@@ -3872,18 +3920,31 @@ input[type='radio'] {
 }
 
 /*
- * The share is written on top of the phase's own colour, so the text takes
- * the page's ground rather than its foreground: the phase colours are light
- * in the dark theme and dark in the light one, and this way the contrast
- * follows them without a second palette.
+ * The share is written on top of the phase's own colour, in the lettering
+ * lib/phase-palette.ts picked for that colour.
+ *
+ * Each block is a container, so the number can be dropped when the block is
+ * too narrow for it — half a digit reads as a different number. A share of
+ * the solve could not decide that: the same 12% is room enough across a
+ * phone-wide bar and nowhere near it in a row that also holds a checkbox.
  */
 .phase-bar--shares .phase-bar__segment {
+  container-type: inline-size;
   display: grid;
   place-items: center;
   overflow: hidden;
   font-size: var(--text-2xs);
   font-weight: 700;
   color: var(--phase-ink, var(--phase-share-ink));
+}
+
+/* Two digits and a percent sign are 2.3em; the rest keeps them off the
+   rounded ends, which would otherwise cut into the first and last. In em so it
+   follows the text size — measured against the block's own font. */
+@container (width < 2.9em) {
+  .phase-bar__share {
+    visibility: hidden;
+  }
 }
 
 /*
