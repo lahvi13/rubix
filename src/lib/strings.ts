@@ -547,7 +547,8 @@ export const strings = {
     exportCsvAction: 'Solves as CSV',
     exportCsvHint:
       'One row per solve — time, penalty, scramble, phases — for a spreadsheet. Nothing reads it back, so it is a copy to look at, not a backup.',
-    lastBackup: (day: string) => `Last backup: ${day}.`,
+    lastBackup: (day: string, size: string | null) =>
+      `Last backup: ${day}${size === null ? '' : ` · ${size}`}.`,
     noBackup: 'No backup from this device yet.',
     changedSince: (count: number) =>
       count === 0
@@ -557,10 +558,12 @@ export const strings = {
       `${count} ${count === 1 ? 'solve exists' : 'solves exist'} only on this device.`,
     storageKept: 'The browser keeps this data even when the device runs low on space.',
     storageMayClear: 'The browser may clear this data when the device runs low on space.',
-    storageUsage: (size: string) => `The app and its data take ${size}.`,
     keepStorage: 'Ask the browser to keep it',
     keepStorageRefused:
       'The browser said no. Browsers tend to agree once the app is installed — until then, a backup is the only sure copy.',
+    shareBackup: 'Send it somewhere…',
+    shareHint: 'Drive, Dropbox, an email to yourself — a copy off this device.',
+    shareFailed: 'This device would not share the file. The downloaded copy is still there.',
     exported: 'Backup saved as',
     exportedCsv: 'Solves saved as',
     importTitle: 'Restore',

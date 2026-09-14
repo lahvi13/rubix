@@ -32,6 +32,9 @@ export function DataScreen() {
     mode,
     setMode,
     exportToFile,
+    canShareBackup,
+    shareBackup,
+    shareOutcome,
     exportSolvesToCsv,
     loadFile,
     confirmImport,
@@ -63,6 +66,16 @@ export function DataScreen() {
         <p className="data-section__hint data-section__hint--after">
           {strings.data.exportCsvHint}
         </p>
+        {canShareBackup ? (
+          <div className="backup-share">
+            <button type="button" onClick={() => void shareBackup()}>
+              {strings.data.shareBackup}
+            </button>
+            <p className="data-section__hint data-section__hint--after">
+              {shareOutcome === 'failed' ? strings.data.shareFailed : strings.data.shareHint}
+            </p>
+          </div>
+        ) : null}
       </section>
 
       <section className="data-section">
@@ -71,7 +84,7 @@ export function DataScreen() {
 
         <FileButton
           label={strings.data.chooseFile}
-          accept="application/json,.json"
+          accept="application/json,.json,text/plain,.txt"
           onFile={(file) => void loadFile(file)}
         />
 
@@ -178,7 +191,8 @@ export function DataScreen() {
  * sync, a backup nobody remembers taking is the likeliest way to lose months.
  */
 function BackupStatusLines() {
-  const { lastExportAt, changedSince, storage, keepStorage } = useBackupStatus();
+  const { lastExportAt, lastExportBytes, changedSince, isPersisted, keepStorage } =
+    useBackupStatus();
   const [isRefused, setRefused] = useState(false);
 
   return (
@@ -187,18 +201,16 @@ function BackupStatusLines() {
         <li>
           {lastExportAt === null
             ? `${strings.data.noBackup}${changedSince > 0 ? ` ${strings.data.onlyHere(changedSince)}` : ''}`
-            : `${strings.data.lastBackup(formatDay(lastExportAt, now()))} ${strings.data.changedSince(changedSince)}`}
+            : `${strings.data.lastBackup(
+                formatDay(lastExportAt, now()),
+                lastExportBytes === null ? null : formatBytes(lastExportBytes),
+              )} ${strings.data.changedSince(changedSince)}`}
         </li>
       )}
-      {storage === null || storage.isPersisted === null ? null : (
-        <li>
-          {storage.isPersisted ? strings.data.storageKept : strings.data.storageMayClear}
-          {storage.usageBytes === null
-            ? null
-            : ` ${strings.data.storageUsage(formatBytes(storage.usageBytes))}`}
-        </li>
+      {isPersisted === undefined || isPersisted === null ? null : (
+        <li>{isPersisted ? strings.data.storageKept : strings.data.storageMayClear}</li>
       )}
-      {storage?.isPersisted === false ? (
+      {isPersisted === false ? (
         <li>
           <button
             type="button"

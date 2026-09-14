@@ -19,6 +19,7 @@ import { useSetting } from '../../../hooks/use-setting';
 import { downloadText } from '../../../lib/download';
 import { reportError } from '../../../lib/errors';
 import { now } from '../../../lib/clock';
+import { canShareFile, shareFile, type ShareOutcome } from '../../../lib/share';
 import { formatIsoDate, formatIsoDateTime, formatTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 
@@ -42,6 +43,10 @@ export interface DataTransferView {
   mode: ImportMode;
   setMode: (mode: ImportMode) => void;
   exportToFile: () => Promise<void>;
+  /** Whether the backup just written can go to the share sheet. */
+  canShareBackup: boolean;
+  shareBackup: () => Promise<void>;
+  shareOutcome: ShareOutcome | null;
   exportSolvesToCsv: () => Promise<void>;
   loadFile: (file: File) => Promise<void>;
   confirmImport: () => Promise<void>;
@@ -59,20 +64,39 @@ export function useDataTransfer(appVersion: string): DataTransferView {
   const [notice, setNotice] = useState<TransferNotice | null>(null);
   const [mode, setMode] = useState<ImportMode>('merge');
   const [, setLastExportAt] = useSetting('data.lastExportAt');
+  const [, setLastExportBytes] = useSetting('data.lastExportBytes');
+  const [shareable, setShareable] = useState<File | null>(null);
+  const [shareOutcome, setShareOutcome] = useState<ShareOutcome | null>(null);
 
   const exportToFile = async (): Promise<void> => {
     setNotice(null);
+    setShareOutcome(null);
     try {
       const file = await buildExportFile(appVersion);
-      const filename = `rubix-${formatIsoDate(file.exportedAt)}.json`;
+      const name = `rubix-${formatIsoDate(file.exportedAt)}`;
       // Compact: this is a backup, not a document, and an indented file is
       // roughly twice the size for the same content.
-      downloadText(filename, JSON.stringify(file));
+      const json = JSON.stringify(file);
+      downloadText(`${name}.json`, json);
+
+      // The copy for the share sheet goes as plain text. Android's Chrome
+      // shares only the file types on its own list, and plain text is on every
+      // list; the restore reads a .txt all the same.
+      const copy = new File([json], `${name}.txt`, { type: 'text/plain' });
+      setShareable(canShareFile(copy) ? copy : null);
+
       setLastExportAt(file.exportedAt);
-      setNotice({ kind: 'exported', filename });
+      setLastExportBytes(copy.size);
+      setNotice({ kind: 'exported', filename: `${name}.json` });
     } catch (cause) {
       reportError(strings.data.exportFailed, cause);
     }
+  };
+
+  /** Straight from the tap, with no await before it: the sheet needs the gesture. */
+  const shareBackup = async (): Promise<void> => {
+    if (shareable === null) return;
+    setShareOutcome(await shareFile(shareable));
   };
 
   /**
@@ -167,6 +191,9 @@ export function useDataTransfer(appVersion: string): DataTransferView {
     mode,
     setMode: changeMode,
     exportToFile,
+    canShareBackup: shareable !== null,
+    shareBackup,
+    shareOutcome,
     exportSolvesToCsv,
     loadFile,
     confirmImport,

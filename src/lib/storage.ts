@@ -1,33 +1,17 @@
-/**
- * What the browser promises about this origin's data. Between backups the
- * solves exist only in IndexedDB, and whether the browser may clear it under
- * disk pressure is the difference between an inconvenience and losing them.
- */
-export interface StorageStatus {
-  /** null when the browser does not say — it has no storage manager, or refused. */
-  isPersisted: boolean | null;
-  /** The whole origin: the cached app counts too, not just the data. */
-  usageBytes: number | null;
-}
-
 function storageManager(): StorageManager | null {
   return 'storage' in navigator ? navigator.storage : null;
 }
 
-export async function readStorageStatus(): Promise<StorageStatus> {
+/**
+ * Whether the browser has promised not to clear this origin's data under disk
+ * pressure. Between backups the solves exist only in IndexedDB, so this is the
+ * difference between an inconvenience and losing them. null when the browser
+ * does not say — it has no storage manager, or refused to answer.
+ */
+export async function isStoragePersisted(): Promise<boolean | null> {
   const storage = storageManager();
-  const [isPersisted, usageBytes] = await Promise.all([
-    typeof storage?.persisted === 'function'
-      ? storage.persisted().catch(() => null)
-      : Promise.resolve(null),
-    typeof storage?.estimate === 'function'
-      ? storage
-          .estimate()
-          .then((estimate) => estimate.usage ?? null)
-          .catch(() => null)
-      : Promise.resolve(null),
-  ]);
-  return { isPersisted, usageBytes };
+  if (typeof storage?.persisted !== 'function') return null;
+  return storage.persisted().catch(() => null);
 }
 
 /**

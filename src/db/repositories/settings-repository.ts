@@ -110,6 +110,8 @@ export interface SettingValues {
    * restored elsewhere says nothing about whether that device is backed up.
    */
   'data.lastExportAt': number;
+  /** How big that backup file was, 0 when unknown. */
+  'data.lastExportBytes': number;
 }
 
 export const DRILL_MODES = ['solve', 'recognise'] as const;
@@ -151,6 +153,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.goalMs': 0,
   'stats.trendByDay': false,
   'data.lastExportAt': 0,
+  'data.lastExportBytes': 0,
 };
 
 export type SettingKey = keyof SettingValues;

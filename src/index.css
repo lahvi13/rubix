@@ -3744,6 +3744,11 @@ button[disabled] {
   line-height: 1.45;
 }
 
+/* Only once there is a fresh backup to send; set apart from the export row it follows. */
+.backup-share {
+  margin-top: var(--space-5);
+}
+
 .backup-status__refused {
   margin: var(--space-3) 0 0;
   color: var(--muted);

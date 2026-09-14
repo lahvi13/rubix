@@ -109,11 +109,52 @@ describe('DataScreen', () => {
     expect(await screen.findByText(/^rubix-\d{4}-\d{2}-\d{2}\.json$/)).toBeInTheDocument();
     expect(click).toHaveBeenCalled();
     expect(
-      await screen.findByText('Last backup: Today. Nothing has changed since.'),
+      await screen.findByText(/^Last backup: Today · \d+ KB\. Nothing has changed since\.$/),
     ).toBeInTheDocument();
+    // jsdom cannot share, and a button that cannot work is not offered.
+    expect(screen.queryByRole('button', { name: 'Send it somewhere…' })).not.toBeInTheDocument();
 
     click.mockRestore();
     vi.unstubAllGlobals();
+  });
+
+  it('hands the backup to the share sheet as plain text', async () => {
+    vi.stubGlobal('URL', { ...URL, createObjectURL: vi.fn(() => 'blob:test'), revokeObjectURL: vi.fn() });
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
+    const share = vi.fn((_: ShareData) => Promise.resolve());
+    Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true });
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true });
+    const user = userEvent.setup();
+
+    try {
+      render(<DataScreen />);
+      await user.click(screen.getByRole('button', { name: 'Export data' }));
+      await user.click(await screen.findByRole('button', { name: 'Send it somewhere…' }));
+
+      const shared = share.mock.calls[0]?.[0].files?.[0];
+      expect(shared?.name).toMatch(/^rubix-\d{4}-\d{2}-\d{2}\.txt$/);
+      expect(shared?.type).toBe('text/plain');
+    } finally {
+      Reflect.deleteProperty(navigator, 'canShare');
+      Reflect.deleteProperty(navigator, 'share');
+      click.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('restores a backup that travelled as a .txt', async () => {
+    const backup = await exportedFile();
+    const user = userEvent.setup();
+
+    render(<DataScreen />);
+    await user.upload(
+      screen.getByLabelText('Choose a file'),
+      new File([await backup.text()], 'rubix-2026-09-14.txt', { type: 'text/plain' }),
+    );
+
+    expect(await screen.findByRole('row', { name: /^Solves/ })).toHaveTextContent('1');
   });
 
   it('holds the wipe behind a countdown and then says it happened', async () => {
