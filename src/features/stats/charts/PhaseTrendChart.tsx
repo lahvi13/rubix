@@ -81,7 +81,15 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
   return (
     <>
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-        <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <ComposedChart
+          // Recharts remembers the touched point by its place in the data, not
+          // by its solve. Smoothing drops the first four solves, so the same
+          // place became a solve four further on: the readout moved while the
+          // cursor stayed put. A new reading starts untouched instead.
+          key={`${mode}:${isSmoothed}`}
+          data={data}
+          margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
+        >
           {/* Counted, not listed: as categories the ticks ran 5 6 7 8 9 10 12
               14, and uneven steps read as uneven solves. */}
           <XAxis
