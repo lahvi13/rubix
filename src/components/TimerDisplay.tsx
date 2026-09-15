@@ -1,8 +1,10 @@
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import { useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import type { TimerState } from '../domain/timer/timer-machine';
 import { INSPECTION_LIMIT_MS } from '../domain/solve/penalty';
 import { useHasKeyboard } from '../hooks/use-has-keyboard';
-import { formatInspection, formatMsParts } from '../lib/format';
+import { useInkCentring } from '../hooks/use-ink-centring';
+import { useSetting } from '../hooks/use-setting';
+import { formatInspection, formatRunningParts, type RunningDisplay } from '../lib/format';
 import { strings } from '../lib/strings';
 
 /**
@@ -73,6 +75,13 @@ export function TimerDisplay({
 }: TimerDisplayProps) {
   const isInspecting = inspectionMs !== null;
   const hasKeyboard = useHasKeyboard();
+  const inspectionText = isInspecting ? formatInspection(inspectionMs, INSPECTION_LIMIT_MS) : '';
+  // Only the countdown: a running time is read against its hundredths, not a bar.
+  const value = useRef<HTMLDivElement>(null);
+  useInkCentring(value, inspectionText, isInspecting);
+  // Cut down only while the clock runs: the time it stops on is always whole.
+  const [runningDisplay] = useSetting('timer.runningDisplay');
+  const display: RunningDisplay = state.status === 'running' ? runningDisplay : 'hundredths';
   const modifier = armed || finishArmed ? 'armed' : state.status;
 
   return (
@@ -90,11 +99,13 @@ export function TimerDisplay({
       >
         {/* The role is what a clock is, and it is how a test asks what it reads;
             announcements stay off, or every frame would be read out. */}
-        <div className="timer__value" role="timer">
+        <div className="timer__value" role="timer" ref={value}>
           {isInspecting ? (
-            formatInspection(inspectionMs, INSPECTION_LIMIT_MS)
+            inspectionText
+          ) : display === 'hidden' ? (
+            <span className="timer__words">{strings.timer.solving}</span>
           ) : (
-            <Time ms={displayMs ?? 0} />
+            <Time ms={displayMs ?? 0} display={display} />
           )}
         </div>
         {isInspecting ? <InspectionBar elapsedMs={inspectionMs} /> : null}
@@ -158,12 +169,12 @@ function InspectionBar({ elapsedMs }: { elapsedMs: number }) {
  * The seconds are read while the cube is still in hand; the hundredths are
  * read afterwards, so they are quieter and take less room.
  */
-function Time({ ms }: { ms: number }) {
-  const { seconds, hundredths } = formatMsParts(ms);
+function Time({ ms, display }: { ms: number; display: RunningDisplay }) {
+  const { seconds, fraction } = formatRunningParts(ms, display);
   return (
     <>
       {seconds}
-      <span className="timer__hundredths">.{hundredths}</span>
+      {fraction === '' ? null : <span className="timer__hundredths">.{fraction}</span>}
     </>
   );
 }

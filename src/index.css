@@ -695,14 +695,6 @@ button[disabled] {
   position: relative;
 }
 
-.result-bar {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .result-bar__next {
   border-color: var(--accent);
   color: var(--accent);
@@ -804,6 +796,15 @@ button[disabled] {
    armed and red while it is held, and the hundredths belong to it. */
 .timer__hundredths {
   font-size: 0.62em;
+  font-weight: 600;
+  opacity: 0.55;
+}
+
+/* "Solving", in place of a time the reader asked not to see: words, so not in
+   the seven-segment face, and quiet, since there is nothing in it to read. */
+.timer__words {
+  font-family: var(--font-ui);
+  font-size: 0.4em;
   font-weight: 600;
   opacity: 0.55;
 }

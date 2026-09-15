@@ -59,6 +59,7 @@ export function TimerScreen() {
   const scramble = useScramble(PUZZLE);
   const { solves, total, changePenalty, remove } = useRecentSolves(session?.id ?? null);
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
+  const [runningDisplay] = useSetting('timer.runningDisplay');
   // Set on the stats screen; 0 there means no goal.
   const [goalSetting] = useSetting('stats.goalMs');
   const methodPhases = usePhases(session?.methodId ?? null);
@@ -67,9 +68,13 @@ export function TimerScreen() {
   // never from a list in the code (SPEC 3.6).
   const phases = splitMode === 'phases' ? methodPhases : EMPTY_PHASES;
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
-  // After a solve the screen shows the result, not the next scramble; the
-  // user moves on explicitly (or just starts the next attempt).
+  // After a solve the result stays under the clock until the next attempt
+  // starts. The next scramble does not wait for it: it is what the hands go to
+  // straight away.
   const [showResult, setShowResult] = useState(false);
+  // The scramble the finished solve was timed on. It stays hidden until the
+  // next one has replaced it, or it would read as the scramble to perform.
+  const [solvedScramble, setSolvedScramble] = useState<string | null>(null);
   // The list, pulled up over the cube to be read. Any touch of the timer ends
   // it, so there is no way to be browsing and solving at once.
   const [isBrowsing, setBrowsing] = useState(false);
@@ -77,6 +82,7 @@ export function TimerScreen() {
   const handleComplete = useCallback(
     (attempt: CompletedAttempt) => {
       setShowResult(true);
+      setSolvedScramble(scramble.scramble);
       /*
        * And the list goes back down, if it was up. On a phone there is
        * nothing to start an attempt with while it is up — the clock is
@@ -241,24 +247,8 @@ export function TimerScreen() {
           scramble={scramble.scramble}
           error={scramble.error}
           onRetry={scramble.next}
-          hidden={isEngaged || resultVisible}
+          hidden={isEngaged || (resultVisible && scramble.scramble === solvedScramble)}
         />
-        {resultVisible ? (
-          <div className="result-bar">
-            <button
-              type="button"
-              className="result-bar__next"
-              onClick={() => {
-                setShowResult(false);
-                // Moving on to the next scramble takes the finished time off
-                // the clock with it — it belongs to the solve now in the list.
-                timer.reset();
-              }}
-            >
-              {strings.timer.nextScramble}
-            </button>
-          </div>
-        ) : null}
       </div>
 
       {/* One grid cell, so the phase bar stays with the number it belongs to
@@ -284,6 +274,7 @@ export function TimerScreen() {
             phases={phases}
             splitMs={timer.state.splitMs}
             elapsedMs={timer.displayMs ?? 0}
+            display={runningDisplay}
           />
         ) : null}
 

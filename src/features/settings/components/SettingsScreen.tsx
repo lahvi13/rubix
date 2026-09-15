@@ -12,6 +12,7 @@ import {
   type Theme,
 } from '../../../lib/appearance';
 import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
+import { RUNNING_DISPLAYS, type RunningDisplay } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useSetting } from '../../../hooks/use-setting';
 import { useResolvedTheme } from '../../../hooks/use-appearance';
@@ -37,6 +38,13 @@ const SIZE_LABELS: Record<Size, string> = {
   large: strings.settings.sizeLarge,
 };
 
+const RUNNING_DISPLAY_LABELS: Record<RunningDisplay, string> = {
+  hundredths: strings.settings.runningHundredths,
+  tenths: strings.settings.runningTenths,
+  seconds: strings.settings.runningSeconds,
+  hidden: strings.settings.runningHidden,
+};
+
 const CLOCK_FACE_LABELS: Record<ClockFace, string> = {
   match: strings.settings.clockFaceMatch,
   mono: strings.settings.clockFaceMono,
@@ -56,6 +64,7 @@ export function SettingsScreen() {
   const [textSize, setTextSize] = useSetting('ui.textSize');
   const [clockSize, setClockSize] = useSetting('ui.clockSize');
   const [clockFace, setClockFace] = useSetting('ui.clockFace');
+  const [runningDisplay, setRunningDisplay] = useSetting('timer.runningDisplay');
   const resolved = useResolvedTheme();
   const [skinId, setSkinId] = useSetting('ui.cubeSkin');
   const [twistyMode, setTwistyMode] = useSetting('ui.twistyMode');
@@ -189,6 +198,15 @@ export function SettingsScreen() {
             ))}
           </div>
         </div>
+
+        <ChoiceRow
+          label={strings.settings.runningDisplay}
+          options={RUNNING_DISPLAYS}
+          labels={RUNNING_DISPLAY_LABELS}
+          value={runningDisplay}
+          onChange={setRunningDisplay}
+        />
+        <p className="data-section__hint">{strings.settings.runningDisplayHint}</p>
 
         <label className="toggle">
           <input

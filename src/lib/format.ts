@@ -88,6 +88,44 @@ export function formatMsParts(ms: number): { seconds: string; hundredths: string
   return { seconds, hundredths };
 }
 
+/**
+ * How much of a running time the clock shows. Measuring is untouched — every
+ * solve is still kept to the millisecond and shown in full once it stops.
+ * Some people find hundredths flickering in the corner of the eye a
+ * distraction, and some want no number at all until the end.
+ */
+export type RunningDisplay = 'hundredths' | 'tenths' | 'seconds' | 'hidden';
+
+export const RUNNING_DISPLAYS: readonly RunningDisplay[] = [
+  'hundredths',
+  'tenths',
+  'seconds',
+  'hidden',
+];
+
+/**
+ * A running time cut to the precision asked for: the fraction loses digits
+ * (truncated, like every time in the app) and is empty for whole seconds.
+ * 'hidden' is not a number to format; it gets whole seconds, and the clock
+ * decides not to draw them.
+ */
+export function formatRunningParts(
+  ms: number,
+  display: RunningDisplay,
+): { seconds: string; fraction: string } {
+  const { seconds, hundredths } = formatMsParts(ms);
+  if (display === 'hundredths') return { seconds, fraction: hundredths };
+  if (display === 'tenths') return { seconds, fraction: hundredths.slice(0, 1) };
+  return { seconds, fraction: '' };
+}
+
+/** The same cut as one line of text, or null when no time is to be shown. */
+export function formatRunning(ms: number, display: RunningDisplay): string | null {
+  if (display === 'hidden') return null;
+  const { seconds, fraction } = formatRunningParts(ms, display);
+  return fraction === '' ? seconds : `${seconds}.${fraction}`;
+}
+
 /** null means DNF everywhere in the app. */
 export function formatTime(ms: number | null): string {
   return ms === null ? 'DNF' : formatMs(ms);

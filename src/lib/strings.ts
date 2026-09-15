@@ -42,12 +42,13 @@ export const strings = {
      */
     inspectionToggle: 'Insp',
     inspectionToggleLabel: 'Inspection',
-    nextScramble: 'Next scramble',
     cancelled: 'Attempt discarded',
     phaseToggle: 'Phase',
     phaseToggleLabel: 'Phases',
     tapToEndPhase: 'Tap to end · hold to finish',
     releaseToFinish: 'Release to finish',
+    /* Where the time would be, with the clock set to show none while solving. */
+    solving: 'Solving',
     /*
      * What the time that has just landed is worth, said in the line the hint
      * leaves empty once a solve is over. The wording is the history's, so the
@@ -539,6 +540,13 @@ export const strings = {
     holdThreshold: 'Hold to start',
     holdOff: 'Off',
     showScramblePreview: 'Show the cube next to the scramble',
+    runningDisplay: 'Time while solving',
+    runningHundredths: '0.00',
+    runningTenths: '0.0',
+    runningSeconds: '0',
+    runningHidden: 'Hidden',
+    runningDisplayHint:
+      'Only what the clock shows while it runs. Every solve is still timed to the hundredth and shown in full when it stops.',
     splitMode: 'Time solves by phase',
     splitModeHint:
       'A tap ends the phase in progress and starts the next one; the last phase stops the clock. Hold a tap to finish a solve early when a phase was skipped.',

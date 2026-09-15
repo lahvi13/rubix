@@ -72,11 +72,17 @@ dostávají hotová data z domény.
   vždy s `penaltySource: 'auto'`
 - ruční penalizace `+2` / `DNF` bezprostředně po solvu i kdykoliv později z historie
 - měření a zobrazení na setiny; interně vždy celé milisekundy (integer)
+- co hodiny ukazují **během běhu**, je volba (`timer.runningDisplay`): setiny,
+  desetiny, celé sekundy, nebo nic („Solving“). Týká se i živých časů fází.
+  Měření se nemění a zastavený čas se ukáže vždy celý
 - zastavení jakoukoliv klávesou nebo dotykem **kdekoliv na obrazovce** (během běhu leží
   přes celou plochu neviditelná vrstva); ESC během běhu = zahodit pokus bez uložení
 - během běhu je scramble i statistiky skryté (režim „pouze čas“)
-- po zastavení zůstane na obrazovce výsledek (čas, mini-statistiky, rychlá penalta);
-  další scramble se odkryje až potvrzením nebo začátkem dalšího pokusu
+- po zastavení zůstane na obrazovce výsledek (čas, mini-statistiky, rychlá penalta)
+  až do začátku dalšího pokusu; další scramble se ukáže **hned**, jakmile je solve
+  uložený — ruce jdou rovnou míchat, potvrzovací tlačítko by byl krok navíc
+  (tak to dělá i csTimer). Scramble právě dokončeného solvu se do té doby
+  neukazuje, aby se nepletl s tím, který se má míchat
 
 ### 3.2 Scramble
 
@@ -815,6 +821,7 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `timer.inspectionCues` | 0 | `[8000, 12000]` |
 | `timer.showScramblePreview` | 0 | `true` |
 | `timer.splitMode` | 0 | `'total'` |
+| `timer.runningDisplay` | 0 | `'hundredths'` (`tenths` / `seconds` / `hidden` — jen co hodiny ukazují během běhu) |
 | `ui.theme` | 1 | `'system'` |
 | `ui.font` | 0 | `'sans'` |
 | `ui.textSize` | **1** | `'medium'` |

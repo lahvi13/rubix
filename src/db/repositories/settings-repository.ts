@@ -3,6 +3,7 @@ import { db } from '../schema';
 import type { Flag } from '../types';
 import { now } from '../../lib/clock';
 import type { ClockFace, Font, Size, Theme } from '../../lib/appearance';
+import type { RunningDisplay } from '../../lib/format';
 
 /**
  * Key-value settings. Device-local entries (mic calibration, chosen audio
@@ -19,6 +20,8 @@ export interface SettingValues {
    * progress instead of stopping the clock, and the last one stops it.
    */
   'timer.splitMode': 'total' | 'phases';
+  /** How much of the time the clock shows while a solve runs (see RunningDisplay). */
+  'timer.runningDisplay': RunningDisplay;
   /** Device-local: the same account can prefer a different theme on each screen. */
   'ui.theme': Theme;
   /** Which typeface the app is set in; 'system' hands it back to the device. */
@@ -142,6 +145,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'timer.inspectionCues': [8000, 12000],
   'timer.showScramblePreview': true,
   'timer.splitMode': 'total',
+  'timer.runningDisplay': 'hundredths',
   'ui.theme': 'dark',
   'ui.font': 'sans',
   'ui.textSize': 'medium',

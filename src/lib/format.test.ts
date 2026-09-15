@@ -11,6 +11,8 @@ import {
   formatMs,
   formatMsParts,
   formatResult,
+  formatRunning,
+  formatRunningParts,
   formatTime,
   formatWhen,
 } from './format';
@@ -67,6 +69,30 @@ describe('formatMsParts', () => {
     [61050, '1:01', '05'],
   ])('splits %i into %s and %s', (ms, seconds, hundredths) => {
     expect(formatMsParts(ms)).toEqual({ seconds, hundredths });
+  });
+});
+
+describe('formatRunningParts', () => {
+  it.each([
+    [12_999, 'hundredths', '12', '99'],
+    [12_999, 'tenths', '12', '9'],
+    [12_999, 'seconds', '12', ''],
+    [61_050, 'tenths', '1:01', '0'],
+    [61_050, 'hidden', '1:01', ''],
+    [0, 'tenths', '0', '0'],
+  ] as const)('cuts %i shown as %s to %s and %j', (ms, display, seconds, fraction) => {
+    expect(formatRunningParts(ms, display)).toEqual({ seconds, fraction });
+  });
+});
+
+describe('formatRunning', () => {
+  it.each([
+    [12_999, 'hundredths', '12.99'],
+    [12_999, 'tenths', '12.9'],
+    [12_999, 'seconds', '12'],
+    [12_999, 'hidden', null],
+  ] as const)('writes %i shown as %s as %j', (ms, display, text) => {
+    expect(formatRunning(ms, display)).toBe(text);
   });
 });
 

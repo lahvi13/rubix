@@ -11,20 +11,22 @@ import { TimerScreen } from './TimerScreen';
 // The real client spins up a module worker, which jsdom cannot run, and
 // cubing/twisty is a custom element that needs a real browser.
 vi.mock('../../../lib/scramble-client', () => ({
-  requestScramble: () => Promise.resolve(SCRAMBLE),
+  requestScramble: () => scrambles(),
 }));
 vi.mock('cubing/twisty', () => ({}));
 
 const SCRAMBLE = "R U R' U' F2";
+const NEXT_SCRAMBLE = "D2 B L' F2";
+let scrambles: () => Promise<string>;
 
 /**
  * The scramble is laid out one move per cell, so no single node holds the whole
  * of it; the paragraph around them does.
  */
-function findScramble(): Promise<HTMLElement> {
+function findScramble(text = SCRAMBLE): Promise<HTMLElement> {
   return screen.findByText(
     (_, element) =>
-      element?.tagName === 'P' && element.textContent?.replace(/s+/g, ' ').trim() === SCRAMBLE,
+      element?.tagName === 'P' && element.textContent?.replace(/s+/g, ' ').trim() === text,
   );
 }
 
@@ -66,6 +68,7 @@ async function keyboardSolve(
 describe('TimerScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
+    scrambles = () => Promise.resolve(SCRAMBLE);
     // The panels hold their entries in module state, which outlives a render.
     resetSheetHistory();
   });
@@ -150,10 +153,12 @@ describe('TimerScreen', () => {
     expect((await db.solves.toCollection().first())?.rawMs).toBe(9990);
   });
 
-  it('shows the result and reveals the next scramble only after confirmation', async () => {
+  it('shows the result and the next scramble together, without being asked', async () => {
     const user = userEvent.setup();
     let clock = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    let served = 0;
+    scrambles = () => Promise.resolve(served++ === 0 ? SCRAMBLE : NEXT_SCRAMBLE);
 
     render(<TimerScreen />);
     await findScramble();
@@ -169,16 +174,69 @@ describe('TimerScreen', () => {
     await user.keyboard('[Space>]');
     await user.keyboard('[/Space]');
 
-    const next = await screen.findByRole('button', { name: 'Next scramble' });
-    expect((await findScramble()).closest('.scramble')).toHaveClass(
-      'scramble--hidden',
-    );
-
-    await user.click(next);
-    expect((await findScramble()).closest('.scramble')).not.toHaveClass(
-      'scramble--hidden',
-    );
+    const next = await findScramble(NEXT_SCRAMBLE);
+    expect(next.closest('.scramble')).not.toHaveClass('scramble--hidden');
+    expect(screen.getByRole('timer')).toHaveTextContent('12.34');
     expect(screen.queryByRole('button', { name: 'Next scramble' })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['hidden', 'Solving'],
+    ['tenths', '4.5'],
+    ['seconds', '4'],
+  ] as const)('shows the running time as %s, and the stopped one in full', async (...row) => {
+    const [display, running] = row;
+    await setSetting('timer.runningDisplay', display);
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await findScramble();
+    await user.keyboard('[Space>]');
+    tick(50);
+    await user.keyboard('[/Space]');
+    tick(3000);
+    await user.keyboard('[Space>]');
+    tick(400);
+    await user.keyboard('[/Space]');
+
+    tick(4567);
+    const shown = new RegExp(`^${running}$`);
+    await waitFor(() => expect(screen.getByRole('timer')).toHaveTextContent(shown));
+
+    await user.keyboard('[Space>]');
+    await user.keyboard('[/Space]');
+    await waitFor(() => expect(screen.getByRole('timer')).toHaveTextContent('4.56'));
+  });
+
+  it('hides the phase times as well when the running time is hidden', async () => {
+    await seedCfop();
+    await setSetting('timer.runningDisplay', 'hidden');
+    await setSetting('timer.splitMode', 'phases');
+    const user = userEvent.setup();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    const { container } = render(<TimerScreen />);
+    await findScramble();
+    await user.keyboard('[Space>]');
+    clock += 50;
+    await user.keyboard('[/Space]');
+    clock += 3000;
+    await user.keyboard('[Space>]');
+    clock += 400;
+    await user.keyboard('[/Space]');
+
+    // Cross over, F2L under way: both would carry a time with the clock shown.
+    clock += 2500;
+    await user.keyboard('[Space>]');
+    await user.keyboard('[/Space]');
+    clock += 1500;
+    expect(await screen.findByText('F2L')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('timer')).toHaveTextContent('Solving'));
+    expect(container.querySelector('.phase-run')?.textContent).not.toMatch(/d/);
   });
 
   it('times a solve phase by phase, and the last tap stops the clock', async () => {
@@ -459,7 +517,6 @@ describe('TimerScreen', () => {
     await keyboardSolve(user, tick, 12_340);
     expect(await screen.findByText('Personal best')).toBeInTheDocument();
 
-    await user.click(await screen.findByRole('button', { name: 'Next scramble' }));
     await keyboardSolve(user, tick, 20_000);
     await waitFor(async () => {
       expect(await db.solves.count()).toBe(2);
@@ -501,7 +558,6 @@ describe('TimerScreen', () => {
     await waitFor(async () => {
       expect(await db.solves.count()).toBe(1);
     });
-    await user.click(await screen.findByRole('button', { name: 'Next scramble' }));
 
     // Slower overall, so neither record is its — but nobody has ever crossed
     // faster, and that is the thing worth saying.
@@ -546,7 +602,7 @@ describe('TimerScreen', () => {
 
     // The finished time is what there is to look at now, not the list.
     expect(container.querySelector('.screen--browsing')).toBeNull();
-    expect(await screen.findByRole('button', { name: 'Next scramble' })).toBeInTheDocument();
+    expect(screen.getByRole('timer')).toHaveTextContent('9.99');
   });
 
   it('leaves the list where it was when an attempt is abandoned', async () => {
@@ -621,11 +677,9 @@ describe('TimerScreen', () => {
     expect(await screen.findByText('Personal best')).toBeInTheDocument();
     expect(screen.queryByText(/^Sub /)).not.toBeInTheDocument();
 
-    await user.click(await screen.findByRole('button', { name: 'Next scramble' }));
     await keyboardSolve(user, tick, 14_000);
     expect(await screen.findByText('Sub 15')).toBeInTheDocument();
 
-    await user.click(await screen.findByRole('button', { name: 'Next scramble' }));
     await keyboardSolve(user, tick, 16_000);
     await waitFor(async () => {
       expect(await db.solves.count()).toBe(3);

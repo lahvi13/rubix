@@ -1,5 +1,5 @@
 import type { MethodPhase } from '../../../db/types';
-import { formatMs } from '../../../lib/format';
+import { formatRunning, type RunningDisplay } from '../../../lib/format';
 import { phaseColour } from '../../../lib/phase-colours';
 
 interface PhaseRunProps {
@@ -8,6 +8,8 @@ interface PhaseRunProps {
   splitMs: readonly number[];
   /** Total time on the clock, so the phase in progress has one of its own. */
   elapsedMs: number;
+  /** The clock's own setting: a phase time must not show what the clock hides. */
+  display: RunningDisplay;
 }
 
 /**
@@ -18,7 +20,7 @@ interface PhaseRunProps {
  * solve the question is how far along the reader is, and a bar that redraws
  * itself under a moving clock is one more thing to read.
  */
-export function PhaseRun({ phases, splitMs, elapsedMs }: PhaseRunProps) {
+export function PhaseRun({ phases, splitMs, elapsedMs, display }: PhaseRunProps) {
   if (phases.length === 0) return null;
 
   const current = splitMs.length;
@@ -28,7 +30,7 @@ export function PhaseRun({ phases, splitMs, elapsedMs }: PhaseRunProps) {
     if (index > current) return null;
     const end = index === current ? elapsedMs : (splitMs[index] ?? 0);
     const start = index === 0 ? 0 : (splitMs[index - 1] ?? startOfCurrent);
-    return formatMs(Math.max(end - start, 0));
+    return formatRunning(Math.max(end - start, 0), display);
   };
 
   return (
