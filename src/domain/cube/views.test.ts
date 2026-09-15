@@ -99,6 +99,44 @@ describe('first two layers stickering', () => {
   });
 });
 
+describe('pair among solved stickering', () => {
+  /** How many stickers of the three visible faces are drawn in colour. */
+  const coloured = (view: ReturnType<typeof isometricView>) =>
+    [...view.top, ...view.front, ...view.right].filter((cell) => cell !== null).length;
+
+  it('draws a basic case exactly as the first two layers stickering does', () => {
+    const state = after("R U R' U'");
+    expect(isometricView(state, 'pairAmongSolved')).toEqual(
+      isometricView(state, 'firstTwoLayers'),
+    );
+  });
+
+  it('greys the pair of the slot the case borrows, so it reads as one pair', () => {
+    // Advanced 1: the pair's edge is trapped in the back slot, which takes that
+    // slot's own corner and edge out of place as well.
+    const state = after("R U R2 U' R U");
+    const plain = isometricView(state, 'firstTwoLayers');
+    const quiet = isometricView(state, 'pairAmongSolved');
+
+    expect(coloured(quiet)).toBeLessThan(coloured(plain));
+    // Nothing is added: every coloured sticker was coloured before.
+    const cells = (view: typeof plain) => [...view.top, ...view.front, ...view.right];
+    cells(quiet).forEach((cell, index) => {
+      if (cell !== null) expect(cell).toBe(cells(plain)[index]);
+    });
+  });
+
+  it('still judges pieces against the centres when the cube is turned first', () => {
+    const turned = after("y' R U R2 U' R U");
+    const plain = isometricView(turned, 'firstTwoLayers');
+    const quiet = isometricView(turned, 'pairAmongSolved');
+    expect(coloured(quiet)).toBeLessThan(coloured(plain));
+    expect(isometricView(after("y'"), 'pairAmongSolved')).toEqual(
+      isometricView(after("y'"), 'firstTwoLayers'),
+    );
+  });
+});
+
 describe('two-look stickerings', () => {
   it('shows only the edges of the cross while the corners are still to come', () => {
     // Two edges of the cross in place, two not. Corners belong to the second
