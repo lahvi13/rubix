@@ -687,6 +687,7 @@ export const strings = {
   },
   errors: {
     saveSolve: 'Could not save the solve',
+    drillScramble: 'Drill scramble fell back to the setup',
     noSession: 'No active session',
     database: 'Database unavailable',
     databaseStuck: 'the database stopped answering — reload the app',

@@ -14,11 +14,14 @@
 
 const GENERATION_TIMEOUT_MS = 20_000;
 
-type CubingScramble = typeof import('cubing/scramble');
+interface Cubing {
+  scramble: typeof import('cubing/scramble');
+  search: typeof import('cubing/search');
+}
 
-let cubingPromise: Promise<CubingScramble> | null = null;
+let cubingPromise: Promise<Cubing> | null = null;
 
-function loadCubing(): Promise<CubingScramble> {
+function loadCubing(): Promise<Cubing> {
   if (!cubingPromise) {
     cubingPromise = (async () => {
       const [scramble, search] = await Promise.all([
@@ -30,7 +33,7 @@ function loadCubing(): Promise<CubingScramble> {
       // doomed network round trip. The esbuild workaround is the strategy
       // Vite rewrites correctly, so it goes first.
       search.setSearchDebug({ prioritizeEsbuildWorkaroundForWorkerInstantiation: true });
-      return scramble;
+      return { scramble, search };
     })();
     // A failed load (offline first visit, wedged service worker) must not
     // poison every later attempt.
@@ -44,12 +47,38 @@ function loadCubing(): Promise<CubingScramble> {
 let queue: Promise<unknown> = Promise.resolve();
 
 export function requestScramble(eventId = '333'): Promise<string> {
-  const result = queue.then(() => generateOnce(eventId));
+  return enqueue(async () => {
+    const { scramble } = await loadCubing();
+    const alg = await scramble.randomScrambleForEvent(eventId);
+    return alg.toString();
+  });
+}
+
+/**
+ * A scramble that reaches the state `target` leaves a solved cube in, found by
+ * cubing's 3×3 solver and handed back inverted. Only face turns come out, so
+ * the target must leave the centres where they started (see drillScramble).
+ */
+export function requestCaseScramble(target: string): Promise<string> {
+  return enqueue(async () => {
+    const [{ search }, { cube3x3x3 }] = await Promise.all([
+      loadCubing(),
+      import('cubing/puzzles'),
+    ]);
+    const kpuzzle = await cube3x3x3.kpuzzle();
+    const pattern = kpuzzle.defaultPattern().applyAlg(target);
+    const solution = await search.experimentalSolve3x3x3IgnoringCenters(pattern);
+    return solution.invert().toString();
+  });
+}
+
+function enqueue(work: () => Promise<string>): Promise<string> {
+  const result = queue.then(() => withTimeout(work));
   queue = result.catch(() => {});
   return result;
 }
 
-async function generateOnce(eventId: string): Promise<string> {
+async function withTimeout(work: () => Promise<string>): Promise<string> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => {
@@ -57,14 +86,8 @@ async function generateOnce(eventId: string): Promise<string> {
     }, GENERATION_TIMEOUT_MS);
   });
 
-  const generate = async (): Promise<string> => {
-    const { randomScrambleForEvent } = await loadCubing();
-    const alg = await randomScrambleForEvent(eventId);
-    return alg.toString();
-  };
-
   try {
-    return await Promise.race([timeout, generate()]);
+    return await Promise.race([timeout, work()]);
   } finally {
     clearTimeout(timer);
   }

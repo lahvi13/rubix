@@ -235,9 +235,14 @@ kromě PB, které je globální per `puzzle`.
   R a U) — rotace nehýbe kostkami, mění jen to, která ruka pracuje. Vyšla u 20
   ze 41 případů a seeduje se jako druhý zabudovaný algoritmus, neaktivní;
   zobrazení se dá vypnout nastavením `trainer.showRotationAlgs`
-- drill mód (vlastní obrazovka): náhodný případ z vybrané podmnožiny, scramble
-  je setup případu s náhodným AUF a otočením kostky (`y`-rodina — `x`/`z` by
-  sundaly žlutou z vršku), měření času stejným timerem jako běžný solve.
+- drill mód (vlastní obrazovka): náhodný případ z vybrané podmnožiny s náhodným
+  AUF a otočením kostky (`y`-rodina — `x`/`z` by sundaly žlutou z vršku), měření
+  času stejným timerem jako běžný solve. **Scramble není setup případu**: setup
+  je obrácený algoritmus, takže kdo ho přečte pozpátku, má odpověď dřív, než
+  začne čas. Stav případu (s centry na místě) vyřeší solver cubing.js a ukáže
+  se obrácené řešení — jen tahy stěnami, bez vztahu k drillovanému algoritmu.
+  Než dorazí, timer je zamčený; když solver selže (offline při první návštěvě),
+  ukáže se setup. Recognition scramble nepotřebuje, kreslí jen kostku.
   Jméno případu, algoritmus i statistiky případu se odkryjí **až po pokusu**;
   rozpoznání je půlka toho, co se drilluje. Tlačítko „ukázat“ případ odhalí
   předem a pokus se pak počítá jako DNF

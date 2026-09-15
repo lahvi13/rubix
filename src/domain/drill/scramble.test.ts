@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DRILL_AUFS, DRILL_ROTATIONS, drillScramble } from './scramble';
-import { parseAlg } from '../cube/notation';
+import { invertAlg, parseAlg } from '../cube/notation';
 import { applyAlg, solvedState, type CubeState } from '../cube/state';
 import type { Random } from '../../lib/random';
 
@@ -32,6 +32,11 @@ function firstTwoLayersSolved(state: CubeState): boolean {
     if (lower.some((sticker) => sticker !== state[start + 4])) return false;
   }
   return true;
+}
+
+/** The middle sticker of every face, in FACELETS order. */
+function centres(state: CubeState): string[] {
+  return [4, 13, 22, 31, 40, 49].map((index) => state[index] ?? '');
 }
 
 describe('drillScramble', () => {
@@ -80,6 +85,29 @@ describe('drillScramble', () => {
       }
     }
   });
+
+  const presentations = DRILL_ROTATIONS.flatMap((rotation, rotationIndex) =>
+    DRILL_AUFS.map((auf, aufIndex) => ({ rotation, auf, rotationIndex, aufIndex })),
+  );
+
+  it.each(presentations)(
+    'targets the same case with the centres at home, turned $rotation, AUF $auf',
+    ({ rotationIndex, aufIndex }) => {
+      const scramble = drillScramble(T_PERM, choose(rotationIndex, aufIndex));
+      expect(scramble).not.toBeNull();
+      if (scramble === null) return;
+
+      const target = parseAlg(scramble.target);
+      const turn = parseAlg(scramble.rotation);
+      expect(target.ok && turn.ok).toBe(true);
+      if (!target.ok || !turn.ok) return;
+
+      const reached = applyAlg(solvedState(), target.moves);
+      expect(centres(reached)).toEqual(centres(solvedState()));
+      // Turning the scrambled cube back is the whole difference between the two.
+      expect(reached).toEqual(applyAlg(scramble.state, invertAlg(turn.moves)));
+    },
+  );
 
   it('reaches every presentation and never the same state twice', () => {
     const states = new Set<string>();

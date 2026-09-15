@@ -10,6 +10,7 @@ import { DrillScreen } from './DrillScreen';
 // route with builds its module worker on import, which jsdom cannot run.
 vi.mock('../../../lib/scramble-client', () => ({
   requestScramble: () => Promise.resolve(''),
+  requestCaseScramble: () => Promise.resolve('D2 R2'),
 }));
 vi.mock('cubing/twisty', () => ({}));
 

@@ -11,6 +11,14 @@ import { DrillScreen } from './DrillScreen';
 
 vi.mock('cubing/twisty', () => ({}));
 
+/** What the solver hands back for a case; the cross is drawn by the app itself. */
+const CASE_SCRAMBLE = "D2 B' L2 U R2 F2 D' B2";
+let caseScramble: (target: string) => Promise<string>;
+vi.mock('../../../lib/scramble-client', () => ({
+  requestScramble: () => Promise.resolve(''),
+  requestCaseScramble: (target: string) => caseScramble(target),
+}));
+
 /**
  * The cross scramble the drill drew, once it is on screen.
  *
@@ -111,6 +119,7 @@ function isCrossSolvedAfter(scramble: string, hold: string, solution: string): b
 describe('DrillScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
+    caseScramble = () => Promise.resolve(CASE_SCRAMBLE);
     await seedPacks();
     await setSetting('trainer.drillSetId', 'pll');
     // One case in the pool, so what comes up is not a matter of luck.
@@ -121,9 +130,7 @@ describe('DrillScreen', () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
 
-    // The T perm undone. Its R2 F' survives every rotation and AUF the drill
-    // can put in front of it, which is what makes it safe to look for.
-    expect(await screen.findByText(/R2 F'/)).toBeInTheDocument();
+    expect(await screen.findByText(CASE_SCRAMBLE)).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'T' })).not.toBeInTheDocument();
 
     await attempt(user, 3210);
@@ -136,11 +143,73 @@ describe('DrillScreen', () => {
     expect(solve?.penalty).toBe('none');
   });
 
+  it('asks the solver for the case rather than handing out its setup', async () => {
+    const asked: string[] = [];
+    caseScramble = (target) => {
+      asked.push(target);
+      return Promise.resolve(CASE_SCRAMBLE);
+    };
+    render(<DrillScreen />);
+
+    expect(await screen.findByText(CASE_SCRAMBLE)).toBeInTheDocument();
+    expect(asked).toHaveLength(1);
+    // The setup is the T perm backwards; reading it off the screen would be
+    // reading the answer. Its R2 F' survives every rotation and AUF.
+    expect(asked[0]).toMatch(/R2 F'/);
+    expect(screen.queryByText(/R2 F'/)).not.toBeInTheDocument();
+  });
+
+  it("writes the solver's half turns the way the rest of the app does", async () => {
+    caseScramble = () => Promise.resolve("B2' R U2'");
+    render(<DrillScreen />);
+
+    expect(await screen.findByText('B2 R U2')).toBeInTheDocument();
+  });
+
+  it('will not start the clock before the scramble has arrived', async () => {
+    const user = userEvent.setup();
+    let deliver: (scramble: string) => void = () => {};
+    caseScramble = () => new Promise((resolve) => (deliver = resolve));
+    render(<DrillScreen />);
+    expect(await screen.findByText('Generating scramble…')).toBeInTheDocument();
+
+    await attempt(user, 3000);
+    expect(await db.solves.count()).toBe(0);
+
+    deliver(CASE_SCRAMBLE);
+    expect(await screen.findByText(CASE_SCRAMBLE)).toBeInTheDocument();
+  });
+
+  it('falls back to the setup when the solver cannot be reached', async () => {
+    caseScramble = () => Promise.reject(new Error('offline'));
+    render(<DrillScreen />);
+
+    expect(await screen.findByText(/R2 F'/)).toBeInTheDocument();
+  });
+
+  it('never lets a late scramble land on the next case', async () => {
+    const user = userEvent.setup();
+    await setSetting('trainer.drillCaseIds', ['pll-t', 'pll-y']);
+    const pending: ((scramble: string) => void)[] = [];
+    caseScramble = () => new Promise((resolve) => pending.push(resolve));
+    render(<DrillScreen />);
+    await screen.findByText('Generating scramble…');
+
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+    await user.click(await screen.findByRole('button', { name: 'Next case' }));
+    await waitFor(() => expect(pending).toHaveLength(2));
+
+    pending[0]?.("R U R' U'");
+    pending[1]?.(CASE_SCRAMBLE);
+    expect(await screen.findByText(CASE_SCRAMBLE)).toBeInTheDocument();
+    expect(screen.queryByText("R U R' U'")).not.toBeInTheDocument();
+  });
+
   it('never inspects, whatever the timer screen is set to', async () => {
     const user = userEvent.setup();
     await setSetting('timer.inspectionEnabled', true);
     render(<DrillScreen />);
-    await screen.findByText(/R2 F'/);
+    await screen.findByText(CASE_SCRAMBLE);
 
     await attempt(user, 5000);
 
@@ -154,7 +223,7 @@ describe('DrillScreen', () => {
   it('will not time a case you have looked up', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
-    await screen.findByText(/R2 F'/);
+    await screen.findByText(CASE_SCRAMBLE);
 
     await user.click(screen.getByRole('button', { name: 'Show me' }));
     expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
@@ -183,7 +252,7 @@ describe('DrillScreen', () => {
   it('lets a look-up be thrown away, but not turned into a time', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
-    await screen.findByText(/R2 F'/);
+    await screen.findByText(CASE_SCRAMBLE);
 
     await user.click(screen.getByRole('button', { name: 'Show me' }));
     await screen.findByRole('heading', { name: 'T' });
@@ -205,7 +274,7 @@ describe('DrillScreen', () => {
   it('will not time the same case twice once its answer is up', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
-    await screen.findByText(/R2 F'/);
+    await screen.findByText(CASE_SCRAMBLE);
 
     await attempt(user, 3210);
     expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
@@ -232,7 +301,7 @@ describe('DrillScreen', () => {
   it('counts the case towards its own statistics, not the timer session', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
-    await screen.findByText(/R2 F'/);
+    await screen.findByText(CASE_SCRAMBLE);
 
     await attempt(user, 2000);
 
@@ -301,7 +370,7 @@ describe('DrillScreen', () => {
   it('takes the answer and the time with it when you move on', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
-    await screen.findByText(/R2 F'/);
+    await screen.findByText(CASE_SCRAMBLE);
 
     await attempt(user, 3210);
     expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
@@ -319,7 +388,7 @@ describe('DrillScreen', () => {
   it('does not carry the answer over to another set', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
-    await screen.findByText(/R2 F'/);
+    await screen.findByText(CASE_SCRAMBLE);
 
     await attempt(user, 3210);
     expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
@@ -479,7 +548,7 @@ describe('DrillScreen', () => {
   it('lets a dropped cube be judged or thrown away on the spot', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
-    await screen.findByText(/R2 F'/);
+    await screen.findByText(CASE_SCRAMBLE);
 
     await attempt(user, 3210);
     await screen.findByRole('heading', { name: 'T' });

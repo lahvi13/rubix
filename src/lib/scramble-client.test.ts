@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { requestScramble, resetScrambleClient } from './scramble-client';
+import { requestCaseScramble, requestScramble, resetScrambleClient } from './scramble-client';
 
 const SCRAMBLE = "R U R' U' F2 D2";
 
@@ -11,6 +11,16 @@ vi.mock('cubing/scramble', () => ({
 
 vi.mock('cubing/search', () => ({
   setSearchDebug: () => {},
+  // The fake pattern is the alg it was built from, and its "solution" says so.
+  experimentalSolve3x3x3IgnoringCenters: (pattern: { alg: string }) =>
+    Promise.resolve({ invert: () => ({ toString: () => `inverse of solving ${pattern.alg}` }) }),
+}));
+
+vi.mock('cubing/puzzles', () => ({
+  cube3x3x3: {
+    kpuzzle: () =>
+      Promise.resolve({ defaultPattern: () => ({ applyAlg: (alg: string) => ({ alg }) }) }),
+  },
 }));
 
 describe('scramble client', () => {
@@ -52,6 +62,10 @@ describe('scramble client', () => {
     await vi.advanceTimersByTimeAsync(20_000);
 
     await outcome;
+  });
+
+  it('scrambles to a case by inverting the solution to the state it leaves', async () => {
+    await expect(requestCaseScramble("R U R' U'")).resolves.toBe("inverse of solving R U R' U'");
   });
 
   it('recovers after a failed attempt', async () => {

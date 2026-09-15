@@ -7,12 +7,14 @@ import { deleteSolve, setPenalty } from '../../../db/repositories/solve-reposito
 import { togglePenalty } from '../../../domain/solve/penalty';
 import { CROSS_SET_ID } from '../../../db/seed/packs';
 import { crossScramble } from '../../../domain/drill/cross-scramble';
+import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { drillScramble } from '../../../domain/drill/scramble';
 import { pickNextCase } from '../../../domain/drill/selection';
 import { useTimer, type CompletedAttempt, type TimerView } from '../../../hooks/use-timer';
 import { now } from '../../../lib/clock';
-import { reportError, watchWrite } from '../../../lib/errors';
+import { logQuietly, reportError, watchWrite } from '../../../lib/errors';
 import { systemRandom } from '../../../lib/random';
+import { requestCaseScramble } from '../../../lib/scramble-client';
 import { strings } from '../../../lib/strings';
 
 const PUZZLE = '333';
@@ -21,7 +23,16 @@ const PUZZLE = '333';
 export interface DrillItem {
   algCase: AlgCase;
   algorithm: Algorithm | null;
-  scramble: string;
+  /** Null while the solver is still finding one; the clock waits for it. */
+  scramble: string | null;
+}
+
+/** A drawn case, and what its scramble is made from until one arrives. */
+interface Pick extends DrillItem {
+  /** The state to ask the solver for, or null when there is nothing to ask. */
+  target: string | null;
+  /** The setup itself, used if the solver cannot be reached. */
+  fallback: string;
 }
 
 /** A stored drill attempt, kept only while its answer is on screen. */
@@ -101,7 +112,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
    */
   const [crossWalk, setCrossWalk] = useState(() => crossScramble(systemRandom));
 
-  const [pick, setPick] = useState<DrillItem | null>(null);
+  const [pick, setPick] = useState<Pick | null>(null);
   /**
    * The answer on show, and which case it belongs to. Keyed by case rather
    * than a plain flag, so an answer can never outlive the case it answers:
@@ -110,6 +121,27 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
    */
   const [revealed, setRevealed] = useState<Revealed | null>(null);
   const [stored, setStored] = useState<StoredAttempt | null>(null);
+
+  /*
+   * The scramble for the case just drawn. A result is kept only if the same
+   * draw is still on screen — Next pressed twice in a row must not let the
+   * first answer land on the second case.
+   */
+  useEffect(() => {
+    if (pick === null || pick.scramble !== null || pick.target === null) return;
+    const drawn = pick;
+    const settle = (scramble: string) =>
+      setPick((shown) => (shown === drawn ? { ...shown, scramble } : shown));
+    requestCaseScramble(pick.target).then(
+      (text) => settle(spelled(text)),
+      (cause: unknown) => {
+        // Offline on a first visit, or a wedged worker: the setup still gets
+        // somebody to the case, it just reads as the answer backwards.
+        logQuietly(strings.errors.drillScramble, cause);
+        settle(drawn.fallback);
+      },
+    );
+  }, [pick]);
 
   const current: DrillItem | null = useMemo(() => {
     if (!isCross) return pick;
@@ -158,7 +190,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     void addDrillSolve({
       puzzle: PUZZLE,
       caseId: item.algCase.id,
-      scramble: item.scramble,
+      scramble: item.scramble ?? '',
       rawMs: attempt.rawMs,
       penalty: attempt.penalty,
       penaltySource: 'auto',
@@ -185,9 +217,11 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   // attempt where somebody thought about the case. The cross is the opposite:
   // reading the scramble and planning the cross inside inspection is exactly
   // the thing being practised, so there it follows the timer's own switch.
+  // Nothing to perform yet, so nothing to time.
+  const isWaiting = current !== null && current.scramble === null;
   const timer = useTimer(handleComplete, {
     inspection: isCross ? 'setting' : 'off',
-    locked: hasAnswer,
+    locked: hasAnswer || isWaiting,
   });
   const status = timer.state.status;
 
@@ -254,7 +288,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
           addDrillSolve({
             puzzle: PUZZLE,
             caseId: current.algCase.id,
-            scramble: current.scramble,
+            scramble: current.scramble ?? '',
             rawMs: 0,
             penalty: 'dnf',
             penaltySource: 'auto',
@@ -269,8 +303,14 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   };
 }
 
-/** One case out of the pool, with the scramble that presents it. */
-function drawFrom(pool: readonly CaseWithAlg[], previousId: string | null): DrillItem | null {
+/** The solver writes a half turn as B2'; the rest of the app writes B2. */
+function spelled(text: string): string {
+  const parsed = parseAlg(text);
+  return parsed.ok ? formatAlg(parsed.moves) : text;
+}
+
+/** One case out of the pool; its scramble is found afterwards (see useDrill). */
+function drawFrom(pool: readonly CaseWithAlg[], previousId: string | null): Pick | null {
   const chosen = pickNextCase(
     pool.map((entry) => ({ id: entry.algCase.id, entry })),
     previousId,
@@ -285,6 +325,8 @@ function drawFrom(pool: readonly CaseWithAlg[], previousId: string | null): Dril
     // A setup that does not parse belongs to a case the user typed in; there
     // is nothing to perform, and the screen says so rather than timing them
     // against a solved cube.
-    scramble: built?.text ?? '',
+    scramble: built === null ? '' : null,
+    target: built?.target ?? null,
+    fallback: built?.text ?? '',
   };
 }

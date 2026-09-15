@@ -214,14 +214,15 @@ interface ScrambleLineProps {
 /**
  * What to perform before the attempt, or why there is nothing to perform.
  *
- * Nothing here can fail or arrive late any more: both scrambles are drawn from
- * the app's own cube, so the only ways to have nothing to show are a set still
- * loading and a case whose setup does not parse.
+ * A case's scramble arrives a moment after the case, from the solver; the
+ * cross is drawn on the spot. Otherwise the only ways to have nothing to show
+ * are a set still loading and a case whose setup does not parse.
  */
 function ScrambleLine({ drill, current }: ScrambleLineProps) {
   const hasKeyboard = useHasKeyboard();
   if (drill.cases === undefined) return <p className="drill__hint">{strings.trainer.loading}</p>;
   if (current === null) return <p className="drill__hint">{strings.drill.empty}</p>;
+  if (current.scramble === null) return <p className="drill__hint">{strings.scramble.loading}</p>;
   if (current.scramble === '') {
     return <p className="drill__hint">{strings.drill.empty}</p>;
   }
@@ -337,7 +338,7 @@ function Answer({
         />
       )}
       {moves.length === 0 ? null : <AlgText moves={moves} triggers={triggers} />}
-      {isCross ? <CrossSolution scramble={current.scramble} /> : null}
+      {isCross ? <CrossSolution scramble={current.scramble ?? ''} /> : null}
 
       <CaseStatsRow stats={stats} />
       {/* The attempt is stored the moment the clock stops, so a dropped cube
