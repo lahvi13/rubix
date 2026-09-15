@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
 import { setSetting } from '../../../db/repositories/settings-repository';
+import { getOrCreateActiveSession } from '../../../db/repositories/session-repository';
+import { addSolve } from '../../../db/repositories/solve-repository';
 import { resetSheetHistory } from '../../../lib/sheet-history';
 import { TimerScreen } from './TimerScreen';
 
@@ -629,6 +631,30 @@ describe('TimerScreen', () => {
       expect(await db.solves.count()).toBe(3);
     });
     expect(screen.queryByText('Sub 15')).not.toBeInTheDocument();
+  });
+
+  it('counts and numbers the whole session, not only the fifty solves it lists', async () => {
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    for (let index = 0; index < 51; index++) {
+      await addSolve({
+        sessionId: session.id,
+        puzzle: '333',
+        mode: 'freestyle',
+        scramble: SCRAMBLE,
+        rawMs: 20_000 + index,
+        penalty: 'none',
+        penaltySource: 'auto',
+        inspectionMs: null,
+        startedAt: index,
+      });
+    }
+
+    render(<TimerScreen />);
+
+    const title = (await screen.findByTitle('Switch session')).closest('h2');
+    await waitFor(() => expect(title).toHaveTextContent('· 51'));
+    expect(screen.getByText('51.')).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(50);
   });
 
   it('creates the default session on first render', async () => {

@@ -57,7 +57,7 @@ function noteFor(note: ResultNote, phases: readonly MethodPhase[]): TimerNote {
 export function TimerScreen() {
   const session = useActiveSession(PUZZLE, MODE);
   const scramble = useScramble(PUZZLE);
-  const { solves, changePenalty, remove } = useRecentSolves(session?.id ?? null);
+  const { solves, total, changePenalty, remove } = useRecentSolves(session?.id ?? null);
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
   // Set on the stats screen; 0 there means no goal.
   const [goalSetting] = useSetting('stats.goalMs');
@@ -342,7 +342,7 @@ export function TimerScreen() {
             >
               {session?.name ?? strings.appName}
             </button>
-            · {solves.length}
+            · {total}
             {/* The list is a peek by default; this pulls it up over the cube. */}
             <button
               type="button"
@@ -386,6 +386,7 @@ export function TimerScreen() {
           <MiniStats sessionId={session?.id ?? null} />
           <SolveList
             solves={solves}
+            total={total}
             phases={methodPhases}
             bests={records.bests}
             globalPbMs={records.globalPbMs}

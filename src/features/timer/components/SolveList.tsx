@@ -12,6 +12,8 @@ import { strings } from '../../../lib/strings';
 
 interface SolveListProps {
   solves: Solve[];
+  /** The session's size, which numbers the rows: the list is only its newest fifty. */
+  total: number;
   /**
    * The drag that pulls the list up over the cube, for as long as it is down.
    * Left out once it is up, when the list is a scroller again and a drag on
@@ -53,6 +55,7 @@ const DISARM_AFTER_MS = 4000;
  */
 export const SolveList = memo(function SolveList({
   solves,
+  total,
   phases,
   bests,
   globalPbMs,
@@ -118,7 +121,7 @@ export const SolveList = memo(function SolveList({
               onOpen(solve.id);
             }}
           >
-            <span className="solves__index">{solves.length - index}.</span>
+            <span className="solves__index">{total - index}.</span>
             <SolveTime solve={solve} bests={bests} globalPbMs={globalPbMs} />
             <span className="solves__meta">
               {solve.penalty !== 'none' && solve.penaltySource === 'auto'
