@@ -100,17 +100,9 @@ export function diagramFor(setId: string, group: string): Diagram {
   }
   // The sets where dimming earns its cost: a case down here is a piece or two
   // in a whole cube, and without the rest going quiet there is nothing to look
-  // at. The advanced and expert levels borrow a second slot, and that slot's
-  // own pair goes quiet too, or the case reads as two pairs to solve.
-  if (Object.hasOwn(LEVEL_BASE_SETS, setId)) {
-    return {
-      view: 'isometric',
-      stickering: 'pairAmongSolved',
-      playerStickering: 'firstTwoLayers',
-      orientation: F2L_ORIENTATION,
-    };
-  }
-  if (setId === 'f2l' || setId === BEGINNER_SET_ID) {
+  // at. F2L is drawn the same way however far into it the case is — the
+  // advanced and expert levels are the same picture with a second slot in it.
+  if (setId === 'f2l' || Object.hasOwn(LEVEL_BASE_SETS, setId) || setId === BEGINNER_SET_ID) {
     return {
       view: 'isometric',
       stickering: 'firstTwoLayers',

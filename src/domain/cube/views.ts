@@ -29,14 +29,6 @@ export type Stickering =
    */
   | 'firstTwoLayers'
   /**
-   * The pair wherever it has got to, and the rest of the first two layers only
-   * where it is already solved. For cases that start with a piece trapped in
-   * another slot: that slot's own pair is out of place too, and drawn in its
-   * colours it read as a second pair to solve — a multislot case, which these
-   * are not. In a real solve that slot is simply not built yet.
-   */
-  | 'pairAmongSolved'
-  /**
    * The first step of every solve: the four edges of the bottom face and the
    * centres. The centres are what makes it readable — a cross is only right
    * when each edge matches the face it sits under, and with the centres grey
@@ -114,18 +106,6 @@ function isPairSticker(state: CubeState, index: number): boolean {
   return PAIR_PIECES.includes(colours);
 }
 
-/**
- * Whether the piece a sticker belongs to is home: every one of its stickers
- * matches the centre of the face it is on. Measured against the centres
- * rather than the face names, because a diagram may turn the whole cube first.
- */
-function isPieceHome(state: CubeState, index: number): boolean {
-  return siblingsOf(index).every((sibling) => {
-    const face = FACELETS[sibling]?.face;
-    return face !== undefined && colourAt(state, sibling) === colourAt(state, indexOf(face, 1, 1));
-  });
-}
-
 /** A piece of the last layer is one wearing the last layer's colour. */
 function isLastLayerPiece(state: CubeState, index: number): boolean {
   return siblingsOf(index).some((sibling) => colourAt(state, sibling) === 'U');
@@ -177,9 +157,6 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       // into the slot is what makes the slot a hole, and painting it in its
       // colours would say the slot was filled.
       return isPairSticker(state, index) || !isLastLayerPiece(state, index) ? colour : null;
-    case 'pairAmongSolved':
-      if (isPairSticker(state, index)) return colour;
-      return !isLastLayerPiece(state, index) && isPieceHome(state, index) ? colour : null;
   }
 }
 
