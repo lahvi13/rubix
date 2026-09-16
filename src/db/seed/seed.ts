@@ -24,6 +24,12 @@ import { TRIGGER_PACK } from './triggers';
  * changed — a bumped `updatedAt` on every start would make every export look
  * freshly edited.
  *
+ * It also retires: a pack case whose id has left the packs is taken out along
+ * with its pack algorithms. Without that, a case dropped by a later version
+ * stays on every device that ever saw it — upserting by id can add and correct
+ * rows but never notices one that should no longer be there, which is how two
+ * retired beginner cases went on being taught months after they were replaced.
+ *
  * Everything is read first and written in one pass at the end. Interleaving
  * hundreds of reads and writes inside a transaction is both slow and fragile:
  * Dexie commits a transaction the moment its queue runs dry, and a long chain
@@ -34,14 +40,27 @@ export async function seedPacks(): Promise<void> {
   const changes = planSeed(current);
   if (isEmpty(changes)) return;
 
-  await db.transaction('rw', [db.methods, db.algSets, db.algCases, db.algorithms, db.triggers], () =>
-    Promise.all([
-      db.methods.bulkPut(changes.methods),
-      db.algSets.bulkPut(changes.algSets),
-      db.algCases.bulkPut(changes.algCases),
-      db.algorithms.bulkPut(changes.algorithms),
-      db.triggers.bulkPut(changes.triggers),
-    ]),
+  const deletedAt = now();
+  const tombstones = [
+    ...changes.retired.algCases.map((id) => ({ id, table: 'algCases', deletedAt })),
+    ...changes.retired.algorithms.map((id) => ({ id, table: 'algorithms', deletedAt })),
+  ];
+
+  await db.transaction(
+    'rw',
+    [db.methods, db.algSets, db.algCases, db.algorithms, db.triggers, db.tombstones],
+    () =>
+      Promise.all([
+        db.methods.bulkPut(changes.methods),
+        db.algSets.bulkPut(changes.algSets),
+        db.algCases.bulkPut(changes.algCases),
+        db.algorithms.bulkPut(changes.algorithms),
+        db.triggers.bulkPut(changes.triggers),
+        // A retired row needs its tombstone or the next import brings it back.
+        db.algCases.bulkDelete(changes.retired.algCases),
+        db.algorithms.bulkDelete(changes.retired.algorithms),
+        db.tombstones.bulkPut(tombstones),
+      ]),
   );
 }
 
@@ -51,6 +70,8 @@ interface SeedChanges {
   algCases: AlgCase[];
   algorithms: Algorithm[];
   triggers: Trigger[];
+  /** Pack rows the packs no longer have, to be deleted with a tombstone. */
+  retired: { algCases: string[]; algorithms: string[] };
 }
 
 interface CurrentState {
@@ -67,6 +88,10 @@ interface CurrentState {
    * a choice, and the seed must not take it back.
    */
   chosen: Set<string>;
+  /** Every case id the packs carry today; anything else is a leftover. */
+  packed: Set<string>;
+  /** Case ids something the reader timed still points at. */
+  attempted: Set<string>;
 }
 
 async function readCurrent(): Promise<CurrentState> {
@@ -78,6 +103,20 @@ async function readCurrent(): Promise<CurrentState> {
     db.triggers.toArray(),
     db.tombstones.toArray(),
   ]);
+
+  const packed = new Set<string>();
+  for (const pack of [...PACKS, CROSS_PACK]) {
+    for (const entry of pack.cases) packed.add(entry.id);
+  }
+
+  // Asked only about the leftovers, and by index: a device that is up to date
+  // has none, so the usual cost of this is a single empty array.
+  const leftovers = algCases.filter((row) => !packed.has(row.id)).map((row) => row.id);
+  const attempted = new Set(
+    leftovers.length === 0
+      ? []
+      : (await db.solves.where('caseId').anyOf(leftovers).toArray()).map((solve) => solve.caseId),
+  );
 
   return {
     methods: byId(methods),
@@ -96,6 +135,9 @@ async function readCurrent(): Promise<CurrentState> {
         .filter((row) => row.isActive === 1 && row.id !== `${row.caseId}-pack`)
         .map((row) => row.caseId),
     ),
+    packed,
+    // Only ever holds ids, never nulls: anyOf was asked for case ids.
+    attempted: new Set([...attempted].filter((id): id is string => id !== null)),
   };
 }
 
@@ -110,6 +152,7 @@ function planSeed(current: CurrentState): SeedChanges {
     algCases: [],
     algorithms: [],
     triggers: [],
+    retired: { algCases: [], algorithms: [] },
   };
 
   const method = buildMethod(current.methods.get(PACK_METHOD_ID));
@@ -170,6 +213,8 @@ function planSeed(current: CurrentState): SeedChanges {
     }
   }
 
+  planRetirements(current, changes);
+
   for (const packTrigger of TRIGGER_PACK) {
     if (current.buried.has(packTrigger.id)) continue;
 
@@ -184,8 +229,39 @@ function planSeed(current: CurrentState): SeedChanges {
   return changes;
 }
 
+/**
+ * Cases the packs have dropped since this device last saw them, and the pack
+ * algorithms that hang off them.
+ *
+ * Only what the pack owns and only where the reader has left it alone. A case
+ * they made their own, renamed, wrote an algorithm for, or ever drilled is
+ * theirs from then on: the seed may stop teaching a case, but it does not get
+ * to throw away somebody's work on the way out.
+ */
+function planRetirements(current: CurrentState, changes: SeedChanges): void {
+  for (const algCase of current.algCases.values()) {
+    if (current.packed.has(algCase.id)) continue;
+    if (algCase.isCustom === 1) continue;
+    if (algCase.label !== null && algCase.label !== '') continue;
+    if (current.attempted.has(algCase.id)) continue;
+
+    const algorithms = [...current.algorithms.values()].filter(
+      (row) => row.caseId === algCase.id,
+    );
+    if (algorithms.some((row) => row.source === 'user')) continue;
+
+    changes.retired.algCases.push(algCase.id);
+    for (const row of algorithms) changes.retired.algorithms.push(row.id);
+  }
+}
+
 function isEmpty(changes: SeedChanges): boolean {
-  return Object.values(changes).every((rows) => rows.length === 0);
+  const { retired, ...rows } = changes;
+  return (
+    Object.values(rows).every((list) => list.length === 0)
+    && retired.algCases.length === 0
+    && retired.algorithms.length === 0
+  );
 }
 
 /** Everything about a row except when it was written. */

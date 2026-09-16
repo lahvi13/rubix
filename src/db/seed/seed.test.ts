@@ -152,3 +152,125 @@ describe('seed', () => {
     expect(await db.triggers.get('trigger-sledgehammer')).toBeUndefined();
   });
 });
+
+describe('retiring a case the packs have dropped', () => {
+  /** A leftover from an older pack version, as a device would still hold it. */
+  async function leaveBehind(id = 'beg-edge-right'): Promise<void> {
+    await db.algCases.put({
+      id,
+      setId: 'beginner',
+      name: 'Edge to the right',
+      label: null,
+      group: 'Middle layer edges',
+      setupAlg: "F' U' F U R U R' U'",
+      order: 99,
+      isCustom: 0,
+      packVersion: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    await db.algorithms.put({
+      id: `${id}-pack`,
+      caseId: id,
+      moves: "U R U' R' U' F' U F",
+      isActive: 1,
+      source: 'pack',
+      packVersion: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    });
+  }
+
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+  });
+
+  it('takes it out along with its pack algorithm', async () => {
+    await leaveBehind();
+    await seedPacks();
+
+    expect(await db.algCases.get('beg-edge-right')).toBeUndefined();
+    expect(await db.algorithms.get('beg-edge-right-pack')).toBeUndefined();
+  });
+
+  it('leaves a tombstone, so an import cannot bring it back', async () => {
+    await leaveBehind();
+    await seedPacks();
+
+    expect(await db.tombstones.get('beg-edge-right')).toMatchObject({ table: 'algCases' });
+    expect(await db.tombstones.get('beg-edge-right-pack')).toMatchObject({
+      table: 'algorithms',
+    });
+  });
+
+  it('keeps a case the reader made their own', async () => {
+    await leaveBehind();
+    await db.algCases.update('beg-edge-right', { isCustom: 1 });
+    await seedPacks();
+
+    expect(await db.algCases.get('beg-edge-right')).toBeDefined();
+  });
+
+  it('keeps a case the reader renamed', async () => {
+    await leaveBehind();
+    await db.algCases.update('beg-edge-right', { label: 'Moje hrana' });
+    await seedPacks();
+
+    expect(await db.algCases.get('beg-edge-right')).toBeDefined();
+  });
+
+  it('keeps a case the reader wrote an algorithm for', async () => {
+    await leaveBehind();
+    await addUserAlgorithm('beg-edge-right', "R U R' U'");
+    await seedPacks();
+
+    expect(await db.algCases.get('beg-edge-right')).toBeDefined();
+    expect(await db.algorithms.get('beg-edge-right-pack')).toBeDefined();
+  });
+
+  it('keeps a case something timed still points at', async () => {
+    await leaveBehind();
+    await db.solves.put({
+      id: 'attempt-1',
+      sessionId: 'drill-session',
+      puzzle: '333',
+      mode: 'drill',
+      caseId: 'beg-edge-right',
+      scramble: '',
+      rawMs: 4200,
+      penalty: 'none',
+      penaltySource: 'manual',
+      inspectionMs: null,
+      startedAt: 1,
+      splits: [],
+      splitsSchemaVersion: 1,
+      tagIds: [],
+      note: null,
+      starred: 0,
+      editedAt: null,
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    await seedPacks();
+
+    expect(await db.algCases.get('beg-edge-right')).toBeDefined();
+  });
+
+  it('leaves the packs their own cases', async () => {
+    await leaveBehind();
+    await seedPacks();
+
+    expect(await db.algCases.count()).toBe(totalCases + 1);
+    expect(await db.algorithms.count()).toBe(totalAlgorithms);
+  });
+
+  it('is idempotent', async () => {
+    await leaveBehind();
+    await seedPacks();
+    const first = await snapshot();
+
+    await seedPacks();
+    expect(await snapshot()).toBe(first);
+    expect(await db.tombstones.count()).toBe(2);
+  });
+});
