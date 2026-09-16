@@ -108,4 +108,11 @@ it.each([
   ])('%i solves imported', (count, expected) => {
     expect(cs.cstimer.imported(count)).toBe(expected);
   });
+it.each([
+    [1, '1 pokus'],
+    [2, '2 pokusy'],
+    [7, '7 pokusů'],
+  ])('%i drill attempts', (count, expected) => {
+    expect(cs.drill.attemptCount(count)).toBe(expected);
+  });
 });

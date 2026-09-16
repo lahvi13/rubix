@@ -469,6 +469,8 @@ export const en = {
     next: 'Next case',
     empty: 'Nothing to drill in this set.',
     attempts: 'Attempts',
+    /** The set's tally, where the number is read as part of the words. */
+    attemptCount: (count: number) => `${count} ${count === 1 ? 'attempt' : 'attempts'}`,
     last: 'Last',
     noAttempts: 'First time on this case.',
     judging: 'Changing the penalty',

@@ -40,8 +40,8 @@ export function SetSummary({ groups, onOpen }: SetSummaryProps) {
   return (
     <section className="set-summary">
       <p className="set-summary__counts">
-        {drilled.length} / {cases.length} {strings.drill.progress} · {attempts}{' '}
-        {strings.drill.attempts.toLowerCase()}
+        {drilled.length} / {cases.length} {strings.drill.progress} ·{' '}
+        {strings.drill.attemptCount(attempts)}
       </p>
 
       {slowest.length === 0 ? null : (
