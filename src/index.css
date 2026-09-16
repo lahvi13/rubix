@@ -3842,7 +3842,8 @@ button[disabled] {
 }
 
 /* Only once there is a fresh backup to send; set apart from the export row it follows. */
-.backup-share {
+.backup-share,
+.backup-csv {
   margin-top: var(--space-5);
 }
 

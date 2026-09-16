@@ -59,13 +59,7 @@ export function DataScreen() {
           <button type="button" className="is-primary" onClick={() => void exportToFile()}>
             {strings.data.exportAction}
           </button>
-          <button type="button" onClick={() => void exportSolvesToCsv()}>
-            {strings.data.exportCsvAction}
-          </button>
         </div>
-        <p className="data-section__hint data-section__hint--after">
-          {strings.data.exportCsvHint}
-        </p>
         {canShareBackup ? (
           <div className="backup-share">
             <button type="button" onClick={() => void shareBackup()}>
@@ -76,6 +70,18 @@ export function DataScreen() {
             </p>
           </div>
         ) : null}
+
+        {/* Its own block, like the share above it. Sharing the row with the
+            backup button put this one's note under both, where it read as a
+            caveat about the export as a whole rather than about the CSV. */}
+        <div className="backup-csv">
+          <button type="button" onClick={() => void exportSolvesToCsv()}>
+            {strings.data.exportCsvAction}
+          </button>
+          <p className="data-section__hint data-section__hint--after">
+            {strings.data.exportCsvHint}
+          </p>
+        </div>
       </section>
 
       <section className="data-section">
