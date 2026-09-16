@@ -131,8 +131,24 @@ export const KEPT_IN_ENGLISH: readonly string[] = [
  * gave a case themselves — comes back as it went in.
  */
 export function packLabel(name: string): string {
-  if (LANGUAGE !== 'cs') return name;
-  return CS[name] ?? name;
+  return LANGUAGE === 'cs' ? czechName(name) : name;
+}
+
+/**
+ * A case the pack numbers rather than names: "Advanced 12", "OLL 21", "F2L 3".
+ * The word in front is the set's own name, so whether it is translated is the
+ * same question as whether that set is — F2L, OLL and PLL are not, and the
+ * levels this app invented are.
+ */
+const NUMBERED = /^(.+) (\d+)$/;
+
+/** Exported for the test; everything else goes through `packLabel`. */
+export function czechName(name: string): string {
+  const known = CS[name];
+  if (known !== undefined) return known;
+  const numbered = NUMBERED.exec(name);
+  const prefix = numbered?.[1] === undefined ? undefined : CS[numbered[1]];
+  return prefix === undefined ? name : `${prefix} ${numbered?.[2] ?? ''}`;
 }
 
 /** For the test that walks the packs; nothing else should need the table. */

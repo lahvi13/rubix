@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { CROSS_PACK, PACKS } from '../../db/seed/packs';
-import { CS_PACK_NAMES, KEPT_IN_ENGLISH, packLabel } from './pack-names';
+import { CS_PACK_NAMES, KEPT_IN_ENGLISH, czechName, packLabel } from './pack-names';
 
 const ALL_PACKS = [...PACKS, CROSS_PACK];
 
@@ -46,5 +46,20 @@ describe('pack names', () => {
   it('hands a name back untouched in English', () => {
     expect(packLabel('Bottom layer corners')).toBe('Bottom layer corners');
     expect(packLabel('a name the reader gave it')).toBe('a name the reader gave it');
+  });
+
+  /* The numbered cases: the word in front is a set name, so it follows the
+     set. F2L, OLL and PLL stay; the levels this app named itself do not. */
+  it.each([
+    ['Advanced 1', 'Pokročilé 1'],
+    ['Advanced 41', 'Pokročilé 41'],
+    ['Expert 7', 'Expert 7'],
+    ['F2L 3', 'F2L 3'],
+    ['OLL 21', 'OLL 21'],
+    ['PLL 2', 'PLL 2'],
+    ['Aa', 'Aa'],
+    ['Fat Antisune', 'Fat Antisune'],
+  ])('%s reads as %s in Czech', (name, expected) => {
+    expect(czechName(name)).toBe(expected);
   });
 });
