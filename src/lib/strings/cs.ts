@@ -18,7 +18,7 @@ export const cs: Strings = {
   },
   scramble: {
     label: 'Scramble',
-    loading: 'Generuju scramble…',
+    loading: 'Generuji scramble…',
     failed: 'Scramble se nepovedl — ťukni pro další pokus',
     next: 'Nový scramble',
     replay: 'Přehrát scramble',
@@ -187,7 +187,7 @@ export const cs: Strings = {
       trim === 1
         ? 'Nejrychlejší a nejpomalejší složení se škrtají (v závorce); průměr je ze zbytku.'
         : `${trim} ${plural(trim, 'nejrychlejší', 'nejrychlejší', 'nejrychlejších')} a ${trim} ${plural(trim, 'nejpomalejší', 'nejpomalejší', 'nejpomalejších')} složení se ${plural(trim, 'škrtá', 'škrtají', 'škrtá')} (v závorce); průměr je ze zbytku.`,
-    windowDnfNote: 'Víc DNF, než kolik jich jde škrtnout, takže průměr je DNF.',
+    windowDnfNote: 'Více DNF, než kolik jich jde škrtnout, takže průměr je DNF.',
     trimmed: 'nepočítá se',
     goal: 'Cíl',
     goalHint: 'Nastav si cílový čas a uvidíš, jak často se pod něj dostaneš.',
@@ -220,7 +220,7 @@ export const cs: Strings = {
       'Každý sloupec je rozsah časů; výška říká, kolik složení do něj spadá.',
     trendAxes:
       'Čára je průměr dvanácti složení končících v daném bodě; tečky jsou samotná složení, od nejstaršího.',
-    andUp: 'a víc',
+    andUp: 'a více',
     bestAo12: 'Nejlepší ao12',
     containsCurrent: 'Sem spadá aktuální ao12',
     touchBar: 'Ťukni na sloupec a uvidíš jeho rozsah a počet.',
@@ -317,14 +317,14 @@ export const cs: Strings = {
         text:
           'Teď přijdou na řadu čtyři bílé rohy. Každý roh nese tři barvy a patří do mezery mezi ty tři středy, které mají stejné barvy jako on.\n\n'
           + 'Najdi bílý roh v horní vrstvě a otáčej vrškem (U), dokud nestojí přímo nad svou mezerou (slotem). Pak se podívej, kam míří jeho bílá nálepka — doprava, dopředu, nebo nahoru — a použij algoritmus, který k tomu patří. Všechny tři jsou hned pod textem.\n\n'
-          + 'Roh, který už dole je, ale je otočený špatně nebo sedí ve špatném slotu, nejdřív vytáhni nahoru: stačí na něj spustit kterýkoli z těch tří algoritmů.',
+          + 'Roh, který už dole je, ale je otočený špatně nebo sedí ve špatném slotu, nejdříve vytáhni nahoru: stačí na něj spustit kterýkoli z těch tří algoritmů.',
       },
       middle: {
         title: 'Hrany prostřední vrstvy',
         text:
           'Zbývají čtyři hrany prostřední vrstvy. V horní vrstvě hledej hranu, která nemá na sobě žlutou — každá taková patří doprostřed.\n\n'
           + 'Otoč vrškem (U) tak, aby hrana stála na pravé straně a její boční barva souhlasila s pravým středem. Pak se podívej na barvu, která u ní míří nahoru: ta rozhodne, jestli hrana patří do předního, nebo do zadního slotu. Oba algoritmy jsou pod textem.\n\n'
-          + 'Hranu, která už v prostřední vrstvě je, ale je otočená obráceně nebo sedí ve špatném slotu, nejdřív dostaň nahoru: drž kostku tak, aby byl tento slot vpravo, a spusť kterýkoli z obou algoritmů.\n\n'
+          + 'Hranu, která už v prostřední vrstvě je, ale je otočená obráceně nebo sedí ve špatném slotu, nejdříve dostaň nahoru: drž kostku tak, aby byl tento slot vpravo, a spusť kterýkoli z obou algoritmů.\n\n'
           + 'Tím jsou hotové první dvě vrstvy — kroky 2 a 3 dohromady jsou to, čemu se říká F2L. Rychlejší metoda je spojí do jednoho a v Trenažéru ji najdeš pod stejnou zkratkou.',
       },
       edgeOrientation: {
@@ -337,7 +337,7 @@ export const cs: Strings = {
       cornerOrientation: {
         title: 'Orientace poslední vrstvy',
         text:
-          'Zbývá celá horní stěna a stačí na ni jediný algoritmus. Spusť ho, podívej se znovu a spusť ho případně zase — víc než třikrát ho nepotřebuješ nikdy.\n\n'
+          'Zbývá celá horní stěna a stačí na ni jediný algoritmus. Spusť ho, podívej se znovu a spusť ho případně zase — více než třikrát ho nepotřebuješ nikdy.\n\n'
           + 'Jak kostku držet, poznáš podle toho, kolik rohů už ukazuje žlutou; všechny tři možnosti jsou na obrázcích pod textem. Pod tlačítkem je pak sedm případů, každý na jedno spuštění.\n\n'
           + 'Kroky 4 a 5 dohromady jsou OLL — orientace poslední vrstvy. Dělají se na dvakrát, a tak je v Trenažéru najdeš pod 2-Look OLL.',
       },
@@ -396,7 +396,7 @@ export const cs: Strings = {
     notation: 'Notace',
     notationHint: 'Každý obrázek je složená kostka po tomto jednom tahu.',
     triggers: 'Triggery',
-    triggerBuiltIn: 'Vestavěný — vypni ho fajfkou místo mazání.',
+    triggerBuiltIn: 'Vestavěný — místo mazání ho odškrtni.',
     triggersHint:
       'Tahy zvýrazněné uvnitř algoritmu. Když vestavěný upravíš, stane se tvým — aktualizace už na něj nesáhnou.',
     triggerName: 'Název',
@@ -534,7 +534,7 @@ export const cs: Strings = {
       'Týká se jen toho, co hodiny ukazují, když běží. Každé složení se pořád měří na setiny a po zastavení se zobrazí celé.',
     splitMode: 'Měřit složení po fázích (4 fáze)',
     splitModeHint:
-      'Ťuknutí ukončí rozběhnutou fázi a spustí další; poslední fáze zastaví hodiny. Podržením ťuknutí ukončíš složení dřív, když se nějaká fáze přeskočila.',
+      'Ťuknutí ukončí rozběhnutou fázi a spustí další; poslední fáze zastaví hodiny. Podržením ťuknutí ukončíš složení dříve, když se nějaká fáze přeskočila.',
     trainer: 'Trenažér',
     twoLookDefault: 'Otevírat OLL a PLL na',
     showAlgs: 'Zobrazit algoritmy v seznamu případů',
@@ -589,7 +589,7 @@ export const cs: Strings = {
     deleted: 'Smazané',
     nothingToDo: 'Soubor nic nemění.',
     confirmImport: 'Importovat',
-    importing: 'Importuju…',
+    importing: 'Importuji…',
     cancel: 'Zrušit',
     imported: 'Import dokončen.',
     importFailed: 'Soubor se nepodařilo importovat',
@@ -614,7 +614,7 @@ export const cs: Strings = {
     },
     dangerTitle: 'Smazat všechna data',
     dangerHint:
-      'Odstraní z tohoto zařízení všechna složení, session a nastavení. Není cesta zpět — nejdřív exportuj.',
+      'Odstraní z tohoto zařízení všechna složení, session a nastavení. Není cesta zpět — nejdříve exportuj.',
     deleteAll: 'Smazat všechna data',
     deleteConfirm: 'Smazat všechno',
     deleteArmed:
@@ -653,7 +653,7 @@ export const cs: Strings = {
     puzzle: 'Puzzle',
     newSolves: 'Nové',
     confirm: 'Importovat z csTimeru',
-    importing: (written: number, total: number) => `Importuju… ${written} / ${total}`,
+    importing: (written: number, total: number) => `Importuji… ${written} / ${total}`,
     imported: (count: number) =>
       `${count} složení ${plural(count, 'importováno', 'importována', 'importováno')} z csTimeru.`,
     whereToFind:
@@ -738,7 +738,7 @@ export const cs: Strings = {
     versionTitle: 'Verze',
     version: (version: string) => `Rubix ${version}`,
     checkUpdates: 'Zkontrolovat aktualizace',
-    checking: 'Kontroluju…',
+    checking: 'Kontroluji…',
     updateCurrent: 'Toto je poslední verze.',
     updateReady: 'Nová verze je připravená — načti ji z lišty dole.',
     updateOffline: 'Server se nepodařilo kontaktovat. Zkus to znovu online.',
@@ -752,7 +752,7 @@ export const cs: Strings = {
     creditCubing: 'Scramble a 3D kostka jsou cubing.js —',
     creditClaude: 'Vytvořeno společně s Claude Code —',
     creditFonts:
-      'Sazba v Inter, JetBrains Mono a DSEG7, všechny pod licencí SIL Open Font License.',
+      'Písma Inter, JetBrains Mono a DSEG7, všechna pod licencí SIL Open Font License.',
   },
   installNudge: {
     message:
