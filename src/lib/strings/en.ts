@@ -1,8 +1,13 @@
 /**
- * All user-facing copy in one place. English, like everything else in the
- * repo. No i18n layer until there is a second language to justify one.
+ * All user-facing copy, in the language the rest of the repo is written in.
+ * The Czech translation in `cs.ts` is typed against this object, so a key
+ * added here and forgotten there fails the build; `index.ts` picks between
+ * the two once, at startup.
  */
-export const strings = {
+
+import type { Translated } from './types';
+
+export const en = {
   appName: 'Rubix',
   common: {
     dismiss: 'Dismiss',
@@ -284,6 +289,10 @@ export const strings = {
     tagOnSolves: (count: number) => `on ${count} ${count === 1 ? 'solve' : 'solves'}`,
   },
   sessions: {
+    /* Written into the first session on a device, and only there: it is data
+       from that moment on, and a device set up in another language keeps the
+       name it was given. */
+    defaultName: 'Default',
     title: 'Sessions',
     /** Written before the name, so the name reads as a session and as a button. */
     label: 'Session',
@@ -332,7 +341,9 @@ export const strings = {
       },
       middle: {
         title: 'Middle layer edges',
-        text: 'A top-layer edge without the top colour on it belongs in the middle. Turn the top until it is on the right, its side colour over the matching centre; the colour facing up says which slot it goes into — front or back. An edge in the middle the wrong way round comes back up with either algorithm.',
+        text:
+          'A top-layer edge without the top colour on it belongs in the middle. Turn the top until it is on the right, its side colour over the matching centre; the colour facing up says which slot it goes into — front or back. An edge in the middle the wrong way round comes back up with either algorithm.\n\n'
+          + 'That is the first two layers done — steps 2 and 3 together are what is called F2L. A faster method joins them into one, and the trainer has it under that name.',
       },
       edgeOrientation: {
         title: 'Last layer cross',
@@ -340,7 +351,9 @@ export const strings = {
       },
       cornerOrientation: {
         title: 'Last layer face',
-        text: 'The whole top face with one algorithm. Hold the cube as one of the three pictures shows, run it, and look again; none takes more than three goes. The button has the seven cases, each done in a single go.',
+        text:
+          'The whole top face with one algorithm. Hold the cube as one of the three pictures shows, run it, and look again; none takes more than three goes. The button has the seven cases, each done in a single go.\n\n'
+          + 'Steps 4 and 5 together are OLL, orienting the last layer. Split in two like this, they are in the trainer under 2-Look OLL.',
       },
       cornerPermutation: {
         title: 'Corners home',
@@ -348,7 +361,9 @@ export const strings = {
       },
       edgePermutation: {
         title: 'Edges home',
-        text: 'Only the edges are left. Turn the top until one side is a solid block of colour: that side is finished, and the other three edges go round. No corner moves.',
+        text:
+          'Only the edges are left. Turn the top until one side is a solid block of colour: that side is finished, and the other three edges go round. No corner moves.\n\n'
+          + 'Steps 6 and 7 together are PLL, permuting the last layer — putting every piece where it belongs. The trainer has them under 2-Look PLL.',
       },
     },
     holds: {
@@ -465,7 +480,7 @@ export const strings = {
     progress: 'drilled',
     needsWork: 'Needs work',
     crossSolution: 'Shortest cross',
-    crossMoves: 'moves',
+    crossMoves: (count: number) => `${count} ${count === 1 ? 'move' : 'moves'}`,
     crossSolved: 'The cross is already done.',
     crossWatch: 'Watch it',
     crossWatchAgain: 'Watch again',
@@ -507,6 +522,12 @@ export const strings = {
   },
   settings: {
     appearance: 'Appearance',
+    /* Each language is named in itself, which is how somebody who cannot
+       read the other one finds their own. */
+    language: 'Language',
+    languageCs: 'Čeština',
+    languageEn: 'English',
+    languageHint: 'Switching the language reloads the app. Nothing you have timed changes.',
     theme: 'Theme',
     themeSystem: 'System',
     themeLight: 'Light',
@@ -531,6 +552,14 @@ export const strings = {
     sizeLarge: 'Large',
     skin: 'Colours',
     skinHint: 'Colours for every case diagram in the app.',
+    /* Named by id rather than in the skin itself: a palette is data, its name
+       is copy, and only one of the two changes with the language. */
+    skins: {
+      classic: 'Classic',
+      contrast: 'High contrast',
+      pastel: 'Pastel',
+      accessible: 'Colour-blind friendly',
+    },
     twistyMode: 'Cube preview',
     previewFlat: 'Flat',
     preview3d: '3D',
@@ -539,7 +568,7 @@ export const strings = {
     timer: 'Timer',
     holdThreshold: 'Hold to start',
     holdOff: 'Off',
-    showScramblePreview: 'Show the cube next to the scramble',
+    showScramblePreview: 'Show the cube below the scramble',
     runningDisplay: 'Time while solving',
     runningHundredths: '0.00',
     runningTenths: '0.0',
@@ -547,7 +576,7 @@ export const strings = {
     runningHidden: 'Hidden',
     runningDisplayHint:
       'Only what the clock shows while it runs. Every solve is still timed to the hundredth and shown in full when it stops.',
-    splitMode: 'Time solves by phase',
+    splitMode: 'Time solves by phase (4 phases)',
     splitModeHint:
       'A tap ends the phase in progress and starts the next one; the last phase stops the clock. Hold a tap to finish a solve early when a phase was skipped.',
     trainer: 'Trainer',
@@ -782,3 +811,10 @@ export const strings = {
       'Worth doing: an iPhone gives an installed app a far longer memory than a tab, and a tab left unopened can have its solves cleared after a week. Keep a backup either way.',
   },
 } as const;
+
+/**
+ * What every other language has to fill in. The English object is the source
+ * of the shape; `Translated` widens its literals so a translation is free to
+ * say anything, in exactly the places English says something.
+ */
+export type Strings = Translated<typeof en>;

@@ -3,7 +3,7 @@ import { caseTitle } from '../../../domain/alg/case-name';
 import { parseAlg } from '../../../domain/cube/notation';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import type { CubeSkin } from '../../../lib/cube-skins';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 import type { Diagram } from '../case-view';
 import type { TrainerCase } from '../hooks/use-alg-cases';
 import { AlgText } from './AlgText';
@@ -45,7 +45,7 @@ export function CaseCard({
 
   return (
     <button type="button" className="case-card" onClick={onOpen}>
-      <span className="case-card__name">{caseTitle(entry.algCase)}</span>
+      <span className="case-card__name">{packLabel(caseTitle(entry.algCase))}</span>
       {/*
         A dot rather than a word: a card is the width of a thumb and the name
         already has it. What it means is one tap away — the sheet the card

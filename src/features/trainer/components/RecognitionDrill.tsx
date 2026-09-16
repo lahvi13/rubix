@@ -5,7 +5,7 @@ import { formatAlg, type Move } from '../../../domain/cube/notation';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { formatTime } from '../../../lib/format';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
 import { useAlgSets } from '../hooks/use-alg-cases';
 import { useTriggers } from '../hooks/use-triggers';
@@ -119,7 +119,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
                 : strings.recognition.question}
             </p>
           ) : (
-            <Verdict outcome={outcome} title={caseTitle(question.answer)} />
+            <Verdict outcome={outcome} title={packLabel(caseTitle(question.answer))} />
           )}
 
           {outcome === null ? null : (
@@ -239,7 +239,7 @@ function OptionCard({ option, setId, skin, outcome, answerId, onChoose }: Option
 
   return (
     <button type="button" className={`case-card${state}`} onClick={onChoose}>
-      <span className="case-card__name">{caseTitle(option.algCase)}</span>
+      <span className="case-card__name">{packLabel(caseTitle(option.algCase))}</span>
       <CubeDiagram
         className="case-card__diagram"
         state={option.state}

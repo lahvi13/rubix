@@ -12,6 +12,7 @@ import {
   type Theme,
 } from '../../../lib/appearance';
 import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
+import { LANGUAGES, currentLanguage, storeLanguage, type Language } from '../../../lib/language';
 import { RUNNING_DISPLAYS, type RunningDisplay } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useSetting } from '../../../hooks/use-setting';
@@ -19,6 +20,15 @@ import { useResolvedTheme } from '../../../hooks/use-appearance';
 
 /** A case with some colour in it, so a skin can be judged before it is chosen. */
 const PREVIEW_SETUP = "R U R' U' R' F R2 U' R' U' R U R' F'";
+
+const LANGUAGE_LABELS: Record<Language, string> = {
+  cs: strings.settings.languageCs,
+  en: strings.settings.languageEn,
+};
+
+/** A skin the app no longer knows still has to be drawn, and named something. */
+const skinName = (id: string): string =>
+  id in strings.settings.skins ? strings.settings.skins[id as keyof typeof strings.settings.skins] : id;
 
 const THEME_LABELS: Record<Theme, string> = {
   system: strings.settings.themeSystem,
@@ -77,6 +87,16 @@ export function SettingsScreen() {
   const [isPreviewShown, setPreviewShown] = useSetting('timer.showScramblePreview');
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
 
+  // Not a setting of the database's: the copy is read while the modules that
+  // name it are loading, so the language is a property of the load, and
+  // changing it means loading again.
+  const language = currentLanguage();
+  const chooseLanguage = (next: Language) => {
+    if (next === language) return;
+    storeLanguage(next);
+    window.location.reload();
+  };
+
   const previewState = previewCube();
   // A threshold that is no longer offered — 200 ms was, and a backup from
   // another device can carry anything — stays chosen, and stays visible, until
@@ -89,6 +109,18 @@ export function SettingsScreen() {
     <main className="screen screen--scroll">
       <section className="data-section">
         <h2 className="data-section__title">{strings.settings.appearance}</h2>
+
+        {/* First in the list, and the only setting whose two answers are each
+            written in their own language: somebody who cannot read the rest of
+            the screen has to be able to find their way off it. */}
+        <ChoiceRow
+          label={strings.settings.language}
+          options={LANGUAGES}
+          labels={LANGUAGE_LABELS}
+          value={language}
+          onChange={chooseLanguage}
+        />
+        <p className="data-section__hint">{strings.settings.languageHint}</p>
 
         <ChoiceRow
           label={strings.settings.theme}
@@ -151,9 +183,9 @@ export function SettingsScreen() {
                 state={previewState}
                 view="lastLayer"
                 skin={skinById(skin.id, resolved)}
-                label={skin.name}
+                label={skinName(skin.id)}
               />
-              <span className="skin__name">{skin.name}</span>
+              <span className="skin__name">{skinName(skin.id)}</span>
             </label>
           ))}
         </div>

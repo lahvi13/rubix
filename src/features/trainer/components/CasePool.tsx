@@ -3,7 +3,7 @@ import { ChevronIcon } from '../../../components/Icons';
 import type { CaseWithAlg } from '../../../db/repositories/alg-repository';
 import { slowestCases, type CaseStats } from '../../../domain/drill/case-stats';
 import { caseTitle } from '../../../domain/alg/case-name';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 
 interface CasePoolProps {
   /** The whole set. Undefined while it loads. */
@@ -78,7 +78,7 @@ export function CasePool({ cases, selectedIds, stats, onSelect }: CasePoolProps)
                     )
                   }
                 />
-                {caseTitle(entry.algCase)}
+                {packLabel(caseTitle(entry.algCase))}
               </label>
             ))}
           </div>

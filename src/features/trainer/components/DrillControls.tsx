@@ -4,7 +4,7 @@ import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { BEGINNER_SET_ID, FULL_SETS, LEVEL_BASE_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
 import { ChevronIcon } from '../../../components/Icons';
 import { useSetting } from '../../../hooks/use-setting';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../levels';
 
 interface DrillSetsProps {
@@ -50,7 +50,7 @@ export function DrillSets({ sets, setId, onSet }: DrillSetsProps) {
             );
           }}
         >
-          {set.name}
+          {packLabel(set.name)}
         </button>
       ))}
     </div>

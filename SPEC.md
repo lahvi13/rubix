@@ -19,8 +19,16 @@ Původně to byl osobní nástroj pro autora a pár známých; z veřejného pro
   návštěvy, proto timer na iOS po pár solvech vyzve k přidání na plochu; připomínka
   zálohy hlídá zbytek
 - **zpětná vazba** jde přes mail na obrazovce About (předmět nese verzi a commit)
-- **jen 3×3 a jen anglicky.** Další disciplína se přidává až na výslovnou poptávku;
+- **jen 3×3.** Další disciplína se přidává až na výslovnou poptávku;
   datový model (`puzzle`) s ní počítá
+- **anglicky a česky.** Jazyk je volba zařízení (`localStorage`, přepínač v Nastavení),
+  ne součást dat: uložené solvy, session ani export žádný jazyk nenesou a soubor
+  zálohy je mezi jazyky přenosný. Další jazyk znamená další soubor v `src/lib/strings/`
+- **venku je aplikace anglicky.** Jedna URL servíruje oba jazyky, takže `index.html`,
+  og: tagy a manifest mluví jedním jazykem pro všechny — a je to angličtina, protože
+  to je i výchozí jazyk aplikace. Vyjednávání jazyka ani vlastní URL `/cs`
+  s předrenderovaným českým HTML kvůli vyhledávačům se nedělá: znamenalo by to
+  serverový kód, což je non-goal. Vědomá cena, ne opomenutí
 
 **Non-goals (platí pro celý projekt):**
 

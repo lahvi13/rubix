@@ -1,7 +1,7 @@
 import { caseTitle } from '../../../domain/alg/case-name';
 import { slowestCases } from '../../../domain/drill/case-stats';
 import { formatAverage } from '../../../lib/format';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 import { useCaseStats } from '../hooks/use-case-stats';
 import type { CaseGroup } from '../hooks/use-alg-cases';
 
@@ -22,8 +22,8 @@ export function SetSummary({ groups, onOpen }: SetSummaryProps) {
   const cases = (groups ?? []).flatMap((group) =>
     group.cases.map((entry) => ({
       id: entry.algCase.id,
-      name: caseTitle(entry.algCase),
-      group: group.name,
+      name: packLabel(caseTitle(entry.algCase)),
+      group: packLabel(group.name),
     })),
   );
   const stats = useCaseStats(cases.map((entry) => entry.id));

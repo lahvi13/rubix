@@ -18,7 +18,7 @@ import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../li
 import type { TwistyPlayerElement } from '../../../types/twisty';
 import { useSetting } from '../../../hooks/use-setting';
 import { watchWrite } from '../../../lib/errors';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
 import { stateOf, useAlgSets } from '../hooks/use-alg-cases';
 import { useCaseStats } from '../hooks/use-case-stats';
@@ -320,7 +320,7 @@ function Answer({
 }: AnswerProps) {
   const diagram = diagramFor(setId, current.algCase.group ?? '');
   const moves = movesOf(current.algorithm?.moves ?? '');
-  const title = caseTitle(current.algCase);
+  const title = packLabel(caseTitle(current.algCase));
 
   return (
     <>
@@ -414,7 +414,7 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
     <>
       <h3 className="drill__case-name">
         {strings.drill.crossSolution}
-        {best.length === 0 ? '' : ` · ${best.length} ${strings.drill.crossMoves}`}
+        {best.length === 0 ? '' : ` · ${strings.drill.crossMoves(best.length)}`}
       </h3>
       {best.length === 0 ? (
         <p className="drill__hint">{strings.drill.crossSolved}</p>

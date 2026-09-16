@@ -1,10 +1,11 @@
 import { db } from '../schema';
 import type { Puzzle, Session, Solve, SolveMode } from '../types';
 import { now } from '../../lib/clock';
+import { strings } from '../../lib/strings';
 import { createId } from '../../lib/uuid';
 
 export const DEFAULT_METHOD_ID = 'cfop';
-const DEFAULT_SESSION_NAME = 'Default';
+const DEFAULT_SESSION_NAME = strings.sessions.defaultName;
 
 /** A deleted session and everything that was timed into it. */
 export interface DeletedSession {

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 import {
   BEGINNER_SET_ID,
   CROSS_SET_ID,
@@ -102,7 +102,7 @@ export function TrainerScreen() {
               setOpenCase(null);
             }}
           >
-            {set.name}
+            {packLabel(set.name)}
           </button>
         ))}
       </div>
@@ -200,7 +200,7 @@ export function TrainerScreen() {
 
       {(groups ?? []).map((group) => (
         <section key={group.name} className="trainer__group">
-          <h2 className="trainer__group-title">{group.name}</h2>
+          <h2 className="trainer__group-title">{packLabel(group.name)}</h2>
           <div className="case-grid">
             {group.cases.map((entry) => (
               <CaseCard

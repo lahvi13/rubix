@@ -1,4 +1,5 @@
 import type { Penalty } from '../db/types';
+import { currentLanguage } from './language';
 import { strings } from './strings';
 
 const MS_PER_SECOND = 1000;
@@ -52,6 +53,19 @@ const DATE_FORMATS = {
 const formatters = new Map<keyof typeof DATE_FORMATS, Intl.DateTimeFormat>();
 
 /**
+ * Dates follow the language the app is in, not the one the browser is in: a
+ * screen written in Czech reading "September" would be the odd thing. The
+ * browser's own tags are still preferred where they agree on the language,
+ * because only they carry the region — en-GB writes a date the other way
+ * round from en-US, and the app has no opinion about that.
+ */
+function dateLocales(): string[] {
+  const language = currentLanguage();
+  const preferred = navigator.languages ?? [navigator.language];
+  return [...preferred.filter((tag) => tag.toLowerCase().split('-')[0] === language), language];
+}
+
+/**
  * Each formatter is made once and kept. Making one is the slow part of
  * toLocaleDateString, and the lists ask for a date on every row of every
  * render: after a solve, with thousands in the database, that was a fifth of
@@ -60,7 +74,7 @@ const formatters = new Map<keyof typeof DATE_FORMATS, Intl.DateTimeFormat>();
 function formatter(name: keyof typeof DATE_FORMATS): Intl.DateTimeFormat {
   const known = formatters.get(name);
   if (known !== undefined) return known;
-  const made = new Intl.DateTimeFormat([], DATE_FORMATS[name]);
+  const made = new Intl.DateTimeFormat(dateLocales(), DATE_FORMATS[name]);
   formatters.set(name, made);
   return made;
 }

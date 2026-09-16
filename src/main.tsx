@@ -6,6 +6,7 @@ import { onDatabaseReconnect } from './db/schema';
 import { seedPacks } from './db/seed/seed';
 import { isBrowserSupported, showUnsupportedBrowser } from './lib/browser-support';
 import { installGlobalErrorHandlers, reportError } from './lib/errors';
+import { currentLanguage } from './lib/language';
 import { strings } from './lib/strings';
 import { applyAppearance, cachedAppearance } from './lib/appearance';
 import { requestPersistentStorage } from './lib/storage';
@@ -35,6 +36,11 @@ function start(root: HTMLElement): void {
   // comes an async tick too late to paint with, and a light-theme reader should
   // not be shown a black screen on the way in.
   applyAppearance(cachedAppearance());
+
+  // What the page is actually written in, for a screen reader's pronunciation
+  // and for the browser's own offer to translate it. The attribute in the HTML
+  // is only what the document is served as.
+  document.documentElement.lang = currentLanguage();
 
   // Between backups, solves exist only in IndexedDB. Persistent storage tells
   // the browser this origin's data must survive disk pressure; installed PWAs

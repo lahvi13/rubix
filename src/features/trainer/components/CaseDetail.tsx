@@ -11,7 +11,7 @@ import { caseAlias, caseTitle } from '../../../domain/alg/case-name';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { watchWrite } from '../../../lib/errors';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 import { useCaseDetail } from '../hooks/use-case-detail';
 import { useCaseStat, useRecognitionStat } from '../hooks/use-case-stats';
 import { useCaseAttempts } from '../hooks/use-case-attempts';
@@ -122,7 +122,7 @@ export function CaseDetail({
           onNext: at < ordered.length - 1 ? () => step(at + 1) : null,
         };
 
-  const title = caseTitle(algCase);
+  const title = packLabel(caseTitle(algCase));
   const alias = caseAlias(algCase);
   const label = algCase.label ?? '';
   const shownName = nameDraft ?? label;
@@ -155,11 +155,11 @@ export function CaseDetail({
           together they say which case this is. */}
       {/* Which family it belongs to — for OLL that is how the case is
           recognised in the first place, so it belongs above the name. */}
-      {inSet === null ? null : <p className="case-detail__group">{inSet.group}</p>}
+      {inSet === null ? null : <p className="case-detail__group">{packLabel(inSet.group)}</p>}
       <h2 className="case-detail__name">{title}</h2>
       {/* Under a name of the reader's own, the pack's stays visible: it is
           what every chart and video out there calls this case. */}
-      {alias === null ? null : <p className="case-detail__alias">{alias}</p>}
+      {alias === null ? null : <p className="case-detail__alias">{packLabel(alias)}</p>}
 
       <div className="case-detail__stage">
         {isPlaying ? (

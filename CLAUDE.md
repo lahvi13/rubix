@@ -4,7 +4,23 @@ Funkční zadání a datový model: [SPEC.md](SPEC.md). Tenhle soubor je o tom *
 
 Komunikace s uživatelem probíhá česky. **Všechno v repu je anglicky** — identifikátory,
 názvy souborů, komentáře, dokumentace v kódu, commit messages, texty chyb.
-UI stringy jsou anglicky a žijí pohromadě v `src/lib/strings.ts` (i18n zatím neřešíme).
+
+**Aplikace mluví dvěma jazyky: anglicky a česky.** Veškerá kopie žije v
+`src/lib/strings/`: `en.ts` je zdroj tvaru, `cs.ts` je proti němu typovaný
+(`Translated<typeof en>`), takže klíč přidaný jen na jedné straně shodí build.
+Nová UI věta se **vždycky** píše do obou souborů. Pravidla:
+
+- jazyk se vybere jednou při startu z `localStorage` (`lib/language.ts`), výchozí
+  je čeština jen tehdy, když si o ni řekne prohlížeč. Přepnutí v Nastavení aplikaci
+  znovu načte — moduly čtou `strings` při importu, nic jiného je nepřemluví
+- české počty mají tři tvary (1 / 2–4 / 5+); rozhoduje `Intl.PluralRules` v
+  `strings/plural.ts`, nikdy ne poslední číslice (22 patří k „pět“, ne ke „dva“)
+- **názvy ze sad algoritmů se nepřekládají v datech.** Anglický název je klíč
+  (seed, `diagramFor`, export mezi zařízeními); překládá se až při vykreslení přes
+  `packLabel()`. Co zůstává anglicky (Dot, Sune, Headlights, písmena PLL), je
+  vyjmenované v `strings/pack-names.ts` a test nad sadami hlídá, že žádný název
+  nezůstal nerozhodnutý
+- datum a čas se řídí jazykem aplikace, region si bere z prohlížeče (`lib/format.ts`)
 
 ## Stack — nerozporovat
 
@@ -39,6 +55,7 @@ src/
   components/     # sdílené hloupé UI (Button, Modal, Sheet, EmptyState)
   hooks/          # sdílené hooky (use-media-query, use-keyboard)
   lib/            # obaly nad cizím světem: scramble-client.ts, beep.ts, format.ts, uuid.ts, clock.ts
+    strings/      # en.ts + cs.ts (typovaný proti en), plural.ts, pack-names.ts, language.ts vedle
   fonts/          # Inter + JetBrains Mono jako woff2 v buildu (fonts/README.md)
   workers/        # audio onset processor (scrambles run in cubing.js's own worker)
   types/          # deklarace pro cizí custom elementy (twisty-player)

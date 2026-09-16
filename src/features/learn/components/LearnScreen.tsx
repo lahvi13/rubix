@@ -8,7 +8,7 @@ import { solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CubeSkin } from '../../../lib/cube-skins';
-import { strings } from '../../../lib/strings';
+import { packLabel, strings } from '../../../lib/strings';
 import {
   AlgText,
   CaseCard,
@@ -188,7 +188,15 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
         </span>
         {step.title}
       </h2>
-      {isExplained ? <p className="learn__text">{step.text}</p> : null}
+      {/* A blank line in the copy starts a new paragraph: the Czech text runs
+          longer than the English and a step of it in one block is a wall. */}
+      {isExplained
+        ? step.text.split('\n\n').map((paragraph) => (
+            <p key={paragraph} className="learn__text">
+              {paragraph}
+            </p>
+          ))
+        : null}
 
       {isCross ? (
         <figure className="learn__figure">
@@ -311,7 +319,7 @@ function KeyCase({ entry, diagram, skin, triggers, onOpen }: KeyCaseProps) {
 
   return (
     <button type="button" className="case-card learn__key" onClick={onOpen}>
-      <span className="case-card__name">{caseTitle(entry.algCase)}</span>
+      <span className="case-card__name">{packLabel(caseTitle(entry.algCase))}</span>
       <span className="learn__key-row">
         <CubeDiagram
           className="learn__key-diagram"
