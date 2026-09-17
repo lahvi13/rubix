@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 
 /**
- * Which of the sections is being read, and a way to go to one.
+ * Which of the sections is being read, and a way to go to one. `-1` until one
+ * of them has reached the line: a screen can open with something above its
+ * first section — the stats do — and lighting that section up while the reader
+ * is still looking at the cards over it would be a lie.
  *
  * Read is the last section whose top has passed a line a fifth of the way down
- * the screen under the pinned row: every step is taller than that, so a step
+ * the screen under the pinned row: every section is taller than that, so one
  * jumped to is the one reported, while one only peeking in from below is not.
  *
- * The last steps cannot all be scrolled to the top — the page ends first — so
- * a step jumped to stays the answer until the reader scrolls on their own.
- * Geometry alone would name whichever step the bottom of the page shows.
+ * The last sections cannot all be scrolled to the top — the page ends first —
+ * so one jumped to stays the answer until the reader scrolls on their own.
+ * Geometry alone would name whichever section the bottom of the page shows.
  */
 export function useCurrentStep(
   ids: readonly string[],
@@ -29,7 +32,7 @@ export function useCurrentStep(
       const scroller = document.documentElement;
       const isAtBottom = scroller.scrollTop + window.innerHeight >= scroller.scrollHeight - 1;
 
-      let read = 0;
+      let read = -1;
       ids.forEach((id, index) => {
         const top = document.getElementById(id)?.getBoundingClientRect().top;
         if (top !== undefined && top <= line) read = index;

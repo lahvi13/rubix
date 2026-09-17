@@ -21,7 +21,7 @@ import {
   type Diagram,
   type TrainerCase,
 } from '../../trainer';
-import { useCurrentStep } from '../hooks/use-current-step';
+import { useCurrentStep } from '../../../hooks/use-current-step';
 import { LEARN_STEPS, holdState, type LearnStep } from '../steps';
 
 const anchorOf = (step: LearnStep) => `learn-${step.id}`;
@@ -54,7 +54,9 @@ export function LearnScreen() {
   const [showLearn, setShowLearn] = useSetting('ui.showLearn');
   const [isExplained, setExplained] = useSetting('ui.learnExplanations');
   const nav = useRef<HTMLElement>(null);
-  const [current, jumpTo] = useCurrentStep(STEP_IDS, nav);
+  const [read, jumpTo] = useCurrentStep(STEP_IDS, nav);
+  // Above the first step is still the first step: the guide starts at its top.
+  const current = Math.max(read, 0);
 
   return (
     <main className="screen screen--scroll learn">
