@@ -8,7 +8,6 @@ import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { caseAlias, caseTitle } from '../../../domain/alg/case-name';
-import { useSetting } from '../../../hooks/use-setting';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { watchWrite } from '../../../lib/errors';
 import { packLabel, strings } from '../../../lib/strings';
@@ -83,7 +82,6 @@ export function CaseDetail({
    * render later than this state could be seeded from it.
    */
   const [nameDraft, setNameDraft] = useState<string | null>(null);
-  const [showRotationAlgs] = useSetting('trainer.showRotationAlgs');
   // What the algorithm leaves behind — a solved cube, or an oriented last
   // layer waiting for the next step — is the one thing on this screen nobody
   // came to look at, so the case comes back by itself. Kept stable: the player
@@ -132,14 +130,6 @@ export function CaseDetail({
   const setupMoves = parseAlg(`${orientation} ${algCase.setupAlg}`);
   const setup = setupMoves.ok ? setupMoves.moves : [];
   const state = applyAlg(solvedState(), setup);
-  // Hiding a variant must never hide the one being drilled. Only the grips are
-  // hidden: an algorithm offered because it is a different solution is exactly
-  // what this list is for.
-  const shownAlgorithms = algorithms.filter(
-    (algorithm) =>
-      showRotationAlgs || algorithm.isActive === 1 || packAlgKind(algorithm.id) !== 'grip',
-  );
-
   // Playing does not ask about the flat/3D setting: that one is about the
   // still picture, and nothing but a turning cube shows what the moves do.
   const play = (): void => {
@@ -209,7 +199,7 @@ export function CaseDetail({
 
       <h3 className="case-detail__section">{strings.trainer.variants}</h3>
       <ul className="variants">
-        {shownAlgorithms.map((algorithm) => (
+        {algorithms.map((algorithm) => (
           <li key={algorithm.id} className="variants__item">
             <label className="variants__pick">
               <input

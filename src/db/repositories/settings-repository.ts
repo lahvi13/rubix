@@ -55,7 +55,14 @@ export interface SettingValues {
   'trainer.twoLookDefault': boolean;
   /** Print the algorithm on every card, not just in the case sheet. */
   'trainer.showAlgs': boolean;
-  /** Offer the built-in variants that start by turning the cube. */
+  /**
+   * Nothing reads this any more. It hid one of the four kinds of extra pack
+   * algorithm — the same case solved again after a turn — and was named for
+   * the turn, which made it read as a switch over every algorithm with a
+   * rotation in it: 39 of the 208 there are. The case sheet labels each
+   * variant where it stands, so the switch went and the key stays, because a
+   * backup written before that still carries a row for it.
+   */
   'trainer.showRotationAlgs': boolean;
   /**
    * Which set the trainer opens on. Somebody halfway through OLL comes back to
