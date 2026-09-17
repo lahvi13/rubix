@@ -493,11 +493,11 @@ export const cs: Strings = {
     themeDark: 'Tmavý',
     themeHint: 'Systém se řídí tím, co má nastavený telefon nebo prohlížeč.',
     font: 'Písmo',
-    fontSans: 'Bezpatkové',
+    fontSans: 'Sans',
     fontMono: 'Mono',
     fontSystem: 'Systémové',
     fontHint:
-      'Inter a JetBrains Mono jsou součástí aplikace, takže vypadají na každém zařízení stejně. Systémové použije to, se kterým přišlo zařízení. Scramble a algoritmy zůstanou neproporcionální tak jako tak.',
+      'Písma Inter a JetBrains Mono jsou součástí aplikace, takže vypadají na každém zařízení stejně. Systémové použije to, se kterým přišlo zařízení. Scramble a algoritmy zůstanou neproporcionální tak jako tak.',
     textSize: 'Velikost textu',
     clockSize: 'Velikost hodin',
     clockSizeHint: 'Běžící čas na timeru a v drilu, který se čte z větší dálky.',
@@ -539,12 +539,9 @@ export const cs: Strings = {
     trainer: 'Trenažér',
     twoLookDefault: 'Otevírat OLL a PLL na',
     showAlgs: 'Zobrazit algoritmy v seznamu případů',
-    showRotationAlgs: 'Nabízet varianty s otočením kostky',
     showLearn: 'Zobrazit průvodce pro začátečníky',
     showLearnHint:
       'Průchod jedním celým složením, v menu jako Pro začátečníky. Skrytí nic jiného nezmění — sady, na které odkazuje, zůstanou tam, kde jsou.',
-    showRotationAlgsHint:
-      'Další vestavěný algoritmus pro některé případy: začíná otočením kostky.',
   },
   data: {
     exportTitle: 'Záloha',
@@ -637,7 +634,7 @@ export const cs: Strings = {
     chooseFile: 'Vybrat soubor z csTimeru',
     reading: 'Čtu soubor…',
     csvNote: (name: string) =>
-      `CSV neříká ani o jaké puzzle, ani o jakou session šlo, takže dorazí jako session 3×3 s názvem „${name}“. Jeho časy jsou přesné jen tak, jak je csTimer zobrazoval, a +2 je do nich už započítaná; přesný je JSON export.`,
+      `CSV neříká ani o jaký hlavolam, ani o jakou session šlo, takže dorazí jako session 3×3 s názvem „${name}“. Jeho časy jsou přesné jen tak, jak je csTimer zobrazoval, a +2 je do nich už započítaná; přesný je JSON export.`,
     found: (solves: number, sessions: number) =>
       `${solves} složení v ${sessions} session`,
     withPhases: (count: number) => `${count} s časy fází`,
@@ -647,11 +644,11 @@ export const cs: Strings = {
     skippedRows: (count: number) =>
       `${plural(count, 'Přeskočen', 'Přeskočeny', 'Přeskočeno')} ${count} ${plural(count, 'řádek', 'řádky', 'řádků')}`,
     nothingNew: 'Každé složení z tohoto souboru už tady je.',
-    unsupportedTitle: 'Session, jejichž puzzle aplikace nezná',
+    unsupportedTitle: 'Session, jejichž hlavolam aplikace nezná',
     unsupported: (name: string, type: string, solves: number) =>
       `${name} — csTimer tomu říká ${type}, ${solves} složení`,
     session: 'Session',
-    puzzle: 'Puzzle',
+    puzzle: 'Hlavolam',
     newSolves: 'Nové',
     confirm: 'Importovat z csTimeru',
     importing: (written: number, total: number) => `Importuji… ${written} / ${total}`,
@@ -724,9 +721,9 @@ export const cs: Strings = {
   },
   about: {
     title: 'Rubix',
-    what: 'Timer a trenažér na kostku 3×3. Provede tě krok za krokem prvním složením, nabídne dril případů F2L, OLL a PLL a měří složení po fázích, aby bylo vidět, kde utíkají sekundy.',
+    what: 'Timer a trenažér na kostku 3×3, zaměřený na metodu CFOP. Provede tě krok za krokem prvním složením, nabídne dril případů F2L, OLL a PLL a měří složení po fázích, aby bylo vidět, kde je potřeba zrychlit.',
     who: 'Je pro každého, kdo je někde mezi první složenou kostkou a rychlým průměrem. Žádný účet, žádné reklamy, a jakmile ji jednou otevřeš, funguje i bez připojení.',
-    scope: 'Zatím jen 3×3 — žádné jiné puzzle.',
+    scope: 'Zatím jen 3×3 — žádné jiné hlavolamy.',
     share: 'Sdílet aplikaci',
     shared: 'Sdíleno.',
     copied: 'Odkaz zkopírován.',
@@ -735,7 +732,7 @@ export const cs: Strings = {
     data: 'Složení, session a nastavení zůstávají na tomto zařízení a nikam se neodesílají. Jediná kopie jinde je záloha, kterou si uděláš.',
     toData: 'Přejít na zálohu',
     analytics:
-      'Web počítá zobrazení stránek přes Cloudflare Web Analytics — žádná složení, žádné cookies, nic, co by rozlišilo jedno zařízení od druhého.',
+      'Web počítá zobrazení stránek přes Cloudflare Web Analytics — nesbírá nic o tvých složeních, žádné cookies a nic, podle čeho by šlo rozlišit jedno zařízení od druhého.',
     versionTitle: 'Verze',
     version: (version: string) => `Rubix ${version}`,
     checkUpdates: 'Zkontrolovat aktualizace',
