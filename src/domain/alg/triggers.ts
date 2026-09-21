@@ -51,7 +51,11 @@ export function segmentAlg(
   };
 
   while (index < moves.length) {
-    const match = triggers.find((trigger) => matchesAt(moves, index, trigger.moves));
+    const match = triggers.find(
+      (trigger) =>
+        matchesAt(moves, index, trigger.moves) &&
+        respectsBrackets(index, index + trigger.moves.length, groups),
+    );
 
     if (match) {
       flushLoose();
@@ -100,6 +104,19 @@ function bracketed(
     out.push({ moves: [...loose.slice(cut - at)], trigger: null });
   }
   return out;
+}
+
+/**
+ * A bracket is how the author chose to remember those moves, so a trigger may
+ * name a whole bracket but never cut one open: `(R U R' U) (R U' R' U)` read
+ * as "right insert, reverse sexy, ..." draws a second chunking over the one
+ * the author wrote, and neither survives it.
+ */
+function respectsBrackets(start: number, end: number, groups: readonly MoveGroup[]): boolean {
+  return groups.every(
+    ([groupStart, groupEnd]) =>
+      groupEnd <= start || groupStart >= end || (groupStart >= start && groupEnd <= end),
+  );
 }
 
 function matchesAt(moves: readonly Move[], start: number, pattern: readonly Move[]): boolean {

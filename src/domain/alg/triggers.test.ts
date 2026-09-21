@@ -120,6 +120,29 @@ describe('brackets the algorithm was written with', () => {
     expect(shape("(R U R' U') (R U2 R')", [sexy])).toBe("<Sexy move> (R U2 R')");
   });
 
+  it('never cuts a bracket open to find a trigger', () => {
+    // Read without the brackets this is "right insert, reverse sexy, ...";
+    // the author wrote three chunks and those are the ones to show.
+    const insert: TriggerDefinition = { id: 'insert', name: 'Right insert', moves: moves("R U R'") };
+    const reverseSexy: TriggerDefinition = {
+      id: 'reverse-sexy',
+      name: 'Reverse sexy',
+      moves: moves("U R U' R'"),
+    };
+
+    expect(shape("y (R U R' U) (R U' R' U) (R U2 R')", [reverseSexy, insert])).toBe(
+      "y (R U R' U) (R U' R' U) (R U2 R')",
+    );
+  });
+
+  it('names a trigger that holds whole brackets', () => {
+    expect(shape("(R U) (R' U')", [sexy])).toBe('<Sexy move>');
+  });
+
+  it('still finds triggers outside the brackets', () => {
+    expect(shape("R U R' U' (R U2 R')", [sexy])).toBe("<Sexy move> (R U2 R')");
+  });
+
   it('keeps the loose moves either side of a bracket', () => {
     expect(shape("U (R U R') D")).toBe("U (R U R') D");
   });
