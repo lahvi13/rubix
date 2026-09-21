@@ -119,8 +119,13 @@ export async function setActiveAlgorithm(id: string): Promise<void> {
   });
 }
 
+/** The pack's own algorithm is the seed's to update, so it is left alone here. */
 export async function updateUserAlgorithm(id: string, moves: string): Promise<void> {
-  await db.algorithms.update(id, { moves: normaliseMoves(moves), updatedAt: now() });
+  await db.algorithms
+    .where('id')
+    .equals(id)
+    .filter((row) => row.source === 'user')
+    .modify({ moves: normaliseMoves(moves), updatedAt: now() });
 }
 
 /**

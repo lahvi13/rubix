@@ -413,6 +413,12 @@ export const en = {
     ownAlgPlaceholder: "Your own algorithm, e.g. R U R' U'",
     addAlg: 'Add',
     invalidAlg: 'That is not a move sequence I can read.',
+    editAlg: 'Edit',
+    saveAlg: 'Save',
+    cancelEdit: 'Cancel',
+    /* Said while a built-in algorithm sits in the box, because saving it adds
+       a new one rather than changing the pack's. */
+    editPackHint: 'The built-in one stays as it is; your edit is added as your own.',
     notation: 'Notation',
     notationHint: 'Each picture is a solved cube after that one move.',
     triggers: 'Triggers',
@@ -429,6 +435,7 @@ export const en = {
     chooseAlgorithm: 'Choosing the algorithm',
     removeAlgorithm: 'Removing the algorithm',
     addAlgorithm: 'Adding the algorithm',
+    saveAlgorithm: 'Saving the algorithm',
     drillSet: 'Drill this set',
     caseStats: 'Your drills',
     rename: 'Your name for it',

@@ -110,6 +110,20 @@ describe('alg repository', () => {
     expect(await db.algorithms.get('pll-t-pack')).toBeDefined();
   });
 
+  it('refuses to rewrite the pack algorithm', async () => {
+    const before = await db.algorithms.get('pll-t-pack');
+
+    await updateUserAlgorithm('pll-t-pack', "R U R'");
+
+    expect(await db.algorithms.get('pll-t-pack')).toEqual(before);
+  });
+
+  it('reads a variant typed without spaces', async () => {
+    const mine = await addUserAlgorithm('pll-t', "(RUR'U')(RU2R')");
+
+    expect(mine.moves).toBe("(R U R' U') (R U2 R')");
+  });
+
   it('trims a variant when it is written or rewritten', async () => {
     const mine = await addUserAlgorithm('pll-t', "  R U R'  ");
     expect(mine.moves).toBe("R U R'");

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
 import { packAlgKind, type PackAlgKind } from '../../../db/seed/packs';
 import { PlayIcon, StopIcon } from '../../../components/Icons';
@@ -62,7 +62,7 @@ export function CaseDetail({
   onOpen,
   onClose,
 }: CaseDetailProps) {
-  const { algCase, algorithms, active, moves, groups, choose, addVariant, removeVariant, rename, forgetRecognition } =
+  const { algCase, algorithms, active, moves, groups, choose, addVariant, editVariant, removeVariant, rename, forgetRecognition } =
     useCaseDetail(caseId);
   const [replayToken, setReplayToken] = useState(0);
   // The sheet used to be keyed by case id so that stepping to the next one
@@ -76,6 +76,12 @@ export function CaseDetail({
   // Which move the player is turning, so the written algorithm can follow along.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
+  /**
+   * The algorithm the box was filled from. The user's own is rewritten in
+   * place; a built-in one is only a starting point, and saving adds a copy.
+   */
+  const [editing, setEditing] = useState<{ id: string; isOwn: boolean } | null>(null);
+  const draftInput = useRef<HTMLTextAreaElement>(null);
   /**
    * What is in the rename box. Null means nobody has touched it, and the box
    * shows whatever the case is called — the case arrives from the database a
@@ -94,6 +100,7 @@ export function CaseDetail({
   if (shownId !== caseId) {
     setShownId(caseId);
     setDraft('');
+    setEditing(null);
     setNameDraft(null);
     setPlaying(false);
     setPlayingMove(null);
@@ -138,6 +145,17 @@ export function CaseDetail({
   };
 
   const draftError = draft.trim() !== '' && !parseAlg(draft).ok;
+  const isEditingOwn = editing?.isOwn === true;
+
+  const startEditing = (algorithm: { id: string; moves: string; source: 'pack' | 'user' }): void => {
+    setDraft(algorithm.moves);
+    setEditing({ id: algorithm.id, isOwn: algorithm.source === 'user' });
+    draftInput.current?.focus();
+  };
+  const stopEditing = (): void => {
+    setDraft('');
+    setEditing(null);
+  };
 
   return (
     <Sheet label={title} className="case-detail" paging={paging} onClose={onClose}>
@@ -210,52 +228,100 @@ export function CaseDetail({
               />
               <span className="variants__moves">{algorithm.moves}</span>
             </label>
-            <span
-              className={
-                algorithm.source === 'pack' && packAlgKind(algorithm.id) === 'slot'
-                  ? 'variants__source is-slot'
-                  : 'variants__source'
-              }
-            >
-              {algorithm.source === 'pack'
-                ? PACK_LABELS[packAlgKind(algorithm.id)]
-                : strings.trainer.ownAlg}
-            </span>
-            {algorithm.source === 'user' ? (
-              <button
-                type="button"
-                onClick={() =>
-                  watchWrite(() => removeVariant(algorithm.id), strings.trainer.removeAlgorithm)
+            <div className="variants__meta">
+              <span
+                className={
+                  algorithm.source === 'pack' && packAlgKind(algorithm.id) === 'slot'
+                    ? 'variants__source is-slot'
+                    : 'variants__source'
                 }
               >
-                {strings.solve.delete}
+                {algorithm.source === 'pack'
+                  ? PACK_LABELS[packAlgKind(algorithm.id)]
+                  : strings.trainer.ownAlg}
+              </span>
+              <button
+                type="button"
+                className={editing?.id === algorithm.id ? 'is-active' : ''}
+                aria-pressed={editing?.id === algorithm.id}
+                onClick={() => startEditing(algorithm)}
+              >
+                {strings.trainer.editAlg}
               </button>
-            ) : null}
+              {algorithm.source === 'user' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (editing?.id === algorithm.id) stopEditing();
+                    watchWrite(() => removeVariant(algorithm.id), strings.trainer.removeAlgorithm);
+                  }}
+                >
+                  {strings.solve.delete}
+                </button>
+              ) : null}
+            </div>
           </li>
         ))}
       </ul>
 
       <form
-        className="variants__add"
+        className="variants__add variants__add--alg"
         onSubmit={(event) => {
           event.preventDefault();
           if (draft.trim() === '' || draftError) return;
-          watchWrite(() => addVariant(draft), strings.trainer.addAlgorithm);
-          setDraft('');
+          if (editing !== null && editing.isOwn) {
+            const id = editing.id;
+            watchWrite(() => editVariant(id, draft), strings.trainer.saveAlgorithm);
+          } else {
+            watchWrite(() => addVariant(draft), strings.trainer.addAlgorithm);
+          }
+          stopEditing();
         }}
       >
-        <input
+        {/* Several lines rather than one, because an algorithm is edited in
+            the middle — a bracket around the fourth move — and a single line
+            on a phone shows only its first few. */}
+        <textarea
+          ref={draftInput}
+          rows={2}
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
+          onChange={(event) => {
+            // A line break means nothing in an algorithm, so Enter is the add
+            // it would be in a one-line field. Read off the input rather than
+            // the key: an open sheet keeps every keydown to itself.
+            const input = event.nativeEvent;
+            if (
+              input instanceof InputEvent &&
+              (input.inputType === 'insertLineBreak' || input.inputType === 'insertParagraph')
+            ) {
+              event.currentTarget.form?.requestSubmit();
+              return;
+            }
+            setDraft(event.target.value.replace(/\s*\n\s*/g, ' '));
+          }}
           placeholder={strings.trainer.ownAlgPlaceholder}
           aria-label={strings.trainer.ownAlgPlaceholder}
           className={draftError ? 'is-invalid' : ''}
+          // Moves are not words: a keyboard that corrects them or offers to
+          // finish them only puts back what was just typed.
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="done"
         />
         <button type="submit" disabled={draft.trim() === '' || draftError}>
-          {strings.trainer.addAlg}
+          {isEditingOwn ? strings.trainer.saveAlg : strings.trainer.addAlg}
         </button>
+        {editing === null ? null : (
+          <button type="button" onClick={stopEditing}>
+            {strings.trainer.cancelEdit}
+          </button>
+        )}
       </form>
       {draftError ? <p className="detail__error">{strings.trainer.invalidAlg}</p> : null}
+      {editing !== null && !editing.isOwn ? (
+        <p className="detail__hint">{strings.trainer.editPackHint}</p>
+      ) : null}
 
       <h3 className="case-detail__section">{strings.trainer.rename}</h3>
       <form

@@ -23,7 +23,8 @@ export interface Move {
   text: string;
 }
 
-const MOVE_PATTERN = /^([UDLRFB]w|[udlrfb]|[UDLRFB]|[MES]|[xyz])(\d*)('?)$/;
+const MOVE_BODY = String.raw`([UDLRFB]w|[udlrfb]|[UDLRFB]|[MES]|[xyz])(\d*)('?)`;
+const MOVE_PATTERN = new RegExp(`^${MOVE_BODY}$`);
 
 const WIDE_BY_LOWERCASE: Record<string, MoveFamily> = {
   u: 'Uw',
@@ -78,8 +79,13 @@ export function parseAlg(text: string): ParseResult {
     }
 
     const move = parseMove(token);
-    if (move === null) return { ok: false, token, index };
-    moves.push(move);
+    if (move !== null) {
+      moves.push(move);
+      continue;
+    }
+    const run = splitRun(token);
+    if (run === null) return { ok: false, token, index };
+    moves.push(...run);
   }
 
   return { ok: true, moves, groups };
@@ -99,6 +105,24 @@ export function parseMove(token: string): Move | null {
   if (amount === 0) return null;
 
   return { family, amount, text: token };
+}
+
+/**
+ * `RUR'U'`, typed on a phone where the space bar is one more reach per move.
+ * Every move starts with a letter and ends before the next one, so the run
+ * cuts one way only — `Rw` is a wide turn because `w` is never a move itself.
+ * All of it has to be moves; one letter that is not, and so is the whole run.
+ */
+function splitRun(token: string): Move[] | null {
+  const moves: Move[] = [];
+  const pattern = new RegExp(MOVE_BODY, 'y');
+  let match: RegExpExecArray | null;
+  while (pattern.lastIndex < token.length && (match = pattern.exec(token)) !== null) {
+    const move = parseMove(match[0]);
+    if (move === null) return null;
+    moves.push(move);
+  }
+  return pattern.lastIndex === token.length && moves.length > 0 ? moves : null;
 }
 
 /** Quarter turns are always written as 1, 2 or -1 — never U3 or U2'. */

@@ -7,6 +7,7 @@ import {
   listAlgorithms,
   setActiveAlgorithm,
   setCaseLabel,
+  updateUserAlgorithm,
 } from '../../../db/repositories/alg-repository';
 import { deleteCaseRecognitions } from '../../../db/repositories/recognition-repository';
 import { parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
@@ -22,6 +23,8 @@ export interface CaseDetailView {
   isLoading: boolean;
   choose: (algorithmId: string) => Promise<void>;
   addVariant: (moves: string) => Promise<void>;
+  /** Only the user's own; a pack algorithm is edited by adding a new one. */
+  editVariant: (algorithmId: string, moves: string) => Promise<void>;
   removeVariant: (algorithmId: string) => Promise<void>;
   /** What the reader calls this case; empty puts the pack name back. */
   rename: (label: string) => Promise<void>;
@@ -52,6 +55,7 @@ export function useCaseDetail(caseId: string | null): CaseDetailView {
       if (caseId === null) return;
       await addUserAlgorithm(caseId, moves);
     },
+    editVariant: updateUserAlgorithm,
     removeVariant: deleteUserAlgorithm,
     rename: async (label) => {
       if (caseId === null) return;
