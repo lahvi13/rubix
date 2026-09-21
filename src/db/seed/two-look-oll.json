@@ -42,7 +42,7 @@
    "id": "2oll-sune",
    "name": "Sune",
    "group": "2 / Corners",
-   "alg": "R U R' U R U2 R'",
+   "alg": "(R U R' U) (R U2 R')",
    "others": [
     "R U R' U R U2' R'"
    ],
@@ -54,7 +54,7 @@
    "id": "2oll-antisune",
    "name": "Anti-Sune",
    "group": "2 / Corners",
-   "alg": "R U2 R' U' R U' R'",
+   "alg": "(R U2 R') (U' R U' R')",
    "others": [
     "R U2' R' U' R U' R'"
    ],
@@ -66,16 +66,17 @@
    "id": "2oll-h",
    "name": "H",
    "group": "2 / Corners",
-   "alg": "R U2 R' U' R U R' U' R U' R'",
+   "alg": "(R U2 R') (U' R U R') (U' R U' R')",
    "orientOnly": [
-    "U R U R' U R U' R' U R U2' R'"
+    "U (R U R' U) (R U' R' U) (R U2' R')",
+    "y (R U R' U) (R U' R' U) (R U2 R')"
    ]
   },
   {
    "id": "2oll-pi",
    "name": "Pi",
    "group": "2 / Corners",
-   "alg": "R U2 R2 U' R2 U' R2 U2 R",
+   "alg": "R U2 (R2 U') (R2 U') R2 U2 R",
    "others": [
     "R U2' (R2' U' R2 U' R2') U2' R"
    ],
@@ -87,7 +88,7 @@
    "id": "2oll-t",
    "name": "T",
    "group": "2 / Corners",
-   "alg": "r U R' U' r' F R F'",
+   "alg": "(r U R' U') (r' F R F')",
    "orientOnly": [
     "y U' (r U R' U') (r' F R F')"
    ]
@@ -96,7 +97,7 @@
    "id": "2oll-u",
    "name": "U",
    "group": "2 / Corners",
-   "alg": "R2 D' R U2 R' D R U2 R",
+   "alg": "R2 D' (R U2 R') D (R U2 R)",
    "orientOnly": [
     "U2 R2 D R' U2 R D' R' U2 R'"
    ]
@@ -105,7 +106,7 @@
    "id": "2oll-bowtie",
    "name": "Bowtie",
    "group": "2 / Corners",
-   "alg": "F' r U R' U' r' F R",
+   "alg": "F' (r U R' U') (r' F R)",
    "orientOnly": [
     "U' (F R' F' r) (U R U' r')"
    ]

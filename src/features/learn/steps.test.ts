@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { PACKS } from '../../db/seed/packs';
-import { parseAlg } from '../../domain/cube/notation';
+import { formatAlg, parseAlg } from '../../domain/cube/notation';
 import { FACELETS, isSolved, applyAlg, type CubeState } from '../../domain/cube/state';
 import { LEARN_STEPS, holdState, type LearnStep } from './steps';
 
@@ -62,7 +62,10 @@ function stepAlg(step: LearnStep): string {
       (step.caseIds.length === 0 || step.caseIds.includes(entry.id)),
   );
   if (cases.length !== 1) throw new Error(`${step.id} does not open on one algorithm`);
-  return cases[0]?.alg ?? '';
+  // The moves, not how the pack brackets them: the repeats are drawn from the
+  // moves alone.
+  const parsed = parseAlg(cases[0]?.alg ?? '');
+  return parsed.ok ? formatAlg(parsed.moves) : '';
 }
 
 const withHolds = LEARN_STEPS.filter((step) => step.holds.length > 0);
