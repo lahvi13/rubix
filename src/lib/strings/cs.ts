@@ -292,7 +292,7 @@ export const cs: Strings = {
   },
   learn: {
     intro:
-      'Sedm kroků od zamíchané kostky ke složené. Rychlejší metoda později nahradí poslední čtyři a první tři si nechá. Obrázky drží kostku tak jako trenažér: cross dole, poslední vrstva nahoře.',
+      'Sedm kroků od zamíchané kostky ke složené. Rychlejší metoda si cross nechá a zbytek spojí po dvou: z kroků 2 a 3 je F2L, ze 4 a 5 OLL, z 6 a 7 PLL. Obrázky drží kostku tak jako trenažér: cross dole, poslední vrstva nahoře.',
     explanations: 'Vysvětlivky',
     stepsNav: 'Kroky',
     hide: 'Odebrat tohoto průvodce z menu',

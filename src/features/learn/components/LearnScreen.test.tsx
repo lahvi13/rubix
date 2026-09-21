@@ -125,7 +125,8 @@ describe('LearnScreen', () => {
     render(<LearnScreen />);
     await settled();
 
-    const text = LEARN_STEPS[0]?.text ?? '';
+    // A step is written in paragraphs; the first one stands for the rest.
+    const text = LEARN_STEPS[0]?.text.split('\n\n')[0] ?? '';
     expect(screen.getByText(text)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: strings.learn.explanations }));

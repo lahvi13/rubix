@@ -319,7 +319,7 @@ export const en = {
   },
   learn: {
     intro:
-      'Seven steps from a scrambled cube to a solved one. A faster method later replaces the last four and keeps the first three. The pictures hold the cube the way the trainer does: the cross on the bottom, the last layer on top.',
+      'Seven steps from a scrambled cube to a solved one. A faster method keeps the cross and joins the rest in pairs: steps 2 and 3 become F2L, 4 and 5 OLL, 6 and 7 PLL. The pictures hold the cube the way the trainer does: the cross on the bottom, the last layer on top.',
     explanations: 'Explanations',
     stepsNav: 'Steps',
     hide: 'Hide this guide from the menu',
@@ -333,36 +333,51 @@ export const en = {
     steps: {
       cross: {
         title: 'Cross',
-        text: 'Four edges of the bottom colour, each under the centre it matches. No algorithm helps here: bring an edge to the top layer, turn the top until it is over its own centre, and drop it in with two turns of that face. Get it easy before going on — every later step assumes the cross.',
+        text:
+          'The cross is four edges of the bottom colour, white here. Start with the white centre facing down (D).\n\n'
+          + 'Each white edge has to reach the bottom with its other colour matching the centre beside it. No algorithm helps here: bring a white edge up to the top layer (U), turn the top until its side colour is over the matching centre, and take it down with two turns of that side.\n\n'
+          + 'Every later step assumes a correct cross, so do not rush it — move on once you can build it without thinking.',
       },
       corners: {
         title: 'Bottom layer corners',
-        text: 'A corner belongs between the three centres whose colours it wears. Turn the top until it sits above its gap, then use the algorithm for the way the cross colour points. A corner already in the bottom layer but twisted comes back up with any of the three.',
+        text:
+          'Next come the four white corners. Each corner wears three colours and belongs in the gap between the three centres of those colours.\n\n'
+          + 'Find a white corner in the top layer and turn the top (U) until it sits right above its gap (its slot). Then look where its white sticker points — right, front or up — and use the algorithm that goes with it. All three are just below.\n\n'
+          + 'A corner already at the bottom but twisted, or in the wrong slot, has to come up first: run any of the three algorithms on it.',
       },
       middle: {
         title: 'Middle layer edges',
         text:
-          'A top-layer edge without the top colour on it belongs in the middle. Turn the top until it is on the right, its side colour over the matching centre; the colour facing up says which slot it goes into — front or back. An edge in the middle the wrong way round comes back up with either algorithm.\n\n'
+          'Four middle-layer edges are left. Look in the top layer for an edge with no yellow on it — every such edge belongs in the middle.\n\n'
+          + 'Turn the top (U) until the edge is on the right, its side colour matching the right centre. Then look at the colour facing up: it says whether the edge goes into the front slot or the back one. Both algorithms are below.\n\n'
+          + 'An edge already in the middle layer but flipped, or in the wrong slot, has to come up first: hold the cube with that slot on the right and run either algorithm.\n\n'
           + 'That is the first two layers done — steps 2 and 3 together are what is called F2L. A faster method joins them into one, and the trainer has it under that name.',
       },
       edgeOrientation: {
         title: 'Last layer cross',
-        text: 'The top face, edges first — only the top colour matters, not where the pieces go. A line becomes a cross with the first algorithm, an L with the second, and a dot with the first and then the second. Lower-case f turns the middle slice along with F.',
+        text:
+          'The bottom two layers are done; from here on only the top one is being solved. First comes the yellow cross — and all that matters is where the yellow is, not whether the pieces are in their places.\n\n'
+          + 'Look at the yellow stickers on top and find yours among the pictures below: a line (I), an L, or just the dot. Hold the cube as the picture shows and run the algorithm under it. For the dot, run both one after the other, exactly as written there.\n\n'
+          + 'The lower-case f in the second algorithm is not a typo. A capital F turns only the front face; a lower-case f turns the front face and the middle layer behind it — two layers at once. The whole notation is under the Notation button at the top.',
       },
       cornerOrientation: {
         title: 'Last layer face',
         text:
-          'The whole top face with one algorithm. Hold the cube as one of the three pictures shows, run it, and look again; none takes more than three goes. The button has the seven cases, each done in a single go.\n\n'
-          + 'Steps 4 and 5 together are OLL, orienting the last layer. Split in two like this, they are in the trainer under 2-Look OLL.',
+          'The whole top face is left, and one algorithm is enough for it. Run it, look again, and run it again if needed — you will never need it more than three times.\n\n'
+          + 'How to hold the cube depends on how many corners already show yellow; all three possibilities are in the pictures below. The button then has the seven cases, each done in a single go.\n\n'
+          + 'Steps 4 and 5 together are OLL, orienting the last layer. Done in two looks like this, they are in the trainer under 2-Look OLL.',
       },
       cornerPermutation: {
         title: 'Corners home',
-        text: 'The face is done; now the pieces go home, corners first. Look along each side for headlights — two corners showing the same colour. The algorithm leaves every edge where it is.',
+        text:
+          'The yellow face is done, but the pieces are not in their places yet. Now they go home, corners first.\n\n'
+          + 'Look at the cube from every side for headlights — two corners on one side showing the same colour. Turn the whole cube so the headlights are at the back, as the pictures below show. The edges stay exactly where they are.',
       },
       edgePermutation: {
         title: 'Edges home',
         text:
-          'Only the edges are left. Turn the top until one side is a solid block of colour: that side is finished, and the other three edges go round. No corner moves.\n\n'
+          'Only the edges are left. Turn the top (U) until one side is a solid block of colour — that side is finished. Then turn the whole cube so that side is at the back, and the other three edges go round it.\n\n'
+          + 'No corner moves while they do. Once the last edge is round, the cube is solved.\n\n'
           + 'Steps 6 and 7 together are PLL, permuting the last layer — putting every piece where it belongs. The trainer has them under 2-Look PLL.',
       },
     },
