@@ -13,6 +13,8 @@ export interface NewSolve {
   mode: Solve['mode'];
   caseId?: string | null;
   scramble: string;
+  /** Omitted for the app's own scramble, which is nearly every solve. */
+  scrambleSource?: Solve['scrambleSource'];
   rawMs: number;
   penalty: Penalty;
   penaltySource: Solve['penaltySource'];
@@ -62,6 +64,7 @@ export async function addSolve(input: NewSolve): Promise<Solve> {
     mode: input.mode,
     caseId: input.caseId ?? null,
     scramble: input.scramble,
+    scrambleSource: input.scrambleSource ?? 'generated',
     rawMs: Math.round(input.rawMs),
     penalty: input.penalty,
     penaltySource: input.penaltySource,

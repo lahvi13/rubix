@@ -8,6 +8,12 @@ export type SolveMode = 'freestyle' | 'drill' | 'recognition';
 export type Penalty = 'none' | 'plus2' | 'dnf';
 export type PenaltySource = 'auto' | 'manual';
 export type SplitSource = 'mic' | 'smartcube' | 'manual';
+/**
+ * Where the scramble a solve was timed on came from: drawn by the app, typed
+ * in by the reader, or taken from an earlier solve to be solved again. A time
+ * on a scramble somebody chose is not the same claim as one on a random one.
+ */
+export type ScrambleSource = 'generated' | 'own' | 'history';
 
 /** IndexedDB cannot index booleans, so every indexed flag is stored as 0 | 1. */
 export type Flag = 0 | 1;
@@ -35,6 +41,8 @@ export interface Solve {
   caseId: string | null;
 
   scramble: string;
+  /** Added in DB v5; every solve before it was on a generated scramble. */
+  scrambleSource: ScrambleSource;
   /** Measured time before penalties, integer milliseconds. */
   rawMs: number;
   penalty: Penalty;

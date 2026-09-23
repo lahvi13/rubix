@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react';
+import type { ScrambleSource } from '../db/types';
 
-/** Where a scramble the timer did not generate came from — said on screen. */
-export type PinSource = 'own' | 'history';
+/** Where a scramble the timer did not generate came from — said on screen and kept with the solve. */
+export type PinSource = Exclude<ScrambleSource, 'generated'>;
 
 export interface PinnedScramble {
   scramble: string;

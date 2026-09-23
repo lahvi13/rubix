@@ -43,6 +43,7 @@ function makeSolve(overrides: Partial<Solve> = {}): Solve {
     mode: 'freestyle',
     caseId: null,
     scramble: "R U R' U'",
+    scrambleSource: 'generated',
     rawMs: 12_340,
     penalty: 'none',
     penaltySource: 'auto',

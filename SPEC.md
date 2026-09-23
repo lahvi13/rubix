@@ -627,6 +627,7 @@ interface Solve {
   caseId: string | null;  // vazba na AlgCase, jen pro drill a recognition
 
   scramble: string;
+  scrambleSource: ScrambleSource; // 'generated' | 'own' (napsaný) | 'history' (složený znovu); DB v5
   rawMs: number;          // naměřený čas bez penalty, integer
   penalty: Penalty;
   penaltySource: PenaltySource;
@@ -862,7 +863,7 @@ ani `isCustom: 1`.
 ```jsonc
 {
   "format": "rubix-export",
-  "formatVersion": 1,
+  "formatVersion": 2,
   "exportedAt": 1756684800000,
   "appVersion": "0.4.0",
   "dbVersion": 1,
@@ -876,7 +877,9 @@ ani `isCustom: 1`.
 ```
 
 Import validuje `formatVersion` a odmítne novější, než umí. Migrace starších
-formátů žije v `src/db/migrations/import/`.
+formátů žije v `src/db/migrations/import/`. Verze 2 přibyla s `scrambleSource`
+(DB v5); upgrade z 1 doplní chybějící `scrambleSource` i `label` u případů,
+který DB v3 přidala bez změny formátu — zálohy z doby před ním jinak nešly obnovit.
 
 ## 5. Obrazovky
 

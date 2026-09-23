@@ -88,6 +88,7 @@ export function TimerScreen() {
   const [isBrowsing, setBrowsing] = useState(false);
 
   const wasPinned = pinned !== null;
+  const scrambleSource = pinned?.source ?? 'generated';
   // A scramble chosen just now is one to show, even when it is the very one
   // just solved — which is what "solve it again" straight after a solve is.
   // Adjusted during render, or the panel would paint hidden first.
@@ -132,6 +133,7 @@ export function TimerScreen() {
             mode: MODE,
             // A missing scramble must not cost the user the time itself.
             scramble: current ?? '',
+            scrambleSource,
             rawMs: attempt.rawMs,
             penalty: attempt.penalty,
             // Anything set at this point came from the inspection rules, not the user.
@@ -153,7 +155,7 @@ export function TimerScreen() {
         strings.errors.saveSolve,
       );
     },
-    [session, scramble, current, wasPinned, phaseKeys],
+    [session, scramble, current, wasPinned, scrambleSource, phaseKeys],
   );
 
   const timer = useTimer(handleComplete, { phases: phaseKeys });

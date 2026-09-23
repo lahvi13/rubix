@@ -1717,6 +1717,13 @@ button[disabled] {
   user-select: text;
 }
 
+/* In the accent, as on the timer while it was being solved. */
+.detail__scramble-source {
+  margin: calc(var(--space-6) * -1 + var(--space-2)) 0 0;
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+
 /* Under the scramble it acts on, and no wider than its words. */
 .detail__again {
   align-self: flex-start;

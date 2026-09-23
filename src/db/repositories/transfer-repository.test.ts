@@ -14,6 +14,7 @@ import {
 } from './transfer-repository';
 import { planImport } from '../../domain/transfer/merge';
 import { parseExportFile } from '../../domain/transfer/validate';
+import { upgradeImportFormat } from '../migrations/import/upgrade';
 
 const APP_VERSION = '0.4.0';
 
@@ -214,6 +215,25 @@ describe('transfer repository', () => {
 
       expect((await listTags()).map((tag) => tag.name)).toEqual(['OLL skip']);
     });
+  });
+
+  it('restores a backup taken before cases had names of their own or solves a scramble source', async () => {
+    await seedDevice();
+    await seedPacks();
+    const file = JSON.parse(JSON.stringify(await buildExportFile(APP_VERSION))) as {
+      formatVersion: number;
+      data: { algCases: Record<string, unknown>[]; solves: Record<string, unknown>[] };
+    };
+    // As the app wrote it before DB v3 and v5.
+    file.formatVersion = 1;
+    for (const row of file.data.algCases) delete row.label;
+    for (const row of file.data.solves) delete row.scrambleSource;
+
+    const parsed = parseExportFile(upgradeImportFormat(file));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.file.data.solves.every((solve) => solve.scrambleSource === 'generated')).toBe(true);
   });
 
   it('wipes everything, tombstones included, so a backup can be restored afterwards', async () => {

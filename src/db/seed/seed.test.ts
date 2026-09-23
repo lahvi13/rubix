@@ -237,6 +237,7 @@ describe('retiring a case the packs have dropped', () => {
       mode: 'drill',
       caseId: 'beg-edge-right',
       scramble: '',
+      scrambleSource: 'generated',
       rawMs: 4200,
       penalty: 'none',
       penaltySource: 'manual',

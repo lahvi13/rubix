@@ -16,6 +16,7 @@ function solve(id: string, updatedAt: number, rawMs = 12_000): Solve {
     mode: 'freestyle',
     caseId: null,
     scramble: "R U R' U'",
+    scrambleSource: 'generated',
     rawMs,
     penalty: 'none',
     penaltySource: 'auto',

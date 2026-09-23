@@ -85,6 +85,19 @@ export class RubixDB extends Dexie {
         '[sessionId+createdAt], [caseId+createdAt], [mode+puzzle], [puzzle+mode+penalty], ' +
         '[puzzle+mode+penalty+rawMs]',
     });
+
+    // v5 says where a solve's scramble came from, now that one can be typed in
+    // or taken from the history. No index: it is only ever read with the solve.
+    // Filled rather than left missing, for the same reason as v3's labels —
+    // and before v5 the app had no scramble but its own.
+    this.version(5).upgrade((tx) =>
+      tx
+        .table<Solve>('solves')
+        .toCollection()
+        .modify((solve) => {
+          solve.scrambleSource = 'generated';
+        }),
+    );
   }
 }
 

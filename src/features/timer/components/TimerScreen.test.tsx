@@ -810,6 +810,8 @@ describe('TimerScreen', () => {
       await waitFor(async () => {
         expect((await db.solves.toCollection().first())?.scramble).toBe(OWN);
       });
+      // And it stays known as one somebody chose, not one the app drew.
+      expect((await db.solves.toCollection().first())?.scrambleSource).toBe('own');
       // The generated one was never shown in between, so it is the one back.
       expect(await findScramble(SCRAMBLE)).toBeInTheDocument();
       expect(screen.queryByText('Your own scramble')).toBeNull();

@@ -108,6 +108,8 @@ function buildSolve(
     mode: 'freestyle',
     caseId: null,
     scramble: imported.scramble,
+    // csTimer does not say whether a scramble was typed in; nearly all are its own.
+    scrambleSource: 'generated',
     rawMs: imported.rawMs,
     penalty: imported.penalty,
     // Not 'auto': that means this app's own inspection set it, and the screen

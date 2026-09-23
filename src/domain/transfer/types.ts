@@ -21,7 +21,7 @@ import type {
 export const EXPORT_FORMAT = 'rubix-export';
 
 /** Bump only together with a migration in db/migrations/import. */
-export const EXPORT_FORMAT_VERSION = 1;
+export const EXPORT_FORMAT_VERSION = 2;
 
 /**
  * Table order is part of the format: the exporter writes tables and rows in a

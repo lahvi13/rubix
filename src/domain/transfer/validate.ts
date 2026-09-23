@@ -14,6 +14,7 @@ import type {
   Penalty,
   PenaltySource,
   Puzzle,
+  ScrambleSource,
   Session,
   Setting,
   Solve,
@@ -174,6 +175,7 @@ const isSolveMode = memberOf<SolveMode>({ freestyle: true, drill: true, recognit
 const isPenalty = memberOf<Penalty>({ none: true, plus2: true, dnf: true });
 const isPenaltySource = memberOf<PenaltySource>({ auto: true, manual: true });
 const isSplitSource = memberOf<SplitSource>({ mic: true, smartcube: true, manual: true });
+const isScrambleSource = memberOf<ScrambleSource>({ generated: true, own: true, history: true });
 const isAlgorithmSource = memberOf<Algorithm['source']>({ pack: true, user: true });
 const isTriggerSource = memberOf<Trigger['source']>({ pack: true, user: true });
 
@@ -198,6 +200,7 @@ function isSolve(value: unknown): value is Solve {
     isSolveMode(value.mode) &&
     isNullOr(value.caseId, isString) &&
     isString(value.scramble) &&
+    isScrambleSource(value.scrambleSource) &&
     isInt(value.rawMs) &&
     isPenalty(value.penalty) &&
     isPenaltySource(value.penaltySource) &&

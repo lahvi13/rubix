@@ -27,4 +27,22 @@ describe('schema upgrades', () => {
     upgraded.close();
     await Dexie.delete(name);
   });
+
+  it('says every solve stored before v5 was on a scramble the app drew', async () => {
+    const name = 'rubix-upgrade-v5';
+    const v4 = new Dexie(name);
+    v4.version(4).stores({
+      solves:
+        'id, sessionId, caseId, createdAt, updatedAt, starred, *tagIds, ' +
+        '[sessionId+createdAt], [caseId+createdAt], [mode+puzzle], [puzzle+mode+penalty], ' +
+        '[puzzle+mode+penalty+rawMs]',
+    });
+    await v4.table('solves').add({ id: 'old', puzzle: '333', mode: 'freestyle', tagIds: [] });
+    v4.close();
+
+    const upgraded = new RubixDB(name);
+    expect((await upgraded.solves.get('old'))?.scrambleSource).toBe('generated');
+    upgraded.close();
+    await Dexie.delete(name);
+  });
 });
