@@ -55,4 +55,17 @@ describe('upgradeImportFormat', () => {
       expect(upgraded).toMatchObject({ data: { solves: 'nope', algCases: [7] } });
     });
   });
+
+  it('starts every case of a format 2 file as new', () => {
+    const upgraded = upgradeImportFormat({
+      format: EXPORT_FORMAT,
+      formatVersion: 2,
+      data: { algCases: [{ id: 'pll-t', label: null }, { id: 'pll-y', progress: 'known' }] },
+    });
+
+    expect(upgraded).toMatchObject({
+      formatVersion: EXPORT_FORMAT_VERSION,
+      data: { algCases: [{ id: 'pll-t', progress: 'new' }, { id: 'pll-y', progress: 'known' }] },
+    });
+  });
 });

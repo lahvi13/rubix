@@ -14,6 +14,7 @@ type RawFile = Record<string, unknown>;
 
 const UPGRADES: Record<number, (file: RawFile) => RawFile> = {
   1: fillMissingFields,
+  2: fillCaseProgress,
 };
 
 /**
@@ -40,6 +41,16 @@ function fillMissingFields(file: RawFile): RawFile {
       solves: fillEach(data.solves, 'scrambleSource', 'generated'),
     },
   };
+}
+
+/**
+ * 2 -> 3: how far the reader is with each case (DB v6). A file from before
+ * knows nothing of it, so every case starts where a fresh device's would.
+ */
+function fillCaseProgress(file: RawFile): RawFile {
+  const data = file.data;
+  if (!isRecord(data)) return file;
+  return { ...file, data: { ...data, algCases: fillEach(data.algCases, 'progress', 'new') } };
 }
 
 function fillEach(rows: unknown, field: string, value: unknown): unknown {

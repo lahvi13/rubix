@@ -14,6 +14,12 @@ export type SplitSource = 'mic' | 'smartcube' | 'manual';
  * on a scramble somebody chose is not the same claim as one on a random one.
  */
 export type ScrambleSource = 'generated' | 'own' | 'history';
+/**
+ * How far the reader is with a case: not started, being worked on, in the
+ * hands. The last is only ever theirs to say; the app moves a case on from
+ * 'new' by itself the first time it is drilled, since drilling it is learning it.
+ */
+export type CaseProgress = 'new' | 'learning' | 'known';
 
 /** IndexedDB cannot index booleans, so every indexed flag is stored as 0 | 1. */
 export type Flag = 0 | 1;
@@ -123,6 +129,8 @@ export interface AlgCase {
    * is still the id everyone else's charts use.
    */
   label: string | null;
+  /** Added in DB v6. The reader's, like the label: the seed carries it over. */
+  progress: CaseProgress;
   group: string | null;
   setupAlg: string;
   order: number;

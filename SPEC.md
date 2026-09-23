@@ -691,6 +691,8 @@ interface AlgCase {
   setId: string;
   name: string;           // packu; seed ho přepisuje při každém startu
   label: string | null;   // jak tomu říká uživatel; pack na něj nikdy nesáhne
+  progress: CaseProgress; // 'new' | 'learning' | 'known'; DB v6. Uživatelův jako label —
+                          // seed ho přenese; první drill posune 'new' na 'learning', 'known' jen ručně
   group: string | null;   // 'corners only', 'dot', ...
   setupAlg: string;       // aplikuje se v <twisty-player>
   order: number;
@@ -863,7 +865,7 @@ ani `isCustom: 1`.
 ```jsonc
 {
   "format": "rubix-export",
-  "formatVersion": 2,
+  "formatVersion": 3,
   "exportedAt": 1756684800000,
   "appVersion": "0.4.0",
   "dbVersion": 1,
@@ -879,7 +881,7 @@ ani `isCustom: 1`.
 Import validuje `formatVersion` a odmítne novější, než umí. Migrace starších
 formátů žije v `src/db/migrations/import/`. Verze 2 přibyla s `scrambleSource`
 (DB v5); upgrade z 1 doplní chybějící `scrambleSource` i `label` u případů,
-který DB v3 přidala bez změny formátu — zálohy z doby před ním jinak nešly obnovit.
+který DB v3 přidala bez změny formátu — zálohy z doby před ním jinak nešly obnovit. Verze 3 přibyla s `progress` u případů (DB v6); upgrade z 2 ho doplní jako `'new'`.
 
 ## 5. Obrazovky
 

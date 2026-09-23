@@ -1,5 +1,6 @@
 import type { Puzzle, Solve } from '../types';
 import { listAttempts, listAttemptsGrouped } from './case-attempts';
+import { markCaseLearning } from './alg-repository';
 import { getOrCreateActiveSession } from './session-repository';
 import { addSolve, deleteSolves } from './solve-repository';
 
@@ -34,7 +35,7 @@ export interface NewRecognitionAttempt {
 
 export async function addRecognitionAttempt(input: NewRecognitionAttempt): Promise<Solve> {
   const session = await getOrCreateActiveSession(input.puzzle, 'recognition');
-  return addSolve({
+  const solve = await addSolve({
     sessionId: session.id,
     puzzle: input.puzzle,
     mode: 'recognition',
@@ -47,6 +48,9 @@ export async function addRecognitionAttempt(input: NewRecognitionAttempt): Promi
     inspectionMs: null,
     startedAt: input.startedAt,
   });
+  // After the attempt, which is what must not be lost: the step is a courtesy.
+  await markCaseLearning(input.caseId);
+  return solve;
 }
 
 /** Every recognition attempt at one case, oldest first. */

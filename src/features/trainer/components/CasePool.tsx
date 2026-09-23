@@ -26,6 +26,9 @@ export function CasePool({ cases, selectedIds, stats, onSelect }: CasePoolProps)
   const [isOpen, setOpen] = useState(false);
 
   const caseIds = (cases ?? []).map((entry) => entry.algCase.id);
+  const learningIds = (cases ?? [])
+    .filter((entry) => entry.algCase.progress === 'learning')
+    .map((entry) => entry.algCase.id);
   const tickedHere = caseIds.filter((id) => selectedIds.includes(id));
 
   const chooseHere = (ids: readonly string[]): void => {
@@ -61,6 +64,15 @@ export function CasePool({ cases, selectedIds, stats, onSelect }: CasePoolProps)
               }
             >
               {strings.drill.poolSlowest}
+            </button>
+            {/* The cases in hand, which is what most of a drill is for while a
+                set is being learned. Nothing to offer before any are. */}
+            <button
+              type="button"
+              disabled={learningIds.length === 0}
+              onClick={() => chooseHere(learningIds)}
+            >
+              {strings.drill.poolLearning}
             </button>
           </div>
           <p className="drill__hint">{strings.drill.poolHint}</p>

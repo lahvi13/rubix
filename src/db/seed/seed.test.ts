@@ -85,6 +85,16 @@ describe('seed', () => {
     expect((await db.algCases.toArray()).map((entry) => entry.updatedAt)).toEqual(timestamps);
   });
 
+  it('carries over how far the reader is with a case', async () => {
+    await seedPacks();
+    await db.algCases.update('pll-t', { progress: 'known' });
+
+    await seedPacks();
+
+    expect((await db.algCases.get('pll-t'))?.progress).toBe('known');
+    expect((await db.algCases.get('pll-y'))?.progress).toBe('new');
+  });
+
   it('leaves the algorithm the user chose active', async () => {
     await seedPacks();
     const mine = await addUserAlgorithm('pll-t', "R U R' U'");
@@ -161,6 +171,7 @@ describe('retiring a case the packs have dropped', () => {
       setId: 'beginner',
       name: 'Edge to the right',
       label: null,
+      progress: 'new',
       group: 'Middle layer edges',
       setupAlg: "F' U' F U R U R' U'",
       order: 99,
@@ -214,6 +225,14 @@ describe('retiring a case the packs have dropped', () => {
   it('keeps a case the reader renamed', async () => {
     await leaveBehind();
     await db.algCases.update('beg-edge-right', { label: 'Moje hrana' });
+    await seedPacks();
+
+    expect(await db.algCases.get('beg-edge-right')).toBeDefined();
+  });
+
+  it.each(['learning', 'known'] as const)('keeps a case the reader marked %s', async (progress) => {
+    await leaveBehind();
+    await db.algCases.update('beg-edge-right', { progress });
     await seedPacks();
 
     expect(await db.algCases.get('beg-edge-right')).toBeDefined();

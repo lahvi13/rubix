@@ -7,6 +7,7 @@ import {
   listAlgorithms,
   setActiveAlgorithm,
   setCaseLabel,
+  setCaseProgress,
   updateUserAlgorithm,
 } from '../../../db/repositories/alg-repository';
 import { deleteCaseRecognitions } from '../../../db/repositories/recognition-repository';
@@ -28,6 +29,7 @@ export interface CaseDetailView {
   removeVariant: (algorithmId: string) => Promise<void>;
   /** What the reader calls this case; empty puts the pack name back. */
   rename: (label: string) => Promise<void>;
+  setProgress: (progress: AlgCase['progress']) => Promise<void>;
   /** Throw away the recognition attempts, leaving the timed ones alone. */
   forgetRecognition: () => Promise<void>;
 }
@@ -60,6 +62,10 @@ export function useCaseDetail(caseId: string | null): CaseDetailView {
     rename: async (label) => {
       if (caseId === null) return;
       await setCaseLabel(caseId, label);
+    },
+    setProgress: async (progress) => {
+      if (caseId === null) return;
+      await setCaseProgress(caseId, progress);
     },
     forgetRecognition: async () => {
       if (caseId === null) return;

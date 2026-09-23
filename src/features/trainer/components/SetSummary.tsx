@@ -1,5 +1,6 @@
 import { caseTitle } from '../../../domain/alg/case-name';
 import { slowestCases } from '../../../domain/drill/case-stats';
+import { countProgress } from '../../../domain/drill/progress';
 import { formatAverage } from '../../../lib/format';
 import { packLabel, strings } from '../../../lib/strings';
 import { useCaseStats } from '../hooks/use-case-stats';
@@ -24,24 +25,37 @@ export function SetSummary({ groups, onOpen }: SetSummaryProps) {
       id: entry.algCase.id,
       name: packLabel(caseTitle(entry.algCase)),
       group: packLabel(group.name),
+      progress: entry.algCase.progress,
     })),
   );
   const stats = useCaseStats(cases.map((entry) => entry.id));
   if (stats === undefined || cases.length === 0) return null;
 
-  const drilled = cases.filter((entry) => (stats.get(entry.id)?.attempts ?? 0) > 0);
+  const counts = countProgress(cases.map((entry) => entry.progress));
   const attempts = cases.reduce((sum, entry) => sum + (stats.get(entry.id)?.attempts ?? 0), 0);
   const slowest = slowestCases([...stats.values()], { limit: SUGGESTIONS });
 
-  if (drilled.length === 0) {
+  // A set nobody has touched stays one quiet line, as it always was: a bar at
+  // nought and a count of nothing would be a screenful of zeros.
+  if (attempts === 0 && counts.new === counts.total) {
     return <p className="set-summary set-summary--empty">{strings.drill.noneYet}</p>;
   }
 
+  const share = (count: number): string => `${(count / counts.total) * 100}%`;
+
   return (
     <section className="set-summary">
+      {/* Known first and learning after it, both from the left, so the bar
+          fills the way the set is learned. The line under it says the same in
+          words, which is what a screen reader gets. */}
+      <div className="set-summary__bar" aria-hidden="true">
+        <span className="set-summary__bar-known" style={{ width: share(counts.known) }} />
+        <span className="set-summary__bar-learning" style={{ width: share(counts.learning) }} />
+      </div>
       <p className="set-summary__counts">
-        {drilled.length} / {cases.length} {strings.drill.progress} ·{' '}
-        {strings.drill.attemptCount(attempts)}
+        {strings.trainer.progressKnown(counts.known, counts.total)}
+        {counts.learning === 0 ? null : ` · ${strings.trainer.progressLearning(counts.learning)}`}
+        {attempts === 0 ? null : ` · ${strings.drill.attemptCount(attempts)}`}
       </p>
 
       {slowest.length === 0 ? null : (

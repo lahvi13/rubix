@@ -35,6 +35,14 @@ describe('drill repository', () => {
     await Promise.all(db.tables.map((table) => table.clear()));
   });
 
+  it('counts a case drilled for the first time as being learned', async () => {
+    await seedPacks();
+    await addDrillSolve(makeAttempt('pll-t', 2500));
+
+    expect((await db.algCases.get('pll-t'))?.progress).toBe('learning');
+    expect((await db.algCases.get('pll-y'))?.progress).toBe('new');
+  });
+
   it('stores an attempt as a drill against its case', async () => {
     const solve = await addDrillSolve(makeAttempt('pll-t', 2500));
 

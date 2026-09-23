@@ -43,9 +43,21 @@ export function CaseCard({
         entry.costsASlot ? { kind: 'slot', label: strings.trainer.markCostsSlot } : null,
       ].filter((mark) => mark !== null);
 
+  const progress = entry.algCase.progress;
+
   return (
-    <button type="button" className="case-card" onClick={onOpen}>
-      <span className="case-card__name">{packLabel(caseTitle(entry.algCase))}</span>
+    <button
+      type="button"
+      className={progress === 'new' ? 'case-card' : `case-card is-${progress}`}
+      onClick={onOpen}
+    >
+      <span className="case-card__name">
+        {packLabel(caseTitle(entry.algCase))}
+        {/* The edge says it to the eye; this says it to anyone who cannot see it. */}
+        {progress === 'new' ? null : (
+          <span className="visually-hidden">, {strings.trainer.progress[progress]}</span>
+        )}
+      </span>
       {/*
         A dot rather than a word: a card is the width of a thumb and the name
         already has it. What it means is one tap away — the sheet the card

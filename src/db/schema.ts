@@ -98,6 +98,17 @@ export class RubixDB extends Dexie {
           solve.scrambleSource = 'generated';
         }),
     );
+
+    // v6 keeps how far the reader is with each case. No index: a set's cases
+    // are always read whole, and counting them is a pass over what is read.
+    this.version(6).upgrade((tx) =>
+      tx
+        .table<AlgCase>('algCases')
+        .toCollection()
+        .modify((algCase) => {
+          algCase.progress = 'new';
+        }),
+    );
   }
 }
 

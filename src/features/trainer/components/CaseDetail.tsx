@@ -62,7 +62,7 @@ export function CaseDetail({
   onOpen,
   onClose,
 }: CaseDetailProps) {
-  const { algCase, algorithms, active, moves, groups, choose, addVariant, editVariant, removeVariant, rename, forgetRecognition } =
+  const { algCase, algorithms, active, moves, groups, choose, addVariant, editVariant, removeVariant, rename, setProgress, forgetRecognition } =
     useCaseDetail(caseId);
   const [replayToken, setReplayToken] = useState(0);
   // The sheet used to be keyed by case id so that stepping to the next one
@@ -204,6 +204,24 @@ export function CaseDetail({
         >
           {isPlaying ? <StopIcon /> : <PlayIcon />}
         </button>
+      </div>
+
+      {/* Under the case it is about, where a verdict on it is made: after
+          looking at the cube and watching it solved. Three joined steps rather
+          than a checkbox, because "being learned" is the one that matters most
+          while a set is in hand. */}
+      <div className="case-progress" role="group" aria-label={strings.trainer.progressLabel}>
+        {(['new', 'learning', 'known'] as const).map((step) => (
+          <button
+            key={step}
+            type="button"
+            className={algCase.progress === step ? `is-active is-${step}` : ''}
+            aria-pressed={algCase.progress === step}
+            onClick={() => watchWrite(() => setProgress(step), strings.trainer.progressLabel)}
+          >
+            {strings.trainer.progress[step]}
+          </button>
+        ))}
       </div>
 
       <AlgText

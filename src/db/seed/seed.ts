@@ -243,6 +243,7 @@ function planRetirements(current: CurrentState, changes: SeedChanges): void {
     if (current.packed.has(algCase.id)) continue;
     if (algCase.isCustom === 1) continue;
     if (algCase.label !== null && algCase.label !== '') continue;
+    if (algCase.progress !== 'new') continue;
     if (current.attempted.has(algCase.id)) continue;
 
     const algorithms = [...current.algorithms.values()].filter(
@@ -323,6 +324,7 @@ function buildCase(
     // the same way a trigger's colour is, so an update never takes back a
     // name somebody chose.
     label: existing?.label ?? null,
+    progress: existing?.progress ?? 'new',
     group: entry.group,
     setupAlg: setupFor(entry),
     order: index,

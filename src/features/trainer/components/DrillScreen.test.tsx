@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState, FACELETS } from '../../../domain/cube/state';
-import { setSetting } from '../../../db/repositories/settings-repository';
+import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
+import { setCaseProgress } from '../../../db/repositories/alg-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { CROSS_SCRAMBLE_LENGTH } from '../../../domain/drill/cross-scramble';
 import { DrillScreen } from './DrillScreen';
@@ -136,6 +137,7 @@ describe('DrillScreen', () => {
     await attempt(user, 3210);
 
     expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
+    await waitFor(async () => expect(await db.solves.count()).toBe(1));
     const solve = await db.solves.toCollection().first();
     expect(solve?.mode).toBe('drill');
     expect(solve?.caseId).toBe('pll-t');
@@ -422,6 +424,26 @@ describe('DrillScreen', () => {
     expect(screen.getByRole('timer')).toHaveTextContent('0.00');
   });
 
+  it('ticks the cases being learned, and offers nothing before there are any', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+
+    await openSetup(user);
+    await user.click(await screen.findByRole('button', { name: /^Cases/ }));
+    expect(await screen.findByRole('button', { name: "What I'm learning" })).toBeDisabled();
+
+    await setCaseProgress('pll-y', 'learning');
+    await setCaseProgress('pll-h', 'learning');
+    await setCaseProgress('pll-t', 'known');
+    const learning = screen.getByRole('button', { name: "What I'm learning" });
+    await waitFor(() => expect(learning).toBeEnabled());
+    await user.click(learning);
+
+    await waitFor(async () => {
+      expect([...(await getSetting('trainer.drillCaseIds'))].sort()).toEqual(['pll-h', 'pll-y']);
+    });
+  });
+
   it('closes the case picker without scrolling back to the top', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
@@ -573,7 +595,8 @@ describe('DrillScreen', () => {
     await attempt(user, 3210);
     await screen.findByRole('heading', { name: 'T' });
 
-    await user.click(screen.getByRole('button', { name: '+2' }));
+    // The judging buttons come with the stored attempt, a write after the answer.
+    await user.click(await screen.findByRole('button', { name: '+2' }));
     await waitFor(async () => {
       expect((await db.solves.toCollection().first())?.penalty).toBe('plus2');
     });

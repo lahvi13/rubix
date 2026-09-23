@@ -2602,6 +2602,17 @@ button[disabled] {
   gap: var(--space-4);
 }
 
+/* How far the reader is with the case, as an edge — the way a solve row in the
+   history carries a best. Amber while it is being learned, green once known;
+   a case not started has none, so a fresh set stays as quiet as it was. */
+.case-card.is-learning {
+  box-shadow: inset 4px 0 0 var(--warn);
+}
+
+.case-card.is-known {
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
 .case-card {
   position: relative;
   display: flex;
@@ -2756,6 +2767,7 @@ button[disabled] {
 
 .drill__picker-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
@@ -3117,6 +3129,24 @@ button[disabled] {
   color: var(--muted);
 }
 
+/* A width from the data is the one thing the rule cannot know; the colours
+   are the ones the cards' edges use. */
+.set-summary__bar {
+  display: flex;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  overflow: hidden;
+}
+
+.set-summary__bar-known {
+  background: var(--accent);
+}
+
+.set-summary__bar-learning {
+  background: var(--warn);
+}
+
 .set-summary__counts {
   margin: 0;
   font-size: var(--text-md);
@@ -3263,6 +3293,42 @@ button[disabled] {
   display: flex;
   justify-content: center;
   gap: var(--space-3);
+}
+
+/* Three steps of one switch, joined as the 2-Look / Full one is. The step that
+   is on takes the colour its edge has on the card. */
+.case-progress {
+  display: flex;
+  justify-content: center;
+}
+
+.case-progress button {
+  background: var(--surface);
+  border-radius: 0;
+  padding-inline: var(--space-5);
+}
+
+.case-progress button:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.case-progress button:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.case-progress button.is-active {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.case-progress button.is-active.is-learning {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.case-progress button.is-active.is-known {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* Round, because it is a shape rather than a word — the same play the timer

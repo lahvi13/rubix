@@ -218,6 +218,7 @@ describe('solvesToCsv', () => {
             setId: 'pll',
             name: 'T',
             label: null,
+            progress: 'new',
             group: null,
             setupAlg: '',
             order: 0,

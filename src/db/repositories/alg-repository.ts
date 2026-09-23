@@ -74,6 +74,23 @@ export async function setCaseLabel(caseId: string, label: string): Promise<void>
   await db.algCases.update(caseId, { label: trimmed === '' ? null : trimmed, updatedAt: now() });
 }
 
+export async function setCaseProgress(caseId: string, progress: AlgCase['progress']): Promise<void> {
+  await db.algCases.update(caseId, { progress, updatedAt: now() });
+}
+
+/**
+ * A case drilled for the first time is being learned, whether or not anybody
+ * said so. Only ever from 'new': a case somebody marked known and drills to
+ * keep sharp stays known.
+ */
+export async function markCaseLearning(caseId: string): Promise<void> {
+  await db.algCases
+    .where('id')
+    .equals(caseId)
+    .filter((algCase) => algCase.progress === 'new')
+    .modify({ progress: 'learning', updatedAt: now() });
+}
+
 export async function listAlgorithms(caseId: string): Promise<Algorithm[]> {
   const algorithms = await db.algorithms.where('caseId').equals(caseId).toArray();
   // Pack first, then the user's own in the order they were added.

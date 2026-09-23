@@ -9,7 +9,9 @@ import {
   listCases,
   listCasesWithAlgs,
   listSets,
+  markCaseLearning,
   setActiveAlgorithm,
+  setCaseProgress,
   updateUserAlgorithm,
 } from './alg-repository';
 import { PACKS } from '../seed/packs';
@@ -147,5 +149,39 @@ describe('alg repository', () => {
     const mine = await addUserAlgorithm('pll-t', '  R U nonsense  ');
 
     expect(mine.moves).toBe('R U nonsense');
+  });
+});
+
+describe('how far the reader is with a case', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    await seedPacks();
+  });
+
+  it('starts every case as new', async () => {
+    const cases = await db.algCases.toArray();
+    expect(cases.every((algCase) => algCase.progress === 'new')).toBe(true);
+  });
+
+  it.each(['learning', 'known', 'new'] as const)('takes %s from the reader', async (progress) => {
+    await setCaseProgress('pll-t', progress);
+    expect((await db.algCases.get('pll-t'))?.progress).toBe(progress);
+  });
+
+  it.each<['new' | 'learning' | 'known', 'new' | 'learning' | 'known']>([
+    ['new', 'learning'],
+    ['learning', 'learning'],
+    // Drilled to keep it sharp, not because it was forgotten.
+    ['known', 'known'],
+  ])('moves a case on from %s to %s when it is drilled', async (before, after) => {
+    await setCaseProgress('pll-t', before);
+    const stamped = (await db.algCases.get('pll-t'))?.updatedAt;
+
+    await markCaseLearning('pll-t');
+
+    const algCase = await db.algCases.get('pll-t');
+    expect(algCase?.progress).toBe(after);
+    // A case left as it was is not written, so an import does not see a change.
+    if (before === after) expect(algCase?.updatedAt).toBe(stamped);
   });
 });

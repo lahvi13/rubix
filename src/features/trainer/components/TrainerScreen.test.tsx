@@ -38,11 +38,36 @@ describe('TrainerScreen', () => {
 
     render(<TrainerScreen />);
 
-    expect(await screen.findByText('1 / 41 drilled · 3 attempts')).toBeInTheDocument();
+    // Drilling the case put it in hand by itself.
+    expect(
+      await screen.findByText('Known 0 of 41 · learning 1 · 3 attempts'),
+    ).toBeInTheDocument();
     // The suggestion is a way into the case, not just a label: its ao5 is the
     // 9.50 in the middle of those three attempts.
     await user.click(await screen.findByRole('button', { name: 'F2L 1 9.50' }));
     expect(await screen.findByRole('dialog', { name: 'F2L 1' })).toBeInTheDocument();
+  });
+
+  it('keeps how well a case is known, on its card and over the set', async () => {
+    const user = userEvent.setup();
+    render(<TrainerScreen />);
+
+    // A set nobody has touched says so and nothing more.
+    expect(await screen.findByText('Nothing drilled here yet.')).toBeInTheDocument();
+
+    await user.click(await screen.findByRole('button', { name: 'F2L 1' }));
+    const detail = await screen.findByRole('dialog', { name: 'F2L 1' });
+    const known = within(detail).getByRole('button', { name: 'Known' });
+    expect(within(detail).getByRole('button', { name: 'New' })).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(known);
+
+    await waitFor(async () => expect((await db.algCases.get('f2l-1'))?.progress).toBe('known'));
+    // The sheet hears of it a live query later.
+    await waitFor(() => expect(known).toHaveAttribute('aria-pressed', 'true'));
+    expect(await screen.findByText('Known 1 of 41')).toBeInTheDocument();
+    // The card says it too — to the eye as its edge, and in its name.
+    expect(screen.getByRole('button', { name: 'F2L 1, Known' })).toHaveClass('is-known');
   });
 
   it('shows the cases of the first set as pictures you can open', async () => {

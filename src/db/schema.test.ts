@@ -45,4 +45,17 @@ describe('schema upgrades', () => {
     upgraded.close();
     await Dexie.delete(name);
   });
+
+  it('starts every case stored before v6 as new', async () => {
+    const name = 'rubix-upgrade-v6';
+    const v5 = new Dexie(name);
+    v5.version(5).stores({ algCases: 'id, setId, isCustom, updatedAt, [setId+order]' });
+    await v5.table('algCases').add({ id: 'pll-t', setId: 'pll', order: 0 });
+    v5.close();
+
+    const upgraded = new RubixDB(name);
+    expect((await upgraded.algCases.get('pll-t'))?.progress).toBe('new');
+    upgraded.close();
+    await Dexie.delete(name);
+  });
 });

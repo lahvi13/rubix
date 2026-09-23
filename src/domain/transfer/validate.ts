@@ -12,6 +12,7 @@ import type {
   Flag,
   Method,
   Penalty,
+  CaseProgress,
   PenaltySource,
   Puzzle,
   ScrambleSource,
@@ -176,6 +177,7 @@ const isPenalty = memberOf<Penalty>({ none: true, plus2: true, dnf: true });
 const isPenaltySource = memberOf<PenaltySource>({ auto: true, manual: true });
 const isSplitSource = memberOf<SplitSource>({ mic: true, smartcube: true, manual: true });
 const isScrambleSource = memberOf<ScrambleSource>({ generated: true, own: true, history: true });
+const isCaseProgress = memberOf<CaseProgress>({ new: true, learning: true, known: true });
 const isAlgorithmSource = memberOf<Algorithm['source']>({ pack: true, user: true });
 const isTriggerSource = memberOf<Trigger['source']>({ pack: true, user: true });
 
@@ -280,6 +282,7 @@ function isAlgCase(value: unknown): value is AlgCase {
     isString(value.setId) &&
     isString(value.name) &&
     isNullOr(value.label, isString) &&
+    isCaseProgress(value.progress) &&
     isNullOr(value.group, isString) &&
     isString(value.setupAlg) &&
     isInt(value.order) &&

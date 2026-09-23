@@ -4,7 +4,7 @@ import type { Penalty, Puzzle, Solve } from '../types';
 import { drillPool } from '../../domain/drill/selection';
 import { now } from '../../lib/clock';
 import { listAttempts, listAttemptsGrouped } from './case-attempts';
-import { listCasesWithAlgs, type CaseWithAlg } from './alg-repository';
+import { listCasesWithAlgs, markCaseLearning, type CaseWithAlg } from './alg-repository';
 import { getOrCreateActiveSession } from './session-repository';
 import { addSolve, deleteSolves } from './solve-repository';
 
@@ -34,7 +34,7 @@ export interface NewDrillSolve {
  */
 export async function addDrillSolve(input: NewDrillSolve): Promise<Solve> {
   const session = await getOrCreateActiveSession(input.puzzle, 'drill');
-  return addSolve({
+  const solve = await addSolve({
     sessionId: session.id,
     puzzle: input.puzzle,
     mode: 'drill',
@@ -46,6 +46,9 @@ export async function addDrillSolve(input: NewDrillSolve): Promise<Solve> {
     inspectionMs: input.inspectionMs,
     startedAt: input.startedAt,
   });
+  // After the attempt, which is what must not be lost: the step is a courtesy.
+  await markCaseLearning(input.caseId);
+  return solve;
 }
 
 /** Every timed attempt at one case, oldest first. */
