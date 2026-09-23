@@ -1095,9 +1095,29 @@ button[disabled] {
 
 .app__header {
   display: flex;
+  /* A screen's own controls beside its name go onto a line of their own
+     rather than off the edge, on a narrow phone with large text. */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-6);
+  gap: var(--space-2) var(--space-6);
+}
+
+.app__header-slot:empty {
+  display: none;
+}
+
+/* The drill's tabs in the header: no rule of their own under them — the
+   header has one — and only as wide as their words. */
+.app__header .drill__tabs {
+  border-bottom: none;
+  gap: var(--space-2);
+}
+
+.app__header .drill__tabs button {
+  flex: 0 0 auto;
+  padding-inline: var(--space-4);
+  min-height: 2.25rem;
 }
 
 .app__menu-toggle {
@@ -2992,12 +3012,37 @@ button[disabled] {
    picture must neither move the cards nor shrink, and it is drawn bigger than
    the box and clipped, as in the case sheet, because it keeps a margin of its
    own around the cube. */
+/* The cube with a button either side of it. The sides share what the cube
+   leaves equally, so the cube stays centred whatever the buttons say; a
+   button that needs more room than that takes it from the cube, which may
+   shrink, rather than being squeezed onto two lines. */
+.recognition__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.recognition__side {
+  flex: 1 1 0;
+  display: flex;
+}
+
+.recognition__side--start {
+  justify-content: flex-end;
+}
+
+.recognition__side--end {
+  justify-content: flex-start;
+}
+
 .recognition__stage {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: min(60vw, 26dvh, 12rem);
+  flex: 0 1 min(60vw, 26dvh, 12rem);
+  min-width: 0;
   aspect-ratio: 1;
   overflow: hidden;
   /* A tap surface once the question is over, not a button to look at. */
@@ -3034,12 +3079,11 @@ button[disabled] {
   }
 
   .recognition__stage {
-    width: min(60vw, 22dvh, 12rem);
+    flex-basis: min(60vw, 22dvh, 12rem);
   }
 }
 
 .recognition__turn {
-  padding-inline: var(--space-7);
   min-height: 2.75rem;
 }
 
@@ -3104,13 +3148,6 @@ button[disabled] {
 /* The two things done to the cube itself, side by side under it. Moving on
    used to sit under the cards, where on a short screen it was below the fold
    and cost a scroll every round; here it is above them and never moves. */
-.recognition__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-4);
-}
-
 /* Three across, two down: the set list packs as many cards in a row as it
    can fit, which is right for reading a whole set and wrong here — six cards
    in fours leaves a ragged second row, and each one is a cube to be compared

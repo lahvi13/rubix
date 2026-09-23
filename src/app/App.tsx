@@ -7,6 +7,7 @@ import { SettingsScreen } from '../features/settings';
 import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
 import { DrillScreen, TrainerScreen } from '../features/trainer';
+import { HeaderSlotContext } from '../components/header-slot-context';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
 import { useKeyCapture } from '../hooks/use-key-capture';
 import { useSetting } from '../hooks/use-setting';
@@ -22,6 +23,7 @@ export function App() {
   const route = useRoute();
   useScrollMemory(route);
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const [headerSlot, setHeaderSlot] = useState<HTMLDivElement | null>(null);
   // A screen that lived through a lost connection holds dead live queries; the
   // key mounts it again once the database is back.
   const generation = useDatabaseGeneration();
@@ -52,6 +54,7 @@ export function App() {
           {strings.appName}
           <span className="app__route">{strings.nav[route]}</span>
         </h1>
+        <div className="app__header-slot" ref={setHeaderSlot} />
 
         {isMenuOpen ? (
           <>
@@ -85,6 +88,7 @@ export function App() {
       </header>
 
       <Fragment key={generation}>
+        <HeaderSlotContext.Provider value={headerSlot}>
         {route === 'timer' ? <TimerScreen /> : null}
         {route === 'learn' ? <LearnScreen /> : null}
         {route === 'history' ? <HistoryScreen /> : null}
@@ -94,6 +98,7 @@ export function App() {
         {route === 'settings' ? <SettingsScreen /> : null}
         {route === 'data' ? <DataScreen /> : null}
         {route === 'about' ? <AboutScreen /> : null}
+        </HeaderSlotContext.Provider>
       </Fragment>
 
       <ErrorBanner />

@@ -111,10 +111,25 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
         <p className="drill__hint">{problemText(recognition.problem)}</p>
       ) : (
         <section className="recognition">
-          {/* The cube is the button, as the timer's scramble preview is: it is
-              where the moves are played, and a button of its own in the row
-              under it cost the row a third control. Only once the question is
-              over — before that there is nothing to play. */}
+          {/* The two things you do to the cube, either side of it: turn it
+              round while the question is open, move on once it is answered.
+              Beside it rather than in a row under it — that row was the bottom
+              row of cards on a phone with large text. Short words, so neither
+              breaks onto a second line in the room the cube leaves.
+
+              The cube itself is the play button once the question is over, as
+              the timer's scramble preview is: it is where the moves are played. */}
+          <div className="recognition__top">
+            <div className="recognition__side recognition__side--start">
+              <button
+                type="button"
+                className={recognition.isTurned ? 'is-active recognition__turn' : 'recognition__turn'}
+                aria-pressed={recognition.isTurned}
+                onClick={turn}
+              >
+                {strings.recognition.turn}
+              </button>
+            </div>
           <Stage
             canPlay={outcome !== null && question.algorithm.length > 0}
             isPlaying={isPlaying}
@@ -136,25 +151,13 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
               picture
             )}
           </Stage>
-
-          {/* Both of the things you do to a cube on this screen, in one row
-              under it: turn it round while the question is open, and move on
-              once it is answered. Fixed where the hand already goes, rather
-              than at the far end of the cards — those are what you were just
-              reading, and the answer is read from the top down. */}
-          <div className="recognition__actions">
-            <button
-              type="button"
-              className={recognition.isTurned ? 'is-active recognition__turn' : 'recognition__turn'}
-              onClick={turn}
-            >
-              {recognition.isTurned ? strings.recognition.turnBack : strings.recognition.turn}
-            </button>
-            {outcome === null ? null : (
-              <button type="button" className="is-primary" onClick={recognition.next}>
-                {strings.recognition.next}
-              </button>
-            )}
+            <div className="recognition__side recognition__side--end">
+              {outcome === null ? null : (
+                <button type="button" className="is-primary" onClick={recognition.next}>
+                  {strings.recognition.next}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* One line, never two. The cube and six cards have to be taken in

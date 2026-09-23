@@ -543,13 +543,12 @@ export const en = {
   },
   recognition: {
     question: 'Which case is this?',
-    /* Two words on a phone: the button sits under a picture that explains it. */
-    turn: 'Turn round',
-    turnBack: 'Turn back',
+    /* One word each: the buttons sit either side of the cube, in the room it leaves. */
+    turn: 'Turn',
     turnedHint: 'Seen from the back left.',
     correct: 'Right',
     wrong: 'No — it was',
-    next: 'Next case',
+    next: 'Next',
     tooFew: 'Tick at least two cases: with one there is nothing to tell apart.',
     empty: 'Nothing to recognise in this set.',
     caseStats: 'Your recognition',

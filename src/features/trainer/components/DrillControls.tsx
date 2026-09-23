@@ -1,3 +1,4 @@
+import { InHeader } from '../../../components/HeaderSlot';
 import { useState, type ReactNode } from 'react';
 import type { AlgSet } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
@@ -142,7 +143,10 @@ interface DrillModesProps {
  * the set changes under it.
  */
 export function DrillModes({ mode, onMode, canRecognise }: DrillModesProps) {
+  // In the header, beside "Drill": a row of their own cost the cards under the
+  // cube their bottom row on a phone with large text.
   return (
+    <InHeader>
     <div className="drill__tabs" role="group" aria-label={strings.drill.modes}>
       <button
         type="button"
@@ -163,6 +167,7 @@ export function DrillModes({ mode, onMode, canRecognise }: DrillModesProps) {
         {strings.drill.modeRecognise}
       </button>
     </div>
+    </InHeader>
   );
 }
 

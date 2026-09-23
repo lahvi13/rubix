@@ -185,7 +185,9 @@ describe('RecognitionDrill', () => {
     await screen.findByText('Which case is this?');
 
     const before = screen.getByRole('img', { name: 'Which case is this?' }).getAttribute('src');
-    await user.click(screen.getByRole('button', { name: 'Turn round' }));
+    const turn = screen.getByRole('button', { name: 'Turn' });
+    expect(turn).toHaveAttribute('aria-pressed', 'false');
+    await user.click(turn);
 
     const after = screen.getByRole('img', { name: 'Which case is this?' }).getAttribute('src');
     expect(after).not.toBe(before);
@@ -196,7 +198,9 @@ describe('RecognitionDrill', () => {
     expect(await db.solves.count()).toBe(0);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Turn back' }));
+    // One word either way, the button a switch that shows it is on.
+    expect(turn).toHaveAttribute('aria-pressed', 'true');
+    await user.click(turn);
     expect(screen.getByText('Which case is this?')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Which case is this?' }).getAttribute('src')).toBe(
       before,
@@ -241,7 +245,7 @@ describe('RecognitionDrill', () => {
     await user.click(firstCard());
     await screen.findByRole('status');
 
-    await user.click(screen.getByRole('button', { name: 'Next case' }));
+    await user.click(screen.getByRole('button', { name: 'Next' }));
 
     expect(await screen.findByText('Which case is this?')).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();

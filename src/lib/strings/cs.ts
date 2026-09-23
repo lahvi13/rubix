@@ -487,11 +487,10 @@ export const cs: Strings = {
   recognition: {
     question: 'Který případ to je?',
     turn: 'Otočit',
-    turnBack: 'Otočit zpět',
     turnedHint: 'Pohled zezadu zleva.',
     correct: 'Správně',
     wrong: 'Ne — bylo to',
-    next: 'Další případ',
+    next: 'Další',
     tooFew: 'Zaškrtni aspoň dva případy: u jednoho není co rozeznávat.',
     empty: 'V této sadě není co rozpoznávat.',
     caseStats: 'Tvoje rozpoznávání',
