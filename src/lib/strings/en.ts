@@ -756,6 +756,7 @@ export const en = {
     seed: 'Could not load the algorithm packs',
     settings: 'Could not read the settings',
     dismiss: 'Dismiss',
+    retry: 'Try again',
   },
   diagnostics: {
     title: 'Troubleshooting',

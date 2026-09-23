@@ -391,8 +391,9 @@ describe('DrillScreen', () => {
 
     await attempt(user, 3210);
     expect(await screen.findByRole('heading', { name: 'T' })).toBeInTheDocument();
-    // On the clock, and again in the case's own record of it.
-    expect(screen.getAllByText('3.21').length).toBeGreaterThan(1);
+    // On the clock, and again in the case's own record of it — which is a
+    // live query of its own and may arrive a moment after the answer.
+    await waitFor(() => expect(screen.getAllByText('3.21').length).toBeGreaterThan(1));
 
     await user.click(screen.getByRole('button', { name: 'Next case' }));
 

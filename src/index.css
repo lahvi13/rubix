@@ -4061,6 +4061,13 @@ button[disabled] {
   color: var(--danger);
 }
 
+/* Side by side and never squeezed: the message is what gives way. */
+.error-banner__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-3);
+}
+
 /*
  * The way back from a delete. At the bottom, where the thumb already is, and
  * over everything: the screen underneath has usually moved on by the time it

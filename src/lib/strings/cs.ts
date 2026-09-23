@@ -696,6 +696,7 @@ export const cs: Strings = {
     seed: 'Sady algoritmů se nepodařilo načíst',
     settings: 'Nastavení se nepodařilo přečíst',
     dismiss: 'Zavřít',
+    retry: 'Zkusit znovu',
   },
   diagnostics: {
     title: 'Řešení potíží',

@@ -10,6 +10,12 @@ export interface AppError {
   context: string;
   message: string;
   at: number;
+  /**
+   * Doing it again, offered only where the failure left nothing half done —
+   * a write that was refused, not one that may still land. Never kept in the
+   * log: it is a way out of this failure, not a record of it.
+   */
+  retry?: () => void;
 }
 
 type Listener = (error: AppError) => void;
@@ -34,9 +40,9 @@ const RETIRED_MESSAGES: ReadonlySet<string> = new Set([
   'the connection was closed — reconnecting',
 ]);
 
-export function reportError(context: string, cause: unknown): void {
+export function reportError(context: string, cause: unknown, retry?: () => void): void {
   const message = describe(cause);
-  last = { context, message, at: Date.now() };
+  last = retry === undefined ? { context, message, at: Date.now() } : { context, message, at: Date.now(), retry };
   remember(last);
   for (const listener of listeners) listener(last);
 }
@@ -55,7 +61,12 @@ function remember(error: AppError): void {
   try {
     window.localStorage.setItem(
       LOG_KEY,
-      JSON.stringify([error, ...recentErrors()].slice(0, LOG_SIZE)),
+      JSON.stringify(
+        [{ context: error.context, message: error.message, at: error.at }, ...recentErrors()].slice(
+          0,
+          LOG_SIZE,
+        ),
+      ),
     );
   } catch {
     // A full or blocked storage must not turn error reporting into an error.
@@ -196,7 +207,8 @@ export function watchWrite(run: () => Promise<unknown>, context: string): void {
       isDone = true;
     } catch (cause: unknown) {
       isDone = true;
-      reportError(context, cause);
+      // Refused twice, so nothing of it landed: the tap can be given back.
+      reportError(context, cause, () => watchWrite(run, context));
     } finally {
       isRecovering = false;
       clearTimeout(timer);
@@ -235,7 +247,7 @@ export function watchWrite(run: () => Promise<unknown>, context: string): void {
       // A connection taken away mid-write: reopen and do it again.
       if (watchdog === null) {
         isDone = true;
-        reportError(context, cause);
+        reportError(context, cause, () => watchWrite(run, context));
         return;
       }
       logQuietly(context, cause);

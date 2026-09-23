@@ -110,6 +110,28 @@ describe('watched writes', () => {
     expect(lastError()?.message).toBe('QuotaExceededError');
   });
 
+  it('offers a refused write back, and giving it back writes it again', async () => {
+    const run = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('QuotaExceededError'))
+      .mockRejectedValueOnce(new Error('QuotaExceededError'))
+      .mockResolvedValueOnce(undefined);
+    installWriteWatchdog({
+      probe: alive,
+      survey: () => Promise.resolve('survey'),
+      reopen: () => Promise.resolve(),
+      recover: () => Promise.resolve(),
+    });
+
+    watchWrite(run, 'solve');
+    await vi.waitFor(() => expect(lastError()?.retry).toBeTypeOf('function'));
+    // What the log keeps is a record, not something to call.
+    expect(recentErrors()[0]).not.toHaveProperty('retry');
+
+    lastError()?.retry?.();
+    await vi.waitFor(() => expect(run).toHaveBeenCalledTimes(3));
+  });
+
   it('says nothing when the write is only slow — the database still answers', async () => {
     installWriteWatchdog({
       probe: alive,

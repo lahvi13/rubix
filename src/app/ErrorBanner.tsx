@@ -19,15 +19,29 @@ export function ErrorBanner() {
       <span>
         {error.context}: {error.message}
       </span>
-      <button
-        type="button"
-        onClick={() => {
-          clearError();
-          setError(null);
-        }}
-      >
-        {strings.errors.dismiss}
-      </button>
+      <span className="error-banner__actions">
+        {error.retry === undefined ? null : (
+          <button
+            type="button"
+            onClick={() => {
+              clearError();
+              setError(null);
+              error.retry?.();
+            }}
+          >
+            {strings.errors.retry}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            clearError();
+            setError(null);
+          }}
+        >
+          {strings.errors.dismiss}
+        </button>
+      </span>
     </div>
   );
 }

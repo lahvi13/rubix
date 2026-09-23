@@ -6,7 +6,7 @@ import { resultNote, type ResultNote } from '../../../domain/stats/records';
 import { now } from '../../../lib/clock';
 import { formatGoal } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import { reportError } from '../../../lib/errors';
+import { reportError, watchWrite } from '../../../lib/errors';
 import { InstallNudge } from '../../about';
 import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
@@ -101,31 +101,36 @@ export function TimerScreen() {
         return;
       }
 
-      void addSolve({
-        sessionId: session.id,
-        puzzle: PUZZLE,
-        mode: MODE,
-        // A missing scramble must not cost the user the time itself.
-        scramble: scramble.scramble ?? '',
-        rawMs: attempt.rawMs,
-        penalty: attempt.penalty,
-        // Anything set at this point came from the inspection rules, not the user.
-        penaltySource: 'auto',
-        inspectionMs: attempt.inspectionMs,
-        startedAt: now() - Math.round(attempt.rawMs),
-        splits: attempt.splitMs.map((atMs, index) => ({
-          phase: phaseKeys[index] ?? '',
-          atMs: Math.round(atMs),
-          source: 'manual' as const,
-        })),
-        phaseKeys,
-      })
-        .then(() => {
-          scramble.next();
-        })
-        .catch((cause: unknown) => {
-          reportError(strings.errors.saveSolve, cause);
-        });
+      const sessionId = session.id;
+      const startedAt = now() - Math.round(attempt.rawMs);
+      // Watched rather than fired and forgotten: a write the phone refuses is
+      // tried again on a reopened connection, and if that fails too the
+      // banner offers the attempt back instead of the time being gone.
+      watchWrite(
+        () =>
+          addSolve({
+            sessionId,
+            puzzle: PUZZLE,
+            mode: MODE,
+            // A missing scramble must not cost the user the time itself.
+            scramble: scramble.scramble ?? '',
+            rawMs: attempt.rawMs,
+            penalty: attempt.penalty,
+            // Anything set at this point came from the inspection rules, not the user.
+            penaltySource: 'auto',
+            inspectionMs: attempt.inspectionMs,
+            startedAt,
+            splits: attempt.splitMs.map((atMs, index) => ({
+              phase: phaseKeys[index] ?? '',
+              atMs: Math.round(atMs),
+              source: 'manual' as const,
+            })),
+            phaseKeys,
+          }).then(() => {
+            scramble.next();
+          }),
+        strings.errors.saveSolve,
+      );
     },
     [session, scramble, phaseKeys],
   );
