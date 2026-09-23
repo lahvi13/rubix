@@ -282,7 +282,9 @@ describe('DrillScreen', () => {
     expect(screen.queryByRole('button', { name: 'DNF' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '+2' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    // The row is written before the screen hears it was, so the button that
+    // acts on it comes a render later.
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(async () => {
       expect(await db.solves.count()).toBe(0);
     });
