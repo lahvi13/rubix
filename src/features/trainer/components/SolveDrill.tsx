@@ -73,6 +73,7 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
     <main className="screen screen--scroll screen--drill">
       <div className={isSolving ? 'drill__setup is-hidden' : 'drill__setup'}>
         <div className="drill__bar">
+          <DrillModes mode={mode} onMode={onMode} canRecognise={canRecognise} />
           <DrillSets
             sets={sets ?? []}
             setId={setId}
@@ -85,7 +86,6 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
           <DrillSetup
             summary={drillSummary(
               setId,
-              mode,
               poolIds,
               selectedIds,
               drill.timer.inspectionEnabled,
@@ -105,7 +105,6 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
                 drill.reset();
               }}
             />
-            <DrillModes mode={mode} onMode={onMode} canRecognise={canRecognise} />
 
             {drill.isCross ? (
               <>

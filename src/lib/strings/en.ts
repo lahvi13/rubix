@@ -532,8 +532,10 @@ export const en = {
      * neighbours, so red is on the left and orange on the right.
      */
     crossColours: { F: 'Green', R: 'Orange', B: 'Blue', L: 'Red' },
+    modes: 'What to drill',
     modeSolve: 'Solve it',
     modeRecognise: 'Name it',
+    nothingToName: 'The cross has no case to name',
     /* Named for what is behind the line, because the line itself is the answer. */
     setup: 'Change what is drilled',
     inspectionOn: 'Inspection on',

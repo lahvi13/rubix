@@ -92,12 +92,12 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
   return (
     <main className="screen screen--scroll">
       <div className="drill__bar">
+        <DrillModes mode={mode} onMode={onMode} canRecognise />
         <DrillSets sets={sets ?? []} setId={setId} onSet={setSetId} />
 
-        <DrillSetup summary={drillSummary(setId, mode, caseIds, selectedIds)}>
+        <DrillSetup summary={drillSummary(setId, caseIds, selectedIds)}>
           <DrillLevels setId={setId} onSet={setSetId} />
           <DrillLooks setId={setId} onSet={setSetId} />
-          <DrillModes mode={mode} onMode={onMode} canRecognise />
           <CasePool
             cases={recognition.cases}
             selectedIds={selectedIds}

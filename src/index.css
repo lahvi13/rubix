@@ -2727,6 +2727,34 @@ button[disabled] {
   width: 100%;
 }
 
+/* The drill's two halves, as tabs over everything else on the screen: a line
+   under the row, the one that is on underlined in the accent. Drawn unlike the
+   set buttons below them, so the two rows are never read as one. */
+.drill__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.drill__tabs button {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: -1px;
+}
+
+.drill__tabs button.is-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.drill__tabs button[disabled] {
+  opacity: 0.35;
+}
+
 .drill__setup-panel {
   display: flex;
   flex-direction: column;

@@ -668,7 +668,7 @@ describe('DrillScreen', () => {
     // The folded line has to answer it on its own, or folding it away would
     // hide what is being practised.
     expect(
-      await screen.findByRole('button', { name: 'Change what is drilled: Full · Solve it · 1 / 21' }),
+      await screen.findByRole('button', { name: 'Change what is drilled: Full · 1 / 21' }),
     ).toBeInTheDocument();
 
     await openSetup(user);

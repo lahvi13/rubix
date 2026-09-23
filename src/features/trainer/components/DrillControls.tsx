@@ -133,12 +133,17 @@ interface DrillModesProps {
  * The two halves of drilling a case: performing it against the clock, and
  * only saying which one it is. Same set and same ticked cases — what changes
  * is which half of the skill is being timed.
+ *
+ * Tabs at the very top rather than a switch among the settings: they are two
+ * different screens, not two values of one, and the choice comes before the
+ * set — first what you are doing, then on what. Folded into the settings line
+ * as one word, it was the thing on the screen nobody found. The cross has
+ * nothing to name, so its second tab is there but off: the row stays put when
+ * the set changes under it.
  */
 export function DrillModes({ mode, onMode, canRecognise }: DrillModesProps) {
-  if (!canRecognise) return null;
-
   return (
-    <div className="trainer__looks">
+    <div className="drill__tabs" role="group" aria-label={strings.drill.modes}>
       <button
         type="button"
         className={mode === 'solve' ? 'is-active' : ''}
@@ -151,6 +156,8 @@ export function DrillModes({ mode, onMode, canRecognise }: DrillModesProps) {
         type="button"
         className={mode === 'recognise' ? 'is-active' : ''}
         aria-pressed={mode === 'recognise'}
+        disabled={!canRecognise}
+        title={canRecognise ? undefined : strings.drill.nothingToName}
         onClick={() => onMode('recognise')}
       >
         {strings.drill.modeRecognise}
@@ -171,10 +178,9 @@ interface DrillSetupProps {
  *
  * Three rows of switches are worth a quarter of a phone screen and are touched
  * once a session, while what the screen is actually for — a scramble and a
- * clock, or a cube and six cards — has to be taken in without scrolling. The
- * line is also the way back: it is the only thing on either drill that leads
- * to the other one, so it is full width with a chevron rather than a button
- * the eye can mistake for one more option.
+ * clock, or a cube and six cards — has to be taken in without scrolling. It
+ * is full width with a chevron rather than a button the eye can mistake for
+ * one more option.
  */
 export function DrillSetup({ summary, children }: DrillSetupProps) {
   const [isOpen, setOpen] = useState(false);

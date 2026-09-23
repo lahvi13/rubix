@@ -213,16 +213,14 @@ describe('RecognitionDrill', () => {
   });
 
   it('does not offer the cross as something to name', async () => {
-    const user = userEvent.setup();
     await setSetting('trainer.drillSetId', 'cross');
     render(<DrillScreen />);
 
-    // Naming it was a dead end, so the switch goes rather than the answer
-    // being an apology: the cross opens on the drill it actually has.
+    // The cross opens on the drill it actually has. Its other tab stays, off,
+    // so the row does not jump when the set changes under it.
     expect(await screen.findByRole('timer')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /^Change what is drilled/ }));
-    expect(screen.queryByRole('button', { name: 'Name it' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Solve it' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Solve it' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Name it' })).toBeDisabled();
   });
 
   it('leaves the stored half alone while the cross is on screen', async () => {
@@ -249,20 +247,20 @@ describe('RecognitionDrill', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
-  it('keeps the set, the pool and the way back behind one line', async () => {
+  it('switches halves with the tabs over the set, and folds the rest into one line', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
     await screen.findByText('Which case is this?');
 
-    // Folded away by default: the cube and the cards have to share one screen.
-    expect(screen.queryByRole('button', { name: 'Solve it' })).not.toBeInTheDocument();
-    // The set has its own row above the line, so the line says what is being
-    // done with it rather than repeating the name.
+    // Both halves in sight, the one on show pressed.
+    expect(screen.getByRole('button', { name: 'Name it' })).toHaveAttribute('aria-pressed', 'true');
+    // The set and the half have their own rows above the line, so the line
+    // says only what they cannot.
     expect(screen.getByRole('button', { name: 'PLL' })).toHaveClass('is-active');
-    const summary = screen.getByRole('button', { name: /Name it/ });
-    expect(summary).toHaveTextContent('Full · Name it · 2 / 21');
+    expect(screen.getByRole('button', { name: /^Change what is drilled/ })).toHaveTextContent(
+      'Full · 2 / 21',
+    );
 
-    await user.click(summary);
     await user.click(screen.getByRole('button', { name: 'Solve it' }));
 
     // The solve drill hands you something to perform instead.

@@ -476,8 +476,10 @@ export const cs: Strings = {
     /* Barvy kostky držené crossem dolů: otočením se prohodí sousedé pólů,
        takže červená je vlevo a oranžová vpravo. */
     crossColours: { F: 'Zelená', R: 'Oranžová', B: 'Modrá', L: 'Červená' },
-    modeSolve: 'Složení',
-    modeRecognise: 'Pojmenování',
+    modes: 'Co drilovat',
+    modeSolve: 'Složit',
+    modeRecognise: 'Poznat',
+    nothingToName: 'U crossu není co poznávat',
     setup: 'Změnit, co se driluje',
     inspectionOn: 'Inspekce zapnutá',
     inspectionOff: 'Inspekce vypnutá',

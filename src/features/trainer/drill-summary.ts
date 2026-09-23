@@ -1,14 +1,12 @@
-import type { DrillMode } from '../../db/repositories/settings-repository';
 import { CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../db/seed/packs';
 import { strings } from '../../lib/strings';
 
 /**
  * What the folded drill controls are set to: the route through the last layer
- * where there is a choice, which half is being drilled, and how much of the
- * set.
+ * where there is a choice, and how much of the set.
  *
- * The set itself is left out — its row stays on screen above the line, with
- * the chosen one already marked.
+ * The set and the half being drilled are left out — their rows stay on screen
+ * above the line, with the chosen ones already marked.
  *
  * The cross has none of those things: one case, no cases to tick, and only one
  * half to drill. What is behind its line is the inspection switch, so that is
@@ -17,7 +15,6 @@ import { strings } from '../../lib/strings';
  */
 export function drillSummary(
   setId: string,
-  mode: DrillMode,
   caseIds: readonly string[],
   selectedIds: readonly string[],
   crossInspection = false,
@@ -33,7 +30,6 @@ export function drillSummary(
   if (twoLookId !== undefined) {
     parts.push(setId === twoLookId ? strings.trainer.twoLook : strings.trainer.fullSet);
   }
-  parts.push(mode === 'recognise' ? strings.drill.modeRecognise : strings.drill.modeSolve);
   if (caseIds.length > 0) {
     const ticked = caseIds.filter((id) => selectedIds.includes(id));
     parts.push(`${ticked.length === 0 ? caseIds.length : ticked.length} / ${caseIds.length}`);
