@@ -4,6 +4,7 @@
  * — the image is built on the device and the reader chooses where it goes.
  */
 
+import type { Face } from '../domain/cube/notation';
 import { downloadBlob } from './download';
 import { canShareFile, shareFile } from './share';
 
@@ -18,6 +19,11 @@ export interface ShareCard {
   detail: string;
   /** When it was done. */
   date: string;
+}
+
+export interface CardLook {
+  /** The reader's cube colours, for the name in the corner. */
+  faces: Record<Face, string>;
 }
 
 /** Square, the one shape every place a cuber posts to shows whole. */
@@ -67,7 +73,12 @@ function readPalette(): Palette {
 /** Faces load on first use, and a canvas does not wait for them. */
 async function loadFaces(palette: Palette): Promise<void> {
   await Promise.all(
-    [`600 48px ${palette.sans}`, `500 48px ${palette.mono}`, `600 48px ${palette.clock}`].map(
+    [
+      `600 48px ${palette.sans}`,
+      `700 48px ${palette.sans}`,
+      `500 48px ${palette.mono}`,
+      `600 48px ${palette.clock}`,
+    ].map(
       (font) => document.fonts.load(font).catch(() => []),
     ),
   );
@@ -101,7 +112,40 @@ function fittedSize(context: CanvasRenderingContext2D, text: string, font: (size
   return size;
 }
 
-export async function renderShareCard(card: ShareCard): Promise<Blob> {
+/**
+ * The name in the corner, one letter to a sticker in the reader's own cube
+ * colours — the one place on a quiet card that says what it is about. Five
+ * letters take five of the six faces; white sits out, as on a dark card it
+ * outshone the rest. Mixed rather than in rainbow order, like a row of a
+ * scrambled cube, with no two near colours side by side.
+ */
+const LOGO = 'RUBIX';
+const LOGO_FACES: readonly Face[] = ['L', 'F', 'U', 'R', 'B'];
+const TILE = 54;
+const TILE_GAP = 8;
+
+/** Drawn centred on `middle`, the height of the date across from it. */
+function drawLogo(context: CanvasRenderingContext2D, palette: Palette, look: CardLook, middle: number): void {
+  // Heavier than the rest of the card: a letter on a coloured tile needs the
+  // weight to read as a letter rather than as a mark on the sticker.
+  context.font = `700 34px ${palette.sans}`;
+  context.textAlign = 'center';
+  const top = middle - TILE / 2;
+  [...LOGO].forEach((letter, index) => {
+    const x = PAD + index * (TILE + TILE_GAP);
+    context.fillStyle = look.faces[LOGO_FACES[index] ?? 'U'];
+    context.beginPath();
+    context.roundRect(x, top, TILE, TILE, 10);
+    context.fill();
+    // Dark on every sticker, in either theme: a letter in the theme's own
+    // text colour was lost on yellow in the light one.
+    context.fillStyle = '#15181f';
+    const ink = context.measureText(letter);
+    context.fillText(letter, x + TILE / 2, middle + (ink.actualBoundingBoxAscent - ink.actualBoundingBoxDescent) / 2);
+  });
+}
+
+export async function renderShareCard(card: ShareCard, look: CardLook): Promise<Blob> {
   const palette = readPalette();
   await loadFaces(palette);
 
@@ -116,21 +160,24 @@ export async function renderShareCard(card: ShareCard): Promise<Blob> {
   context.textBaseline = 'alphabetic';
 
   // The name and the date along the top, as the app's own header carries them.
-  context.font = `600 34px ${palette.sans}`;
   context.fillStyle = palette.muted;
-  context.textAlign = 'left';
-  context.letterSpacing = '6px';
-  context.fillText('RUBIX', PAD, PAD + 34);
-  context.letterSpacing = '0px';
   context.textAlign = 'right';
   context.font = `500 30px ${palette.sans}`;
-  context.fillText(card.date, SIZE - PAD, PAD + 32);
+  const dateInk = context.measureText(card.date);
+  const dateBaseline = PAD + 32;
+  context.fillText(card.date, SIZE - PAD, dateBaseline);
+  drawLogo(
+    context,
+    palette,
+    look,
+    dateBaseline - (dateInk.actualBoundingBoxAscent - dateInk.actualBoundingBoxDescent) / 2,
+  );
 
   // The middle block, measured first so it can be centred as a whole. The
   // heights come from the glyphs themselves rather than from the size: the
   // seven-segment face stands far taller than its size says, and a block laid
   // out by size put the number over the words above it.
-  const kickerFont = `600 38px ${palette.sans}`;
+  const kickerFont = `600 48px ${palette.sans}`;
   const headlineFont = (size: number) => `600 ${size}px ${palette.clock}`;
   const badgeFont = `600 40px ${palette.sans}`;
   const detailFont = `500 36px ${palette.mono}`;
@@ -141,7 +188,7 @@ export async function renderShareCard(card: ShareCard): Promise<Blob> {
     return { ascent: metrics.actualBoundingBoxAscent, descent: metrics.actualBoundingBoxDescent };
   };
 
-  const headlineSize = fittedSize(context, card.headline, headlineFont, 260);
+  const headlineSize = fittedSize(context, card.headline, headlineFont, 200);
   const kicker = inkOf(kickerFont, card.kicker);
   const headline = inkOf(headlineFont(headlineSize), card.headline);
   const badge = card.badge === null ? null : inkOf(badgeFont, card.badge);
@@ -207,8 +254,12 @@ export type CardOutcome = 'shared' | 'cancelled' | 'downloaded';
  * share that fails outright falls back to the download too — the picture is
  * made, and the reader should end up holding it.
  */
-export async function deliverShareCard(card: ShareCard, filename: string): Promise<CardOutcome> {
-  const blob = await renderShareCard(card);
+export async function deliverShareCard(
+  card: ShareCard,
+  look: CardLook,
+  filename: string,
+): Promise<CardOutcome> {
+  const blob = await renderShareCard(card, look);
   const file = new File([blob], filename, { type: 'image/png' });
 
   if (canShareFile(file)) {
