@@ -170,10 +170,15 @@ export function formatRate(rate: number | null): string {
   return rate === null ? '—' : `${Math.round(rate * 100)}%`;
 }
 
-/** Inspection counts down and is shown in whole seconds. */
-export function formatInspection(elapsedMs: number, limitMs: number): string {
+/**
+ * Inspection counts down and is shown in whole seconds, then says what
+ * starting now would cost. Past the second limit that is a DNF, not another
+ * +2: a solver who reads "+2" and goes for it is owed the truth.
+ */
+export function formatInspection(elapsedMs: number, limitMs: number, dnfLimitMs: number): string {
   const remaining = Math.ceil((limitMs - elapsedMs) / MS_PER_SECOND);
-  return remaining > 0 ? String(remaining) : '+2';
+  if (remaining > 0) return String(remaining);
+  return elapsedMs > dnfLimitMs ? 'DNF' : '+2';
 }
 
 export function formatClock(timestamp: number): string {

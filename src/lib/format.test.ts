@@ -16,6 +16,12 @@ import {
   formatTime,
   formatWhen,
 } from './format';
+import { penaltyLabel } from '../domain/solve/final-time';
+import {
+  INSPECTION_DNF_LIMIT_MS,
+  INSPECTION_LIMIT_MS,
+  penaltyForInspection,
+} from '../domain/solve/penalty';
 
 describe('formatMs', () => {
   it.each<[number, string]>([
@@ -49,16 +55,29 @@ describe('formatIsoDate', () => {
 
 describe('formatInspection', () => {
   it('counts down in whole seconds', () => {
-    expect(formatInspection(0, 15_000)).toBe('15');
-    expect(formatInspection(1, 15_000)).toBe('15');
-    expect(formatInspection(1000, 15_000)).toBe('14');
-    expect(formatInspection(14_500, 15_000)).toBe('1');
+    expect(formatInspection(0, 15_000, 17_000)).toBe('15');
+    expect(formatInspection(1, 15_000, 17_000)).toBe('15');
+    expect(formatInspection(1000, 15_000, 17_000)).toBe('14');
+    expect(formatInspection(14_500, 15_000, 17_000)).toBe('1');
   });
 
-  it('shows the penalty once the limit is gone', () => {
-    expect(formatInspection(15_000, 15_000)).toBe('+2');
-    expect(formatInspection(16_000, 15_000)).toBe('+2');
+  it.each([
+    [15_000, '+2'],
+    [16_000, '+2'],
+    [17_000, '+2'],
+    [17_001, 'DNF'],
+    [30_000, 'DNF'],
+  ])('shows what starting at %i ms would cost: %s', (elapsedMs, shown) => {
+    expect(formatInspection(elapsedMs, 15_000, 17_000)).toBe(shown);
   });
+
+  it.each([15_500, 16_999, 17_000, 17_001, 20_000])(
+    'agrees with the penalty the solve is given at %i ms',
+    (elapsedMs) => {
+      const shown = formatInspection(elapsedMs, INSPECTION_LIMIT_MS, INSPECTION_DNF_LIMIT_MS);
+      expect(shown).toBe(penaltyLabel(penaltyForInspection(elapsedMs)));
+    },
+  );
 });
 
 describe('formatMsParts', () => {

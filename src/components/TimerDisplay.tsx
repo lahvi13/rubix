@@ -1,6 +1,6 @@
 import { useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import type { TimerState } from '../domain/timer/timer-machine';
-import { INSPECTION_LIMIT_MS } from '../domain/solve/penalty';
+import { INSPECTION_DNF_LIMIT_MS, INSPECTION_LIMIT_MS } from '../domain/solve/penalty';
 import { useHasKeyboard } from '../hooks/use-has-keyboard';
 import { useInkCentring } from '../hooks/use-ink-centring';
 import { useSetting } from '../hooks/use-setting';
@@ -76,7 +76,7 @@ export function TimerDisplay({
 }: TimerDisplayProps) {
   const isInspecting = inspectionMs !== null;
   const hasKeyboard = useHasKeyboard();
-  const inspectionText = isInspecting ? formatInspection(inspectionMs, INSPECTION_LIMIT_MS) : '';
+  const inspectionText = isInspecting ? formatInspection(inspectionMs, INSPECTION_LIMIT_MS, INSPECTION_DNF_LIMIT_MS) : '';
   // Only the countdown: a running time is read against its hundredths, not a bar.
   const value = useRef<HTMLDivElement>(null);
   useInkCentring(value, inspectionText, isInspecting);
