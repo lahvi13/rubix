@@ -77,7 +77,7 @@ async function loadFaces(palette: Palette): Promise<void> {
       `600 48px ${palette.sans}`,
       `700 48px ${palette.sans}`,
       `500 48px ${palette.mono}`,
-      `600 48px ${palette.clock}`,
+      `400 48px ${palette.clock}`,
     ].map(
       (font) => document.fonts.load(font).catch(() => []),
     ),
@@ -178,7 +178,10 @@ export async function renderShareCard(card: ShareCard, look: CardLook): Promise<
   // seven-segment face stands far taller than its size says, and a block laid
   // out by size put the number over the words above it.
   const kickerFont = `600 48px ${palette.sans}`;
-  const headlineFont = (size: number) => `600 ${size}px ${palette.clock}`;
+  // The clock's own weight. The seven-segment face comes in one weight only,
+  // and asked for a bolder one the browser thickens it by stroking each
+  // outline — which blew the pointed ends of its segments up into arrowheads.
+  const headlineFont = (size: number) => `400 ${size}px ${palette.clock}`;
   const badgeFont = `600 40px ${palette.sans}`;
   const detailFont = `500 36px ${palette.mono}`;
 
