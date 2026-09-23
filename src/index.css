@@ -1738,6 +1738,14 @@ button[disabled] {
   justify-content: flex-end;
 }
 
+/* The time on the left, what can be done with it on the right. */
+.detail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
 .detail__result {
   font-size: var(--text-4xl);
 }
@@ -1757,11 +1765,9 @@ button[disabled] {
   color: var(--accent);
 }
 
-/* Under the scramble they act on, each no wider than its words. */
-.detail__scramble-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
+/* Under the scramble it acts on, and no wider than its words. */
+.detail__again {
+  align-self: flex-start;
 }
 
 .detail__row {

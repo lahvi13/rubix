@@ -88,22 +88,29 @@ export function SolveDetail({
 
   return (
     <Sheet label={strings.history.detailTitle} paging={paging} onClose={onClose}>
-      <span
-        className={
-          isPb ? 'detail__result is-best is-record' : isBest ? 'detail__result is-best' : 'detail__result'
-        }
-      >
-        {formatResult(resultMs, solve.penalty)}
-        {isPb || isBest ? (
-          <span
-            className={isPb ? 'history__best is-record' : 'history__best'}
-            role="img"
-            aria-label={isPb ? strings.history.personalBest : strings.history.sessionBest}
-          >
-            {strings.history.star}
-          </span>
-        ) : null}
-      </span>
+      {/* Share sits with the time, because the time is what it shares; the
+          way back to the timer sits with the scramble it takes there. */}
+      <div className="detail__head">
+        <span
+          className={
+            isPb ? 'detail__result is-best is-record' : isBest ? 'detail__result is-best' : 'detail__result'
+          }
+        >
+          {formatResult(resultMs, solve.penalty)}
+          {isPb || isBest ? (
+            <span
+              className={isPb ? 'history__best is-record' : 'history__best'}
+              role="img"
+              aria-label={isPb ? strings.history.personalBest : strings.history.sessionBest}
+            >
+              {strings.history.star}
+            </span>
+          ) : null}
+        </span>
+        <button type="button" onClick={onShare} disabled={isSharing}>
+          {isSharing ? strings.share.busy : strings.share.action}
+        </button>
+      </div>
 
       <p className="detail__scramble">{solve.scramble}</p>
       {/* A time on a scramble somebody chose is not the claim a random one
@@ -113,16 +120,11 @@ export function SolveDetail({
           {solve.scrambleSource === 'own' ? strings.scramble.own : strings.scramble.fromHistory}
         </p>
       )}
-      <div className="detail__scramble-actions">
-        {onSolveAgain === undefined ? null : (
-          <button type="button" onClick={onSolveAgain}>
-            {strings.history.solveAgain}
-          </button>
-        )}
-        <button type="button" onClick={onShare} disabled={isSharing}>
-          {isSharing ? strings.share.busy : strings.share.action}
+      {onSolveAgain === undefined ? null : (
+        <button type="button" className="detail__again" onClick={onSolveAgain}>
+          {strings.history.solveAgain}
         </button>
-      </div>
+      )}
 
       <div className="detail__row">
         <label htmlFor="detail-time">{strings.history.rawTime}</label>
