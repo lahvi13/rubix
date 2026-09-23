@@ -436,9 +436,12 @@ button[disabled] {
   z-index: 40;
   background: var(--bg);
   padding: var(--space-2) var(--space-5);
-  /* Held sideways the notch is beside the header, not above it. */
-  padding-inline-start: max(var(--space-5), env(safe-area-inset-left));
-  padding-inline-end: max(var(--space-5), env(safe-area-inset-right));
+  /* Held sideways the notch is beside the header, not above it. On a wide
+     screen the header's controls keep to the page's own width, so the menu
+     and a screen's tabs line up with the content under them instead of
+     sitting out at the edges of the monitor. */
+  padding-inline-start: max(var(--space-5), env(safe-area-inset-left), (100% - var(--page-width)) / 2);
+  padding-inline-end: max(var(--space-5), env(safe-area-inset-right), (100% - var(--page-width)) / 2);
   border-bottom: 1px solid var(--border);
 }
 
@@ -1149,8 +1152,10 @@ button[disabled] {
 .app__menu {
   position: absolute;
   top: 100%;
-  /* Off the header's padding box, which reaches into the notch in landscape. */
-  inset-inline-start: env(safe-area-inset-left, 0);
+  /* Off the header's padding box, which reaches into the notch in landscape,
+     and under the button that opened it once the header keeps to the page's
+     width on a wide screen. */
+  inset-inline-start: max(env(safe-area-inset-left, 0px), (100% - var(--page-width)) / 2);
   z-index: 9;
   display: flex;
   flex-direction: column;
@@ -1160,6 +1165,14 @@ button[disabled] {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0 0 var(--radius-lg) 0;
+}
+
+/* Wider than the page, it hangs under the button rather than off the edge of
+   the window, so both of its lower corners are free. */
+@media (min-width: 52rem) {
+  .app__menu {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
 }
 
 .app__menu button {
@@ -3660,7 +3673,6 @@ button[disabled] {
   grid-template-columns: repeat(6, 1fr);
   gap: var(--space-2);
   margin-bottom: var(--space-2);
-  max-width: 34rem;
 }
 
 .notation__item {
