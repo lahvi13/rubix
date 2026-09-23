@@ -112,7 +112,7 @@ export function timerReducer(
       if (!heldLongEnough(state.heldSince, event.at, config)) {
         return { status: 'inspecting', inspectionStartedAt: state.inspectionStartedAt };
       }
-      return startRunning(event.at, event.at - state.inspectionStartedAt);
+      return startRunning(event.at, Math.round(event.at - state.inspectionStartedAt));
     }
 
     case 'running': {
@@ -135,7 +135,7 @@ export function timerReducer(
       }
       return {
         ...state,
-        splitMs: [...state.splitMs, state.pressedAt - state.startedAt],
+        splitMs: [...state.splitMs, Math.round(state.pressedAt - state.startedAt)],
         pressedAt: null,
       };
     }
@@ -155,9 +155,12 @@ function stopAt(
   state: Extract<TimerState, { status: 'running' }>,
   at: number,
 ): TimerState {
+  // Whole milliseconds from here on. The clock reads fractions, and a time
+  // kept as 2009.6 showed 2.00 on the clock while the list, which stores it
+  // rounded, said 2.01 — the same solve two ways, one time in twenty.
   return {
     status: 'stopped',
-    rawMs: at - state.startedAt,
+    rawMs: Math.round(at - state.startedAt),
     inspectionMs: state.inspectionMs,
     splitMs: state.splitMs,
   };

@@ -130,6 +130,43 @@ describe('timerReducer edge cases', () => {
     expect(timerReducer(running, { type: 'cancel' }, noInspection).status).toBe('idle');
   });
 
+  it('keeps whole milliseconds, so the clock and the stored time agree', () => {
+    const stopped = run(
+      [
+        { type: 'press', at: 0 },
+        { type: 'release', at: 400.25 },
+        { type: 'press', at: 2409.85 },
+      ],
+      noInspection,
+    );
+    // 2009.6 ms: stored as 2010, so the clock has to say 2.01 too, not 2.00.
+    expect(stopped).toMatchObject({ status: 'stopped', rawMs: 2010 });
+  });
+
+  it('keeps whole milliseconds for the inspection and the phase boundaries', () => {
+    const inspected = run(
+      [
+        { type: 'press', at: 0 },
+        { type: 'release', at: 10.4 },
+        { type: 'press', at: 5000 },
+        { type: 'release', at: 5400.7 },
+      ],
+      withInspection,
+    );
+    expect(inspected).toMatchObject({ status: 'running', inspectionMs: 5390 });
+
+    const split = timerReducer(
+      timerReducer(
+        run([{ type: 'press', at: 0 }, { type: 'release', at: 400 }], byPhase),
+        { type: 'press', at: 1234.56 },
+        byPhase,
+      ),
+      { type: 'release', at: 1250 },
+      byPhase,
+    );
+    expect(split).toMatchObject({ status: 'running', splitMs: [835] });
+  });
+
   it('forgets a hold the system took away, so a later tap is not a full hold', () => {
     const aborted = run(
       [
