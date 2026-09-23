@@ -1,4 +1,6 @@
+import { useCallback, useState, type ReactNode } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
+import { PlayIcon, StopIcon } from '../../../components/Icons';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { caseTitle } from '../../../domain/alg/case-name';
 import { formatAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
@@ -17,6 +19,7 @@ import {
   type RecognitionProblem,
 } from '../hooks/use-recognition';
 import { AlgText } from './AlgText';
+import { CasePlayer } from './CasePlayer';
 import { CasePool } from './CasePool';
 import { CaseStatsRow } from './CaseStats';
 import { drillSummary } from '../drill-summary';
@@ -53,6 +56,40 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
   // case list, so a card is recognisable as the thing that was learned.
   const chart = question === null ? null : diagramFor(setId, question.answer.group ?? '');
 
+  // Tied to the question it was asked for, so moving on puts the next case's
+  // picture up without anything having to remember to stop the cube.
+  const questionKey = question === null ? null : `${question.answer.id} ${question.scramble}`;
+  const [playing, setPlaying] = useState<{ key: string; token: number } | null>(null);
+  const [playingMove, setPlayingMove] = useState<number | null>(null);
+  const stopPlaying = useCallback(() => setPlaying(null), []);
+  const isPlaying = outcome !== null && playing !== null && playing.key === questionKey;
+
+  const play = (): void => {
+    if (questionKey === null) return;
+    // The cube plays from the angle the question was asked at — the one the
+    // AUF was worked out for — so a cube turned round comes back first.
+    if (recognition.isTurned) recognition.turn();
+    setPlaying((current) => ({ key: questionKey, token: (current?.token ?? 0) + 1 }));
+  };
+  const turn = (): void => {
+    stopPlaying();
+    recognition.turn();
+  };
+
+  const picture =
+    question === null || chart === null ? null : (
+      <CubeDiagram
+        className="recognition__cube"
+        state={recognition.isTurned ? question.turnedState : question.state}
+        // Never the flat last-layer chart: that one shows all four sides
+        // at once, which is the one thing a cube in your hands does not.
+        view="isometric"
+        stickering={chart.stickering}
+        skin={skin}
+        label={strings.recognition.question}
+      />
+    );
+
   return (
     <main className="screen screen--scroll">
       <div className="drill__bar">
@@ -75,16 +112,31 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
         <p className="drill__hint">{problemText(recognition.problem)}</p>
       ) : (
         <section className="recognition">
-          <CubeDiagram
-            className="recognition__cube"
-            state={recognition.isTurned ? question.turnedState : question.state}
-            // Never the flat last-layer chart: that one shows all four sides
-            // at once, which is the one thing a cube in your hands does not.
-            view="isometric"
-            stickering={chart.stickering}
-            skin={skin}
-            label={strings.recognition.question}
-          />
+          {/* The cube is the button, as the timer's scramble preview is: it is
+              where the moves are played, and a button of its own in the row
+              under it cost the row a third control. Only once the question is
+              over — before that there is nothing to play. */}
+          <Stage
+            canPlay={outcome !== null && question.algorithm.length > 0}
+            isPlaying={isPlaying}
+            onClick={isPlaying ? stopPlaying : play}
+          >
+            {isPlaying ? (
+              <CasePlayer
+                // The scramble that drew the picture, so the cube starts exactly
+                // where the question left it, and the AUF goes first.
+                setupAlg={question.scramble}
+                alg={formatAlg([...(question.auf ?? []), ...question.algorithm])}
+                stickering={chart.playerStickering}
+                replayToken={playing.token}
+                onMove={setPlayingMove}
+                onFinished={stopPlaying}
+                placeholder={picture}
+              />
+            ) : (
+              picture
+            )}
+          </Stage>
 
           {/* Both of the things you do to a cube on this screen, in one row
               under it: turn it round while the question is open, and move on
@@ -95,7 +147,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
             <button
               type="button"
               className={recognition.isTurned ? 'is-active recognition__turn' : 'recognition__turn'}
-              onClick={recognition.turn}
+              onClick={turn}
             >
               {recognition.isTurned ? strings.recognition.turnBack : strings.recognition.turn}
             </button>
@@ -128,6 +180,8 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
               groups={question.groups}
               auf={question.auf}
               triggers={definitions}
+              onPlay={play}
+              playingMove={isPlaying ? playingMove : null}
             />
           )}
 
@@ -149,6 +203,33 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
         </section>
       )}
     </main>
+  );
+}
+
+interface StageProps {
+  canPlay: boolean;
+  isPlaying: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}
+
+function Stage({ canPlay, isPlaying, onClick, children }: StageProps) {
+  if (!canPlay) return <div className="recognition__stage">{children}</div>;
+
+  const label = isPlaying ? strings.trainer.stop : strings.trainer.play;
+  return (
+    <button
+      type="button"
+      className="recognition__stage"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+    >
+      {children}
+      <span className="recognition__play" aria-hidden="true">
+        {isPlaying ? <StopIcon /> : <PlayIcon />}
+      </span>
+    </button>
   );
 }
 
@@ -195,6 +276,9 @@ interface SolutionProps {
   groups: MoveGroup[];
   auf: Move[] | null;
   triggers: ReturnType<typeof useTriggers>['definitions'];
+  onPlay: () => void;
+  /** Counted through the AUF and the algorithm together, as the cube plays them. */
+  playingMove: number | null;
 }
 
 /**
@@ -206,17 +290,31 @@ interface SolutionProps {
  * wants a different one, and an algorithm learned with somebody's AUF welded
  * on is an algorithm that only works from one angle.
  */
-function Solution({ moves, groups, auf, triggers }: SolutionProps) {
+function Solution({ moves, groups, auf, triggers, onPlay, playingMove }: SolutionProps) {
   if (moves.length === 0) return null;
+
+  const aufLength = auf?.length ?? 0;
+  const isTurningAuf = playingMove !== null && playingMove < aufLength;
 
   return (
     <div className="recognition__solution">
       {auf === null || auf.length === 0 ? null : (
-        <span className="recognition__auf" title={strings.recognition.aufHint}>
+        <span
+          className="recognition__auf"
+          title={strings.recognition.aufHint}
+          aria-current={isTurningAuf ? 'step' : undefined}
+        >
           {formatAlg(auf)}
         </span>
       )}
-      <AlgText moves={moves} groups={groups} triggers={triggers} />
+      <AlgText
+        moves={moves}
+        groups={groups}
+        triggers={triggers}
+        onPlay={onPlay}
+        playLabel={strings.trainer.play}
+        playingMove={playingMove === null || isTurningAuf ? null : playingMove - aufLength}
+      />
     </div>
   );
 }

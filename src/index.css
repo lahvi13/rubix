@@ -577,6 +577,7 @@ button[disabled] {
  */
 .scramble__moves span[aria-current],
 .drill__moves span[aria-current],
+.recognition__auf[aria-current],
 .alg__move[aria-current] {
   color: var(--accent);
 }
@@ -646,7 +647,8 @@ button[disabled] {
  * has only its top face up there, and the cube seen from a corner ends below
  * it.
  */
-.scramble__play {
+.scramble__play,
+.recognition__play {
   position: absolute;
   inset-block-start: 0;
   inset-inline-end: 0;
@@ -2872,10 +2874,37 @@ button[disabled] {
 
 /* Big enough to read two side faces from arm's length, and no bigger: the
    cards under it are what the eye has to travel to and back. */
-.recognition__cube {
+/* The box, not the picture, carries the size: the cube that replaces the
+   picture must neither move the cards nor shrink, and it is drawn bigger than
+   the box and clipped, as in the case sheet, because it keeps a margin of its
+   own around the cube. */
+.recognition__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: min(60vw, 26dvh, 12rem);
-  height: auto;
   aspect-ratio: 1;
+  overflow: hidden;
+  /* A tap surface once the question is over, not a button to look at. */
+  padding: 0;
+  border: none;
+  background: none;
+  min-height: 0;
+}
+
+.recognition__cube {
+  width: 100%;
+  height: 100%;
+}
+
+.recognition__stage .case-player {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: 125%;
+  height: 125%;
+  transform: translate(-50%, -50%);
 }
 
 /*
@@ -2890,7 +2919,7 @@ button[disabled] {
     gap: var(--space-4);
   }
 
-  .recognition__cube {
+  .recognition__stage {
     width: min(60vw, 22dvh, 12rem);
   }
 }

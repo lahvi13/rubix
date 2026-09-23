@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { strings } from '../../../lib/strings';
@@ -25,6 +25,12 @@ interface CasePlayerProps {
    * over — so the still picture of the case is what belongs on screen again.
    */
   onFinished: () => void;
+  /**
+   * Shown while the player's chunk arrives. Where the player takes a still
+   * picture's place, that picture is better than a line of text: a flash of
+   * "loading" where a cube just was reads as the cube having gone.
+   */
+  placeholder?: ReactNode;
 }
 
 /**
@@ -39,6 +45,7 @@ export function CasePlayer({
   replayToken,
   onMove,
   onFinished,
+  placeholder,
 }: CasePlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
@@ -83,7 +90,9 @@ export function CasePlayer({
     element.play();
   }, [isReady, setupAlg, alg, replayToken]);
 
-  if (!isReady) return <p className="case-player__loading">{strings.trainer.loadingPlayer}</p>;
+  if (!isReady) {
+    return placeholder ?? <p className="case-player__loading">{strings.trainer.loadingPlayer}</p>;
+  }
 
   return (
     <twisty-player

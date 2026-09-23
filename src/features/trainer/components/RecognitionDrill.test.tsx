@@ -165,6 +165,20 @@ describe('RecognitionDrill', () => {
     expect(["R' F R2 U'", "F R U' R'"]).toContain(blocks[0]?.textContent);
   });
 
+  it('offers to play the answer on the cube only once the question is over', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText('Which case is this?');
+
+    expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
+
+    await user.click(firstCard());
+    await screen.findByRole('status');
+
+    // The cube itself, not a control of its own beside it.
+    expect(screen.getByRole('button', { name: 'Play' })).toHaveClass('recognition__stage');
+  });
+
   it('turns the cube round without ending the question', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
