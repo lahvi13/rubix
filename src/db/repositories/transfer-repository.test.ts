@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
 import { addSolve } from './solve-repository';
-import { createSession } from './session-repository';
-import { createTag, deleteTag } from './tag-repository';
+import { createSession, getActiveSession, getOrCreateActiveSession } from './session-repository';
+import { addUserAlgorithm } from './alg-repository';
+import { seedPacks } from '../seed/seed';
+import { createTag, deleteTag, listTags } from './tag-repository';
 import { setSetting } from './settings-repository';
 import {
   applyImportPlan,
@@ -161,6 +163,57 @@ describe('transfer repository', () => {
     expect(first.data.solves.map((s) => s.id)).toEqual(
       [...first.data.solves.map((s) => s.id)].sort(),
     );
+  });
+
+  describe('merging two devices that each set themselves up', () => {
+    /** What a second device has, taken while this one's tables are emptied. */
+    async function otherDevice(setUp: () => Promise<void>) {
+      await setUp();
+      const snapshot = await readSnapshot();
+      await Promise.all(db.tables.map((table) => table.clear()));
+      return snapshot;
+    }
+
+    it('keeps one active session per puzzle and mode, the one chosen last', async () => {
+      const phone = await otherDevice(async () => {
+        await getOrCreateActiveSession('333', 'freestyle');
+      });
+      const mine = await getOrCreateActiveSession('333', 'freestyle');
+
+      await applyImportPlan(planImport('merge', await readSnapshot(), phone));
+
+      const active = (await db.sessions.toArray()).filter((session) => session.isActive === 1);
+      expect(await db.sessions.count()).toBe(2);
+      expect(active.map((session) => session.id)).toEqual([mine.id]);
+      expect((await getActiveSession('333', 'freestyle'))?.id).toBe(mine.id);
+    });
+
+    it('keeps one active algorithm per case', async () => {
+      const phone = await otherDevice(async () => {
+        await seedPacks();
+        await addUserAlgorithm('pll-t', "R U R' U' R' F R2 U' R' U' R U R' F'");
+      });
+      await seedPacks();
+      const mine = await addUserAlgorithm('pll-t', "(R U R' U') (R' F R2 U') (R' U' R U) (R' F')");
+
+      await applyImportPlan(planImport('merge', await readSnapshot(), phone));
+
+      const active = (await db.algorithms.where('caseId').equals('pll-t').toArray()).filter(
+        (algorithm) => algorithm.isActive === 1,
+      );
+      expect(active.map((algorithm) => algorithm.id)).toEqual([mine.id]);
+    });
+
+    it('merges a tag both devices named alike instead of failing the whole import', async () => {
+      const phone = await otherDevice(async () => {
+        await createTag('OLL skip');
+      });
+      await createTag('OLL skip');
+
+      await applyImportPlan(planImport('merge', await readSnapshot(), phone));
+
+      expect((await listTags()).map((tag) => tag.name)).toEqual(['OLL skip']);
+    });
   });
 
   it('wipes everything, tombstones included, so a backup can be restored afterwards', async () => {

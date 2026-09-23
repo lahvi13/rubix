@@ -7,6 +7,7 @@ import {
   type ExportFile,
 } from '../../domain/transfer/types';
 import type { ImportPlan } from '../../domain/transfer/merge';
+import { supersededActives } from '../../domain/transfer/actives';
 import { now } from '../../lib/clock';
 
 /**
@@ -67,11 +68,27 @@ export async function buildExportFile(appVersion: string): Promise<ExportFile> {
  * Applies a plan in a single transaction: either the whole file lands or the
  * database is untouched. Deletes come from tombstones that are written in the
  * same pass, so nothing is removed without a record of the removal.
+ *
+ * Deletes go first. A row the file deleted and then brought back is in both
+ * lists, and deleting it after writing it lost it again; and a tag buried by
+ * the file still held its name against the one written in its place.
  */
 export async function applyImportPlan(plan: ImportPlan): Promise<void> {
   await db.transaction('rw', db.tables, async () => {
     if (plan.mode === 'replace') {
       await Promise.all(db.tables.map((table) => table.clear()));
+    }
+
+    if (plan.mode === 'merge') {
+      await db.sessions.bulkDelete(plan.deletes.sessions);
+      await db.solves.bulkDelete(plan.deletes.solves);
+      await db.tags.bulkDelete(plan.deletes.tags);
+      await db.methods.bulkDelete(plan.deletes.methods);
+      await db.algSets.bulkDelete(plan.deletes.algSets);
+      await db.algCases.bulkDelete(plan.deletes.algCases);
+      await db.algorithms.bulkDelete(plan.deletes.algorithms);
+      await db.triggers.bulkDelete(plan.deletes.triggers);
+      await db.settings.bulkDelete(plan.deletes.settings);
     }
 
     await db.sessions.bulkPut(plan.puts.sessions);
@@ -85,18 +102,39 @@ export async function applyImportPlan(plan: ImportPlan): Promise<void> {
     await db.settings.bulkPut(plan.puts.settings);
     await db.tombstones.bulkPut(plan.puts.tombstones);
 
-    if (plan.mode === 'merge') {
-      await db.sessions.bulkDelete(plan.deletes.sessions);
-      await db.solves.bulkDelete(plan.deletes.solves);
-      await db.tags.bulkDelete(plan.deletes.tags);
-      await db.methods.bulkDelete(plan.deletes.methods);
-      await db.algSets.bulkDelete(plan.deletes.algSets);
-      await db.algCases.bulkDelete(plan.deletes.algCases);
-      await db.algorithms.bulkDelete(plan.deletes.algorithms);
-      await db.triggers.bulkDelete(plan.deletes.triggers);
-      await db.settings.bulkDelete(plan.deletes.settings);
-    }
+    await settleActives();
   });
+}
+
+/**
+ * One active session per puzzle and mode, one active algorithm per case —
+ * which a merge breaks as a matter of course, since each device has its own.
+ * Left alone, the timer used one session while the picker hid the other as
+ * already chosen, and a case's card and its sheet named different algorithms.
+ *
+ * Whole tables rather than an index: there is no index on the flag alone,
+ * both tables are small, and an import is rare.
+ */
+async function settleActives(): Promise<void> {
+  const at = now();
+  const [sessions, algorithms] = await Promise.all([
+    db.sessions.toArray(),
+    db.algorithms.toArray(),
+  ]);
+  const switchedOff = { isActive: 0 as const, updatedAt: at };
+
+  await db.sessions.bulkUpdate(
+    supersededActives(sessions, (session) => `${session.puzzle} ${session.mode}`).map((key) => ({
+      key,
+      changes: switchedOff,
+    })),
+  );
+  await db.algorithms.bulkUpdate(
+    supersededActives(algorithms, (algorithm) => algorithm.caseId).map((key) => ({
+      key,
+      changes: switchedOff,
+    })),
+  );
 }
 
 /**

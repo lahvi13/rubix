@@ -10,7 +10,7 @@
  * the import irrelevant — importing A into B and B into A converge.
  */
 
-import type { Setting, Tombstone } from '../../db/types';
+import type { Setting, Solve, Tag, Tombstone } from '../../db/types';
 import type { ExportData, TransferTable } from './types';
 
 export type ImportMode = 'merge' | 'replace';
@@ -81,8 +81,11 @@ function planMerge(local: ExportData, incoming: ExportData): ImportPlan {
     });
 
   const sessions = byId('sessions', local.sessions, incoming.sessions);
-  const solves = byId('solves', local.solves, incoming.solves);
-  const tags = byId('tags', local.tags, incoming.tags);
+  const { tags, solves } = unifyTagNames(
+    local.tags,
+    byId('tags', local.tags, incoming.tags),
+    byId('solves', local.solves, incoming.solves),
+  );
   const methods = byId('methods', local.methods, incoming.methods);
   const algSets = byId('algSets', local.algSets, incoming.algSets);
   const algCases = byId('algCases', local.algCases, incoming.algCases);
@@ -273,6 +276,79 @@ function replaceRows<T>(input: ReplaceInput<T>): TableResult<T> {
 
   // The repository clears the tables first, so a replace never needs deletes.
   return { puts: [...input.kept, ...input.incoming], deletes: [], counts };
+}
+
+/**
+ * A tag is unique by its name, and two devices that each made "OLL skip" made
+ * two tags of it with different ids. Putting the second beside the first
+ * failed the whole import on the name index, so the incoming one is folded
+ * into the tag already here: it is not written, and the solves arriving with
+ * it are written with the local id instead.
+ *
+ * A rename arriving for a tag that exists here, onto a name another tag here
+ * already has, is left out — the tag keeps the name it has on this device.
+ * Renames are weighed before new tags, so a name one of them gives up is
+ * free for the other.
+ */
+function unifyTagNames(
+  localTags: readonly Tag[],
+  tags: TableResult<Tag>,
+  solves: TableResult<Solve>,
+): { tags: TableResult<Tag>; solves: TableResult<Solve> } {
+  const localById = new Map(localTags.map((tag) => [tag.id, tag]));
+  const incomingIds = new Set(tags.puts.map((tag) => tag.id));
+  const deleted = new Set(tags.deletes);
+
+  // Who holds each name once the import has landed, the incoming rows aside.
+  const holder = new Map<string, string>();
+  for (const tag of localTags) {
+    if (!deleted.has(tag.id) && !incomingIds.has(tag.id)) holder.set(tag.name, tag.id);
+  }
+
+  const counts: TableCounts = { ...tags.counts };
+  const puts: Tag[] = [];
+  const folded = new Map<string, string>();
+  const renames = tags.puts.filter((tag) => localById.has(tag.id));
+  const additions = tags.puts.filter((tag) => !localById.has(tag.id));
+
+  for (const tag of renames) {
+    const current = localById.get(tag.id);
+    const taken = holder.get(tag.name);
+    if (taken === undefined || current === undefined) {
+      puts.push(tag);
+      holder.set(tag.name, tag.id);
+      continue;
+    }
+    holder.set(current.name, current.id);
+    counts.updated -= 1;
+    counts.unchanged += 1;
+  }
+
+  for (const tag of additions) {
+    const taken = holder.get(tag.name);
+    if (taken === undefined) {
+      puts.push(tag);
+      holder.set(tag.name, tag.id);
+      continue;
+    }
+    folded.set(tag.id, taken);
+    counts.added -= 1;
+    counts.unchanged += 1;
+  }
+
+  const solvePuts =
+    folded.size === 0
+      ? solves.puts
+      : solves.puts.map((solve) =>
+          solve.tagIds.some((id) => folded.has(id))
+            ? { ...solve, tagIds: [...new Set(solve.tagIds.map((id) => folded.get(id) ?? id))] }
+            : solve,
+        );
+
+  return {
+    tags: { puts, deletes: tags.deletes, counts },
+    solves: { ...solves, puts: solvePuts },
+  };
 }
 
 /* Helpers. */

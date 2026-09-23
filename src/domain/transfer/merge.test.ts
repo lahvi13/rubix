@@ -186,6 +186,73 @@ describe('planImport — merge', () => {
   });
 });
 
+describe('planImport — merge, tags by name', () => {
+  const tagged = (id: string, updatedAt: number, tagIds: string[]): Solve => ({
+    ...solve(id, updatedAt),
+    tagIds,
+  });
+
+  it('folds a tag of the same name into the one already here, solves and all', () => {
+    const plan = planImport(
+      'merge',
+      data({ tags: [tag('desk', 'OLL skip', 100)] }),
+      data({ tags: [tag('phone', 'OLL skip', 200)], solves: [tagged('s', 300, ['phone'])] }),
+    );
+
+    expect(plan.puts.tags).toEqual([]);
+    expect(plan.puts.solves[0]?.tagIds).toEqual(['desk']);
+    expect(plan.counts.tags).toEqual({ added: 0, updated: 0, deleted: 0, unchanged: 1 });
+  });
+
+  it('keeps one id where a solve carries both halves of a folded tag', () => {
+    const plan = planImport(
+      'merge',
+      data({ tags: [tag('desk', 'PLL skip', 100)] }),
+      data({ tags: [tag('phone', 'PLL skip', 200)], solves: [tagged('s', 300, ['desk', 'phone'])] }),
+    );
+
+    expect(plan.puts.solves[0]?.tagIds).toEqual(['desk']);
+  });
+
+  it('leaves out a rename onto a name another tag here holds', () => {
+    const plan = planImport(
+      'merge',
+      data({ tags: [tag('a', 'Lucky', 100), tag('b', 'Skip', 100)] }),
+      data({ tags: [tag('a', 'Skip', 200)] }),
+    );
+
+    expect(plan.puts.tags).toEqual([]);
+    expect(plan.counts.tags).toEqual({ added: 0, updated: 0, deleted: 0, unchanged: 1 });
+  });
+
+  it.each([
+    [
+      'a rename gives it up',
+      data({ tags: [tag('a', 'Skip', 100)] }),
+      data({ tags: [tag('a', 'Lucky', 200), tag('n', 'Skip', 200)] }),
+    ],
+    [
+      'the tag holding it is deleted by the file',
+      data({ tags: [tag('a', 'Skip', 100)] }),
+      data({ tags: [tag('n', 'Skip', 200)], tombstones: [grave('a', 'tags', 150)] }),
+    ],
+  ])('lets a new tag have a name once %s', (_name, local, incoming) => {
+    const plan = planImport('merge', local, incoming);
+    expect(plan.puts.tags.map((row) => row.id)).toContain('n');
+  });
+
+  it('leaves the names alone when nothing collides', () => {
+    const plan = planImport(
+      'merge',
+      data({ tags: [tag('a', 'Skip', 100)] }),
+      data({ tags: [tag('n', 'Lucky', 200)], solves: [tagged('s', 300, ['n'])] }),
+    );
+
+    expect(plan.puts.tags.map((row) => row.id)).toEqual(['n']);
+    expect(plan.puts.solves[0]?.tagIds).toEqual(['n']);
+  });
+});
+
 describe('planImport — replace', () => {
   it('takes the file wholesale and reports what is lost', () => {
     const plan = planImport(
