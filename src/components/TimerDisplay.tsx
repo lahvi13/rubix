@@ -56,6 +56,7 @@ interface TimerDisplayProps {
   touchHandlers: {
     onPointerDown: (event: ReactPointerEvent) => void;
     onPointerUp: (event: ReactPointerEvent) => void;
+    onPointerCancel: (event: ReactPointerEvent) => void;
   };
 }
 

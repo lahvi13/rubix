@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { strings } from '../lib/strings';
 import { TimerDisplay } from './TimerDisplay';
 
-const handlers = { onPointerDown: () => {}, onPointerUp: () => {} };
+const handlers = { onPointerDown: () => {}, onPointerUp: () => {}, onPointerCancel: () => {} };
 
 /** Answers every media query as a mouse-and-keyboard device would, or not. */
 function pointerIsFine(matches: boolean) {

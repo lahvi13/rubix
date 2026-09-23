@@ -130,6 +130,54 @@ describe('timerReducer edge cases', () => {
     expect(timerReducer(running, { type: 'cancel' }, noInspection).status).toBe('idle');
   });
 
+  it('forgets a hold the system took away, so a later tap is not a full hold', () => {
+    const aborted = run(
+      [
+        { type: 'press', at: 0 },
+        { type: 'abort', at: 500 },
+        { type: 'press', at: 10_000 },
+        { type: 'release', at: 10_020 },
+      ],
+      noInspection,
+    );
+    expect(aborted.status).toBe('idle');
+  });
+
+  it('goes back to inspecting, still counting, when a hold during inspection is taken away', () => {
+    const aborted = run(
+      [
+        { type: 'press', at: 0 },
+        { type: 'release', at: 50 },
+        { type: 'press', at: 5000 },
+        { type: 'abort', at: 5500 },
+      ],
+      withInspection,
+    );
+    expect(aborted).toEqual({ status: 'inspecting', inspectionStartedAt: 50 });
+  });
+
+  it.each<[string, TimerEvent[], TimerConfig, number, TimerState['status']]>([
+    ['the press that stopped the solve', [
+      { type: 'press', at: 0 },
+      { type: 'release', at: 400 },
+      { type: 'press', at: 5000 },
+    ], noInspection, 5050, 'idle'],
+    ['a quick phase press', [
+      { type: 'press', at: 0 },
+      { type: 'release', at: 400 },
+      { type: 'press', at: 2000 },
+    ], byPhase, 2050, 'running'],
+    ['a held phase press', [
+      { type: 'press', at: 0 },
+      { type: 'release', at: 400 },
+      { type: 'press', at: 2000 },
+    ], byPhase, 2500, 'stopped'],
+  ])('treats an abort of %s as its release', (_name, events, config, at, expected) => {
+    const state = timerReducer(run(events, config), { type: 'abort', at }, config);
+    expect(state.status).toBe(expected);
+    if (state.status === 'running') expect(state.pressedAt).toBeNull();
+  });
+
   it('keeps a stopped result when cancel arrives, so the solve is not lost', () => {
     const stopped: TimerState = { status: 'stopped', rawMs: 1234, inspectionMs: null, splitMs: [] };
     expect(timerReducer(stopped, { type: 'cancel' }, noInspection)).toBe(stopped);

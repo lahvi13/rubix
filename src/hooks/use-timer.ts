@@ -56,6 +56,7 @@ export interface TimerView {
   touchHandlers: {
     onPointerDown: (event: ReactPointerEvent) => void;
     onPointerUp: (event: ReactPointerEvent) => void;
+    onPointerCancel: (event: ReactPointerEvent) => void;
   };
 }
 
@@ -129,6 +130,13 @@ export function useTimer(
   const stateRef = useRef(state);
   const onCompleteRef = useRef(onComplete);
   const firedCues = useRef<Set<number>>(new Set());
+  /**
+   * The fingers on the surface. A cuber rests both hands on the phone the way
+   * they would on a mat, and the attempt belongs to the pair: it is pressed
+   * with the first finger down and released with the last one up — lifting
+   * one hand used to start the clock while the other was still on the cube.
+   */
+  const pointers = useRef<Set<number>>(new Set());
   const cues = useRef<readonly number[]>(SETTING_DEFAULTS['timer.inspectionCues']);
 
   // Kept in refs so the event listeners never need re-binding, and assigned in
@@ -235,6 +243,34 @@ export function useTimer(
     };
   }, [dispatch]);
 
+  // A finger the surface never heard lift — it was unmounted under it, or
+  // the lift landed somewhere else — would otherwise stay counted for good,
+  // and every later touch would be taken for a second finger. Registered on
+  // the window, so it runs after the surface's own handler has had its turn.
+  useEffect(() => {
+    const onLift = (event: PointerEvent) => {
+      if (!pointers.current.delete(event.pointerId) || pointers.current.size > 0) return;
+      dispatch({
+        type: event.type === 'pointercancel' ? 'abort' : 'release',
+        at: monotonicNow(),
+      });
+    };
+    // A hidden page is sent no pointer events at all, so nothing still down
+    // when it went away will ever be reported up.
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') pointers.current.clear();
+    };
+
+    window.addEventListener('pointerup', onLift);
+    window.addEventListener('pointercancel', onLift);
+    document.addEventListener('visibilitychange', onHide);
+    return () => {
+      window.removeEventListener('pointerup', onLift);
+      window.removeEventListener('pointercancel', onLift);
+      document.removeEventListener('visibilitychange', onHide);
+    };
+  }, [dispatch]);
+
   return {
     state,
     displayMs: displayedMs(state, frameAt),
@@ -256,7 +292,9 @@ export function useTimer(
         if (isLocked) return;
         event.preventDefault();
         primeBeep();
-        dispatch({ type: 'press', at: monotonicNow() });
+        const isFirst = pointers.current.size === 0;
+        pointers.current.add(event.pointerId);
+        if (isFirst) dispatch({ type: 'press', at: monotonicNow() });
       },
       onPointerUp: (event: ReactPointerEvent) => {
         if (isLocked) return;
@@ -266,7 +304,14 @@ export function useTimer(
         // dispatched — and a touch's click is hit-tested where it lands, not
         // where it started.
         if (event.pointerType !== 'mouse') swallowTapClick();
+        if (!pointers.current.delete(event.pointerId) || pointers.current.size > 0) return;
         dispatch({ type: 'release', at: monotonicNow() });
+      },
+      onPointerCancel: (event: ReactPointerEvent) => {
+        // Not refused while locked: the finger may have gone down before the
+        // lock, and a press left open is what this exists to close.
+        if (!pointers.current.delete(event.pointerId) || pointers.current.size > 0) return;
+        dispatch({ type: 'abort', at: monotonicNow() });
       },
     },
   };

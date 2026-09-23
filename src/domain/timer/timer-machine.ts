@@ -45,6 +45,13 @@ export type TimerState =
 export type TimerEvent =
   | { type: 'press'; at: number }
   | { type: 'release'; at: number }
+  /**
+   * The press was taken away rather than let go: the system claimed the
+   * finger for a gesture of its own. A hold ends without starting anything —
+   * left in place, its old start made the next tap of any length count as a
+   * full hold. Anywhere else it is a release, so nothing is left mid-press.
+   */
+  | { type: 'abort'; at: number }
   /** ESC — abandon the attempt without recording it, splits included. */
   | { type: 'cancel' }
   /** The stopped solve has been dealt with; back to idle. */
@@ -60,6 +67,16 @@ export function timerReducer(
   if (event.type === 'reset') return initialTimerState;
   if (event.type === 'cancel') {
     return state.status === 'stopped' ? state : initialTimerState;
+  }
+  if (event.type === 'abort') {
+    if (state.status !== 'holding') {
+      return timerReducer(state, { type: 'release', at: event.at }, config);
+    }
+    // Inspection is already counting and keeps counting: the fifteen seconds
+    // are the solver's whether or not their finger slipped.
+    return state.inspectionStartedAt === null
+      ? initialTimerState
+      : { status: 'inspecting', inspectionStartedAt: state.inspectionStartedAt };
   }
 
   switch (state.status) {

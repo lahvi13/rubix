@@ -415,6 +415,62 @@ describe('TimerScreen', () => {
     });
   });
 
+  it('starts only once both hands are off the glass', async () => {
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    // The events below fire faster than any hand, so the session has to be
+    // there before the first of them rather than a query after it.
+    await getOrCreateActiveSession('333', 'freestyle');
+    const { container } = render(<TimerScreen />);
+    await findScramble();
+    await screen.findByText(/no solves yet/i);
+    const surface = container.querySelector('.timer');
+    if (surface === null) throw new Error('the clock never appeared');
+
+    fireEvent.pointerDown(surface, { pointerId: 1, pointerType: 'touch' });
+    fireEvent.pointerDown(surface, { pointerId: 2, pointerType: 'touch' });
+    tick(400);
+    fireEvent.pointerUp(surface, { pointerId: 1, pointerType: 'touch' });
+    tick(5000);
+    // Still being held by the other hand: the solve starts here, not above.
+    fireEvent.pointerUp(surface, { pointerId: 2, pointerType: 'touch' });
+    tick(3000);
+    const overlay = await waitFor(() => {
+      const node = container.querySelector('.timer-overlay');
+      if (node === null) throw new Error('the clock is not running');
+      return node;
+    });
+    fireEvent.pointerDown(overlay, { pointerId: 3, pointerType: 'touch' });
+    fireEvent.pointerUp(overlay, { pointerId: 3, pointerType: 'touch' });
+
+    await waitFor(async () => {
+      expect((await db.solves.toCollection().first())?.rawMs).toBe(3000);
+    });
+  });
+
+  it('forgets a hold the phone took away, so a later tap starts nothing', async () => {
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    const { container } = render(<TimerScreen />);
+    await findScramble();
+    const surface = container.querySelector('.timer');
+    if (surface === null) throw new Error('the clock never appeared');
+
+    fireEvent.pointerDown(surface, { pointerId: 1, pointerType: 'touch' });
+    tick(500);
+    // A system gesture claims the finger; no pointerup ever comes.
+    fireEvent.pointerCancel(surface, { pointerId: 1, pointerType: 'touch' });
+    tick(10_000);
+    fireEvent.pointerDown(surface, { pointerId: 2, pointerType: 'touch' });
+    tick(20);
+    fireEvent.pointerUp(surface, { pointerId: 2, pointerType: 'touch' });
+
+    await waitFor(() => expect(container.querySelector('.timer-overlay')).toBeNull());
+    expect(screen.getByRole('timer')).not.toHaveTextContent(/[1-9]/);
+  });
+
   it('pulls the list up on a drag, and never on a scroll', async () => {
     const user = userEvent.setup();
     let clock = 0;
