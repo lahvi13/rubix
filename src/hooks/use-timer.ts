@@ -14,7 +14,7 @@ import {
 } from '../domain/timer/timer-machine';
 import { penaltyForInspection } from '../domain/solve/penalty';
 import type { Penalty } from '../db/types';
-import { monotonicNow } from '../lib/clock';
+import { eventTime, monotonicNow } from '../lib/clock';
 import { beep, primeBeep } from '../lib/beep';
 import { SETTING_DEFAULTS, getSetting, setSetting } from '../db/repositories/settings-repository';
 
@@ -211,7 +211,7 @@ export function useTimer(
       // A running solve stops on ANY key (SPEC 3.1) — mid-solve nobody aims.
       if (stateRef.current.status === 'running') {
         event.preventDefault();
-        dispatch({ type: 'press', at: monotonicNow() });
+        dispatch({ type: 'press', at: eventTime(event.timeStamp) });
         return;
       }
       if (event.code !== 'Space') return;
@@ -221,7 +221,7 @@ export function useTimer(
       // so the 8s/12s cues only schedule a tone instead of creating a context
       // mid animation frame.
       primeBeep();
-      dispatch({ type: 'press', at: monotonicNow() });
+      dispatch({ type: 'press', at: eventTime(event.timeStamp) });
     };
 
     const onKeyUp = (event: KeyboardEvent) => {
@@ -232,7 +232,7 @@ export function useTimer(
       // that never resolves and a clock nothing but ESC can stop.
       if (event.code !== 'Space' && !awaitingRelease(stateRef.current)) return;
       event.preventDefault();
-      dispatch({ type: 'release', at: monotonicNow() });
+      dispatch({ type: 'release', at: eventTime(event.timeStamp) });
     };
 
     window.addEventListener('keydown', onKeyDown);
@@ -252,7 +252,7 @@ export function useTimer(
       if (!pointers.current.delete(event.pointerId) || pointers.current.size > 0) return;
       dispatch({
         type: event.type === 'pointercancel' ? 'abort' : 'release',
-        at: monotonicNow(),
+        at: eventTime(event.timeStamp),
       });
     };
     // A hidden page is sent no pointer events at all, so nothing still down
@@ -294,7 +294,7 @@ export function useTimer(
         primeBeep();
         const isFirst = pointers.current.size === 0;
         pointers.current.add(event.pointerId);
-        if (isFirst) dispatch({ type: 'press', at: monotonicNow() });
+        if (isFirst) dispatch({ type: 'press', at: eventTime(event.timeStamp) });
       },
       onPointerUp: (event: ReactPointerEvent) => {
         if (isLocked) return;
@@ -305,13 +305,13 @@ export function useTimer(
         // where it started.
         if (event.pointerType !== 'mouse') swallowTapClick();
         if (!pointers.current.delete(event.pointerId) || pointers.current.size > 0) return;
-        dispatch({ type: 'release', at: monotonicNow() });
+        dispatch({ type: 'release', at: eventTime(event.timeStamp) });
       },
       onPointerCancel: (event: ReactPointerEvent) => {
         // Not refused while locked: the finger may have gone down before the
         // lock, and a press left open is what this exists to close.
         if (!pointers.current.delete(event.pointerId) || pointers.current.size > 0) return;
-        dispatch({ type: 'abort', at: monotonicNow() });
+        dispatch({ type: 'abort', at: eventTime(event.timeStamp) });
       },
     },
   };

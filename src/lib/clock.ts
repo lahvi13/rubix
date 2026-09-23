@@ -25,3 +25,24 @@ export function now(): number {
 export function monotonicNow(): number {
   return performance.now();
 }
+
+/**
+ * How long an event may have waited for its handler and still be trusted.
+ * Anything older is more likely a timestamp on some other clock.
+ */
+const MAX_EVENT_AGE_MS = 1000;
+
+/**
+ * When an input event happened, on the monotonic clock.
+ *
+ * The event's own timestamp, not the moment its handler got to run: a phone
+ * busy with a frame hands the touch over tens of milliseconds late, and a
+ * clock read in the handler adds all of that to the solve. The timestamp is
+ * trusted only when it is on the same clock — some engines have stamped
+ * events with epoch time, and so does jsdom — and the handler's own reading
+ * stands in otherwise.
+ */
+export function eventTime(timeStamp: number): number {
+  const at = monotonicNow();
+  return timeStamp > 0 && timeStamp <= at && at - timeStamp < MAX_EVENT_AGE_MS ? timeStamp : at;
+}
