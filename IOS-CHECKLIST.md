@@ -43,10 +43,15 @@ Deploy first, then check what production actually serves — About shows
 12. Run a solve with inspection on: the cues at 8 and 12 seconds must be
     audible. Worth deciding whether they should still sound with the phone on
     silent.
+13. With the screen timeout at 30 seconds, sit on the timer for a minute
+    without touching it: the screen must stay on. Safari has kept a home-screen
+    app's screen wake lock only since iOS 18.4; below that the screen dims as
+    before, which is the expected fallback, not a bug. After five minutes with
+    no attempt it is let go on purpose.
 
 ## Status bar and theme
 
-13. Settings → Theme → Light: the status bar must lighten with the app and the
+14. Settings → Theme → Light: the status bar must lighten with the app and the
     clock and battery must stay readable. Then Dark, then System.
 
     This is the one to watch. `apple-mobile-web-app-status-bar-style` is
@@ -57,32 +62,32 @@ Deploy first, then check what production actually serves — About shows
 
 ## Offline and data
 
-14. Aeroplane mode → close the app from the switcher → launch from the home
+15. Aeroplane mode → close the app from the switcher → launch from the home
     screen. It must come up, show a scramble, and time a solve.
-15. Time three solves, close from the switcher, wait a few minutes, reopen.
+16. Time three solves, close from the switcher, wait a few minutes, reopen.
     They must still be there.
-16. Data → Export data, **from the home-screen app, not a tab**: check that a
+17. Data → Export data, **from the home-screen app, not a tab**: check that a
     file **actually comes out** (iOS opens the share sheet, or saves to Files).
     The export is a plain `<a download>` on a blob URL, which is the shakiest
     thing in the app on iOS — a standalone web app has no download bar to put
     it in. The line under the section title must change to "Last backup: Today
     · … KB".
-17. Right after the export, "Send it somewhere…" must be there. Tap it: the
+18. Right after the export, "Send it somewhere…" must be there. Tap it: the
     share sheet opens, and Mail or Files takes a `rubix-YYYY-MM-DD.txt`. If
-    the download in step 16 did nothing, this is the way out on iOS — worth
+    the download in step 17 did nothing, this is the way out on iOS — worth
     knowing before anyone relies on it.
-18. Data → Restore → Choose a file: pick that `.txt` from Files. The preview
+19. Data → Restore → Choose a file: pick that `.txt` from Files. The preview
     must come up with the solves in it ("The file changes nothing here." is
     right when restoring onto the same phone).
-19. The storage line in the Backup section: from the home-screen app it should
+20. The storage line in the Backup section: from the home-screen app it should
     say the browser **keeps** the data. "May clear" there means `persist()` was
     refused even for an installed app, and the export is all there is.
-20. If there is the patience for it, check a week later that the solves are
+21. If there is the patience for it, check a week later that the solves are
     still there.
 
 ## Updates
 
-21. After the next deploy: launch from the home screen. Within the hour, or on
+22. After the next deploy: launch from the home screen. Within the hour, or on
     returning to the foreground, "A new version is available." must appear, and
     the version on About must change after Reload. "Check for updates" on
     About should find a fresh deploy straight away.

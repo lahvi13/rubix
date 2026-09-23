@@ -16,6 +16,7 @@ import { penaltyForInspection } from '../domain/solve/penalty';
 import type { Penalty } from '../db/types';
 import { eventTime, monotonicNow } from '../lib/clock';
 import { beep, primeBeep } from '../lib/beep';
+import { useStayAwake } from './use-stay-awake';
 import { SETTING_DEFAULTS, getSetting, setSetting } from '../db/repositories/settings-repository';
 
 export interface CompletedAttempt {
@@ -103,6 +104,7 @@ export function useTimer(
 ): TimerView {
   const [state, setState] = useState<TimerState>(initialTimerState);
   const [frameAt, setFrameAt] = useState(() => monotonicNow());
+  useStayAwake(state.status);
 
   // Live, so toggling inspection on the timer screen applies immediately.
   const settings = useLiveQuery(
