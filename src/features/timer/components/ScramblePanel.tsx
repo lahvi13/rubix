@@ -1,9 +1,10 @@
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
-import { PlayIcon, StopIcon } from '../../../components/Icons';
+import { CloseIcon, PlayIcon, StopIcon } from '../../../components/Icons';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
+import type { PinSource } from '../../../hooks/use-pinned-scramble';
 import { useSetting } from '../../../hooks/use-setting';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { withWhiteTop } from '../../../lib/cube-skins';
@@ -17,6 +18,12 @@ interface ScramblePanelProps {
   onRetry: () => void;
   /** Hidden while a solve is in progress — nothing must distract from the time. */
   hidden: boolean;
+  /** Where the scramble came from when the timer did not generate it; null when it did. */
+  pinnedSource: PinSource | null;
+  /** The scramble was tapped: the reader wants to type, paste or copy one. Kept stable. */
+  onEdit: () => void;
+  /** Back to the generated scramble. Kept stable. */
+  onUnpin: () => void;
 }
 
 /**
@@ -36,6 +43,9 @@ export const ScramblePanel = memo(function ScramblePanel({
   error,
   onRetry,
   hidden,
+  pinnedSource,
+  onEdit,
+  onUnpin,
 }: ScramblePanelProps) {
   const [mode] = useSetting('ui.twistyMode');
   const [isPreviewShown] = useSetting('timer.showScramblePreview');
@@ -76,7 +86,33 @@ export const ScramblePanel = memo(function ScramblePanel({
           {scramble === null ? (
             <ScramblePlaceholder />
           ) : (
-            <ScrambleMoves scramble={scramble} playingMove={playingMove} />
+            /* The scramble itself is what is tapped to change it: a pencil
+               beside it would be one more control on the one screen that must
+               stay quiet, and it would have nowhere to go with the cube hidden. */
+            <button
+              type="button"
+              className="scramble__edit"
+              aria-label={strings.scramble.edit(scramble)}
+              onClick={onEdit}
+            >
+              <ScrambleMoves scramble={scramble} playingMove={playingMove} />
+            </button>
+          )}
+          {pinnedSource === null || scramble === null ? null : (
+            /* Said out loud, because a scramble the reader did not ask the
+               app for is one they may have forgotten they chose. */
+            <p className="scramble__pinned">
+              {pinnedSource === 'own' ? strings.scramble.own : strings.scramble.fromHistory}
+              <button
+                type="button"
+                className="scramble__unpin"
+                aria-label={strings.scramble.unpin}
+                title={strings.scramble.unpin}
+                onClick={onUnpin}
+              >
+                <CloseIcon />
+              </button>
+            </p>
           )}
           {scramble === null && isPreviewShown ? (
             /* A grey cube in the box the scramble's cube will take, so the
@@ -141,13 +177,13 @@ function ScrambleMoves({
   playingMove: number | null;
 }) {
   return (
-    <p className="scramble__text scramble__moves">
+    <span className="scramble__text scramble__moves">
       {scramble.split(' ').map((move, index) => (
         <span key={index + move} aria-current={index === playingMove ? 'step' : undefined}>
           {move + ' '}
         </span>
       ))}
-    </p>
+    </span>
   );
 }
 

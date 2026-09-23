@@ -568,6 +568,62 @@ button[disabled] {
   white-space: pre;
 }
 
+/* The scramble is the way to change it, so it is a tap surface — and must
+   still read as the scramble, not as a button. */
+.scramble__edit {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+}
+
+/* Said quietly, in the accent: a scramble the app did not draw. */
+.scramble__pinned {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+
+.scramble__unpin {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: none;
+  color: var(--muted);
+}
+
+.scramble-sheet__title {
+  margin: calc(var(--space-5) * -1) 0 0;
+  font-size: var(--text-xl);
+}
+
+.scramble-sheet__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.scramble-sheet__form textarea {
+  resize: none;
+  font-family: var(--font-mono);
+}
+
+/* The one this panel is for at the thumb's end. */
+.scramble-sheet__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
 /*
  * The move the cube is turning, while a scramble or an algorithm is played
  * back. The move itself changes colour rather than getting a mark of its own:
@@ -1659,6 +1715,11 @@ button[disabled] {
   font-size: var(--text-lg);
   color: var(--muted);
   user-select: text;
+}
+
+/* Under the scramble it acts on, and no wider than its words. */
+.detail__again {
+  align-self: flex-start;
 }
 
 .detail__row {

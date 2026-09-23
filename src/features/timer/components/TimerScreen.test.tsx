@@ -6,6 +6,7 @@ import { setSetting } from '../../../db/repositories/settings-repository';
 import { getOrCreateActiveSession } from '../../../db/repositories/session-repository';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { resetSheetHistory } from '../../../lib/sheet-history';
+import { unpinScramble } from '../../../hooks/use-pinned-scramble';
 import { TimerScreen } from './TimerScreen';
 
 // The real client spins up a module worker, which jsdom cannot run, and
@@ -26,7 +27,8 @@ let scrambles: () => Promise<string>;
 function findScramble(text = SCRAMBLE): Promise<HTMLElement> {
   return screen.findByText(
     (_, element) =>
-      element?.tagName === 'P' && element.textContent?.replace(/s+/g, ' ').trim() === text,
+      element?.classList.contains('scramble__moves') === true &&
+      element.textContent?.replace(/\s+/g, ' ').trim() === text,
   );
 }
 
@@ -71,6 +73,8 @@ describe('TimerScreen', () => {
     scrambles = () => Promise.resolve(SCRAMBLE);
     // The panels hold their entries in module state, which outlives a render.
     resetSheetHistory();
+    // So does a scramble chosen for the next solve.
+    unpinScramble();
   });
 
   it('shows a scramble, a zeroed timer and an empty session', async () => {
@@ -776,5 +780,100 @@ describe('TimerScreen', () => {
     const session = await db.sessions.toCollection().first();
     expect(session?.puzzle).toBe('333');
     expect(session?.isActive).toBe(1);
+  });
+
+  describe('a scramble of your own', () => {
+    const OWN = "F R U' R' U' R U R' F'";
+
+    async function chooseOwn(user: ReturnType<typeof userEvent.setup>, text: string) {
+      await user.click(await screen.findByRole('button', { name: /^Change the scramble/ }));
+      const field = screen.getByRole('textbox', { name: 'Scramble to solve' });
+      await user.clear(field);
+      await user.type(field, text);
+    }
+
+    it('is timed on the scramble typed in, once, and then the random ones come back', async () => {
+      const user = userEvent.setup();
+      let clock = 0;
+      const tick = (ms: number) => (clock += ms);
+      vi.spyOn(performance, 'now').mockImplementation(() => clock);
+      render(<TimerScreen />);
+      await findScramble();
+
+      await chooseOwn(user, OWN);
+      await user.click(screen.getByRole('button', { name: 'Use it' }));
+
+      expect(await findScramble(OWN)).toBeInTheDocument();
+      expect(screen.getByText('Your own scramble')).toBeInTheDocument();
+
+      await keyboardSolve(user, tick, 7000);
+      await waitFor(async () => {
+        expect((await db.solves.toCollection().first())?.scramble).toBe(OWN);
+      });
+      // The generated one was never shown in between, so it is the one back.
+      expect(await findScramble(SCRAMBLE)).toBeInTheDocument();
+      expect(screen.queryByText('Your own scramble')).toBeNull();
+    });
+
+    it('will not take what is not a scramble', async () => {
+      const user = userEvent.setup();
+      render(<TimerScreen />);
+      await findScramble();
+
+      await chooseOwn(user, 'R U X Q');
+
+      expect(screen.getByText(/Not a scramble/)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Use it' })).toBeDisabled();
+    });
+
+    it('can be put back for a random one before it is solved', async () => {
+      const user = userEvent.setup();
+      render(<TimerScreen />);
+      await findScramble();
+
+      await chooseOwn(user, OWN);
+      await user.click(screen.getByRole('button', { name: 'Use it' }));
+      await user.click(await screen.findByRole('button', { name: 'Back to a random scramble' }));
+
+      expect(await findScramble(SCRAMBLE)).toBeInTheDocument();
+    });
+
+    it('skips to a fresh random scramble from the same panel', async () => {
+      const user = userEvent.setup();
+      let served = 0;
+      scrambles = () => Promise.resolve(served++ === 0 ? SCRAMBLE : NEXT_SCRAMBLE);
+      render(<TimerScreen />);
+      await findScramble();
+
+      await user.click(screen.getByRole('button', { name: /^Change the scramble/ }));
+      await user.click(screen.getByRole('button', { name: 'New scramble' }));
+
+      expect(await findScramble(NEXT_SCRAMBLE)).toBeInTheDocument();
+    });
+
+    it('takes a solve from the list back to the timer to solve again', async () => {
+      const user = userEvent.setup();
+      const session = await getOrCreateActiveSession('333', 'freestyle');
+      await addSolve({
+        sessionId: session.id,
+        puzzle: '333',
+        mode: 'freestyle',
+        scramble: OWN,
+        rawMs: 9000,
+        penalty: 'none',
+        penaltySource: 'auto',
+        inspectionMs: null,
+        startedAt: 1,
+      });
+      render(<TimerScreen />);
+      await findScramble();
+
+      await user.click(await screen.findByRole('button', { name: /9\.00/ }));
+      await user.click(await screen.findByRole('button', { name: 'Solve this scramble again' }));
+
+      expect(await findScramble(OWN)).toBeInTheDocument();
+      expect(screen.getByText('Scramble from the history')).toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
   });
 });

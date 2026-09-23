@@ -25,6 +25,8 @@ interface SolveDetailProps {
   globalPbMs: number | null;
   /** Which session it belongs to — it need not be the one being read. */
   sessionName: string | null;
+  /** Given, the scramble can be taken back to the timer and solved again. */
+  onSolveAgain?: () => void;
   onClose: () => void;
 }
 
@@ -40,6 +42,7 @@ export function SolveDetail({
   bests,
   globalPbMs,
   sessionName,
+  onSolveAgain,
   onClose,
 }: SolveDetailProps) {
   const [timeInput, setTimeInput] = useState(() => formatMs(solve.rawMs));
@@ -98,6 +101,11 @@ export function SolveDetail({
       </span>
 
       <p className="detail__scramble">{solve.scramble}</p>
+      {onSolveAgain === undefined ? null : (
+        <button type="button" className="detail__again" onClick={onSolveAgain}>
+          {strings.history.solveAgain}
+        </button>
+      )}
 
       <div className="detail__row">
         <label htmlFor="detail-time">{strings.history.rawTime}</label>

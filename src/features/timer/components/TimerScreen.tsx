@@ -15,12 +15,14 @@ import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useSheetMotion } from '../hooks/use-sheet-motion';
 import { useScramble } from '../../../hooks/use-scramble';
+import { pinScramble, unpinScramble, usePinnedScramble } from '../../../hooks/use-pinned-scramble';
 import { useBackToClose } from '../../../hooks/use-back-to-close';
 import { usePull } from '../../../hooks/use-pull';
 import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useSetting } from '../../../hooks/use-setting';
 import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
 import { ScramblePanel } from './ScramblePanel';
+import { ScrambleSheet } from './ScrambleSheet';
 import { SolveList } from './SolveList';
 import { TimerDisplay, type TimerNote } from '../../../components/TimerDisplay';
 
@@ -57,6 +59,12 @@ function noteFor(note: ResultNote, phases: readonly MethodPhase[]): TimerNote {
 export function TimerScreen() {
   const session = useActiveSession(PUZZLE, MODE);
   const scramble = useScramble(PUZZLE);
+  const pinned = usePinnedScramble();
+  // What the next attempt is timed on: one put here by hand or taken from the
+  // history, or else the generated one, which waits underneath until then.
+  const current = pinned?.scramble ?? scramble.scramble;
+  const [isEditingScramble, setEditingScramble] = useState(false);
+  const openScramble = useCallback(() => setEditingScramble(true), []);
   const { solves, total, changePenalty, remove } = useRecentSolves(session?.id ?? null);
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
   const [runningDisplay] = useSetting('timer.runningDisplay');
@@ -79,10 +87,20 @@ export function TimerScreen() {
   // it, so there is no way to be browsing and solving at once.
   const [isBrowsing, setBrowsing] = useState(false);
 
+  const wasPinned = pinned !== null;
+  // A scramble chosen just now is one to show, even when it is the very one
+  // just solved — which is what "solve it again" straight after a solve is.
+  // Adjusted during render, or the panel would paint hidden first.
+  const [pinnedSeen, setPinnedSeen] = useState(pinned);
+  if (pinned !== pinnedSeen) {
+    setPinnedSeen(pinned);
+    if (pinned !== null) setSolvedScramble(null);
+  }
+
   const handleComplete = useCallback(
     (attempt: CompletedAttempt) => {
       setShowResult(true);
-      setSolvedScramble(scramble.scramble);
+      setSolvedScramble(current);
       /*
        * And the list goes back down, if it was up. On a phone there is
        * nothing to start an attempt with while it is up — the clock is
@@ -113,7 +131,7 @@ export function TimerScreen() {
             puzzle: PUZZLE,
             mode: MODE,
             // A missing scramble must not cost the user the time itself.
-            scramble: scramble.scramble ?? '',
+            scramble: current ?? '',
             rawMs: attempt.rawMs,
             penalty: attempt.penalty,
             // Anything set at this point came from the inspection rules, not the user.
@@ -127,12 +145,15 @@ export function TimerScreen() {
             })),
             phaseKeys,
           }).then(() => {
-            scramble.next();
+            // A chosen scramble is for one solve; the generated one that was
+            // waiting under it is still unseen, so it comes back as it was.
+            if (wasPinned) unpinScramble();
+            else scramble.next();
           }),
         strings.errors.saveSolve,
       );
     },
-    [session, scramble, phaseKeys],
+    [session, scramble, current, wasPinned, phaseKeys],
   );
 
   const timer = useTimer(handleComplete, { phases: phaseKeys });
@@ -249,10 +270,13 @@ export function TimerScreen() {
           only out of sight: nothing covered should take a Tab or be read out. */}
       <div className="scramble-slot" inert={showBrowsing}>
         <ScramblePanel
-          scramble={scramble.scramble}
-          error={scramble.error}
+          scramble={current}
+          error={pinned === null ? scramble.error : null}
           onRetry={scramble.next}
-          hidden={isEngaged || (resultVisible && scramble.scramble === solvedScramble)}
+          hidden={isEngaged || (resultVisible && current === solvedScramble)}
+          pinnedSource={pinned?.source ?? null}
+          onEdit={openScramble}
+          onUnpin={unpinScramble}
         />
       </div>
 
@@ -393,6 +417,22 @@ export function TimerScreen() {
           />
         </section>
       </div>
+
+      {isEditingScramble ? (
+        <ScrambleSheet
+          scramble={current}
+          onUse={(text) => {
+            pinScramble(text, 'own');
+            setEditingScramble(false);
+          }}
+          onNewRandom={() => {
+            if (pinned === null) scramble.next();
+            else unpinScramble();
+            setEditingScramble(false);
+          }}
+          onClose={() => setEditingScramble(false)}
+        />
+      ) : null}
 
       {openSolveId === null ? null : (
         <SolveDetailSheet

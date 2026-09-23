@@ -6,6 +6,9 @@ import { getSolve, updateSolve, type SolvePatch } from '../../../db/repositories
 import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useRemoveSolves } from '../../../hooks/use-remove-solves';
+import { navigate } from '../../../app/router';
+import { parseAlg } from '../../../domain/cube/notation';
+import { pinScramble } from '../../../hooks/use-pinned-scramble';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { SessionPicker } from '../../sessions';
@@ -72,6 +75,13 @@ export function SolveDetailSheet({
             at < solveIds.length - 1 ? () => onOpen(solveIds[at + 1] ?? solve.id) : null,
         };
 
+  // Only a timer solve's scramble is one to go back to: a drill's takes the
+  // cube to a case, and the drill draws its own. One that no longer parses —
+  // an old import — would put a cube on the timer that is not the one solved.
+  const scramble = solve.scramble.trim();
+  const canSolveAgain =
+    solve.mode === 'freestyle' && scramble !== '' && parseAlg(scramble).ok;
+
   // The sheet turns into the choice rather than stacking one on top of it: two
   // panels deep, the one underneath is covered anyway and only the way back out
   // gets harder. Once the solve is filed elsewhere this detail is showing a
@@ -110,6 +120,15 @@ export function SolveDetailSheet({
       bests={bests}
       globalPbMs={globalPbMs}
       sessionName={session?.name ?? null}
+      onSolveAgain={
+        canSolveAgain
+          ? () => {
+              pinScramble(scramble, 'history');
+              onClose();
+              navigate('timer');
+            }
+          : undefined
+      }
       onClose={onClose}
     />
   );
