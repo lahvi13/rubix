@@ -238,7 +238,7 @@ export const cs: Strings = {
     noSolves: 'V této session zatím nejsou žádná složení.',
     loadMore: 'Načíst další',
     detailTitle: 'Detail složení',
-    solveAgain: 'Složit tenhle scramble znovu',
+    solveAgain: 'Složit tento scramble znovu',
     close: 'Zavřít',
     rawTime: 'Čas',
     invalidTime: 'Zadej 12.34 nebo 1:23.45 — případně 1 23.45, bez dvojtečky',
@@ -306,7 +306,7 @@ export const cs: Strings = {
     stepsNav: 'Kroky',
     hide: 'Odebrat tohoto průvodce z menu',
     hideHint:
-      'Až budeš kostku skládat bez čtení, vyhoď průvodce z menu. Nastavení ho vrátí zpátky.',
+      'Až budeš kostku skládat bez čtení, vyhoď průvodce z menu. V nastavení to můžeš vrátit zpět.',
     source: 'Metoda i pořadí kroků vychází z průvodce pro začátečníky na',
     sourceLink: 'badmephisto.com',
     loading: 'Načítám případy…',
