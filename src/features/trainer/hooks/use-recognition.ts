@@ -109,7 +109,9 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   const stats = useRecognitionStats((cases ?? []).map((entry) => entry.algCase.id));
   // The cases slow to be told apart come up more often; see drill/weights.
   const weights = useMemo(
-    () => caseWeights((pool ?? []).map((entry) => entry.algCase.id), stats),
+    // Read against the clock when the numbers change, which is after every
+    // attempt — close enough for a measure counted in days.
+    () => caseWeights((pool ?? []).map((entry) => entry.algCase.id), stats, now()),
     [pool, stats],
   );
 

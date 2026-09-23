@@ -7,6 +7,12 @@ export const MIN_WEIGHT = 0.5;
 /** And the most — a case that keeps failing must not take the drill over. */
 export const MAX_WEIGHT = 3;
 
+const MS_PER_DAY = 86_400_000;
+/** Drilled within this long ago, a case is taken as fresh in the hands. */
+export const FRESH_FOR_MS = MS_PER_DAY;
+/** Left alone this long, a case comes up twice as often as its pace says. */
+export const FORGOTTEN_AFTER_MS = 14 * MS_PER_DAY;
+
 /**
  * How often each case of the pool should come up, against a typical one at 1.
  *
@@ -17,11 +23,18 @@ export const MAX_WEIGHT = 3;
  * pace already counts them. A case with too few attempts to have a pace is
  * drawn as though it were slow — it is the one that most needs attempts.
  *
+ * A pace goes stale. A case that was quick a month ago may not be now, and
+ * judged on pace alone it would be the one drawn least — so the longer since
+ * it was last drilled, the more it comes up: unchanged for a day, rising
+ * evenly to twice as often at two weeks. A quick case left alone comes back
+ * to an ordinary share; a slow one was already near the top.
+ *
  * Everything at 1 while nothing in the pool has a pace to compare with.
  */
 export function caseWeights(
   caseIds: readonly string[],
   stats: ReadonlyMap<string, CaseStats> | undefined,
+  at: number,
 ): Map<string, number> {
   const paces = new Map<string, number>();
   for (const id of caseIds) {
@@ -37,9 +50,19 @@ export function caseWeights(
     const pace = paces.get(id);
     if (middle === null) weights.set(id, 1);
     else if (pace === undefined) weights.set(id, NEW_CASE_WEIGHT);
-    else weights.set(id, clamp((pace / middle) ** 2, MIN_WEIGHT, MAX_WEIGHT));
+    else {
+      const staleness = stalenessFactor(stats?.get(id)?.lastAt ?? null, at);
+      weights.set(id, clamp((pace / middle) ** 2 * staleness, MIN_WEIGHT, MAX_WEIGHT));
+    }
   }
   return weights;
+}
+
+/** 1 for a case drilled within the day, rising evenly to 2 at two weeks and past. */
+export function stalenessFactor(lastAt: number | null, at: number): number {
+  if (lastAt === null) return 1;
+  const idle = at - lastAt - FRESH_FOR_MS;
+  return 1 + clamp(idle / (FORGOTTEN_AFTER_MS - FRESH_FOR_MS), 0, 1);
 }
 
 function median(values: readonly number[]): number | null {

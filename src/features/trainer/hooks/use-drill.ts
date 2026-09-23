@@ -110,7 +110,9 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   const stats = useCaseStats((cases ?? []).map((entry) => entry.algCase.id));
   // The slow cases come up more often; see drill/weights.
   const weights = useMemo(
-    () => caseWeights((pool ?? []).map((entry) => entry.algCase.id), stats),
+    // Read against the clock when the numbers change, which is after every
+    // attempt — close enough for a measure counted in days.
+    () => caseWeights((pool ?? []).map((entry) => entry.algCase.id), stats, now()),
     [pool, stats],
   );
 

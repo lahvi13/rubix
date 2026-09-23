@@ -1,14 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import type { CaseStats } from './case-stats';
-import { caseWeights, MAX_WEIGHT, MIN_WEIGHT, NEW_CASE_WEIGHT } from './weights';
+import { caseWeights, MAX_WEIGHT, MIN_WEIGHT, NEW_CASE_WEIGHT, stalenessFactor } from './weights';
 
-function stats(caseId: string, attempts: number, ao5: CaseStats['ao5'], meanMs: number | null = null): CaseStats {
+const DAY = 86_400_000;
+const NOW = 100 * DAY;
+
+function stats(
+  caseId: string,
+  attempts: number,
+  ao5: CaseStats['ao5'],
+  meanMs: number | null = null,
+  lastAt: number | null = null,
+): CaseStats {
   return {
     caseId,
     attempts,
     bestMs: null,
     lastMs: null,
-    lastAt: null,
+    lastAt,
     ao5,
     ao12: null,
     meanMs,
@@ -19,12 +28,12 @@ function stats(caseId: string, attempts: number, ao5: CaseStats['ao5'], meanMs: 
 function weightsOf(entries: CaseStats[], extraIds: string[] = []): Record<string, number> {
   const ids = [...entries.map((entry) => entry.caseId), ...extraIds];
   const map = new Map(entries.map((entry) => [entry.caseId, entry]));
-  return Object.fromEntries(caseWeights(ids, map));
+  return Object.fromEntries(caseWeights(ids, map, NOW));
 }
 
 describe('caseWeights', () => {
   it('draws everything evenly while the numbers are still loading', () => {
-    expect(Object.fromEntries(caseWeights(['a', 'b'], undefined))).toEqual({ a: 1, b: 1 });
+    expect(Object.fromEntries(caseWeights(['a', 'b'], undefined, NOW))).toEqual({ a: 1, b: 1 });
   });
 
   it('draws everything evenly while no case has a pace to compare', () => {
@@ -61,5 +70,41 @@ describe('caseWeights', () => {
     // Middle 2000: a is at half pace, a quarter squared, held up at the floor.
     expect(weights.a).toBe(MIN_WEIGHT);
     expect(weights.b).toBeCloseTo(2.25);
+  });
+});
+
+describe('stalenessFactor', () => {
+  it.each<[string, number | null, number]>([
+    ['never drilled — the pace weight has that covered', null, 1],
+    ['drilled an hour ago', NOW - DAY / 24, 1],
+    ['drilled exactly a day ago', NOW - DAY, 1],
+    ['a week and a half ago, halfway', NOW - 7.5 * DAY, 1.5],
+    ['two weeks ago', NOW - 14 * DAY, 2],
+    ['half a year ago, no more than two weeks', NOW - 180 * DAY, 2],
+    ['a clock that went backwards', NOW + DAY, 1],
+  ])('weighs a case %s at %f', (_name, lastAt, expected) => {
+    expect(stalenessFactor(lastAt, NOW)).toBeCloseTo(expected);
+  });
+});
+
+describe('caseWeights with time', () => {
+  it('brings a quick case left alone back to an ordinary share', () => {
+    const weights = weightsOf([
+      stats('fresh', 5, 2000, null, NOW - DAY / 2),
+      stats('quick', 5, 1414, null, NOW - 14 * DAY),
+      stats('slow', 5, 3000, null, NOW - DAY / 2),
+    ]);
+    // Half the pace weight (1414 against 2000, squared), doubled for the two weeks.
+    expect(weights.quick).toBeCloseTo(1, 1);
+    expect(weights.fresh).toBe(1);
+  });
+
+  it('keeps a slow, forgotten case at the ceiling rather than past it', () => {
+    const weights = weightsOf([
+      stats('a', 5, 2000, null, NOW),
+      stats('b', 5, 2000, null, NOW),
+      stats('slow', 5, 3000, null, NOW - 30 * DAY),
+    ]);
+    expect(weights.slow).toBe(MAX_WEIGHT);
   });
 });
