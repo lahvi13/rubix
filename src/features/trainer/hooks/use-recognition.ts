@@ -4,7 +4,7 @@ import type { AlgCase, Algorithm } from '../../../db/types';
 import { listCasesWithAlgs, type CaseWithAlg } from '../../../db/repositories/alg-repository';
 import { loadDrillPool } from '../../../db/repositories/drill-repository';
 import { addRecognitionAttempt } from '../../../db/repositories/recognition-repository';
-import { parseAlg, type Move } from '../../../domain/cube/notation';
+import { parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import type { CubeState } from '../../../domain/cube/state';
 import { aufForAngle } from '../../../domain/recognition/angle';
 import { drillScramble } from '../../../domain/drill/scramble';
@@ -29,6 +29,8 @@ export interface RecognitionQuestion {
   answer: AlgCase;
   /** How the case is solved, once it is no longer a secret. */
   algorithm: Move[];
+  /** The brackets it was written with, so it reads the way the trainer shows it. */
+  groups: MoveGroup[];
   /**
    * The turn to make before it, for the angle this question was met at. Empty
    * when none is needed; null when the algorithm does not solve the case at
@@ -139,10 +141,11 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
       }
     }
 
-    const algorithm = movesOf(answer.active);
+    const { moves: algorithm, groups } = movesOf(answer.active);
     return {
       answer: answer.algCase,
       algorithm,
+      groups,
       // Worked out for this angle rather than for the case: the same algorithm
       // wants a different turn in front of it depending on where the case was
       // met, and that turn is half of what a solver does after recognising it.
@@ -215,12 +218,12 @@ function problemOf(pool: CaseWithAlg[] | undefined): RecognitionProblem | null {
 }
 
 /** The algorithm a case is drilled with, or nothing to show. */
-function movesOf(algorithm: Algorithm | null): Move[] {
-  if (algorithm === null) return [];
+function movesOf(algorithm: Algorithm | null): { moves: Move[]; groups: MoveGroup[] } {
+  if (algorithm === null) return { moves: [], groups: [] };
   const parsed = parseAlg(algorithm.moves);
   // Text that does not parse is a variant somebody typed and the app kept as
   // written; there is nothing to print as moves.
-  return parsed.ok ? parsed.moves : [];
+  return parsed.ok ? { moves: parsed.moves, groups: parsed.groups } : { moves: [], groups: [] };
 }
 
 /** One round: which case, which cards, and the cube the reader is shown. */

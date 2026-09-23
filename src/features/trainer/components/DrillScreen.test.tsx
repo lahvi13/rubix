@@ -249,6 +249,23 @@ describe('DrillScreen', () => {
     expect(screen.getByText('Answer shown — Next case to go again')).toBeInTheDocument();
   });
 
+  it('draws the brackets the algorithm was written with, as the trainer does', async () => {
+    // A block no trigger claims, so only the bracket can draw it.
+    await db.algorithms
+      .where('caseId')
+      .equals('pll-t')
+      .modify({ moves: "R U R' U' (R' F R2 U') R' U' R U R' F'" });
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText(CASE_SCRAMBLE);
+
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+    await screen.findByRole('heading', { name: 'T' });
+
+    const blocks = [...document.querySelectorAll('.drill__answer .alg__part--group')];
+    expect(blocks.map((node) => node.textContent)).toEqual(["R' F R2 U'"]);
+  });
+
   it('lets a look-up be thrown away, but not turned into a time', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);

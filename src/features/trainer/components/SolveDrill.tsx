@@ -3,7 +3,7 @@ import { CubeDiagram } from '../../../components/CubeDiagram';
 import { ChevronIcon } from '../../../components/Icons';
 import { TimerDisplay } from '../../../components/TimerDisplay';
 import { useHasKeyboard } from '../../../hooks/use-has-keyboard';
-import { formatAlg, parseAlg, type Move } from '../../../domain/cube/notation';
+import { formatAlg, parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import { CROSS_HOLDS, crossSolutions, warmCrossSolver } from '../../../domain/cube/cross-solver';
 import { CROSS_CASE_ID } from '../../../db/seed/packs';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
@@ -319,7 +319,7 @@ function Answer({
   onNext,
 }: AnswerProps) {
   const diagram = diagramFor(setId, current.algCase.group ?? '');
-  const moves = movesOf(current.algorithm?.moves ?? '');
+  const { moves, groups } = movesOf(current.algorithm?.moves ?? '');
   const title = packLabel(caseTitle(current.algCase));
 
   return (
@@ -337,7 +337,7 @@ function Answer({
           label={title}
         />
       )}
-      {moves.length === 0 ? null : <AlgText moves={moves} triggers={triggers} />}
+      {moves.length === 0 ? null : <AlgText moves={moves} groups={groups} triggers={triggers} />}
       {isCross ? <CrossSolution scramble={current.scramble ?? ''} /> : null}
 
       <CaseStatsRow stats={stats} />
@@ -359,9 +359,9 @@ function Answer({
   );
 }
 
-function movesOf(text: string): Move[] {
+function movesOf(text: string): { moves: Move[]; groups: MoveGroup[] } {
   const parsed = parseAlg(text);
-  return parsed.ok ? parsed.moves : [];
+  return parsed.ok ? { moves: parsed.moves, groups: parsed.groups } : { moves: [], groups: [] };
 }
 
 /** Indexable by any face; the four sides are the ones that can be in front. */

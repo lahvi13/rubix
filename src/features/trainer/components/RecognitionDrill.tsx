@@ -1,7 +1,7 @@
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { caseTitle } from '../../../domain/alg/case-name';
-import { formatAlg, type Move } from '../../../domain/cube/notation';
+import { formatAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import { formatTime } from '../../../lib/format';
@@ -125,6 +125,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
           {outcome === null ? null : (
             <Solution
               moves={question.algorithm}
+              groups={question.groups}
               auf={question.auf}
               triggers={definitions}
             />
@@ -191,6 +192,7 @@ function Verdict({ outcome, title }: VerdictProps) {
 
 interface SolutionProps {
   moves: Move[];
+  groups: MoveGroup[];
   auf: Move[] | null;
   triggers: ReturnType<typeof useTriggers>['definitions'];
 }
@@ -204,7 +206,7 @@ interface SolutionProps {
  * wants a different one, and an algorithm learned with somebody's AUF welded
  * on is an algorithm that only works from one angle.
  */
-function Solution({ moves, auf, triggers }: SolutionProps) {
+function Solution({ moves, groups, auf, triggers }: SolutionProps) {
   if (moves.length === 0) return null;
 
   return (
@@ -214,7 +216,7 @@ function Solution({ moves, auf, triggers }: SolutionProps) {
           {formatAlg(auf)}
         </span>
       )}
-      <AlgText moves={moves} triggers={triggers} />
+      <AlgText moves={moves} groups={groups} triggers={triggers} />
     </div>
   );
 }

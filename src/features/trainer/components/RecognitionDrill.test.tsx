@@ -143,6 +143,28 @@ describe('RecognitionDrill', () => {
     expect(["", 'U', 'U2', "U'"]).toContain(auf);
   });
 
+  it('draws the brackets the algorithm was written with, as the trainer does', async () => {
+    // Blocks no trigger claims, so only the brackets can draw them.
+    await db.algorithms
+      .where('caseId')
+      .equals('pll-t')
+      .modify({ moves: "R U R' U' (R' F R2 U') R' U' R U R' F'" });
+    await db.algorithms
+      .where('caseId')
+      .equals('pll-y')
+      .modify({ moves: "(F R U' R') U' R U R' F' R U R' U' R' F R F'" });
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText('Which case is this?');
+
+    await user.click(firstCard());
+    await screen.findByRole('status');
+
+    const blocks = [...document.querySelectorAll('.recognition__solution .alg__part--group')];
+    expect(blocks).toHaveLength(1);
+    expect(["R' F R2 U'", "F R U' R'"]).toContain(blocks[0]?.textContent);
+  });
+
   it('turns the cube round without ending the question', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
