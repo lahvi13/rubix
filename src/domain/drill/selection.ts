@@ -8,6 +8,8 @@ import type { Random } from '../../lib/random';
 /** Everything picking needs to know about a case. */
 export interface Identified {
   id: string;
+  /** How often it should come up against the others; 1 when left out. See drill/weights. */
+  weight?: number;
 }
 
 /** One item of the list, chosen uniformly. Undefined only for an empty list. */
@@ -40,9 +42,10 @@ export function shuffle<T>(items: readonly T[], random: Random): T[] {
 }
 
 /**
- * The case to drill next. Never the same one twice in a row while there is
- * anything else to pick: a repeat is the one case whose answer is still on
- * the screen, so drilling it measures memory of the last ten seconds.
+ * The case to drill next, in proportion to its weight. Never the same one
+ * twice in a row while there is anything else to pick: a repeat is the one
+ * case whose answer is still on the screen, so drilling it measures memory of
+ * the last ten seconds.
  */
 export function pickNextCase<T extends Identified>(
   pool: readonly T[],
@@ -53,7 +56,21 @@ export function pickNextCase<T extends Identified>(
     pool.length > 1 && previousId !== null
       ? pool.filter((entry) => entry.id !== previousId)
       : pool;
-  return pickFrom(candidates.length === 0 ? pool : candidates, random) ?? null;
+  return pickWeighted(candidates.length === 0 ? pool : candidates, random) ?? null;
+}
+
+function pickWeighted<T extends Identified>(items: readonly T[], random: Random): T | undefined {
+  const weightOf = (item: T): number => Math.max(0, item.weight ?? 1);
+  const total = items.reduce((sum, item) => sum + weightOf(item), 0);
+  if (total <= 0) return pickFrom(items, random);
+
+  let left = random() * total;
+  for (const item of items) {
+    left -= weightOf(item);
+    if (left < 0) return item;
+  }
+  // Rounding can leave a sliver past the last one; it belongs to the last one.
+  return items[items.length - 1];
 }
 
 /**

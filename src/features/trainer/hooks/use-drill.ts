@@ -10,12 +10,15 @@ import { crossScramble } from '../../../domain/drill/cross-scramble';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { drillScramble } from '../../../domain/drill/scramble';
 import { pickNextCase } from '../../../domain/drill/selection';
+import type { CaseStats } from '../../../domain/drill/case-stats';
+import { caseWeights } from '../../../domain/drill/weights';
 import { useTimer, type CompletedAttempt, type TimerView } from '../../../hooks/use-timer';
 import { now } from '../../../lib/clock';
 import { logQuietly, reportError, watchWrite } from '../../../lib/errors';
 import { systemRandom } from '../../../lib/random';
 import { requestCaseScramble } from '../../../lib/scramble-client';
 import { strings } from '../../../lib/strings';
+import { useCaseStats } from './use-case-stats';
 
 const PUZZLE = '333';
 
@@ -53,6 +56,8 @@ export interface DrillView {
   cases: CaseWithAlg[] | undefined;
   /** The cases actually being drilled — the selection, or the whole set. */
   pool: CaseWithAlg[] | undefined;
+  /** Every case's numbers, by case id. Undefined while loading. */
+  stats: Map<string, CaseStats> | undefined;
   current: DrillItem | null;
   /** Cross is drilled from a scramble, so it has no case to recognise. */
   isCross: boolean;
@@ -102,6 +107,12 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   );
   const cases = data?.cases;
   const pool = data?.pool;
+  const stats = useCaseStats((cases ?? []).map((entry) => entry.algCase.id));
+  // The slow cases come up more often; see drill/weights.
+  const weights = useMemo(
+    () => caseWeights((pool ?? []).map((entry) => entry.algCase.id), stats),
+    [pool, stats],
+  );
 
   /*
    * The cross gets its own scramble, drawn here rather than fetched from
@@ -156,9 +167,9 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
 
   const advance = useCallback(
     (previousId: string | null) => {
-      setPick(drawFrom(pool ?? [], previousId));
+      setPick(drawFrom(pool ?? [], previousId, weights));
     },
-    [pool],
+    [pool, weights],
   );
 
   // Which pool the case on screen was drawn from. A different set, or a
@@ -170,7 +181,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     // "the state no longer matches what it was derived from" case, and doing
     // it in an effect would paint the previous set's case first.
     setDrawnFor(poolKey);
-    setPick(drawFrom(pool ?? [], null));
+    setPick(drawFrom(pool ?? [], null, weights));
   }
 
   // The completion callback lives as long as the timer does, so what it needs
@@ -255,6 +266,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   return {
     cases,
     pool,
+    stats,
     current,
     isCross,
     timer,
@@ -310,9 +322,13 @@ function spelled(text: string): string {
 }
 
 /** One case out of the pool; its scramble is found afterwards (see useDrill). */
-function drawFrom(pool: readonly CaseWithAlg[], previousId: string | null): Pick | null {
+function drawFrom(
+  pool: readonly CaseWithAlg[],
+  previousId: string | null,
+  weights: ReadonlyMap<string, number>,
+): Pick | null {
   const chosen = pickNextCase(
-    pool.map((entry) => ({ id: entry.algCase.id, entry })),
+    pool.map((entry) => ({ id: entry.algCase.id, weight: weights.get(entry.algCase.id), entry })),
     previousId,
     systemRandom,
   );

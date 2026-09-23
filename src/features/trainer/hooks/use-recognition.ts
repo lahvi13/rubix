@@ -10,12 +10,15 @@ import { aufForAngle } from '../../../domain/recognition/angle';
 import { drillScramble } from '../../../domain/drill/scramble';
 import { fromOtherCorner } from '../../../domain/recognition/corner';
 import { buildRound, MIN_POOL } from '../../../domain/recognition/round';
+import type { CaseStats } from '../../../domain/drill/case-stats';
+import { caseWeights } from '../../../domain/drill/weights';
 import { now } from '../../../lib/clock';
 import { reportError } from '../../../lib/errors';
 import { systemRandom } from '../../../lib/random';
 import { strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
 import { stateOf } from './use-alg-cases';
+import { useRecognitionStats } from './use-case-stats';
 
 const PUZZLE = '333';
 
@@ -58,6 +61,8 @@ export type RecognitionProblem = 'loading' | 'empty' | 'tooFew';
 export interface RecognitionView {
   /** Every case of the set, for the picker. Undefined while loading. */
   cases: CaseWithAlg[] | undefined;
+  /** How quickly each case is recognised, by case id. Undefined while loading. */
+  stats: Map<string, CaseStats> | undefined;
   question: RecognitionQuestion | null;
   problem: RecognitionProblem | null;
   /** The cube has been turned round to show the other two sides. */
@@ -101,6 +106,12 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
 
   const cases = data?.cases;
   const pool = useMemo(() => data?.pool, [data]);
+  const stats = useRecognitionStats((cases ?? []).map((entry) => entry.algCase.id));
+  // The cases slow to be told apart come up more often; see drill/weights.
+  const weights = useMemo(
+    () => caseWeights((pool ?? []).map((entry) => entry.algCase.id), stats),
+    [pool, stats],
+  );
 
   const [round, setRound] = useState<Round | null>(null);
   const [isTurned, setTurned] = useState(false);
@@ -113,7 +124,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   const [drawnFor, setDrawnFor] = useState<string | null>(null);
   if (poolKey !== null && poolKey !== drawnFor) {
     setDrawnFor(poolKey);
-    setRound(drawRound(pool ?? [], null));
+    setRound(drawRound(pool ?? [], null, weights));
     setTurned(false);
     setOutcome(null);
   }
@@ -171,8 +182,8 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
   const next = useCallback(() => {
     setTurned(false);
     setOutcome(null);
-    setRound((previous) => drawRound(pool ?? [], previous?.answerId ?? null));
-  }, [pool]);
+    setRound((previous) => drawRound(pool ?? [], previous?.answerId ?? null, weights));
+  }, [pool, weights]);
 
   const answer = useCallback(
     (caseId: string) => {
@@ -200,6 +211,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
 
   return {
     cases,
+    stats,
     question,
     problem: problemOf(pool),
     isTurned,
@@ -227,9 +239,17 @@ function movesOf(algorithm: Algorithm | null): { moves: Move[]; groups: MoveGrou
 }
 
 /** One round: which case, which cards, and the cube the reader is shown. */
-function drawRound(pool: readonly CaseWithAlg[], previousId: string | null): Round | null {
+function drawRound(
+  pool: readonly CaseWithAlg[],
+  previousId: string | null,
+  weights: ReadonlyMap<string, number>,
+): Round | null {
   const round = buildRound(
-    pool.map((entry) => ({ id: entry.algCase.id, group: entry.algCase.group })),
+    pool.map((entry) => ({
+      id: entry.algCase.id,
+      group: entry.algCase.group,
+      weight: weights.get(entry.algCase.id),
+    })),
     previousId,
     systemRandom,
   );

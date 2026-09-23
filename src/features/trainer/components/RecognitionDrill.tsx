@@ -11,7 +11,6 @@ import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
 import { useAlgSets } from '../hooks/use-alg-cases';
 import { useTriggers } from '../hooks/use-triggers';
-import { useRecognitionStats } from '../hooks/use-case-stats';
 import {
   useRecognition,
   type RecognitionOption,
@@ -49,7 +48,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
   const { definitions } = useTriggers();
 
   const caseIds = (recognition.cases ?? []).map((entry) => entry.algCase.id);
-  const stats = useRecognitionStats(caseIds);
+  const { stats } = recognition;
 
   const { question, outcome } = recognition;
   // The whole set is the answer's own chart: same view, same stickering as the

@@ -21,7 +21,6 @@ import { watchWrite } from '../../../lib/errors';
 import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
 import { stateOf, useAlgSets } from '../hooks/use-alg-cases';
-import { useCaseStats } from '../hooks/use-case-stats';
 import { useCaseAttempts } from '../hooks/use-case-attempts';
 import { useDrill, type DrillItem, type DrillView, type StoredAttempt } from '../hooks/use-drill';
 import { useTriggers } from '../hooks/use-triggers';
@@ -54,7 +53,7 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
   const { definitions } = useTriggers();
 
   const caseIds = (drill.cases ?? []).map((entry) => entry.algCase.id);
-  const stats = useCaseStats(caseIds);
+  const { stats } = drill;
   // The cross is one row in the case table only so that its attempts have
   // somewhere to live; there is nothing to tick, so nothing to count.
   const poolIds = drill.isCross ? [] : caseIds;

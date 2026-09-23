@@ -47,6 +47,34 @@ describe('pickNextCase', () => {
   it('has nothing to pick from an empty pool', () => {
     expect(pickNextCase([], null, sequence(0))).toBeNull();
   });
+
+  const weighted = [
+    { id: 'pll-t', weight: 1 },
+    { id: 'pll-y', weight: 3 },
+    { id: 'pll-h', weight: 0.5 },
+  ];
+
+  it.each<[number, string]>([
+    // 4.5 in all: pll-t takes [0, 1), pll-y [1, 4), pll-h [4, 4.5).
+    [0, 'pll-t'],
+    [0.2, 'pll-t'],
+    [0.23, 'pll-y'],
+    [0.88, 'pll-y'],
+    [0.9, 'pll-h'],
+    [1, 'pll-h'],
+  ])('gives each case a share of the draw as wide as its weight: random %f picks %s', (value, expected) => {
+    expect(pickNextCase(weighted, null, sequence(value))?.id).toBe(expected);
+  });
+
+  it('shares the draw among the rest when the case just drilled is left out', () => {
+    // Without pll-y: 1.5 in all, pll-t [0, 1), pll-h [1, 1.5).
+    expect(pickNextCase(weighted, 'pll-y', sequence(0.7))?.id).toBe('pll-h');
+  });
+
+  it('draws evenly when every weight is zero, rather than never', () => {
+    const none = cases.map((entry) => ({ ...entry, weight: 0 }));
+    expect(pickNextCase(none, null, sequence(0.99))?.id).toBe('pll-h');
+  });
 });
 
 describe('drillPool', () => {
