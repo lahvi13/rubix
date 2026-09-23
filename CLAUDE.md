@@ -176,7 +176,11 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   co produkce doopravdy servíruje. Jakou verzi zařízení běží, je vidět na obrazovce
   About (`__APP_VERSION__` = verze z `package.json` · commit) — service worker jinak
   update schová; „Check for updates“ tamtéž si ho vynutí. Verze: nová funkce zvedá
-  prostřední číslo, oprava poslední.
+  prostřední číslo, oprava poslední — ale **číslo se zvedá jednou za pracovní blok**
+  (sezení, den), ne po každém pushi. Push nasazuje průběžně se starým číslem;
+  nasazené sestavení rozliší commit za tečkou. Zvednout až na konci bloku jedním
+  `chore(release)` podle nejvyšší změny v bloku (autor nechce, aby verze naskakovaly
+  po několika za den).
 - cubing.js se importuje **dynamicky** (`await import('cubing/scramble')`), aby se
   nedostal do hlavního chunku
 - **statické obrázky kostky kreslí `components/CubeDiagram.tsx`**, ne twisty:
