@@ -1724,9 +1724,11 @@ button[disabled] {
   color: var(--accent);
 }
 
-/* Under the scramble it acts on, and no wider than its words. */
-.detail__again {
-  align-self: flex-start;
+/* Under the scramble they act on, each no wider than its words. */
+.detail__scramble-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .detail__row {
@@ -2319,6 +2321,10 @@ button[disabled] {
 
 .average-sheet__solve.is-trimmed {
   color: var(--muted);
+}
+
+.average-sheet__share {
+  align-self: flex-start;
 }
 
 .chart-card {

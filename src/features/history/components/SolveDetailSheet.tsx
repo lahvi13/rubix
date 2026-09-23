@@ -9,6 +9,9 @@ import { useRemoveSolves } from '../../../hooks/use-remove-solves';
 import { navigate } from '../../../app/router';
 import { parseAlg } from '../../../domain/cube/notation';
 import { pinScramble } from '../../../hooks/use-pinned-scramble';
+import { useShareCard } from '../../../hooks/use-share-card';
+import { finalMs } from '../../../domain/solve/final-time';
+import { solveCard, solveCardFilename } from '../solve-card';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { SessionPicker } from '../../sessions';
@@ -54,6 +57,7 @@ export function SolveDetailSheet({
   const removeSolves = useRemoveSolves();
   const moveSolves = useMoveSolves();
   const [isMoving, setMoving] = useState(false);
+  const card = useShareCard();
 
   if (!solve) return null;
 
@@ -129,6 +133,19 @@ export function SolveDetailSheet({
             }
           : undefined
       }
+      onShare={() => {
+        const resultMs = finalMs(solve);
+        const record =
+          resultMs === null
+            ? null
+            : resultMs === globalPbMs
+              ? 'personal'
+              : resultMs === bests.totalMs
+                ? 'session'
+                : null;
+        card.share(solveCard(solve, record), solveCardFilename(solve));
+      }}
+      isSharing={card.isBusy}
       onClose={onClose}
     />
   );

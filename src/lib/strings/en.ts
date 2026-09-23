@@ -752,6 +752,12 @@ export const en = {
     message:
       'Update the browser to its latest version and open the page again. On an iPhone or iPad that means iOS 17.5 or newer.',
   },
+  share: {
+    action: 'Share',
+    busy: 'Drawing…',
+    single: 'Single',
+    failed: 'Could not make the picture',
+  },
   errors: {
     saveSolve: 'Could not save the solve',
     drillScramble: 'Drill scramble fell back to the setup',

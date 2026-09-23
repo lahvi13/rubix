@@ -1,4 +1,6 @@
 import { Sheet } from '../../../components/Sheet';
+import { useShareCard } from '../../../hooks/use-share-card';
+import { averageCard, averageCardFilename } from '../average-card';
 import { formatAverage, formatDate, formatResult } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import type { AverageWindowView } from '../hooks/use-session-stats';
@@ -16,6 +18,7 @@ interface AverageSheetProps {
  */
 export function AverageSheet({ view, onOpenSolve, onClose }: AverageSheetProps) {
   const title = strings.stats.windowTitle(view.at, view.n);
+  const card = useShareCard();
   const first = view.solves[0]?.createdAt;
   const last = view.solves[view.solves.length - 1]?.createdAt;
 
@@ -54,6 +57,18 @@ export function AverageSheet({ view, onOpenSolve, onClose }: AverageSheetProps) 
           );
         })}
       </ol>
+      {/* Only a whole average: a window still filling, or one the trim could
+          not save from a DNF, is not a number anybody posts. */}
+      {typeof view.average === 'number' ? (
+        <button
+          type="button"
+          className="average-sheet__share"
+          disabled={card.isBusy}
+          onClick={() => card.share(averageCard(view), averageCardFilename(view))}
+        >
+          {card.isBusy ? strings.share.busy : strings.share.action}
+        </button>
+      ) : null}
     </Sheet>
   );
 }

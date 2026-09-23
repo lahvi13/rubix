@@ -27,6 +27,9 @@ interface SolveDetailProps {
   sessionName: string | null;
   /** Given, the scramble can be taken back to the timer and solved again. */
   onSolveAgain?: () => void;
+  /** The solve as a picture to post. */
+  onShare: () => void;
+  isSharing: boolean;
   onClose: () => void;
 }
 
@@ -43,6 +46,8 @@ export function SolveDetail({
   globalPbMs,
   sessionName,
   onSolveAgain,
+  onShare,
+  isSharing,
   onClose,
 }: SolveDetailProps) {
   const [timeInput, setTimeInput] = useState(() => formatMs(solve.rawMs));
@@ -108,11 +113,16 @@ export function SolveDetail({
           {solve.scrambleSource === 'own' ? strings.scramble.own : strings.scramble.fromHistory}
         </p>
       )}
-      {onSolveAgain === undefined ? null : (
-        <button type="button" className="detail__again" onClick={onSolveAgain}>
-          {strings.history.solveAgain}
+      <div className="detail__scramble-actions">
+        {onSolveAgain === undefined ? null : (
+          <button type="button" onClick={onSolveAgain}>
+            {strings.history.solveAgain}
+          </button>
+        )}
+        <button type="button" onClick={onShare} disabled={isSharing}>
+          {isSharing ? strings.share.busy : strings.share.action}
         </button>
-      )}
+      </div>
 
       <div className="detail__row">
         <label htmlFor="detail-time">{strings.history.rawTime}</label>

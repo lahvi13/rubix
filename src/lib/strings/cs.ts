@@ -692,6 +692,12 @@ export const cs: Strings = {
     message:
       'Aktualizuj prohlížeč na poslední verzi a otevři stránku znovu. Na iPhonu nebo iPadu to znamená iOS 17.5 nebo novější.',
   },
+  share: {
+    action: 'Sdílet',
+    busy: 'Kreslím…',
+    single: 'Single',
+    failed: 'Obrázek se nepodařilo vytvořit',
+  },
   errors: {
     saveSolve: 'Složení se nepodařilo uložit',
     drillScramble: 'Scramble drilu spadl zpět na setup',
