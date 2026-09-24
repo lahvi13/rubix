@@ -20,7 +20,8 @@ Původně to byl osobní nástroj pro autora a pár známých; z veřejného pro
   zálohy hlídá zbytek
 - **zpětná vazba** jde přes mail na obrazovce About (předmět nese verzi a commit)
 - **jen 3×3.** Další disciplína se přidává až na výslovnou poptávku;
-  datový model (`puzzle`) s ní počítá
+  datový model (`puzzle`) s ní počítá. Návrh, jak na 2×2 a další metody, je
+  ve fázi 7
 - **anglicky a česky.** Jazyk je volba zařízení (`localStorage`, přepínač v Nastavení),
   ne součást dat: uložené solvy, session ani export žádný jazyk nenesou a soubor
   zálohy je mezi jazyky přenosný. Další jazyk znamená další soubor v `src/lib/strings/`
@@ -1023,7 +1024,7 @@ nemigruje.
 2. **Detekce nástupu zvuku** (`AudioWorklet`) za tímtéž rozhraním. **Zatím se
    nestaví**: jestli se vyplatí, se pozná až podle toho, jestli se fázové časy
    doopravdy používají. Model se kvůli tomu nemění (`Split.source`), takže
-   rozhodnutí smí přijít později — a smart cube (fáze 7) řeší totéž přesněji.
+   rozhodnutí smí přijít později — a smart cube (fáze 8) řeší totéž přesněji.
    Chybí k němu onset detektor za rozhraním `SplitSource` a kalibrace v nastavení;
    všechno ostatní (uložení, editace, statistiky) už stojí z kroku 1.
 
@@ -1031,7 +1032,61 @@ nemigruje.
 drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
 → *Použitelné jako: analýza slabé fáze.*
 
-### Fáze 7 — Smart cube (později)
+### Fáze 7 — Další metody a další kostky (návrh, zatím se nestaví)
+
+Nápad z 2026-09-24, předřazený smart cube. Zapsaný rozbor, ne rozhodnutí:
+**obsah (fáze metod, algoritmy) se bude brát ze zdrojů, které dodá autor** —
+Roux ani ZZ sám neskládá, takže volba fází a algoritmů není na odhadu.
+Zdroje, které autor doporučil:
+
+- **Roux:** <https://sites.google.com/view/kianroux/>
+- **ZZ:** <https://www.zzmethod.com/>
+
+**Co už stojí.** Datový model s tím počítá od začátku: fáze splitů jsou
+`Method.phases` (CFOP je jen seedovaný záznam), `Session.methodId`,
+`AlgSet.methodId`, `Method.puzzle`; typ `Puzzle` zná všechny WCA disciplíny, solvy
+i sessiony nesou `puzzle` a aktivní session i PB se vedou po disciplínách. Splity,
+průměry fází a jejich barvy (přidělené podle pořadí, ne jména) snesou libovolný
+počet fází. Model kostky zná slice (`M`), wide (`r`) tahy i rotace. Scramble pro
+2×2 a další disciplíny umí cubing.js stejně jako pro 3×3.
+
+**Co je dnes natvrdo 3×3 CFOP:** `const PUZZLE = '333'` na sedmi obrazovkách
+(timer, historie, statistiky, výběr session, drilly), nová session dostává
+`methodId: 'cfop'`, trenažér (pořadí a úrovně sad, `diagramFor`, ověřování sad
+v `packs.test.ts`), cross drill s vlastním solverem a průvodce pro začátečníky.
+Import z csTimeru už dnes natáhne i 2×2, 4×4, pyraminx… sessiony — v databázi
+jsou, jen je žádná obrazovka neukáže.
+
+**Postup, každý krok použitelný sám o sobě:**
+
+1. **Volba disciplíny a metody** (nejdřív kostka, pak metoda, která k ní patří;
+   dělat obojí najednou, ať se nastavení nepředělává dvakrát). Výchozí metoda
+   v Nastavení, nové sessiony ji převezmou; **existující session si metodu
+   nechává** — její splity patří k fázím, pod kterými byly změřeny. Timer,
+   historie a statistiky pro zvolenou disciplínu fungují samy; jiné kostky než 3×3
+   mají zatím jen textový scramble. Rozsah zhruba jedno sezení.
+2. **Náhled scramblu 2×2 ve vlastním skinu.** 2×2 se chová jako rohy 3×3 (R na 2×2
+   udělá s rohy totéž co R na 3×3), takže stačí stávající model a kreslit jen
+   rohové nálepky — rozvin a pohled od rohu v mřížce 2×2. Háček: 3D animaci 2×2
+   kreslí cubing.js jiným rendererem (PG3D, ne `Cube3D`), takže `lib/twisty-skin.ts`
+   na ni nesáhne — buď barvy cubing.js, nebo nový průzkum.
+3. **Trenažér podle metody.** Metoda musí **vlastnit seznam sad**, ne sada jednu
+   metodu: OLL/PLL sdílí CFOP a ZZ (dnes je to `AlgSet.methodId`, tedy změna modelu
+   s migrací). Sady po jedné, každou ověřit spuštěním jako OLL/PLL — zhruba den na
+   sadu podle kvality zdrojů:
+   - **ZZ:** fáze EOLine/EOCross → F2L → LL; OLL/PLL převzít, nově COLL (42),
+     ZBLL (493) je samostatný projekt
+   - **Roux:** fáze FB → SB → CMLL → LSE (jestli LSE dělit na EOLR + 4c, rozhodnou
+     zdroje); nově CMLL (42), případně EOLR. LSE (jen M a U) by chtělo nový druh
+     obrázku, CMLL stačí pohled shora
+   - **2×2:** Ortega (7 + 5), CLL (42), EG-1 / EG-2 (po 42); ověřitelné na stejném
+     modelu přes rohy 3×3
+4. **Drilly intuitivních fází** (EOLine, první blok Rouxu) až nakonec — každý chce
+   vlastní solver jako cross drill a první blok i jiný pohled na kostku (zleva).
+
+Průvodce pro začátečníky zůstává CFOP — začátečník se učí CFOP skoro vždycky.
+
+### Fáze 8 — Smart cube (později)
 
 Druhá implementace `SplitSource` přes Web Bluetooth (`source: 'smartcube'`),
 případně rekonstrukce tahů. Datový model se kvůli tomu **nemění**.
