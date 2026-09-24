@@ -1,7 +1,7 @@
 import { db } from '../schema';
 import type { AlgCase, AlgSet, Algorithm } from '../types';
 import { formatAlg, parseAlg } from '../../domain/cube/notation';
-import { SET_ORDER } from '../seed/packs';
+import { SET_ORDER, withTwin } from '../seed/packs';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 
@@ -74,8 +74,12 @@ export async function setCaseLabel(caseId: string, label: string): Promise<void>
   await db.algCases.update(caseId, { label: trimmed === '' ? null : trimmed, updatedAt: now() });
 }
 
+/** Marked on a two-look case, marked on its twin in the full set too (packs.ts). */
 export async function setCaseProgress(caseId: string, progress: AlgCase['progress']): Promise<void> {
-  await db.algCases.update(caseId, { progress, updatedAt: now() });
+  const updatedAt = now();
+  await db.transaction('rw', db.algCases, () =>
+    Promise.all(withTwin(caseId).map((id) => db.algCases.update(id, { progress, updatedAt }))),
+  );
 }
 
 /**
@@ -86,7 +90,7 @@ export async function setCaseProgress(caseId: string, progress: AlgCase['progres
 export async function markCaseLearning(caseId: string): Promise<void> {
   await db.algCases
     .where('id')
-    .equals(caseId)
+    .anyOf(withTwin(caseId))
     .filter((algCase) => algCase.progress === 'new')
     .modify({ progress: 'learning', updatedAt: now() });
 }

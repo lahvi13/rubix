@@ -141,6 +141,38 @@ export const FULL_SETS: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Two-look cases that are the very same case in the full set: the same
+ * position, read the same way, solved by the same algorithm. How far the
+ * reader is with one — learning, known — is how far they are with both.
+ *
+ * The first look's three edge shapes are left out on purpose. Their algorithms
+ * are those of OLL 45, 44 and 2, but a two-look line is any line whatever the
+ * corners do, while OLL 45 is one corner pattern among several: knowing the
+ * first is not yet telling the second apart from its neighbours.
+ */
+export const CASE_TWINS: readonly (readonly [twoLook: string, full: string])[] = [
+  ['2oll-sune', 'oll-27'],
+  ['2oll-antisune', 'oll-26'],
+  ['2oll-h', 'oll-21'],
+  ['2oll-pi', 'oll-22'],
+  ['2oll-t', 'oll-24'],
+  ['2oll-u', 'oll-23'],
+  ['2oll-bowtie', 'oll-25'],
+  ['2pll-t', 'pll-t'],
+  ['2pll-y', 'pll-y'],
+  ['2pll-ua', 'pll-ua'],
+  ['2pll-ub', 'pll-ub'],
+  ['2pll-h', 'pll-h'],
+  ['2pll-z', 'pll-z'],
+];
+
+/** A case and its twin in the other set, or the case alone when it has none. */
+export function withTwin(caseId: string): string[] {
+  const pair = CASE_TWINS.find((twins) => twins.includes(caseId));
+  return pair === undefined ? [caseId] : [...pair];
+}
+
+/**
  * The order the sets are offered in: the order they come up in a solve, not
  * the alphabet. A trainer sorted A to Z puts the last layer before the cross,
  * which is not how anybody works through a solve.

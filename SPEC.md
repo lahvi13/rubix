@@ -697,7 +697,11 @@ interface AlgCase {
   name: string;           // packu; seed ho přepisuje při každém startu
   label: string | null;   // jak tomu říká uživatel; pack na něj nikdy nesáhne
   progress: CaseProgress; // 'new' | 'learning' | 'known'; DB v6. Uživatelův jako label —
-                          // seed ho přenese; první drill posune 'new' na 'learning', 'known' jen ručně
+                          // seed ho přenese; první drill posune 'new' na 'learning', 'known' jen ručně.
+                          // 2-Look případ a jeho dvojče v plné sadě (CASE_TWINS v packs.ts: rohy
+                          // OLL, celé PLL; hrany OLL ne) mají progress společný — zapisuje se
+                          // oběma naráz a seed srovná rozjeté páry na ten pokročilejší.
+                          // Algoritmy a volba aktivního zůstávají každému případu zvlášť
   group: string | null;   // 'corners only', 'dot', ...
   setupAlg: string;       // aplikuje se v <twisty-player>
   order: number;

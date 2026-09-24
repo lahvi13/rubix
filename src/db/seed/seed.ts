@@ -1,8 +1,9 @@
 import { db } from '../schema';
-import type { AlgCase, AlgSet, Algorithm, Method, Trigger } from '../types';
+import type { AlgCase, AlgSet, Algorithm, CaseProgress, Method, Trigger } from '../types';
 import { formatAlg, invertAlg, parseAlg } from '../../domain/cube/notation';
 import { now } from '../../lib/clock';
 import {
+  CASE_TWINS,
   CROSS_PACK,
   PACKS,
   PACK_METHOD_ID,
@@ -155,6 +156,8 @@ function planSeed(current: CurrentState): SeedChanges {
     retired: { algCases: [], algorithms: [] },
   };
 
+  const agreed = agreedProgress(current.algCases);
+
   const method = buildMethod(current.methods.get(PACK_METHOD_ID));
   if (hasChanged(current.methods.get(PACK_METHOD_ID), method)) changes.methods.push(method);
 
@@ -171,7 +174,7 @@ function planSeed(current: CurrentState): SeedChanges {
       const existingCase = current.algCases.get(entry.id);
       // A case the user turned into their own belongs to them now.
       if (existingCase?.isCustom !== 1) {
-        const algCase = buildCase(pack, entry, index, existingCase);
+        const algCase = buildCase(pack, entry, index, existingCase, agreed.get(entry.id));
         if (hasChanged(existingCase, algCase)) changes.algCases.push(algCase);
       }
 
@@ -256,6 +259,27 @@ function planRetirements(current: CurrentState, changes: SeedChanges): void {
   }
 }
 
+const PROGRESS_RANK: Record<CaseProgress, number> = { new: 0, learning: 1, known: 2 };
+
+/**
+ * One progress for each pair of twin cases (packs.ts) that disagree. The
+ * repository marks both of a pair at once, so this only meets pairs marked
+ * apart before that — or brought in apart by an import — and settles them on
+ * the further of the two: taking back a case somebody marked known would be
+ * the one wrong answer.
+ */
+function agreedProgress(cases: ReadonlyMap<string, AlgCase>): Map<string, CaseProgress> {
+  const agreed = new Map<string, CaseProgress>();
+  for (const pair of CASE_TWINS) {
+    const [first, second] = pair.map((id) => cases.get(id)?.progress);
+    if (first === undefined || second === undefined || first === second) continue;
+
+    const further = PROGRESS_RANK[first] >= PROGRESS_RANK[second] ? first : second;
+    for (const id of pair) agreed.set(id, further);
+  }
+  return agreed;
+}
+
 function isEmpty(changes: SeedChanges): boolean {
   const { retired, ...rows } = changes;
   return (
@@ -315,6 +339,7 @@ function buildCase(
   entry: PackCase,
   index: number,
   existing: AlgCase | undefined,
+  agreed: CaseProgress | undefined,
 ): AlgCase {
   return {
     id: entry.id,
@@ -324,7 +349,7 @@ function buildCase(
     // the same way a trigger's colour is, so an update never takes back a
     // name somebody chose.
     label: existing?.label ?? null,
-    progress: existing?.progress ?? 'new',
+    progress: agreed ?? existing?.progress ?? 'new',
     group: entry.group,
     setupAlg: setupFor(entry),
     order: index,

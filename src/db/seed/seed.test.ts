@@ -294,3 +294,32 @@ describe('retiring a case the packs have dropped', () => {
     expect(await db.tombstones.count()).toBe(2);
   });
 });
+
+describe('seed and twin cases', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    await seedPacks();
+  });
+
+  it('settles twins marked apart on the further of the two', async () => {
+    // Marked before twins were linked: the full set knows it, the short route does not.
+    await db.algCases.update('pll-t', { progress: 'known' });
+    await db.algCases.update('2pll-t', { progress: 'learning' });
+    await db.algCases.update('2oll-sune', { progress: 'learning' });
+
+    await seedPacks();
+
+    expect((await db.algCases.get('2pll-t'))?.progress).toBe('known');
+    expect((await db.algCases.get('pll-t'))?.progress).toBe('known');
+    expect((await db.algCases.get('oll-27'))?.progress).toBe('learning');
+  });
+
+  it('settles them once, and is idempotent after', async () => {
+    await db.algCases.update('pll-y', { progress: 'known' });
+    await seedPacks();
+    const first = await snapshot();
+
+    await seedPacks();
+    expect(await snapshot()).toBe(first);
+  });
+});

@@ -9,7 +9,8 @@ import { describe, expect, it } from 'vitest';
 import { invertAlg, parseAlg, type Move } from '../../domain/cube/notation';
 import { canonicalise } from '../../domain/cube/orientation';
 import { FACELETS, applyAlg, isSolved, solvedState, stateKey } from '../../domain/cube/state';
-import { BEGINNER_GROUPS, PACKS, type AlgPack, type PackCase } from './packs';
+import { lastLayerView, type Stickering } from '../../domain/cube/views';
+import { BEGINNER_GROUPS, CASE_TWINS, PACKS, type AlgPack, type PackCase } from './packs';
 
 function movesOf(text: string): Move[] {
   const parsed = parseAlg(text);
@@ -462,5 +463,40 @@ describe('beginner', () => {
 
     expect(wrongOutside(state, (index) => !isCornerSticker(index))).toBe(0);
     expect(homePieces(state, 2)).toBe(9);
+  });
+});
+
+describe('twin cases', () => {
+  const entryById = (id: string): PackCase => {
+    for (const pack of PACKS) {
+      const entry = pack.cases.find((candidate) => candidate.id === id);
+      if (entry !== undefined) return entry;
+    }
+    throw new Error(`no such case: ${id}`);
+  };
+
+  /** The last layer as the set reads it, from each of the four sides. */
+  const readings = (entry: PackCase, stickering: Stickering): string[] =>
+    ['', 'U', 'U2', "U'"].map((turn) =>
+      JSON.stringify(lastLayerView(applyAlg(caseState(entry), movesOf(turn)), stickering)),
+    );
+
+  it.each(CASE_TWINS.map(([twoLook, full]) => [twoLook, full] as const))(
+    '%s is the same case as %s',
+    (twoLook, full) => {
+      // OLL is read by what faces up; PLL by every sticker of the layer.
+      const stickering: Stickering = full.startsWith('oll') ? 'orientation' : 'full';
+      const mine = readings(entryById(twoLook), stickering);
+
+      expect(readings(entryById(full), stickering).some((view) => mine.includes(view))).toBe(true);
+    },
+  );
+
+  it('pairs a two-look case with a full one, each at most once', () => {
+    const twoLook = new Set(packById('2look-oll').cases.concat(packById('2look-pll').cases).map((entry) => entry.id));
+    const ids = CASE_TWINS.flat();
+
+    expect(CASE_TWINS.every(([first]) => twoLook.has(first))).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });

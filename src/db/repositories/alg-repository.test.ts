@@ -184,4 +184,34 @@ describe('how far the reader is with a case', () => {
     // A case left as it was is not written, so an import does not see a change.
     if (before === after) expect(algCase?.updatedAt).toBe(stamped);
   });
+  it.each([
+    ['2pll-t', 'pll-t'],
+    ['oll-27', '2oll-sune'],
+  ])('marks %s and its twin %s together', async (marked, twin) => {
+    await setCaseProgress(marked, 'known');
+    expect((await db.algCases.get(twin))?.progress).toBe('known');
+
+    await setCaseProgress(twin, 'learning');
+    expect((await db.algCases.get(marked))?.progress).toBe('learning');
+  });
+
+  it('leaves a two-look edge case apart from the OLL that shares its algorithm', async () => {
+    await setCaseProgress('2oll-line', 'known');
+    expect((await db.algCases.get('oll-45'))?.progress).toBe('new');
+  });
+
+  it('moves a twin on too when its pair is drilled', async () => {
+    await markCaseLearning('2pll-ua');
+    expect((await db.algCases.get('pll-ua'))?.progress).toBe('learning');
+  });
+
+  it('shares only the progress, not the algorithms', async () => {
+    const mine = await addUserAlgorithm('2pll-t', "R U R' U' R' F R2 U' R' U' R U R' F'");
+    await setActiveAlgorithm(mine.id);
+    await setCaseProgress('2pll-t', 'known');
+
+    expect((await listAlgorithms('pll-t')).some((row) => row.source === 'user')).toBe(false);
+    expect((await getActiveAlgorithm('2pll-t'))?.id).toBe(mine.id);
+    expect((await getActiveAlgorithm('pll-t'))?.id).toBe('pll-t-pack');
+  });
 });
