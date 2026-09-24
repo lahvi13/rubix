@@ -113,16 +113,6 @@
   --phase-share-ink: light-dark(#ffffff, #0f1115);
 
   /*
-   * The ground the animated cube stands on, and only on paper. cubing.js
-   * paints its own cube and cannot be given a skin — pale grey plastic, white
-   * stickers — which on a white page is a cube with no edges; against the dark
-   * theme that same pale cube stands out on its own, and a card under it is a
-   * box the picture did not need. Our own drawing needs none of this in either
-   * theme: it wears the reader's skin and outlines every sticker.
-   */
-  --cube-stage: light-dark(#d6dbe5, transparent);
-
-  /*
    * One type scale, in sixteenths of a rem so every step lands on a whole
    * pixel at the default size. A rule picks a step; nothing writes its own
    * size, which is what kept twenty of them in here.
@@ -719,13 +709,6 @@ button[disabled] {
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--muted);
-}
-
-/* Only under the player: the still picture is drawn in the reader's own
-   colours and holds its own against the page. */
-.scramble__stage.is-watching {
-  background: var(--cube-stage);
-  border-radius: var(--radius-lg);
 }
 
 /* A short phone has no room for a big cube and a list of solves both. */

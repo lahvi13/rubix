@@ -136,7 +136,7 @@ export const ScramblePanel = memo(function ScramblePanel({
                the scramble does not resize the screen under the thumb. */
             <button
               type="button"
-              className={isWatching ? 'scramble__stage is-watching' : 'scramble__stage'}
+              className="scramble__stage"
               aria-label={isWatching ? strings.scramble.showPicture : strings.scramble.replay}
               onClick={() => setWatched(isWatching ? null : scramble)}
             >
