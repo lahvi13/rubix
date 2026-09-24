@@ -38,7 +38,7 @@ export function diagramUrl(
 ): string {
   // Everything the theme changes about a skin belongs in the key, or a picture
   // drawn before the theme flipped gets handed back after it.
-  const key = `${skin.id}|${skin.muted}|${skin.arrow.build}|${view}|${stickering}|${stateKey(state)}`;
+  const key = `${skin.id}|${skin.muted}|${view}|${stickering}|${stateKey(state)}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
 
@@ -119,6 +119,12 @@ const INSET = 1;
 function lastLayerSvg(state: CubeState, stickering: Stickering, skin: CubeSkin): string {
   const view = lastLayerView(state, stickering);
 
+  // The plastic under the top face and the strips round it, as the cross it
+  // makes — the corners of the square are no part of the cube.
+  const plastic =
+    rect(OFFSET, 0, CELL * 3, SIZE, 2, skin.outline, skin, 1) +
+    rect(0, OFFSET, SIZE, CELL * 3, 2, skin.outline, skin, 1);
+
   const top = view.top
     .map((cell, index) =>
       rect(
@@ -162,7 +168,7 @@ function lastLayerSvg(state: CubeState, stickering: Stickering, skin: CubeSkin):
     .map((arrow) => arrowSvg(arrow, skin))
     .join('');
 
-  return svg(`0 0 ${SIZE} ${SIZE}`, top + sides + arrows);
+  return svg(`0 0 ${SIZE} ${SIZE}`, plastic + top + sides + arrows);
 }
 
 /** Centre of a cell of the top-face grid. */
@@ -170,25 +176,15 @@ function cellCentre(cell: number): readonly [number, number] {
   return [OFFSET + ((cell % 3) + 0.5) * CELL, OFFSET + (Math.floor(cell / 3) + 0.5) * CELL];
 }
 
-interface ArrowShape {
+/** The arrow's proportions, in the units of the picture — a sticker is 20. */
+const ARROW = {
   /** Half the width of the body. */
-  shaftHalf: number;
-  headLength: number;
-  headHalf: number;
+  shaftHalf: 1.9,
+  headLength: 8,
+  headHalf: 4.6,
   /** The band laid all round the arrow, outside it. */
-  band: number;
-}
-
-/**
- * The two builds of the arrow, in the units of the picture — a sticker is 20.
- * The dark one is the slimmer: ink covers a sticker more heavily than paper
- * does at the same width, and it needs the wider band, because the stickers'
- * own outline is that very colour.
- */
-const ARROW_SHAPES: Record<CubeSkin['arrow']['build'], ArrowShape> = {
-  pale: { shaftHalf: 1.9, headLength: 8, headHalf: 4.6, band: 1.5 },
-  dark: { shaftHalf: 1.4, headLength: 8.5, headHalf: 3.9, band: 1.2 },
-};
+  band: 1.5,
+} as const;
 
 /**
  * Where a piece has to go. Drawn short of both cells so the arrow sits between
@@ -199,7 +195,7 @@ const ARROW_SHAPES: Record<CubeSkin['arrow']['build'], ArrowShape> = {
  * a yellow sticker, and a stroke round a short triangle is a blob, not a point.
  */
 function arrowSvg(arrow: PieceArrow, skin: CubeSkin): string {
-  const { shaftHalf, headLength, headHalf, band } = ARROW_SHAPES[skin.arrow.build];
+  const { shaftHalf, headLength, headHalf, band } = ARROW;
   const [fromX, fromY] = cellCentre(arrow.from);
   const [toX, toY] = cellCentre(arrow.to);
   const length = Math.hypot(toX - fromX, toY - fromY);
@@ -274,6 +270,17 @@ function netSvg(state: CubeState, stickering: Stickering, skin: CubeSkin): strin
 
   const body = faces
     .map((face) =>
+      // Each face on its own plastic; the gaps between faces are the unfolding.
+      rect(
+        face.column * (NET_FACE + NET_GAP),
+        face.row * (NET_FACE + NET_GAP),
+        NET_FACE,
+        NET_FACE,
+        1.5,
+        skin.outline,
+        skin,
+        0.7,
+      ) +
       face.cells
         .map((cell, index) =>
           rect(

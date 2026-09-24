@@ -13,20 +13,14 @@ import type { Face } from '../domain/cube/notation';
 import type { ResolvedTheme } from './appearance';
 
 /**
- * How an arrow over a permutation case is painted. It is always one of the
- * skin's two neutrals with the other laid round it as a band — never the dark
- * one alone, because the stickers wear that colour as their outline and an
- * arrow in it reads as a gap in the grid rather than a mark on the layer.
+ * How an arrow over a permutation case is painted: the skin's pale neutral,
+ * with the dark one laid round it as a band. Never dark itself, in either
+ * theme — the cube is drawn on dark plastic, and a dark arrow crossing the
+ * gaps between stickers loses its outline and, at the head, its direction.
  */
 export interface ArrowStyle {
   fill: string;
   band: string;
-  /**
-   * Which of the two the arrow itself is. The drawing code takes the arrow's
-   * proportions from this: ink covers a sticker more heavily than paper does,
-   * so the dark arrow is the slimmer of the two.
-   */
-  build: 'pale' | 'dark';
 }
 
 export interface CubeSkin {
@@ -46,8 +40,8 @@ export interface CubeSkin {
 export const SIDE_SHADE = { front: 0.88, right: 0.74 } as const;
 
 /**
- * A skin as it is written down. Both the muted sticker and the arrow are still
- * a choice at this point — the theme makes it, not the skin.
+ * A skin as it is written down. The muted sticker is still a choice at this
+ * point — the theme makes it, not the skin.
  */
 interface CubeSkinDefinition extends Omit<CubeSkin, 'muted' | 'arrow'> {
   muted: Record<ResolvedTheme, string>;
@@ -136,17 +130,6 @@ const FALLBACK: CubeSkinDefinition = {
   pale: '#f4f6fb',
 };
 
-/**
- * The arrow the theme asks for. A dark card wants the pale arrow and a light
- * one the dark arrow — the same choice the muted sticker makes, for the same
- * reason: whichever of the two the card is, the arrow has to be the other.
- */
-function arrowFor(definition: CubeSkinDefinition, theme: ResolvedTheme): ArrowStyle {
-  return theme === 'dark'
-    ? { fill: definition.pale, band: definition.outline, build: 'pale' }
-    : { fill: definition.outline, band: definition.pale, build: 'dark' };
-}
-
 function definitionById(id: string): CubeSkinDefinition {
   return CUBE_SKINS.find((skin) => skin.id === id) ?? CUBE_SKINS[0] ?? FALLBACK;
 }
@@ -164,7 +147,7 @@ export function skinById(id: string, theme: ResolvedTheme): CubeSkin {
     faces: definition.faces,
     outline: definition.outline,
     muted: definition.muted[theme],
-    arrow: arrowFor(definition, theme),
+    arrow: { fill: definition.pale, band: definition.outline },
   };
 }
 

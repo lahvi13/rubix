@@ -32,27 +32,22 @@ describe('cube diagrams as text', () => {
     expect(solved).not.toContain('<polygon');
   });
 
-  it('paints the arrows the way round the theme needs', () => {
-    const skins = { dark: defaultSkin('dark'), light: defaultSkin('light') };
-    const svgs = {
-      dark: diagramSvg(tPerm, 'lastLayer', 'full', skins.dark),
-      light: diagramSvg(tPerm, 'lastLayer', 'full', skins.light),
-    };
+  it.each(['dark', 'light'] as const)('paints the arrow pale on the %s theme', (theme) => {
+    const skin = defaultSkin(theme);
+    const svg = diagramSvg(tPerm, 'lastLayer', 'full', skin);
 
-    // A dark card takes the pale arrow and a light one the dark arrow. Neither
-    // may be the bare outline colour: the stickers wear that as their own
-    // outline, and an arrow in it would read as a gap in the grid.
-    expect(svgs.dark).toContain(`fill="${skins.dark.arrow.fill}"`);
-    expect(skins.dark.arrow.fill).not.toBe(skins.dark.outline);
-    expect(svgs.light).toContain(`fill="${skins.light.arrow.fill}"`);
-    expect(skins.light.arrow.fill).toBe(skins.light.outline);
-    expect(skins.light.arrow.band).not.toBe(skins.light.outline);
-    expect(svgs.dark).not.toBe(svgs.light);
+    // The cube stands on dark plastic whatever the page is, so the arrow is
+    // the pale neutral in a band of the dark one. In the outline colour alone
+    // it would read as a gap in the grid.
+    expect(svg).toContain(`fill="${skin.arrow.fill}"`);
+    expect(skin.arrow.fill).not.toBe(skin.outline);
+    expect(skin.arrow.band).toBe(skin.outline);
   });
 
   it('keeps the two themes apart in the cache', () => {
-    const dark = diagramUrl(tPerm, 'lastLayer', 'full', defaultSkin('dark'));
-    const light = diagramUrl(tPerm, 'lastLayer', 'full', defaultSkin('light'));
+    // Greyed stickers are the part of a picture the theme changes.
+    const dark = diagramUrl(tPerm, 'lastLayer', 'corners', defaultSkin('dark'));
+    const light = diagramUrl(tPerm, 'lastLayer', 'corners', defaultSkin('light'));
 
     expect(dark).not.toBe(light);
   });
