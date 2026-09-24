@@ -353,7 +353,19 @@ function isometricSvg(state: CubeState, stickering: Stickering, skin: CubeSkin):
     ].join(' ');
   };
 
+  // The plastic, under the stickers. Left out, the gaps between them are the
+  // page — black on a dark one, but a white page turns them white, and the
+  // animated cube that replaces this picture has its plastic.
+  const plastic = [
+    [point(-1.5, -1.5, 0), point(1.5, -1.5, 0), point(1.5, 1.5, 0), point(-1.5, 1.5, 0)],
+    [point(-1.5, 1.5, 0), point(1.5, 1.5, 0), point(1.5, 1.5, 3), point(-1.5, 1.5, 3)],
+    [point(1.5, 1.5, 0), point(1.5, -1.5, 0), point(1.5, -1.5, 3), point(1.5, 1.5, 3)],
+  ]
+    .map((corners) => polygon(corners.join(' '), skin.outline, skin.outline, 0.8))
+    .join('');
+
   const body =
+    plastic +
     view.top
       .map((cell, index) => polygon(topCell(index), colourOf(cell, skin), skin.outline, 0.8))
       .join('') +
