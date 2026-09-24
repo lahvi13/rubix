@@ -48,7 +48,7 @@ describe('BackupReminder', () => {
     render(<BackupReminder />);
 
     expect(
-      await screen.findByText(`${BACKUP_REMINDER_SOLVES} solves exist only on this device, with no backup.`),
+      await screen.findByText(`Only on this device, with no backup: ${BACKUP_REMINDER_SOLVES} solves.`),
     ).toBeInTheDocument();
   });
 
@@ -59,7 +59,7 @@ describe('BackupReminder', () => {
     render(<BackupReminder />);
 
     expect(
-      await screen.findByText(`${BACKUP_REMINDER_SOLVES} solves are not in your last backup.`),
+      await screen.findByText(`Not in your last backup: ${BACKUP_REMINDER_SOLVES} solves.`),
     ).toBeInTheDocument();
   });
 

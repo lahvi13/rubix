@@ -7,6 +7,7 @@ import {
   type ImportCounts,
   type ImportMode,
 } from '../../../domain/transfer/merge';
+import { totalRecords } from '../../../domain/transfer/backup-reminder';
 import type { SkipReason, SkippedRow } from '../../../domain/transfer/cstimer';
 import { TRANSFER_TABLES } from '../../../domain/transfer/types';
 import type { ImportProblem } from '../../../domain/transfer/validate';
@@ -206,7 +207,7 @@ function BackupStatusLines() {
       {changedSince === undefined ? null : (
         <li>
           {lastExportAt === null
-            ? `${strings.data.noBackup}${changedSince > 0 ? ` ${strings.data.onlyHere(changedSince)}` : ''}`
+            ? `${strings.data.noBackup}${totalRecords(changedSince) > 0 ? ` ${strings.data.onlyHere(changedSince)}` : ''}`
             : `${strings.data.lastBackup(
                 formatDay(lastExportAt, now()),
                 lastExportBytes === null ? null : formatBytes(lastExportBytes),

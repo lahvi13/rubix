@@ -1,3 +1,5 @@
+import type { SolveMode } from '../../db/types';
+
 /**
  * How many solves may pile up outside any backup before the app says so.
  * Not a hundred: a keen evening is fifty solves, and a reminder every other
@@ -17,4 +19,11 @@ export function backupReminderBaseline(lastExportAt: number, snoozedAt: number):
 
 export function isBackupDue(changedSinceBaseline: number): boolean {
   return changedSinceBaseline >= BACKUP_REMINDER_SOLVES;
+}
+
+/** What a backup is missing, by what the rows record. */
+export type RecordCounts = Readonly<Record<SolveMode, number>>;
+
+export function totalRecords(counts: RecordCounts): number {
+  return counts.freestyle + counts.drill + counts.recognition;
 }

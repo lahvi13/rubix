@@ -8,15 +8,15 @@ import { useBackupReminder } from '../hooks/use-backup-reminder';
  * or "Not now" quiets it for as long again.
  */
 export function BackupReminder() {
-  const { unsavedCount, hasBackup, snooze } = useBackupReminder();
-  if (unsavedCount === null) return null;
+  const { unsaved, hasBackup, snooze } = useBackupReminder();
+  if (unsaved === null) return null;
 
   return (
     <div className="backup-reminder" role="status">
       <p className="backup-reminder__message">
         {hasBackup
-          ? strings.backupReminder.sinceBackup(unsavedCount)
-          : strings.backupReminder.never(unsavedCount)}
+          ? strings.backupReminder.sinceBackup(unsaved)
+          : strings.backupReminder.never(unsaved)}
       </p>
       <div className="backup-reminder__actions">
         <button type="button" className="is-primary" onClick={() => navigate('data')}>

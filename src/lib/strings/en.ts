@@ -5,7 +5,20 @@
  * the two once, at startup.
  */
 
+import { totalRecords, type RecordCounts } from '../../domain/transfer/backup-reminder';
 import type { Translated } from './types';
+
+/** The kinds there are, as one phrase: "120 solves and 45 drill attempts". */
+function records(counts: RecordCounts): string {
+  const parts = [
+    counts.freestyle > 0 ? `${counts.freestyle} ${counts.freestyle === 1 ? 'solve' : 'solves'}` : null,
+    counts.drill > 0 ? `${counts.drill} drill ${counts.drill === 1 ? 'attempt' : 'attempts'}` : null,
+    counts.recognition > 0
+      ? `${counts.recognition} recognition ${counts.recognition === 1 ? 'attempt' : 'attempts'}`
+      : null,
+  ].filter((part) => part !== null);
+  return new Intl.ListFormat('en', { type: 'conjunction' }).format(parts);
+}
 
 export const en = {
   appName: 'Rubix',
@@ -636,12 +649,11 @@ export const en = {
     lastBackup: (day: string, size: string | null) =>
       `Last backup: ${day}${size === null ? '' : ` · ${size}`}.`,
     noBackup: 'No backup from this device yet.',
-    changedSince: (count: number) =>
-      count === 0
+    changedSince: (counts: RecordCounts) =>
+      totalRecords(counts) === 0
         ? 'Nothing has changed since.'
-        : `${count} ${count === 1 ? 'solve' : 'solves'} added or changed since.`,
-    onlyHere: (count: number) =>
-      `${count} ${count === 1 ? 'solve exists' : 'solves exist'} only on this device.`,
+        : `Added or changed since: ${records(counts)}.`,
+    onlyHere: (counts: RecordCounts) => `Only on this device: ${records(counts)}.`,
     storageKept: 'The browser keeps this data even when the device runs low on space.',
     storageMayClear: 'The browser may clear this data when the device runs low on space.',
     keepStorage: 'Ask the browser to keep it',
@@ -701,8 +713,8 @@ export const en = {
     deleteFailed: 'Could not delete the data',
   },
   backupReminder: {
-    sinceBackup: (count: number) => `${count} solves are not in your last backup.`,
-    never: (count: number) => `${count} solves exist only on this device, with no backup.`,
+    sinceBackup: (counts: RecordCounts) => `Not in your last backup: ${records(counts)}.`,
+    never: (counts: RecordCounts) => `Only on this device, with no backup: ${records(counts)}.`,
     backUp: 'Back up',
     later: 'Not now',
   },

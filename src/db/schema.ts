@@ -109,6 +109,16 @@ export class RubixDB extends Dexie {
           algCase.progress = 'new';
         }),
     );
+
+    // v7 counts what a backup is missing by kind — solves, drill attempts,
+    // recognition attempts — on the index, as v4 did for the total: the data
+    // screen asks again after every write. Nothing about a row changes.
+    this.version(7).stores({
+      solves:
+        'id, sessionId, caseId, createdAt, updatedAt, starred, *tagIds, ' +
+        '[sessionId+createdAt], [caseId+createdAt], [mode+puzzle], [puzzle+mode+penalty], ' +
+        '[puzzle+mode+penalty+rawMs], [mode+updatedAt]',
+    });
   }
 }
 

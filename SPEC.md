@@ -796,6 +796,7 @@ export class RubixDB extends Dexie {
 | `solves.[caseId+createdAt]` | statistiky konkrétního případu v trenažéru |
 | `solves.[mode+puzzle]` | oddělení drillů od freestyle napříč sessiony |
 | `solves.[puzzle+mode+penalty]` | globální PB single (přeskočí DNF bez načítání všeho) |
+| `solves.[mode+updatedAt]` | co chybí v záloze, po druzích — složení, pokusy v drillu, pokusy o rozpoznání (DB v7) |
 | `solves.*tagIds` | filtr historie podle tagu |
 | `solves.starred` | seznam „k rozboru“ |
 | `sessions.[puzzle+mode+isActive]` | nalezení aktivní session |

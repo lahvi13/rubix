@@ -3,6 +3,7 @@ import { db } from '../schema';
 import { SPLITS_SCHEMA_VERSION, type Penalty, type Puzzle, type Solve, type Split } from '../types';
 import { finalMs } from '../../domain/solve/final-time';
 import { clampSplitsToRaw, normaliseSplits } from '../../domain/solve/splits';
+import type { RecordCounts } from '../../domain/transfer/backup-reminder';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 
@@ -210,6 +211,23 @@ export async function countSolves(sessionId: string): Promise<number> {
  */
 export async function countSolvesChangedSince(timestamp: number): Promise<number> {
   return db.solves.where('updatedAt').above(timestamp).count();
+}
+
+/**
+ * The same, told apart by kind: a solve on the timer, an attempt in the
+ * drill, an attempt at recognising a case. All three live in this table and
+ * all three go into a backup, but only the first is a solve to the reader.
+ */
+export async function countRecordsChangedSince(timestamp: number): Promise<RecordCounts> {
+  const [freestyle, drill, recognition] = await Promise.all(
+    (['freestyle', 'drill', 'recognition'] as const).map((mode) =>
+      db.solves
+        .where('[mode+updatedAt]')
+        .between([mode, timestamp], [mode, Dexie.maxKey], false, true)
+        .count(),
+    ),
+  );
+  return { freestyle: freestyle ?? 0, drill: drill ?? 0, recognition: recognition ?? 0 };
 }
 
 /**

@@ -8,8 +8,24 @@
  * itself uses stays English: cross, F2L, OLL, PLL, AUF, ao5, DNF, +2, PB.
  */
 
+import { totalRecords, type RecordCounts } from '../../domain/transfer/backup-reminder';
 import type { Strings } from './en';
 import { plural } from './plural';
+
+/**
+ * Druhy záznamů jako jedna fráze: „120 složení a 45 pokusů v drillu“. Věty kolem
+ * ní ji uvádějí dvojtečkou — sloveso by se se seznamem několika počtů shodovalo
+ * jen těžko.
+ */
+function records(counts: RecordCounts): string {
+  const attempts = (count: number) => `${count} ${plural(count, 'pokus', 'pokusy', 'pokusů')}`;
+  const parts = [
+    counts.freestyle > 0 ? `${counts.freestyle} složení` : null,
+    counts.drill > 0 ? `${attempts(counts.drill)} v drillu` : null,
+    counts.recognition > 0 ? `${attempts(counts.recognition)} o rozpoznání` : null,
+  ].filter((part) => part !== null);
+  return new Intl.ListFormat('cs', { type: 'conjunction' }).format(parts);
+}
 
 export const cs: Strings = {
   appName: 'Rubix',
@@ -574,12 +590,11 @@ export const cs: Strings = {
     lastBackup: (day: string, size: string | null) =>
       `Poslední záloha: ${day}${size === null ? '' : ` · ${size}`}.`,
     noBackup: 'Z tohoto zařízení zatím žádná záloha.',
-    changedSince: (count: number) =>
-      count === 0
+    changedSince: (counts: RecordCounts) =>
+      totalRecords(counts) === 0
         ? 'Od té doby se nic nezměnilo.'
-        : `Od té doby ${plural(count, 'přibylo nebo se změnilo', 'přibyla nebo se změnila', 'přibylo nebo se změnilo')} ${count} složení.`,
-    onlyHere: (count: number) =>
-      `${count} složení ${plural(count, 'existuje', 'existují', 'existuje')} jen na tomto zařízení.`,
+        : `Nové nebo změněné od té doby: ${records(counts)}.`,
+    onlyHere: (counts: RecordCounts) => `Jen na tomto zařízení: ${records(counts)}.`,
     storageKept: 'Prohlížeč tato data nechá i ve chvíli, kdy na zařízení dochází místo.',
     storageMayClear: 'Prohlížeč tato data může smazat, až bude na zařízení docházet místo.',
     keepStorage: 'Požádat prohlížeč o trvalé uložení',
@@ -640,10 +655,8 @@ export const cs: Strings = {
     deleteFailed: 'Data se nepodařilo smazat',
   },
   backupReminder: {
-    sinceBackup: (count: number) =>
-      `${count} složení ${plural(count, 'není', 'nejsou', 'není')} v tvé poslední záloze.`,
-    never: (count: number) =>
-      `${count} složení ${plural(count, 'existuje', 'existují', 'existuje')} jen na tomto zařízení, bez zálohy.`,
+    sinceBackup: (counts: RecordCounts) => `Mimo tvou poslední zálohu: ${records(counts)}.`,
+    never: (counts: RecordCounts) => `Jen na tomto zařízení, bez zálohy: ${records(counts)}.`,
     backUp: 'Zálohovat',
     later: 'Teď ne',
   },

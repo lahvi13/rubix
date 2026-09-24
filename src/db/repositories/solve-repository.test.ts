@@ -7,6 +7,7 @@ import {
 } from './session-repository';
 import {
   addSolve,
+  countRecordsChangedSince,
   countSolvesChangedSince,
   deleteSolve,
   deleteSolves,
@@ -110,6 +111,24 @@ describe('solve repository', () => {
     }
 
     expect(await countSolvesChangedSince(backupAt)).toBe(expected);
+  });
+
+  it('tells solves, drill attempts and recognition attempts apart', async () => {
+    const rows: [NewSolve['mode'], number][] = [
+      ['freestyle', 100],
+      ['freestyle', 500],
+      ['drill', 500],
+      ['drill', 600],
+      ['recognition', 700],
+    ];
+    for (const [mode, updatedAt] of rows) {
+      const solve = await addSolve({ ...(await makeSolve(sessionId, 1000)), mode });
+      await db.solves.update(solve.id, { updatedAt });
+    }
+
+    expect(await countRecordsChangedSince(200)).toEqual({ freestyle: 1, drill: 2, recognition: 1 });
+    // Strictly after, as above.
+    expect(await countRecordsChangedSince(700)).toEqual({ freestyle: 0, drill: 0, recognition: 0 });
   });
 });
 
