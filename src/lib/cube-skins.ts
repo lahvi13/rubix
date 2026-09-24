@@ -6,7 +6,9 @@
  * `muted` is for stickers a case does not depend on — they are still drawn,
  * because an empty square reads as a hole in the cube. Those are the one part
  * of a skin that has to know about the theme: a sticker that recedes into a
- * dark card is a slab of ink on a white one.
+ * dark card is a slab of ink on a white one. On paper it is still a mid grey,
+ * not a pale one: the white face, shaded on the side of a cube, comes down to
+ * a pale grey itself, and the two must never be mistaken for each other.
  */
 
 import type { Face } from '../domain/cube/notation';
@@ -68,7 +70,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#d63a3a',
       R: '#e8811c',
     },
-    muted: { dark: '#525b70', light: '#c7cddb' },
+    muted: { dark: '#525b70', light: '#9099ab' },
     outline: '#0f1115',
     pale: '#f4f6fb',
   },
@@ -83,7 +85,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#ff2d2d',
       R: '#ff8a00',
     },
-    muted: { dark: '#4b5468', light: '#bcc4d3' },
+    muted: { dark: '#4b5468', light: '#8a93a6' },
     outline: '#000000',
     pale: '#ffffff',
   },
@@ -98,7 +100,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#e79a9a',
       R: '#f0b681',
     },
-    muted: { dark: '#5a6379', light: '#d2d8e3' },
+    muted: { dark: '#5a6379', light: '#a4acbc' },
     outline: '#1b1f28',
     pale: '#f2f4f8',
   },
@@ -115,7 +117,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#d55e00',
       R: '#e69f00',
     },
-    muted: { dark: '#4f586d', light: '#c4cbd9' },
+    muted: { dark: '#4f586d', light: '#8f98aa' },
     outline: '#0f1115',
     pale: '#f8fafc',
   },
@@ -125,7 +127,7 @@ const FALLBACK: CubeSkinDefinition = {
   id: 'classic',
   name: 'Classic',
   faces: { U: '#f2d024', D: '#f4f4f4', F: '#25b05a', B: '#2f6fd0', L: '#d63a3a', R: '#e8811c' },
-  muted: { dark: '#525b70', light: '#c7cddb' },
+  muted: { dark: '#525b70', light: '#9099ab' },
   outline: '#0f1115',
   pale: '#f4f6fb',
 };
