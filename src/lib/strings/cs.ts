@@ -23,6 +23,9 @@ function records(counts: RecordCounts): string {
     counts.freestyle > 0 ? `${counts.freestyle} složení` : null,
     counts.drill > 0 ? `${attempts(counts.drill)} v drillu` : null,
     counts.recognition > 0 ? `${attempts(counts.recognition)} o rozpoznání` : null,
+    counts.algorithms > 0
+      ? `${counts.algorithms} ${plural(counts.algorithms, 'vlastní algoritmus', 'vlastní algoritmy', 'vlastních algoritmů')}`
+      : null,
   ].filter((part) => part !== null);
   return new Intl.ListFormat('cs', { type: 'conjunction' }).format(parts);
 }

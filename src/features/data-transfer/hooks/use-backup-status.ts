@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useState } from 'react';
-import { countRecordsChangedSince } from '../../../db/repositories/solve-repository';
+import { countChangedSince } from '../../../db/repositories/transfer-repository';
 import type { RecordCounts } from '../../../domain/transfer/backup-reminder';
 import { useSetting } from '../../../hooks/use-setting';
 import { isStoragePersisted, requestPersistentStorage } from '../../../lib/storage';
@@ -26,7 +26,7 @@ export interface BackupStatus {
 export function useBackupStatus(): BackupStatus {
   const [lastExportAt] = useSetting('data.lastExportAt');
   const [lastExportBytes] = useSetting('data.lastExportBytes');
-  const changedSince = useLiveQuery(() => countRecordsChangedSince(lastExportAt), [lastExportAt]);
+  const changedSince = useLiveQuery(() => countChangedSince(lastExportAt), [lastExportAt]);
   const [isPersisted, setPersisted] = useState<boolean | null | undefined>(undefined);
 
   useEffect(() => {

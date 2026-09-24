@@ -10,6 +10,7 @@ import {
   applyImportPlan,
   buildExportFile,
   clearAllData,
+  countChangedSince,
   readSnapshot,
 } from './transfer-repository';
 import { planImport } from '../../domain/transfer/merge';
@@ -243,5 +244,25 @@ describe('transfer repository', () => {
 
     const counts = await Promise.all(db.tables.map((table) => table.count()));
     expect(counts.every((count) => count === 0)).toBe(true);
+  });
+});
+
+describe('what a backup is missing', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    await seedPacks();
+  });
+
+  it("names the reader's own algorithms, and never the pack's", async () => {
+    const before = Date.now() - 1;
+    await addUserAlgorithm('pll-t', "R U R' U' R' F R2 U' R' U' R U R' F'");
+
+    // The seed wrote every pack algorithm after `before` too; none of them count.
+    expect(await countChangedSince(before)).toEqual({
+      freestyle: 0,
+      drill: 0,
+      recognition: 0,
+      algorithms: 1,
+    });
   });
 });

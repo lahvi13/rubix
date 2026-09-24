@@ -21,9 +21,12 @@ export function isBackupDue(changedSinceBaseline: number): boolean {
   return changedSinceBaseline >= BACKUP_REMINDER_SOLVES;
 }
 
-/** What a backup is missing, by what the rows record. */
-export type RecordCounts = Readonly<Record<SolveMode, number>>;
+/**
+ * What a backup is missing: solves, drill and recognition attempts, and the
+ * algorithms the reader wrote. Those last are few, but typed in by hand.
+ */
+export type RecordCounts = Readonly<Record<SolveMode | 'algorithms', number>>;
 
 export function totalRecords(counts: RecordCounts): number {
-  return counts.freestyle + counts.drill + counts.recognition;
+  return counts.freestyle + counts.drill + counts.recognition + counts.algorithms;
 }

@@ -16,6 +16,9 @@ function records(counts: RecordCounts): string {
     counts.recognition > 0
       ? `${counts.recognition} recognition ${counts.recognition === 1 ? 'attempt' : 'attempts'}`
       : null,
+    counts.algorithms > 0
+      ? `${counts.algorithms} ${counts.algorithms === 1 ? 'algorithm' : 'algorithms'} of your own`
+      : null,
   ].filter((part) => part !== null);
   return new Intl.ListFormat('en', { type: 'conjunction' }).format(parts);
 }

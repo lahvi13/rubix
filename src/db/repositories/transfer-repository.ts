@@ -7,8 +7,28 @@ import {
   type ExportFile,
 } from '../../domain/transfer/types';
 import type { ImportPlan } from '../../domain/transfer/merge';
+import type { RecordCounts } from '../../domain/transfer/backup-reminder';
+import { countRecordsChangedSince } from './solve-repository';
 import { supersededActives } from '../../domain/transfer/actives';
 import { now } from '../../lib/clock';
+
+/**
+ * What a backup taken at `timestamp` does not hold as it is now. The solves
+ * table is counted by kind on its index; the reader's own algorithms are a
+ * handful of rows, and the only algorithms worth naming — the pack's are put
+ * back by every start, and never touched by the reader except to pick one.
+ */
+export async function countChangedSince(timestamp: number): Promise<RecordCounts> {
+  const [records, algorithms] = await Promise.all([
+    countRecordsChangedSince(timestamp),
+    db.algorithms
+      .where('updatedAt')
+      .above(timestamp)
+      .filter((algorithm) => algorithm.source === 'user')
+      .count(),
+  ]);
+  return { ...records, algorithms };
+}
 
 /**
  * Reads every table, including device-local settings. This is the picture an

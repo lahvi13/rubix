@@ -218,7 +218,9 @@ export async function countSolvesChangedSince(timestamp: number): Promise<number
  * drill, an attempt at recognising a case. All three live in this table and
  * all three go into a backup, but only the first is a solve to the reader.
  */
-export async function countRecordsChangedSince(timestamp: number): Promise<RecordCounts> {
+export async function countRecordsChangedSince(
+  timestamp: number,
+): Promise<Omit<RecordCounts, 'algorithms'>> {
   const [freestyle, drill, recognition] = await Promise.all(
     (['freestyle', 'drill', 'recognition'] as const).map((mode) =>
       db.solves

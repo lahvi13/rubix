@@ -1,8 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import {
-  countRecordsChangedSince,
-  countSolvesChangedSince,
-} from '../../../db/repositories/solve-repository';
+import { countSolvesChangedSince } from '../../../db/repositories/solve-repository';
+import { countChangedSince } from '../../../db/repositories/transfer-repository';
 import {
   backupReminderBaseline,
   isBackupDue,
@@ -16,7 +14,8 @@ export interface BackupReminder {
    * Records in no backup, by kind, when there are enough of them to say so;
    * null otherwise. Drill and recognition attempts count toward "enough" as
    * much as solves do: a backup holds them all, and months of drilling are as
-   * much to lose.
+   * much to lose. The reader's own algorithms are named when it speaks, but
+   * a few of them never bring it up — the threshold is sized for solves.
    */
   unsaved: RecordCounts | null;
   /** Whether any backup was ever taken here — it changes what the reminder says. */
@@ -33,7 +32,7 @@ export function useBackupReminder(): BackupReminder {
     const sinceBaseline = await countSolvesChangedSince(baseline);
     if (!isBackupDue(sinceBaseline)) return null;
     // Said as everything outside the backup, not only what came after "not now".
-    return countRecordsChangedSince(lastExportAt);
+    return countChangedSince(lastExportAt);
   }, [lastExportAt, snoozedAt]);
 
   return {

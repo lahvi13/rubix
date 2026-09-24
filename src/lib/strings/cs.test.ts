@@ -69,15 +69,23 @@ describe('counted sentences', () => {
   });
 
   it.each([
-    [{ freestyle: 0, drill: 0, recognition: 0 }, 'Od té doby se nic nezměnilo.'],
-    [{ freestyle: 6, drill: 0, recognition: 0 }, 'Nové nebo změněné od té doby: 6 složení.'],
-    [{ freestyle: 0, drill: 1, recognition: 0 }, 'Nové nebo změněné od té doby: 1 pokus v drillu.'],
+    [{ freestyle: 0, drill: 0, recognition: 0, algorithms: 0 }, 'Od té doby se nic nezměnilo.'],
+    [{ freestyle: 6, drill: 0, recognition: 0, algorithms: 0 }, 'Nové nebo změněné od té doby: 6 složení.'],
+    [{ freestyle: 0, drill: 1, recognition: 0, algorithms: 0 }, 'Nové nebo změněné od té doby: 1 pokus v drillu.'],
     [
-      { freestyle: 120, drill: 3, recognition: 22 },
+      { freestyle: 120, drill: 3, recognition: 22, algorithms: 0 },
       'Nové nebo změněné od té doby: 120 složení, 3 pokusy v drillu a 22 pokusů o rozpoznání.',
     ],
     [
-      { freestyle: 2, drill: 0, recognition: 5 },
+      { freestyle: 0, drill: 0, recognition: 0, algorithms: 3 },
+      'Nové nebo změněné od té doby: 3 vlastní algoritmy.',
+    ],
+    [
+      { freestyle: 7, drill: 0, recognition: 0, algorithms: 1 },
+      'Nové nebo změněné od té doby: 7 složení a 1 vlastní algoritmus.',
+    ],
+    [
+      { freestyle: 2, drill: 0, recognition: 5, algorithms: 0 },
       'Nové nebo změněné od té doby: 2 složení a 5 pokusů o rozpoznání.',
     ],
   ])('what changed since the backup: %o', (counts, expected) => {
@@ -101,7 +109,7 @@ it.each([
   });
 
   it('says what is missing from the backup, kind by kind', () => {
-    expect(cs.backupReminder.sinceBackup({ freestyle: 250, drill: 41, recognition: 0 })).toBe(
+    expect(cs.backupReminder.sinceBackup({ freestyle: 250, drill: 41, recognition: 0, algorithms: 0 })).toBe(
       // Intl.ListFormat keeps the one-letter "a" off the end of a line, as Czech type does.
       'Mimo tvou poslední zálohu: 250 složení a 41 pokusů v drillu.',
     );
