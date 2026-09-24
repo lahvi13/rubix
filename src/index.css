@@ -168,6 +168,17 @@
   --clock-size: clamp(3.5rem, 18vw, 9rem);
 
   /*
+   * How much bigger than the still picture the animated cube's box is. The
+   * player draws its cube inside a margin of its own, so it needs the bigger
+   * box to come out the picture's size. Measured, not judged: the two cubes
+   * were overlaid and the pixels compared, and 1.2 differs least — the 1.25
+   * this used to be read as the cube swelling when it replaced the picture.
+   * Its perspective makes the sides a touch wider than the picture's
+   * isometric ones at any size; this splits that difference.
+   */
+  --player-scale: 1.2;
+
+  /*
    * What the pinned header takes off the top of the page. Written from the
    * same tokens the header is built from, so a scroll target that has to clear
    * it grows with the text size the way the bar itself does.
@@ -676,8 +687,8 @@ button[disabled] {
      swapping one cube for the other must not resize it — which is why the
      ground under it takes a little clipping at the edge rather than the cube
      being shrunk to fit. */
-  width: calc(var(--stage-width) * 1.25);
-  height: calc(var(--stage-height) * 1.25);
+  width: calc(var(--stage-width) * var(--player-scale));
+  height: calc(var(--stage-height) * var(--player-scale));
   /*
    * Centred by hand: a grid item that overflows its area is aligned to the
    * start instead of the centre — the browser would rather push content off
@@ -3063,8 +3074,8 @@ button[disabled] {
   position: absolute;
   inset-block-start: 50%;
   inset-inline-start: 50%;
-  width: 125%;
-  height: 125%;
+  width: calc(100% * var(--player-scale));
+  height: calc(100% * var(--player-scale));
   transform: translate(-50%, -50%);
 }
 
@@ -3345,8 +3356,8 @@ button[disabled] {
   position: absolute;
   inset-block-start: 50%;
   inset-inline-start: 50%;
-  width: 15rem;
-  height: 15rem;
+  width: calc(12rem * var(--player-scale));
+  height: calc(12rem * var(--player-scale));
   transform: translate(-50%, -50%);
 }
 
