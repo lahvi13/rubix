@@ -7,13 +7,11 @@ export interface Diagram {
   view: DiagramView;
   stickering: Stickering;
   /**
-   * What the animated cube shows.
-   *
-   * Dimming costs a cube its colours — cubing.js darkens them rather than
-   * greying them, so blue turns to navy and yellow to olive — and that is only
-   * worth paying where half the cube would otherwise be noise. On the last
-   * layer it is not: the case is the layer being turned, and the eye finds it
-   * without help.
+   * What the animated cube shows. Greyed stickers wear the skin's muted colour
+   * (`lib/twisty-skin.ts`), the same grey the still picture uses, so the cube
+   * that replaces a picture keeps what the picture chose to show — as far as
+   * a cube that also has sides can. PLL shows everything: the side colours
+   * are what the case is read by.
    */
   playerStickering: PlayerStickering;
   /**
@@ -51,7 +49,7 @@ export function diagramFor(setId: string, group: string): Diagram {
     return {
       view: 'lastLayer',
       stickering: group.includes('Edges') ? 'edgeOrientation' : 'orientation',
-      playerStickering: 'full',
+      playerStickering: 'orientation',
       orientation: '',
     };
   }
@@ -67,7 +65,7 @@ export function diagramFor(setId: string, group: string): Diagram {
     return {
       view: 'lastLayer',
       stickering: 'orientation',
-      playerStickering: 'full',
+      playerStickering: 'orientation',
       orientation: '',
     };
   }

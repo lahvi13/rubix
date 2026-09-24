@@ -4,13 +4,14 @@ import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { strings } from '../../../lib/strings';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
-import { maskHidingLayer } from '../../../lib/twisty-stickering';
+import { maskHidingLayer, maskOrientingLayer } from '../../../lib/twisty-stickering';
 
 /**
- * What the moving cube shows: everything, or only the two layers a case is
- * built in, with the last layer greyed out the way the still picture greys it.
+ * What the moving cube shows: everything; only the two layers a case is built
+ * in, with the last layer greyed out the way the still picture greys it; or
+ * only the last layer's yellow, the way an OLL picture reads.
  */
-export type PlayerStickering = 'full' | 'firstTwoLayers';
+export type PlayerStickering = 'full' | 'firstTwoLayers' | 'orientation';
 
 interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
@@ -69,10 +70,12 @@ export function CasePlayer({
   // Handed over rather than named: the cube stands yellow up, and cubing.js
   // names its stickerings for a cube standing the other way.
   useEffect(() => {
-    if (!isReady || stickering !== 'firstTwoLayers') return;
+    if (!isReady || stickering === 'full') return;
 
     let cancelled = false;
-    void maskHidingLayer('D').then((mask) => {
+    // The last layer is cubing.js's D: the cube stands on its head.
+    const masked = stickering === 'orientation' ? maskOrientingLayer('D') : maskHidingLayer('D');
+    void masked.then((mask) => {
       const element = player.current;
       if (cancelled || !element) return;
       element.experimentalStickeringMaskOrbits = mask;
