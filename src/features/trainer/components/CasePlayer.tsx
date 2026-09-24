@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { TwistyPlayerElement } from '../../../types/twisty';
+import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { strings } from '../../../lib/strings';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
-import { maskHidingLayer, maskOrientingLayer } from '../../../lib/twisty-stickering';
+import {
+  maskHidingLayer,
+  maskOrientingLayer,
+  type StickeringMask,
+} from '../../../lib/twisty-stickering';
 
 /**
  * What the moving cube shows: everything; only the two layers a case is built
@@ -51,71 +56,70 @@ export function CasePlayer({
 }: CasePlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
+  const [mask, setMask] = useState<StickeringMask | null>(null);
 
   // cubing/twisty is a heavy chunk and the trainer is usable without it, so it
-  // is only fetched once someone actually asks to see a case move.
+  // is only fetched once someone actually asks to see a case move. The mask is
+  // worked out alongside, so the cube is built wearing it rather than showing
+  // every colour for its first few frames.
   useEffect(() => {
     let cancelled = false;
-    void import('cubing/twisty').then(() => {
-      if (!cancelled) setReady(true);
+    void Promise.all([import('cubing/twisty'), maskFor(stickering)]).then(([, nextMask]) => {
+      if (cancelled) return;
+      setMask(nextMask);
+      setReady(true);
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [stickering]);
+
+  useEffect(() => {
+    const element = player.current;
+    if (!isReady || !element || mask === null) return;
+    element.experimentalStickeringMaskOrbits = mask;
+  }, [isReady, mask]);
 
   usePlayingMove(player, isReady, onMove, onFinished);
   useTwistySkin(player, isReady);
+  const isDrawn = usePlayWhenDrawn(player, isReady, `${setupAlg}|${alg}|${replayToken}`);
 
-  // Handed over rather than named: the cube stands yellow up, and cubing.js
-  // names its stickerings for a cube standing the other way.
-  useEffect(() => {
-    if (!isReady || stickering === 'full') return;
-
-    let cancelled = false;
-    // The last layer is cubing.js's D: the cube stands on its head.
-    const masked = stickering === 'orientation' ? maskOrientingLayer('D') : maskHidingLayer('D');
-    void masked.then((mask) => {
-      const element = player.current;
-      if (cancelled || !element) return;
-      element.experimentalStickeringMaskOrbits = mask;
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isReady, stickering]);
-
-  useEffect(() => {
-    if (!isReady) return;
-    const element = player.current;
-    if (!element) return;
-
-    element.jumpToStart();
-    element.play();
-  }, [isReady, setupAlg, alg, replayToken]);
-
-  if (!isReady) {
-    return placeholder ?? <p className="case-player__loading">{strings.trainer.loadingPlayer}</p>;
-  }
+  const waiting = placeholder ?? (
+    <p className="case-player__loading">{strings.trainer.loadingPlayer}</p>
+  );
+  if (!isReady) return waiting;
 
   return (
-    <twisty-player
-      ref={player}
-      className="case-player"
-      // Dragging this turns the cube. A swipe that spun it instead of
-      // turning the page would be maddening, so the sheet skips it.
-      data-no-swipe=""
-      puzzle="3x3x3"
-      alg={alg}
-      experimental-setup-alg={`${CUBE_ORIENTATION} ${setupAlg}`}
-      experimental-setup-anchor="start"
-      visualization="3D"
-      background="none"
-      camera-latitude={CAMERA_LATITUDE}
-      camera-longitude={CAMERA_LONGITUDE}
-      control-panel="none"
-      hint-facelets="none"
-    />
+    <>
+      {/* Under the player, until its cube has faded in over it. */}
+      {isDrawn ? null : waiting}
+      <twisty-player
+        ref={player}
+        className="case-player"
+        // Dragging this turns the cube. A swipe that spun it instead of
+        // turning the page would be maddening, so the sheet skips it.
+        data-no-swipe=""
+        puzzle="3x3x3"
+        alg={alg}
+        experimental-setup-alg={`${CUBE_ORIENTATION} ${setupAlg}`}
+        experimental-setup-anchor="start"
+        visualization="3D"
+        background="none"
+        camera-latitude={CAMERA_LATITUDE}
+        camera-longitude={CAMERA_LONGITUDE}
+        control-panel="none"
+        hint-facelets="none"
+      />
+    </>
   );
+}
+
+/**
+ * Handed over rather than named: the cube stands yellow up, and cubing.js
+ * names its stickerings for a cube standing the other way. Its last layer is
+ * cubing.js's D.
+ */
+function maskFor(stickering: PlayerStickering): Promise<StickeringMask | null> {
+  if (stickering === 'full') return Promise.resolve(null);
+  return stickering === 'orientation' ? maskOrientingLayer('D') : maskHidingLayer('D');
 }

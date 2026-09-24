@@ -157,6 +157,17 @@ export function CaseDetail({
     setEditing(null);
   };
 
+  const picture = (
+    <CubeDiagram
+      className="case-detail__diagram"
+      state={state}
+      view={view}
+      stickering={stickering}
+      skin={skin}
+      label={title}
+    />
+  );
+
   return (
     <Sheet label={title} className="case-detail" paging={paging} onClose={onClose}>
       {/* The name belongs to the picture under it, not to the panel: read
@@ -181,16 +192,10 @@ export function CaseDetail({
             replayToken={replayToken}
             onMove={setPlayingMove}
             onFinished={stopPlaying}
+            placeholder={picture}
           />
         ) : (
-          <CubeDiagram
-            className="case-detail__diagram"
-            state={state}
-            view={view}
-            stickering={stickering}
-            skin={skin}
-            label={title}
-          />
+          picture
         )}
       </div>
 

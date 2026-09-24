@@ -6,6 +6,7 @@ import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import type { PinSource } from '../../../hooks/use-pinned-scramble';
 import { useSetting } from '../../../hooks/use-setting';
+import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { withWhiteTop } from '../../../lib/cube-skins';
@@ -247,29 +248,27 @@ function SpatialPreview({
     };
   }, []);
 
-  useEffect(() => {
-    if (!isReady) return;
-    const element = player.current;
-    if (!element) return;
-    element.jumpToStart();
-    element.play();
-  }, [isReady, scramble]);
+  const isDrawn = usePlayWhenDrawn(player, isReady, scramble);
 
   if (!isReady) return placeholder;
 
   return (
-    <twisty-player
-      ref={player}
-      className="scramble__player"
-      puzzle="3x3x3"
-      alg={scramble}
-      experimental-setup-anchor="start"
-      visualization="3D"
-      background="none"
-      camera-latitude={CAMERA_LATITUDE}
-      camera-longitude={CAMERA_LONGITUDE}
-      control-panel="none"
-      hint-facelets="none"
-    />
+    <>
+      {/* Under the player, until its cube has faded in over it. */}
+      {isDrawn ? null : placeholder}
+      <twisty-player
+        ref={player}
+        className="scramble__player"
+        puzzle="3x3x3"
+        alg={scramble}
+        experimental-setup-anchor="start"
+        visualization="3D"
+        background="none"
+        camera-latitude={CAMERA_LATITUDE}
+        camera-longitude={CAMERA_LONGITUDE}
+        control-panel="none"
+        hint-facelets="none"
+      />
+    </>
   );
 }

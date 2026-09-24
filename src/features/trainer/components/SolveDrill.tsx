@@ -13,6 +13,7 @@ import type { CaseStats } from '../../../domain/drill/case-stats';
 import type { Penalty } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
+import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
@@ -586,15 +587,8 @@ function CrossPlayer({ setupAlg, alg, replayToken, onMove }: CrossPlayerProps) {
   // From below, the cross is the face the light leaves darkest. Half the shade
   // still says which face is the bottom, and leaves white looking white.
   useTwistySkin(player, isReady, { shadeStrength: 0.5 });
-
-  useEffect(() => {
-    if (!isReady) return;
-    const element = player.current;
-    if (!element) return;
-
-    element.jumpToStart();
-    element.play();
-  }, [isReady, setupAlg, alg, replayToken]);
+  // Nothing to hide behind here, so the cube shows at once, held at the start.
+  usePlayWhenDrawn(player, isReady, `${setupAlg}|${alg}|${replayToken}`);
 
   if (!isReady) return <p className="case-player__loading">{strings.trainer.loadingPlayer}</p>;
 
