@@ -602,7 +602,7 @@ export const en = {
     previewFlat: 'Flat',
     preview3d: '3D',
     twistyModeHint:
-      'Both are drawn here in your colours: flat as an unfolded net, 3D as a cube seen from a corner. Watching the scramble hands over to the animated cube from cubing.js, which paints its own colours.',
+      'Both are drawn here in your colours: flat as an unfolded net, 3D as a cube seen from a corner. Watching the scramble hands over to an animated cube, in the same colours.',
     timer: 'Timer',
     holdThreshold: 'Hold to start',
     holdOff: 'Off',

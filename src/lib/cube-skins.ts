@@ -39,6 +39,13 @@ export interface CubeSkin {
 }
 
 /**
+ * How much darker the two sides of a cube are drawn than its top, so the three
+ * faces stay apart. The 3D player is lit to match (`lib/twisty-skin.ts`): the
+ * still picture and the cube that replaces it are the same cube.
+ */
+export const SIDE_SHADE = { front: 0.88, right: 0.74 } as const;
+
+/**
  * A skin as it is written down. Both the muted sticker and the arrow are still
  * a choice at this point — the theme makes it, not the skin.
  */

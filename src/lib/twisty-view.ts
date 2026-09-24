@@ -27,8 +27,8 @@ export const CAMERA_LONGITUDE = 45;
  * It leaves the two cubes painted the same, which is the point: our skins are
  * a standard cube written down as it is held here, and cubing.js flipped by z2
  * is that same cube — yellow up, green in front, red on the left and orange on
- * the right. What it cannot match is the reader's chosen skin; the player
- * paints its own colours, which is why the still picture is ours to draw.
+ * the right. The reader's chosen skin is laid over it afterwards
+ * (`lib/twisty-skin.ts`), and matches because of this.
  *
  * A set looked at through a rotation of its own (`features/trainer/case-view`)
  * puts that rotation after this one, in front of the setup, and both cubes end

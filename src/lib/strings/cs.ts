@@ -540,7 +540,7 @@ export const cs: Strings = {
     previewFlat: 'Plochý',
     preview3d: '3D',
     twistyModeHint:
-      'Oba náhledy se kreslí ve tvých zvolených barvách: plochý jako rozložená síť, 3D jako kostka viděná od rohu. Přehrání scramblu předává řízení animované kostce z cubing.js, která používá své vlastní barvy.',
+      'Oba náhledy se kreslí ve tvých zvolených barvách: plochý jako rozložená síť, 3D jako kostka viděná od rohu. Přehrání scramblu předá řízení animované kostce ve stejných barvách.',
     timer: 'Timer',
     holdThreshold: 'Podržení pro start',
     holdOff: 'Vypnuto',

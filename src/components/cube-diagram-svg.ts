@@ -18,7 +18,7 @@ import {
   type PieceArrow,
   type Stickering,
 } from '../domain/cube/views';
-import type { CubeSkin } from '../lib/cube-skins';
+import { SIDE_SHADE, type CubeSkin } from '../lib/cube-skins';
 
 export type DiagramView = 'lastLayer' | 'isometric' | 'net';
 
@@ -359,12 +359,12 @@ function isometricSvg(state: CubeState, stickering: Stickering, skin: CubeSkin):
       .join('') +
     view.front
       .map((cell, index) =>
-        polygon(frontCell(index), shade(colourOf(cell, skin), 0.88), skin.outline, 0.8),
+        polygon(frontCell(index), shade(colourOf(cell, skin), SIDE_SHADE.front), skin.outline, 0.8),
       )
       .join('') +
     view.right
       .map((cell, index) =>
-        polygon(rightCell(index), shade(colourOf(cell, skin), 0.74), skin.outline, 0.8),
+        polygon(rightCell(index), shade(colourOf(cell, skin), SIDE_SHADE.right), skin.outline, 0.8),
       )
       .join('');
 

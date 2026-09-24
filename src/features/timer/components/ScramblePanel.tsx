@@ -7,6 +7,7 @@ import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import type { PinSource } from '../../../hooks/use-pinned-scramble';
 import { useSetting } from '../../../hooks/use-setting';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
+import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { withWhiteTop } from '../../../lib/cube-skins';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-view';
 import { strings } from '../../../lib/strings';
@@ -33,10 +34,9 @@ interface ScramblePanelProps {
  * re-renders.
  *
  * The preview is drawn here from the app's own cube model, so it follows the
- * chosen skin and costs nothing to render. cubing.js paints its own colours
- * and cannot be given a skin, so the 3D mode does not replace the picture —
- * it adds a button that plays the scramble and hands the picture back
- * afterwards.
+ * chosen skin and costs nothing to render. cubing.js is a heavy chunk, so the
+ * 3D mode does not replace the picture — it adds a button that plays the
+ * scramble and hands the picture back afterwards.
  */
 export const ScramblePanel = memo(function ScramblePanel({
   scramble,
@@ -60,7 +60,7 @@ export const ScramblePanel = memo(function ScramblePanel({
   const isWatching = watched !== null && watched === scramble;
 
   // Drawn in the reader's own colours, flat or from a corner. The animated
-  // cube paints its own, so it is only fetched when someone asks to watch.
+  // cube is only fetched when someone asks to watch.
   const picture =
     scramble === null ? null : (
       <CubeDiagram
@@ -219,9 +219,8 @@ function stateAfter(scramble: string) {
  * is here — this is the answer to "watch it" — and hands the still picture
  * back when it is done.
  *
- * These are cubing.js's colours, not the reader's: the player cannot be given
- * a skin. That is the whole reason the still picture is drawn by us and this
- * only appears once someone asks for it, along with the weight of the chunk.
+ * Only fetched once someone asks for it: the still picture costs nothing, and
+ * this brings the whole of cubing/twisty with it.
  */
 function SpatialPreview({
   scramble,
@@ -236,6 +235,7 @@ function SpatialPreview({
   const [isReady, setReady] = useState(false);
 
   usePlayingMove(player, isReady, onMove);
+  useTwistySkin(player, isReady);
 
   useEffect(() => {
     let cancelled = false;

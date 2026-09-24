@@ -16,6 +16,11 @@ export interface TwistyPlayerElement extends HTMLElement {
    * it takes the whole mask, orbits and all.
    */
   experimentalStickeringMaskOrbits: StickeringMask;
+  /**
+   * The three.js object of the cube being drawn, once there is one. Left as
+   * unknown on purpose: lib/twisty-skin.ts checks what it gets before using it.
+   */
+  experimentalCurrentThreeJSPuzzleObject(): Promise<unknown>;
   /** The player's own state — only the part we listen to. */
   experimentalModel: {
     currentMoveInfo: TwistyProp<TwistyCurrentMoveInfo>;

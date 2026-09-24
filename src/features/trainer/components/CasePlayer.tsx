@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
+import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { strings } from '../../../lib/strings';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
 import { maskHidingLayer } from '../../../lib/twisty-stickering';
@@ -63,6 +64,7 @@ export function CasePlayer({
   }, []);
 
   usePlayingMove(player, isReady, onMove, onFinished);
+  useTwistySkin(player, isReady);
 
   // Handed over rather than named: the cube stands yellow up, and cubing.js
   // names its stickerings for a cube standing the other way.

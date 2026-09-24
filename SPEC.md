@@ -102,9 +102,9 @@ dostávají hotová data z domény.
   i skin jako trenažér, žádný chunk navíc), 3D přes `<twisty-player>`
   — přepíná to nastavení `ui.twistyMode`, vypnout celý náhled jde přes
   `timer.showScramblePreview`. Rozvin se kreslí **bílou nahoru** (skin se otočí),
-  protože v té poloze je scramble definovaný. Skin platí jen na plochý rozvin;
-  ve 3D si barvy drží cubing.js, a proto se do 3D nikdy nepřepíná samo —
-  z plochého náhledu se scramble dá přehrát tlačítkem a obrázek se pak vrátí
+  protože v té poloze je scramble definovaný. Animovaná kostka je těžký chunk,
+  a proto se do ní nikdy nepřepíná samo — z náhledu se scramble dá přehrát
+  tlačítkem a obrázek se pak vrátí
 - scramble se ukládá ke každému solvu jako string; při reimportu se nikdy neregeneruje
 - ruční vložení scramblu (paste) pro trénink konkrétní situace
 
@@ -190,7 +190,7 @@ kromě PB, které je globální per `puzzle`.
   `patternIndex`) — vlastní hodiny by se od kostky na obrazovce během pár tahů
   rozešly. V DOM je to `aria-current="step"`, takže to není jen barva
 - **skiny**: barevná schémata nálepek (`lib/cube-skins.ts`, nastavení `ui.cubeSkin`);
-  proto vlastní vykreslování — twisty si barvy určuje sám
+  statické obrázky kreslí aplikace, animovanou kostku přebarví `lib/twisty-skin.ts`
 - **téma**: světlé / tmavé / podle systému (`ui.theme`, device-local). Paleta je
   jedna sada CSS proměnných zapsaná přes `light-dark()`, takže systémovou volbu
   řeší samo CSS a výslovná volba je jen `data-theme` na `<html>` (`lib/theme.ts`).
@@ -231,10 +231,14 @@ kromě PB, které je globální per `puzzle`.
   ztmavená kromě políček, o která jde. Přehrává se **přesně to, co je napsané** — twisty
   maluje bílou nahoru, zatímco diagramy mají žlutou, ale kostka, která na `F`
   otočí `B`, je horší než kostka špatné barvy (zkoušeno, vráceno)
-- **twisty se nedá obarvit skinem** — barvy si drží cubing.js (má sice experimentální
-  `experimentalSprite`, ale to je textura, ne paleta). Volba je tedy vědomá:
-  `ui.twistyMode` říká, jestli chceš svoje barvy (plochý rozvin), nebo animovanou
-  kostku v barvách cubing.js
+- **twisty má barvy skinu** (`lib/twisty-skin.ts`): cubing.js na barvy nastavení
+  nemá, ale přes `experimentalCurrentThreeJSPuzzleObject()` vydá three.js objekt
+  kostky a každá nálepka je mesh s vyměnitelným materiálem. Každá kostka dostane
+  vlastní materiály (stěny, zašedlé nálepky, plast) a shader ji stínuje podle
+  toho, kam nálepka míří — stejnými faktory jako statický obrázek (`SIDE_SHADE`),
+  takže se kostka po nahrazení obrázku nezmění ani o pixel. Je to zásah do vnitřku
+  knihovny: po upgradu cubing.js ověřit v prohlížeči; když se vnitřek změní,
+  kostka jen zůstane v barvách cubing.js
 - triggery mají vlastní barvu zvýraznění (pole `Trigger.colour`)
 - výchozí volba mezi 2-Look a Full je nastavení `trainer.twoLookDefault`;
   `trainer.showAlgs` vypíše algoritmus i na kartu v seznamu případů

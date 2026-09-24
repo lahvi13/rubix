@@ -31,8 +31,7 @@ interface CubeDiagramProps {
  *
  * Not a <twisty-player>: a set screen shows fifty-seven of these at once, and
  * fifty-seven custom elements each loading a puzzle would make the phone
- * useless. This is also the only way to give the cube a skin — the player
- * paints its own colours.
+ * useless.
  *
  * The picture is an image rather than a tree of elements, because the tree is
  * what cost the phone its seconds; see cube-diagram-svg.ts, which builds and

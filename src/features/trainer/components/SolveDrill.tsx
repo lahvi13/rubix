@@ -14,6 +14,7 @@ import type { Penalty } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
+import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 import { useSetting } from '../../../hooks/use-setting';
@@ -565,9 +566,7 @@ interface CrossPlayerProps {
  * one face you cannot see. It is the same look a reader gets by tilting the
  * cube to check their work.
  *
- * These are cubing.js's colours rather than the reader's — the player cannot be
- * given a skin — which is also why the still picture beside the scramble is
- * drawn by us and this only arrives when somebody asks for it, chunk and all.
+ * It only arrives when somebody asks for it, chunk and all.
  */
 function CrossPlayer({ setupAlg, alg, replayToken, onMove }: CrossPlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
@@ -584,6 +583,9 @@ function CrossPlayer({ setupAlg, alg, replayToken, onMove }: CrossPlayerProps) {
   }, []);
 
   usePlayingMove(player, isReady, onMove);
+  // From below, the cross is the face the light leaves darkest. Half the shade
+  // still says which face is the bottom, and leaves white looking white.
+  useTwistySkin(player, isReady, { shadeStrength: 0.5 });
 
   useEffect(() => {
     if (!isReady) return;
