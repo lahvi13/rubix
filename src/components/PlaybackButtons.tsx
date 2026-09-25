@@ -16,11 +16,13 @@ interface PlaybackButtonsProps {
 }
 
 /**
- * Play or pause, and one move on. The step only appears once there is a cube
- * turning: before that there is nothing to step through, and a still picture
- * with two buttons on it is one more thing to read on a screen that is meant
- * to be quiet. The play button never moves when it does — a button that slides
- * away between two taps is a second tap that lands on its neighbour.
+ * Play or pause, and one move on. The step only appears once the cube has been
+ * paused: someone who stops it is someone who could not keep up, and that is
+ * who going a move at a time is for. Someone just watching sees no more than
+ * a pause button, and a still picture — on a screen meant to be quiet — no
+ * more than play. The play button never moves when the step appears: a button
+ * that slides away between two taps is a second tap that lands on its
+ * neighbour.
  */
 export function PlaybackButtons({
   status,
@@ -46,7 +48,7 @@ export function PlaybackButtons({
       >
         {isPlaying ? <PauseIcon /> : <PlayIcon />}
       </button>
-      {status === 'idle' ? null : (
+      {status === 'paused' ? (
         <button
           type="button"
           className="playback__step"
@@ -56,7 +58,7 @@ export function PlaybackButtons({
         >
           <StepIcon />
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
