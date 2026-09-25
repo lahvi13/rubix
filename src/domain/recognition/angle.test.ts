@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { PACKS } from '../../db/seed/packs';
 import { formatAlg, invertAlg, parseAlg, type Move } from '../cube/notation';
-import { applyAlg, isSolvedIgnoringOrientation } from '../cube/state';
+import { canonicalise } from '../cube/orientation';
+import { applyAlg, isSolvedIgnoringOrientation, type CubeState } from '../cube/state';
+import { isSolvedAsShown, type Stickering } from '../cube/views';
+import { diagramFor } from '../../features/trainer/case-view';
 import { DRILL_AUFS, DRILL_ROTATIONS, drillScramble } from '../drill/scramble';
 import { aufForAngle } from './angle';
 
@@ -90,6 +93,78 @@ describe('aufForAngle', () => {
     expect(checked).toBe(195 * 16);
   });
 
+  it('finds the turn for an OLL of your own that orients and permutes its own way', () => {
+    // Seen on a phone: H learned as F (R U R' U') x3 F'. It orients the layer
+    // but leaves it permuted unlike the pack's H, so an outright solve never
+    // came and no turn was shown at all.
+    const pack = "(R U2 R') (U' R U R') (U' R U' R')";
+    const mine = moves("F (R U R' U') (R U R' U') (R U R' U') F'");
+
+    for (const auf of DRILL_AUFS) {
+      const state = shown(pack, '', auf);
+      expect(aufForAngle(state, mine), `${auf || 'no AUF'}, judged outright`).toBeNull();
+
+      const found = aufForAngle(state, mine, { stickering: 'orientation' });
+      expect(found, auf || 'no AUF').not.toBeNull();
+      expect(solvesAsShown(applyAlg(applyAlg(state, found ?? []), mine), 'orientation')).toBe(true);
+    }
+  });
+
+  it('gives every algorithm a case offers its turn, from every angle', () => {
+    let checked = 0;
+
+    for (const pack of PACKS) {
+      for (const entry of pack.cases) {
+        const { stickering } = diagramFor(pack.set.id, entry.group ?? '');
+        const offered = [entry.alg, entry.alt, ...(entry.others ?? []), ...(entry.orientOnly ?? [])];
+
+        for (const alg of offered) {
+          if (alg === undefined) continue;
+          const algMoves = moves(alg);
+
+          for (const rotation of DRILL_ROTATIONS) {
+            for (const auf of DRILL_AUFS) {
+              const state = shown(entry.alg, rotation, auf);
+              const found = aufForAngle(state, algMoves, { stickering, scrambleAuf: auf });
+              const label = `${entry.id}: ${alg} at ${rotation || 'no rotation'} ${auf || 'no AUF'}`;
+
+              expect(found, label).not.toBeNull();
+              expect(solvesAsShown(applyAlg(applyAlg(state, found ?? []), algMoves), stickering), label).toBe(true);
+              checked++;
+            }
+          }
+        }
+      }
+    }
+
+    expect(checked).toBeGreaterThan(195 * 16);
+    // Thousands of cubes turned and judged: seconds, not the default five, once
+    // the rest of the suite is running beside it.
+  }, 30_000);
+
+  it.each([
+    ['', ''],
+    ['U', "U'"],
+    ["U'", 'U'],
+    // A half turn leaves H looking exactly as the trainer draws it: nothing to undo.
+    ['U2', ''],
+  ])(
+    'turns H back to how the trainer draws it after a %s scramble turn, with %s',
+    (auf, expected) => {
+      // H orients the same from two sides. This algorithm works from where the
+      // trainer draws the case, so the answer is the shortest turn that makes
+      // the layer look like that — not another that happens to work as well.
+      const pack = "(R U2 R') (U' R U R') (U' R U' R')";
+      const mine = moves("F (R U R' U') (R U R' U') (R U R' U') F'");
+
+      const found = aufForAngle(shown(pack, '', auf), mine, {
+        stickering: 'orientation',
+        scrambleAuf: auf,
+      });
+      expect(formatAlg(found ?? [])).toBe(expected);
+    },
+  );
+
   it('takes an algorithm that carries its own AUF as it is', () => {
     // The user's own variant, with the AUF already written into it: the screen
     // must not put a second one in front of it.
@@ -100,3 +175,9 @@ describe('aufForAngle', () => {
     expect(aufForAngle(state, moves(withAuf))).toEqual([]);
   });
 });
+
+/** Solved as the set looks at the case, whichever way up, give or take a last U turn. */
+function solvesAsShown(state: CubeState, stickering: Stickering): boolean {
+  const upright = canonicalise(state);
+  return DRILL_AUFS.some((end) => isSolvedAsShown(end === '' ? upright : applyAlg(upright, moves(end)), stickering));
+}

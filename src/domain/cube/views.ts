@@ -9,7 +9,7 @@
  */
 
 import type { Face } from './notation';
-import { FACELETS, type CubeState } from './state';
+import { FACELETS, solvedState, type CubeState } from './state';
 
 export type Stickering =
   /** Every sticker in its own colour. */
@@ -158,6 +158,23 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       // colours would say the slot was filled.
       return isPairSticker(state, index) || !isLastLayerPiece(state, index) ? colour : null;
   }
+}
+
+const SOLVED = solvedState();
+
+/**
+ * Whether a cube is solved as far as `stickering` looks: the last layer in
+ * everything the stickering shows of it, and every layer under it outright.
+ * The judge of an algorithm somebody wrote themselves — an OLL that orients
+ * and leaves the layer permuted its own way has still solved the case it is
+ * for. The cube must already stand the right way up (`canonicalise`).
+ */
+export function isSolvedAsShown(state: CubeState, stickering: Stickering): boolean {
+  return FACELETS.every((sticker, index) =>
+    sticker.position[1] === 1
+      ? cell(state, index, stickering) === cell(SOLVED, index, stickering)
+      : state[index] === SOLVED[index],
+  );
 }
 
 function faceGrid(state: CubeState, face: Face, stickering: Stickering): Cell[] {

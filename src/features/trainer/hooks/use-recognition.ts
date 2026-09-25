@@ -79,6 +79,8 @@ interface Round {
   answerId: string;
   optionIds: string[];
   scramble: string;
+  /** The U turn the scramble added after the setup; '' when it added none. */
+  scrambleAuf: string;
   state: CubeState;
 }
 
@@ -162,7 +164,10 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
       // Worked out for this angle rather than for the case: the same algorithm
       // wants a different turn in front of it depending on where the case was
       // met, and that turn is half of what a solver does after recognising it.
-      auf: aufForAngle(round.state, algorithm),
+      auf: aufForAngle(round.state, algorithm, {
+        stickering: diagramFor(setId, answer.algCase.group ?? '').stickering,
+        scrambleAuf: round.scrambleAuf,
+      }),
       state: round.state,
       turnedState: fromOtherCorner(round.state),
       scramble: round.scramble,
@@ -267,6 +272,7 @@ function drawRound(
     answerId: round.answerId,
     optionIds: round.optionIds,
     scramble: built?.text ?? answer.setupAlg,
+    scrambleAuf: built?.auf ?? '',
     state: built?.state ?? stateOf(answer.setupAlg),
   };
 }
