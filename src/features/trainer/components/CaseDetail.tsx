@@ -25,7 +25,10 @@ const PACK_LABELS: Record<PackAlgKind, string> = {
   grip: strings.trainer.packAlgGrip,
   other: strings.trainer.packAlgOther,
   slot: strings.trainer.packAlgSlot,
-  orient: strings.trainer.packAlgOrient,
+  // Not "orients only": every OLL algorithm only orients. That the pack's own
+  // answer also permutes is an accident of the case being built by undoing
+  // it, not something it would do in a solve.
+  orient: strings.trainer.packAlgOther,
 };
 
 /** A case's place in a set: which one, and under which heading. */

@@ -44,9 +44,12 @@ export interface PackCase {
   multiSlot?: readonly string[];
   /**
    * Solutions that orient the last layer and leave it permuted differently
-   * from the rest of the list. For OLL that is the whole job — where the
-   * pieces end up is the next step's business — but every other algorithm in
-   * these packs hands back a solved cube, so this one says that it will not.
+   * from the pack's own answer, on the cube the case is built as. For OLL that
+   * is the whole job — where the pieces end up is the next step's business —
+   * and the case sheet offers them as just another way: the pack's answer only
+   * leaves the cube solved because the case is built by undoing it. Kept apart
+   * because the ids are, and because the drills judge them by what the set
+   * looks at rather than by a solved cube (domain/recognition/angle.ts).
    */
   orientOnly?: readonly string[];
 }

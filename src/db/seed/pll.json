@@ -193,7 +193,6 @@
     "y R2 D R2' U' R2 U D' R' D R' D' R U' R' U R'",
     "R' U R U' R' f' U' R U2 R' U' R U' R' f R",
     "R' U R' U' y R' F' R2 U' R' U R' F R F",
-    "R' U R' U' R D' R' D R' U D' R2 U' R2' D R2",
     "R2' D' R2 U R2' U' D R D' R D R' U R U' R",
     "R' U R U' x' U R U2' R' U' R U' R' U2 R U R' U'",
     "z D' R2 D R2 U R' D' R U' R U R' D R U'"

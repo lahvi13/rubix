@@ -9,10 +9,7 @@
    "id": "oll-1",
    "name": "OLL 1",
    "group": "Dot",
-   "alg": "R U2 R2 F R F' U2 R' F R F'",
-   "others": [
-    "R U2' (R2' F R F') U2' (R' F R F')"
-   ],
+   "alg": "R U2 (R2 F R F') U2 (R' F R F')",
    "orientOnly": [
     "U2 R U2' (R2' F R F') U2' (R' F R F')"
    ]
@@ -64,9 +61,6 @@
    "name": "OLL 6",
    "group": "Square",
    "alg": "r U2 R' U' R U' r'",
-   "others": [
-    "r U2' R' U' R U' r'"
-   ],
    "orientOnly": [
     "y U' r U2' R' U' R U' r'"
    ]
@@ -76,9 +70,6 @@
    "name": "OLL 7",
    "group": "Lightning",
    "alg": "r U R' U R U2 r'",
-   "others": [
-    "r U R' U R U2' r'"
-   ],
    "orientOnly": [
     "y U' r U R' U R U2' r'"
    ]
@@ -135,10 +126,7 @@
    "id": "oll-13",
    "name": "OLL 13",
    "group": "Knight move",
-   "alg": "F U R U' R2 F' R U R U' R'",
-   "others": [
-    "F (U R U' R2') F' R (U R U' R')"
-   ],
+   "alg": "F (U R U' R2) F' R (U R U' R')",
    "orientOnly": [
     "y U' F (U R U' R2') F' R (U R U' R')"
    ]
@@ -184,9 +172,6 @@
    "name": "OLL 18",
    "group": "Dot",
    "alg": "r U R' U R U2 r2 U' R U' R' U2 r",
-   "others": [
-    "r U R' U R U2' r2' U' R U' R' U2' r"
-   ],
    "orientOnly": [
     "y U' r U R' U R U2' r2' U' R U' R' U2' r"
    ]
@@ -207,10 +192,7 @@
    "id": "oll-20",
    "name": "OLL 20",
    "group": "Dot",
-   "alg": "r U R' U' M2 U R U' R' U' M'",
-   "others": [
-    "(r U R' U') M2' (U R U' R') U' M'"
-   ],
+   "alg": "(r U R' U') M2 (U R U' R') U' M'",
    "orientOnly": [
     "U (r U R' U') M2' (U R U' R') U' M'"
    ]
@@ -228,10 +210,7 @@
    "id": "oll-22",
    "name": "OLL 22",
    "group": "Cross",
-   "alg": "R U2 R2 U' R2 U' R2 U2 R",
-   "others": [
-    "R U2' (R2' U' R2 U' R2') U2' R"
-   ],
+   "alg": "R U2 (R2 U' R2 U' R2) U2 R",
    "orientOnly": [
     "y U' R U2' (R2' U' R2 U' R2') U2' R"
    ]
@@ -268,9 +247,6 @@
    "name": "OLL 26",
    "group": "Cross",
    "alg": "R U2 R' U' R U' R'",
-   "others": [
-    "R U2' R' U' R U' R'"
-   ],
    "orientOnly": [
     "y U' R U2' R' U' R U' R'"
    ]
@@ -280,9 +256,6 @@
    "name": "OLL 27",
    "group": "Cross",
    "alg": "R U R' U R U2 R'",
-   "others": [
-    "R U R' U R U2' R'"
-   ],
    "orientOnly": [
     "y U' R U R' U R U2' R'"
    ]
@@ -357,10 +330,7 @@
    "id": "oll-35",
    "name": "OLL 35",
    "group": "Fish",
-   "alg": "R U2 R2 F R F' R U2 R'",
-   "others": [
-    "R U2' (R2' F R F') R U2' R'"
-   ],
+   "alg": "R U2 (R2 F R F') R U2 R'",
    "orientOnly": [
     "y U' R U2' (R2' F R F') R U2' R'"
    ]
@@ -414,10 +384,7 @@
    "id": "oll-41",
    "name": "OLL 41",
    "group": "Awkward",
-   "alg": "R U R' U R U2 R' F R U R' U' F'",
-   "others": [
-    "R U R' U R U2' R' F (R U R' U') F'"
-   ],
+   "alg": "R U R' U R U2 R' F (R U R' U') F'",
    "orientOnly": [
     "y U' R U R' U R U2' R' F (R U R' U') F'"
    ]
@@ -490,9 +457,6 @@
    "name": "OLL 49",
    "group": "L",
    "alg": "r U' r2 U r2 U r2 U' r",
-   "others": [
-    "r U' r2' U r2 U r2' U' r"
-   ],
    "orientOnly": [
     "y U' r U' r2' U r2 U r2' U' r"
    ]

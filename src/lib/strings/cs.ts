@@ -418,7 +418,6 @@ export const cs: Strings = {
     packAlgGrip: 'vestavěný · s otočením',
     packAlgOther: 'vestavěný · jinak',
     packAlgSlot: 'vestavěný · rozbije jiný slot',
-    packAlgOrient: 'vestavěný · jen orientuje',
     markOwn: 'tvůj vlastní algoritmus',
     markCostsSlot: 'rozbije jiný slot',
     ownAlg: 'tvůj',

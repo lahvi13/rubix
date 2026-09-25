@@ -43,9 +43,6 @@
    "name": "Sune",
    "group": "2 / Corners",
    "alg": "(R U R' U) (R U2 R')",
-   "others": [
-    "R U R' U R U2' R'"
-   ],
    "orientOnly": [
     "y U' R U R' U R U2' R'"
    ]
@@ -55,9 +52,6 @@
    "name": "Anti-Sune",
    "group": "2 / Corners",
    "alg": "(R U2 R') (U' R U' R')",
-   "others": [
-    "R U2' R' U' R U' R'"
-   ],
    "orientOnly": [
     "y U' R U2' R' U' R U' R'"
    ]
@@ -77,9 +71,6 @@
    "name": "Pi",
    "group": "2 / Corners",
    "alg": "R U2 (R2 U') (R2 U') R2 U2 R",
-   "others": [
-    "R U2' (R2' U' R2 U' R2') U2' R"
-   ],
    "orientOnly": [
     "y U' R U2' (R2' U' R2 U' R2') U2' R"
    ]

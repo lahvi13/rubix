@@ -61,6 +61,7 @@ export async function seedPacks(): Promise<void> {
         db.algCases.bulkDelete(changes.retired.algCases),
         db.algorithms.bulkDelete(changes.retired.algorithms),
         db.tombstones.bulkPut(tombstones),
+        db.tombstones.bulkDelete(changes.unburied),
       ]),
   );
 }
@@ -73,6 +74,8 @@ interface SeedChanges {
   triggers: Trigger[];
   /** Pack rows the packs no longer have, to be deleted with a tombstone. */
   retired: { algCases: string[]; algorithms: string[] };
+  /** Tombstones the seed once left on built-in algorithms the packs offer again. */
+  unburied: string[];
 }
 
 interface CurrentState {
@@ -83,12 +86,8 @@ interface CurrentState {
   triggers: Map<string, Trigger>;
   /** Ids the user has deleted; the pack must leave them alone. */
   buried: Set<string>;
-  /**
-   * Cases where the reader has picked something other than the pack's own
-   * answer — one they wrote, or another of the built-in ones. Either way it is
-   * a choice, and the seed must not take it back.
-   */
-  chosen: Set<string>;
+  /** Every algorithm row, by the case it belongs to. */
+  algorithmsByCase: Map<string, Algorithm[]>;
   /** Every case id the packs carry today; anything else is a leftover. */
   packed: Set<string>;
   /** Case ids something the reader timed still points at. */
@@ -126,16 +125,7 @@ async function readCurrent(): Promise<CurrentState> {
     algorithms: byId(algorithms),
     triggers: byId(triggers),
     buried: new Set(tombstones.map((stone) => stone.id)),
-    // Judged by which row is active rather than by who wrote it. Picking a
-    // second built-in algorithm is as much a choice as typing one in, and
-    // counting only the typed ones left the pack free to switch its own answer
-    // back on at the next start — two rows active at once, and which of them
-    // the screen showed came down to the order they came back in.
-    chosen: new Set(
-      algorithms
-        .filter((row) => row.isActive === 1 && row.id !== `${row.caseId}-pack`)
-        .map((row) => row.caseId),
-    ),
+    algorithmsByCase: groupByCase(algorithms),
     packed,
     // Only ever holds ids, never nulls: anyOf was asked for case ids.
     attempted: new Set([...attempted].filter((id): id is string => id !== null)),
@@ -146,6 +136,12 @@ function byId<T extends { id: string }>(rows: readonly T[]): Map<string, T> {
   return new Map(rows.map((row) => [row.id, row]));
 }
 
+function groupByCase(rows: readonly Algorithm[]): Map<string, Algorithm[]> {
+  const grouped = new Map<string, Algorithm[]>();
+  for (const row of rows) grouped.set(row.caseId, [...(grouped.get(row.caseId) ?? []), row]);
+  return grouped;
+}
+
 function planSeed(current: CurrentState): SeedChanges {
   const changes: SeedChanges = {
     methods: [],
@@ -154,6 +150,7 @@ function planSeed(current: CurrentState): SeedChanges {
     algorithms: [],
     triggers: [],
     retired: { algCases: [], algorithms: [] },
+    unburied: [],
   };
 
   const agreed = agreedProgress(current.algCases);
@@ -184,10 +181,6 @@ function planSeed(current: CurrentState): SeedChanges {
       const algorithmId = `${entry.id}-pack`;
       if (current.buried.has(algorithmId)) continue;
 
-      const existingAlgorithm = current.algorithms.get(algorithmId);
-      const algorithm = buildAlgorithm(entry, existingAlgorithm, current.chosen.has(entry.id));
-      if (hasChanged(existingAlgorithm, algorithm)) changes.algorithms.push(algorithm);
-
       // Beside the pack's own answer: the same solution with the cube turned
       // round, and any different solution the pack offers for the same case.
       const extras: [string, string][] = [
@@ -206,12 +199,36 @@ function planSeed(current: CurrentState): SeedChanges {
         ]),
       ] as [string, string][];
 
+      const rows = current.algorithmsByCase.get(entry.id) ?? [];
+      const picked = pickedExtra(rows, algorithmId, extras);
+      // Judged by which row is active rather than by who wrote it. Picking a
+      // second built-in algorithm is as much a choice as typing one in, and
+      // counting only the typed ones left the pack free to switch its own
+      // answer back on at the next start — two rows active at once, and which
+      // of them the screen showed came down to the order they came back in.
+      const isOtherChosen = picked !== null || rows.some((row) => row.isActive === 1 && row.source === 'user');
+
+      const existingAlgorithm = current.algorithms.get(algorithmId);
+      const algorithm = buildAlgorithm(entry, existingAlgorithm, isOtherChosen);
+      if (hasChanged(existingAlgorithm, algorithm)) changes.algorithms.push(algorithm);
+
       for (const [extraId, moves] of extras) {
-        if (current.buried.has(extraId)) continue;
+        // Nobody deletes a built-in algorithm but the seed, so a tombstone on
+        // one the pack offers again was left by an earlier pack that dropped
+        // it. The pack decides what it ships; the id comes back.
+        if (current.buried.has(extraId)) changes.unburied.push(extraId);
 
         const existingExtra = current.algorithms.get(extraId);
-        const extra = buildExtraAlgorithm(extraId, entry.id, moves, existingExtra);
+        const extra = buildExtraAlgorithm(extraId, entry.id, moves, existingExtra, extraId === picked);
         if (hasChanged(existingExtra, extra)) changes.algorithms.push(extra);
+      }
+
+      // Built-in alternatives the pack no longer offers: gone from the pack
+      // means gone from the case sheet, or a dropped duplicate lingers on
+      // every device that ever saw it.
+      const offered = new Set([algorithmId, ...extras.map(([extraId]) => extraId)]);
+      for (const row of rows) {
+        if (row.source === 'pack' && !offered.has(row.id)) changes.retired.algorithms.push(row.id);
       }
     }
   }
@@ -361,6 +378,25 @@ function buildCase(
 }
 
 /**
+ * Which built-in alternative the reader has picked, found by its moves rather
+ * than its id. Alternatives are numbered by their place in the pack, so a pack
+ * that drops one moves every id after it along; following the id would hand
+ * the reader's choice to the algorithm that happened to land on it. Null when
+ * the pick is the pack's own answer, one of their own, or no longer offered —
+ * in which case the pack's own answer takes over again.
+ */
+function pickedExtra(
+  rows: readonly Algorithm[],
+  mainId: string,
+  extras: readonly (readonly [string, string])[],
+): string | null {
+  // Beside the pack's own answer, if an old seed left both on: the pick wins.
+  const active = rows.find((row) => row.isActive === 1 && row.id !== mainId);
+  if (active === undefined || active.source !== 'pack') return null;
+  return extras.find(([, moves]) => moves === active.moves)?.[0] ?? null;
+}
+
+/**
  * The pack algorithm of a case has a derived id, so a later app version
  * replaces it instead of piling up duplicates. It is only active while nothing
  * else has been picked for the case — whatever the reader chose outranks the
@@ -390,12 +426,13 @@ function buildExtraAlgorithm(
   caseId: string,
   moves: string,
   existing: Algorithm | undefined,
+  isPicked: boolean,
 ): Algorithm {
   return {
     id,
     caseId,
     moves,
-    isActive: existing?.isActive ?? 0,
+    isActive: isPicked ? 1 : 0,
     source: 'pack',
     packVersion: 1,
     createdAt: existing?.createdAt ?? now(),

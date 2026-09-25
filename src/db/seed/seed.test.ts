@@ -323,3 +323,76 @@ describe('seed and twin cases', () => {
     expect(await snapshot()).toBe(first);
   });
 });
+
+describe('seed and the built-in alternatives it drops', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+    await seedPacks();
+  });
+
+  /** A row an older pack shipped and this one does not. */
+  async function leftOver(id: string, caseId: string, moves: string, isActive: 0 | 1): Promise<void> {
+    await db.algorithms.put({
+      id,
+      caseId,
+      moves,
+      isActive,
+      source: 'pack',
+      packVersion: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    });
+  }
+
+  it('takes a dropped alternative off the case, with a tombstone', async () => {
+    await leftOver('oll-27-pack-other-1', 'oll-27', "R U R' U R U2' R'", 0);
+
+    await seedPacks();
+
+    expect(await db.algorithms.get('oll-27-pack-other-1')).toBeUndefined();
+    expect(await db.tombstones.get('oll-27-pack-other-1')).toBeDefined();
+  });
+
+  it("hands a dropped pick back to the pack's own answer", async () => {
+    await db.algorithms.update('oll-27-pack', { isActive: 0 });
+    await leftOver('oll-27-pack-other-1', 'oll-27', "R U R' U R U2' R'", 1);
+
+    await seedPacks();
+
+    const active = await db.algorithms.where('caseId').equals('oll-27').filter((row) => row.isActive === 1).toArray();
+    expect(active.map((row) => row.id)).toEqual(['oll-27-pack']);
+  });
+
+  it('follows a pick by its moves when dropping one alternative moves the rest along', async () => {
+    // An older pack had one more alternative before this one, so the same
+    // algorithm sat one number further on — and that is the row that was picked.
+    const shifted = await db.algorithms.get('pll-v-pack-other-6');
+    if (shifted === undefined) throw new Error('pll-v has no sixth alternative');
+    await db.algorithms.update('pll-v-pack', { isActive: 0 });
+    await db.algorithms.update('pll-v-pack-other-7', { moves: shifted.moves, isActive: 1 });
+
+    await seedPacks();
+
+    const active = await db.algorithms.where('caseId').equals('pll-v').filter((row) => row.isActive === 1).toArray();
+    expect(active.map((row) => [row.id, row.moves])).toEqual([['pll-v-pack-other-6', shifted.moves]]);
+  });
+
+  it('brings back an alternative the pack offers again', async () => {
+    await db.algorithms.delete('pll-ua-pack-other-1');
+    await db.tombstones.put({ id: 'pll-ua-pack-other-1', table: 'algorithms', deletedAt: 1 });
+
+    await seedPacks();
+
+    expect(await db.algorithms.get('pll-ua-pack-other-1')).toBeDefined();
+    expect(await db.tombstones.get('pll-ua-pack-other-1')).toBeUndefined();
+  });
+
+  it('is idempotent after tidying up', async () => {
+    await leftOver('oll-26-pack-other-1', 'oll-26', "R U2' R' U' R U' R'", 1);
+    await seedPacks();
+    const first = await snapshot();
+
+    await seedPacks();
+    expect(await snapshot()).toBe(first);
+  });
+});
