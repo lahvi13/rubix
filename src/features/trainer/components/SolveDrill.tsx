@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { ChevronIcon } from '../../../components/Icons';
+import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { TimerDisplay } from '../../../components/TimerDisplay';
 import { useHasKeyboard } from '../../../hooks/use-has-keyboard';
 import { formatAlg, parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
@@ -14,7 +15,9 @@ import type { Penalty } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
+import { usePlayback, type PlaybackRequest } from '../../../hooks/use-playback';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
+import { useTap } from '../../../hooks/use-tap';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
 import type { TwistyPlayerElement } from '../../../types/twisty';
@@ -382,9 +385,11 @@ interface CrossSolutionProps {
  */
 function CrossSolution({ scramble }: CrossSolutionProps) {
   const [front] = useSetting('trainer.crossFront');
-  // Bumped rather than toggled, so tapping again replays instead of doing
-  // nothing; zero is "not watching yet".
-  const [watchToken, setWatchToken] = useState(0);
+  // Once asked for, the cube stays: played to the end it shows the cross
+  // built, which is worth looking at, and the next play starts it over.
+  const [isWatched, setWatched] = useState(false);
+  const playback = usePlayback();
+  const tap = useTap(playback.toggle);
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   /** Which of the shortest solutions is the one on show and on the cube. */
   const [chosen, setChosen] = useState(0);
@@ -404,6 +409,7 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
   if (chosenFor !== front) {
     setChosenFor(front);
     setChosen(0);
+    if (isWatched) playback.restart();
   }
 
   const best = solutions[chosen] ?? solutions[0];
@@ -423,14 +429,23 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
           {/* The cube picks up where the reader's did: scrambled, then turned
               round into the grip they said they were using, so the moves below
               mean on screen exactly what they mean in their hands. */}
-          {watchToken === 0 ? null : (
-            <CrossPlayer
-              setupAlg={`${scramble} ${formatAlg(hold.rotation)}`}
-              alg={formatAlg(best)}
-              replayToken={watchToken}
-              onMove={setPlayingMove}
-            />
-          )}
+          {isWatched ? (
+            <div className="drill__cross-stage" {...tap}>
+              <CrossPlayer
+                setupAlg={`${scramble} ${formatAlg(hold.rotation)}`}
+                alg={formatAlg(best)}
+                request={playback.request}
+                onMove={setPlayingMove}
+                onFinished={playback.stop}
+              />
+              <PlaybackButtons
+                status={playback.status}
+                onToggle={playback.toggle}
+                onStep={playback.step}
+                placement="corners"
+              />
+            </div>
+          ) : null}
           <p className="drill__moves">
             {formatAlg(best)
               .split(' ')
@@ -440,8 +455,14 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
                 </span>
               ))}
           </p>
-          <button type="button" onClick={() => setWatchToken((token) => token + 1)}>
-            {watchToken === 0 ? strings.drill.crossWatch : strings.drill.crossWatchAgain}
+          <button
+            type="button"
+            onClick={() => {
+              setWatched(true);
+              playback.restart();
+            }}
+          >
+            {isWatched ? strings.drill.crossWatchAgain : strings.drill.crossWatch}
           </button>
           {/*
             The others are the same length; which one suits your hands is
@@ -456,7 +477,10 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
                 <li key={formatAlg(solution)}>
                   <button
                     type="button"
-                    onClick={() => setChosen(solutions.indexOf(solution))}
+                    onClick={() => {
+                      setChosen(solutions.indexOf(solution));
+                      if (isWatched) playback.restart();
+                    }}
                   >
                     {formatAlg(solution)}
                   </button>
@@ -554,9 +578,10 @@ interface CrossPlayerProps {
   /** The scramble and the turn onto the cross face, as one setup. */
   setupAlg: string;
   alg: string;
-  /** Bumped by the caller to perform the same solution again. */
-  replayToken: number;
+  /** What the buttons last asked the cube to do. */
+  request: PlaybackRequest;
   onMove: (index: number | null) => void;
+  onFinished: () => void;
 }
 
 /**
@@ -569,7 +594,7 @@ interface CrossPlayerProps {
  *
  * It only arrives when somebody asks for it, chunk and all.
  */
-function CrossPlayer({ setupAlg, alg, replayToken, onMove }: CrossPlayerProps) {
+function CrossPlayer({ setupAlg, alg, request, onMove, onFinished }: CrossPlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
@@ -583,12 +608,12 @@ function CrossPlayer({ setupAlg, alg, replayToken, onMove }: CrossPlayerProps) {
     };
   }, []);
 
-  usePlayingMove(player, isReady, onMove);
+  usePlayingMove(player, isReady, onMove, onFinished);
   // From below, the cross is the face the light leaves darkest. Half the shade
   // still says which face is the bottom, and leaves white looking white.
   useTwistySkin(player, isReady, { shadeStrength: 0.5 });
   // Nothing to hide behind here, so the cube shows at once, held at the start.
-  usePlayWhenDrawn(player, isReady, `${setupAlg}|${alg}|${replayToken}`);
+  usePlayWhenDrawn(player, isReady, request);
 
   if (!isReady) return <p className="case-player__loading">{strings.trainer.loadingPlayer}</p>;
 

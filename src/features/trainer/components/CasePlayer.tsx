@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { TwistyPlayerElement } from '../../../types/twisty';
+import type { PlaybackRequest } from '../../../hooks/use-playback';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
@@ -23,8 +24,8 @@ interface CasePlayerProps {
   setupAlg: string;
   alg: string;
   stickering: PlayerStickering;
-  /** Bumped by the caller to replay the same algorithm again. */
-  replayToken: number;
+  /** What the buttons last asked the cube to do. */
+  request: PlaybackRequest;
   /** Which move is turning, so the written algorithm can say where the cube is. */
   onMove: (index: number | null) => void;
   /**
@@ -49,7 +50,7 @@ export function CasePlayer({
   setupAlg,
   alg,
   stickering,
-  replayToken,
+  request,
   onMove,
   onFinished,
   placeholder,
@@ -82,7 +83,7 @@ export function CasePlayer({
 
   usePlayingMove(player, isReady, onMove, onFinished);
   useTwistySkin(player, isReady);
-  const isDrawn = usePlayWhenDrawn(player, isReady, `${setupAlg}|${alg}|${replayToken}`);
+  const isDrawn = usePlayWhenDrawn(player, isReady, request);
 
   const waiting = placeholder ?? (
     <p className="case-player__loading">{strings.trainer.loadingPlayer}</p>

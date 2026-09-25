@@ -35,13 +35,18 @@ export const cs: Strings = {
   common: {
     dismiss: 'Zavřít',
   },
+  playback: {
+    play: 'Přehrát',
+    pause: 'Pozastavit',
+    resume: 'Pokračovat',
+    step: 'Další tah',
+  },
   scramble: {
     label: 'Scramble',
     loading: 'Generuji scramble…',
     failed: 'Scramble se nepovedl — ťukni pro další pokus',
     next: 'Nový scramble',
     replay: 'Přehrát scramble',
-    showPicture: 'Zpět na obrázek',
     showPreview: 'Zobrazit náhled',
     hidePreview: 'Skrýt náhled',
     edit: (scramble: string) => `Změnit scramble: ${scramble}`,
@@ -411,7 +416,6 @@ export const cs: Strings = {
     levelAdvanced: 'Pokročilé',
     levelExpert: 'Expert',
     play: 'Přehrát',
-    stop: 'Zastavit',
     loadingPlayer: 'Načítám kostku…',
     variants: 'Algoritmy',
     packAlg: 'vestavěný',

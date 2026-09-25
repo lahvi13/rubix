@@ -28,13 +28,19 @@ export const en = {
   common: {
     dismiss: 'Dismiss',
   },
+  /* The buttons on every cube that turns: an algorithm, a scramble, a cross. */
+  playback: {
+    play: 'Play',
+    pause: 'Pause',
+    resume: 'Continue',
+    step: 'Next move',
+  },
   scramble: {
     label: 'Scramble',
     loading: 'Generating scramble…',
     failed: 'Scramble failed — tap to retry',
     next: 'New scramble',
     replay: 'Watch the scramble',
-    showPicture: 'Back to the picture',
     showPreview: 'Show preview',
     hidePreview: 'Hide preview',
     edit: (scramble: string) => `Change the scramble: ${scramble}`,
@@ -436,7 +442,6 @@ export const en = {
     levelAdvanced: 'Advanced',
     levelExpert: 'Expert',
     play: 'Play',
-    stop: 'Stop',
     loadingPlayer: 'Loading the cube…',
     variants: 'Algorithms',
     packAlg: 'built in',

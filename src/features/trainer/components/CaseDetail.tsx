@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
 import { packAlgKind, type PackAlgKind } from '../../../db/seed/packs';
-import { PlayIcon, StopIcon } from '../../../components/Icons';
+import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { Sheet, type SheetPaging } from '../../../components/Sheet';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
@@ -10,6 +10,8 @@ import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { caseAlias, caseTitle } from '../../../domain/alg/case-name';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { watchWrite } from '../../../lib/errors';
+import { usePlayback } from '../../../hooks/use-playback';
+import { useTap } from '../../../hooks/use-tap';
 import { packLabel, strings } from '../../../lib/strings';
 import { useCaseDetail } from '../hooks/use-case-detail';
 import { useCaseStat, useRecognitionStat } from '../hooks/use-case-stats';
@@ -67,7 +69,6 @@ export function CaseDetail({
 }: CaseDetailProps) {
   const { algCase, algorithms, active, moves, groups, choose, addVariant, editVariant, removeVariant, rename, setProgress, forgetRecognition } =
     useCaseDetail(caseId);
-  const [replayToken, setReplayToken] = useState(0);
   // The sheet used to be keyed by case id so that stepping to the next one
   // built a fresh panel. That took the panel out of the document and put a
   // new one back a paint later, once its case had been read — and the screen
@@ -75,7 +76,6 @@ export function CaseDetail({
   // case it is showing until the next one has arrived, and clears what
   // belonged to the old one here instead.
   const [shownId, setShownId] = useState(caseId);
-  const [isPlaying, setPlaying] = useState(false);
   // Which move the player is turning, so the written algorithm can follow along.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
@@ -93,9 +93,11 @@ export function CaseDetail({
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   // What the algorithm leaves behind — a solved cube, or an oriented last
   // layer waiting for the next step — is the one thing on this screen nobody
-  // came to look at, so the case comes back by itself. Kept stable: the player
-  // subscribes to it.
-  const stopPlaying = useCallback(() => setPlaying(false), []);
+  // came to look at, so the case comes back by itself when it ends. Another
+  // case, or another algorithm chosen for this one, is a different cube.
+  const playback = usePlayback(`${caseId} ${formatAlg(moves)}`);
+  const isPlaying = playback.status !== 'idle';
+  const tap = useTap(playback.toggle);
   const stats = useCaseStat(caseId);
   const recognition = useRecognitionStat(caseId);
   const attempts = useCaseAttempts(caseId);
@@ -105,7 +107,6 @@ export function CaseDetail({
     setDraft('');
     setEditing(null);
     setNameDraft(null);
-    setPlaying(false);
     setPlayingMove(null);
   }
 
@@ -140,12 +141,6 @@ export function CaseDetail({
   const setupMoves = parseAlg(`${orientation} ${algCase.setupAlg}`);
   const setup = setupMoves.ok ? setupMoves.moves : [];
   const state = applyAlg(solvedState(), setup);
-  // Playing does not ask about the flat/3D setting: that one is about the
-  // still picture, and nothing but a turning cube shows what the moves do.
-  const play = (): void => {
-    setPlaying(true);
-    setReplayToken((token) => token + 1);
-  };
 
   const draftError = draft.trim() !== '' && !parseAlg(draft).ok;
   const isEditingOwn = editing?.isOwn === true;
@@ -183,7 +178,10 @@ export function CaseDetail({
           what every chart and video out there calls this case. */}
       {alias === null ? null : <p className="case-detail__alias">{packLabel(alias)}</p>}
 
-      <div className="case-detail__stage">
+      {/* Playing does not ask about the flat/3D setting: that one is about the
+          still picture, and nothing but a turning cube shows what the moves
+          do. A tap on the cube plays and pauses it, as the button does. */}
+      <div className="case-detail__stage" {...tap}>
         {isPlaying ? (
           <CasePlayer
             // Performed exactly as written — the player is stood yellow up
@@ -192,9 +190,9 @@ export function CaseDetail({
             setupAlg={formatAlg(setup)}
             alg={formatAlg(moves)}
             stickering={playerStickering}
-            replayToken={replayToken}
+            request={playback.request}
             onMove={setPlayingMove}
-            onFinished={stopPlaying}
+            onFinished={playback.stop}
             placeholder={picture}
           />
         ) : (
@@ -203,15 +201,12 @@ export function CaseDetail({
       </div>
 
       <div className="case-detail__controls">
-        <button
-          type="button"
-          className="is-primary case-detail__play"
-          onClick={isPlaying ? stopPlaying : play}
-          aria-label={isPlaying ? strings.trainer.stop : strings.trainer.play}
-          title={isPlaying ? strings.trainer.stop : strings.trainer.play}
-        >
-          {isPlaying ? <StopIcon /> : <PlayIcon />}
-        </button>
+        <PlaybackButtons
+          status={playback.status}
+          onToggle={playback.toggle}
+          onStep={playback.step}
+          placement="row"
+        />
       </div>
 
       {/* Under the case it is about, where a verdict on it is made: after
@@ -236,7 +231,7 @@ export function CaseDetail({
         moves={moves}
         groups={groups}
         triggers={triggers}
-        onPlay={play}
+        onPlay={playback.restart}
         playingMove={isPlaying ? playingMove : null}
         playLabel={strings.trainer.play}
       />

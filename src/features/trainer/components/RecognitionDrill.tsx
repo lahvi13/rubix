@@ -1,11 +1,13 @@
-import { useCallback, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
-import { PlayIcon, StopIcon } from '../../../components/Icons';
+import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { caseTitle } from '../../../domain/alg/case-name';
 import { formatAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
+import { usePlayback, type Playback } from '../../../hooks/use-playback';
 import { useSetting } from '../../../hooks/use-setting';
+import { useTap } from '../../../hooks/use-tap';
 import { formatTime } from '../../../lib/format';
 import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
@@ -57,21 +59,19 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
 
   // Tied to the question it was asked for, so moving on puts the next case's
   // picture up without anything having to remember to stop the cube.
-  const questionKey = question === null ? null : `${question.answer.id} ${question.scramble}`;
-  const [playing, setPlaying] = useState<{ key: string; token: number } | null>(null);
+  const questionKey = question === null ? '' : `${question.answer.id} ${question.scramble}`;
+  const playback = usePlayback(questionKey);
   const [playingMove, setPlayingMove] = useState<number | null>(null);
-  const stopPlaying = useCallback(() => setPlaying(null), []);
-  const isPlaying = outcome !== null && playing !== null && playing.key === questionKey;
+  const isPlaying = outcome !== null && playback.status !== 'idle';
 
-  const play = (): void => {
-    if (questionKey === null) return;
-    // The cube plays from the angle the question was asked at — the one the
-    // AUF was worked out for — so a cube turned round comes back first.
+  // The cube plays from the angle the question was asked at — the one the
+  // AUF was worked out for — so a cube turned round comes back first.
+  const unturned = (then: () => void) => (): void => {
     if (recognition.isTurned) recognition.turn();
-    setPlaying((current) => ({ key: questionKey, token: (current?.token ?? 0) + 1 }));
+    then();
   };
   const turn = (): void => {
-    stopPlaying();
+    playback.stop();
     recognition.turn();
   };
 
@@ -117,8 +117,9 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
               row of cards on a phone with large text. Short words, so neither
               breaks onto a second line in the room the cube leaves.
 
-              The cube itself is the play button once the question is over, as
-              the timer's scramble preview is: it is where the moves are played. */}
+              Once the question is over a tap on the cube plays and pauses it,
+              as the timer's scramble preview does: it is where the moves are
+              played. */}
           <div className="recognition__top">
             <div className="recognition__side recognition__side--start">
               <button
@@ -132,8 +133,11 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
             </div>
           <Stage
             canPlay={outcome !== null && question.algorithm.length > 0}
-            isPlaying={isPlaying}
-            onClick={isPlaying ? stopPlaying : play}
+            playback={{
+              ...playback,
+              toggle: unturned(playback.toggle),
+              step: unturned(playback.step),
+            }}
           >
             {isPlaying ? (
               <CasePlayer
@@ -142,9 +146,9 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
                 setupAlg={question.scramble}
                 alg={formatAlg([...(question.auf ?? []), ...question.algorithm])}
                 stickering={chart.playerStickering}
-                replayToken={playing.token}
+                request={playback.request}
                 onMove={setPlayingMove}
-                onFinished={stopPlaying}
+                onFinished={playback.stop}
                 placeholder={picture}
               />
             ) : (
@@ -182,7 +186,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
               groups={question.groups}
               auf={question.auf}
               triggers={definitions}
-              onPlay={play}
+              onPlay={unturned(playback.restart)}
               playingMove={isPlaying ? playingMove : null}
             />
           )}
@@ -210,28 +214,25 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
 
 interface StageProps {
   canPlay: boolean;
-  isPlaying: boolean;
-  onClick: () => void;
+  playback: Playback;
   children: ReactNode;
 }
 
-function Stage({ canPlay, isPlaying, onClick, children }: StageProps) {
+/** The cube, and once the question is over, what plays it. */
+function Stage({ canPlay, playback, children }: StageProps) {
+  const tap = useTap(playback.toggle);
   if (!canPlay) return <div className="recognition__stage">{children}</div>;
 
-  const label = isPlaying ? strings.trainer.stop : strings.trainer.play;
   return (
-    <button
-      type="button"
-      className="recognition__stage"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-    >
+    <div className="recognition__stage is-playable" {...tap}>
       {children}
-      <span className="recognition__play" aria-hidden="true">
-        {isPlaying ? <StopIcon /> : <PlayIcon />}
-      </span>
-    </button>
+      <PlaybackButtons
+        status={playback.status}
+        onToggle={playback.toggle}
+        onStep={playback.step}
+        placement="corners"
+      />
+    </div>
   );
 }
 

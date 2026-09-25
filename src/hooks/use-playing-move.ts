@@ -1,16 +1,23 @@
 import { useEffect, type RefObject } from 'react';
-import type { TwistyCurrentMoveInfo, TwistyPlayerElement } from '../types/twisty';
+import type {
+  TwistyCurrentMoveInfo,
+  TwistyPlayerElement,
+  TwistyTimelineInfo,
+} from '../types/twisty';
 
 /**
  * Reports which move of the algorithm the player is turning, and null when
- * nothing is. `onFinished`, if given, says the player has reached the end.
+ * nothing is. Paused, it is the move the cube stopped after: that is the
+ * place the reader is keeping, and the one the cube on screen has just done.
+ * `onFinished`, if given, says the player has reached the end.
  *
  * Listened to rather than timed: the player owns the tempo, and a clock of our
  * own would drift away from the cube on screen within a few turns.
  *
  * Whether it is playing at all has to be asked separately. The last move of an
  * algorithm stays the current move once the animation stops, so without this
- * the cube would come to rest with a move still lit.
+ * the cube would come to rest with a move still lit. And a stop is only the
+ * end when the player stands at the end — anywhere else it is a pause.
  *
  * The callbacks have to keep their identity — a state setter does, and
  * anything else wants `useCallback` — or the listeners are torn down and
@@ -27,30 +34,34 @@ export function usePlayingMove(
     const element = player.current;
     if (!element) return;
 
-    let isPlaying = false;
+    let timeline: TwistyTimelineInfo = { playing: false, atStart: true, atEnd: false };
+    let move: TwistyCurrentMoveInfo | null = null;
     // The player says it is not playing before it starts, too. Only the stop
-    // that follows a start is the end of the algorithm.
+    // that follows a start is a pause or the end of the algorithm.
     let hasPlayed = false;
 
-    const onMoveInfo = (info: TwistyCurrentMoveInfo) => {
-      onMove(isPlaying && info.currentMoves.length > 0 ? info.patternIndex : null);
+    const report = () => {
+      if (move === null) return;
+      if (timeline.playing) onMove(move.currentMoves.length > 0 ? move.patternIndex : null);
+      else onMove(hasPlayed && !timeline.atEnd && !timeline.atStart ? move.patternIndex : null);
     };
-    const onPlayingInfo = (info: { playing: boolean }) => {
-      isPlaying = info.playing;
-      if (isPlaying) {
-        hasPlayed = true;
-        return;
-      }
-      onMove(null);
-      if (hasPlayed) onFinished?.();
+    const onMoveInfo = (info: TwistyCurrentMoveInfo) => {
+      move = info;
+      report();
+    };
+    const onTimeline = (info: TwistyTimelineInfo) => {
+      timeline = info;
+      if (info.playing) hasPlayed = true;
+      report();
+      if (!info.playing && info.atEnd && hasPlayed) onFinished?.();
     };
 
     const model = element.experimentalModel;
-    model.playingInfo.addFreshListener(onPlayingInfo);
+    model.coarseTimelineInfo.addFreshListener(onTimeline);
     model.currentMoveInfo.addFreshListener(onMoveInfo);
 
     return () => {
-      model.playingInfo.removeFreshListener(onPlayingInfo);
+      model.coarseTimelineInfo.removeFreshListener(onTimeline);
       model.currentMoveInfo.removeFreshListener(onMoveInfo);
       onMove(null);
     };

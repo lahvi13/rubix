@@ -15,14 +15,6 @@ export function PlayIcon() {
   );
 }
 
-export function StopIcon() {
-  return (
-    <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="7" y="7" width="10" height="10" rx="1.5" />
-    </svg>
-  );
-}
-
 export function CloseIcon() {
   return (
     <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
@@ -52,6 +44,25 @@ export function ChevronIcon({ up }: { up: boolean }) {
   return (
     <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
       <path d={up ? 'M7 14l5-5 5 5' : 'M7 10l5 5 5-5'} />
+    </svg>
+  );
+}
+
+export function PauseIcon() {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="7" y="6.5" width="3.5" height="11" rx="1" />
+      <rect x="13.5" y="6.5" width="3.5" height="11" rx="1" />
+    </svg>
+  );
+}
+
+/** One move on: play up to a bar, the way a player's "next" is drawn. */
+export function StepIcon() {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6.5 6.5v11l8.5-5.5z" />
+      <rect x="15.5" y="6.5" width="2.5" height="11" rx="1" />
     </svg>
   );
 }

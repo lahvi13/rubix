@@ -667,11 +667,8 @@ button[disabled] {
   place-items: center;
   width: var(--stage-width);
   height: var(--stage-height);
-  padding: 0;
-  border: none;
-  background: none;
-  min-height: 0;
   overflow: hidden;
+  cursor: pointer;
 }
 
 /*
@@ -702,24 +699,72 @@ button[disabled] {
 }
 
 /*
- * Says the picture can be played, without spending a line on saying it. The
- * top right corner is the one place both cubes leave empty: the unfolded net
- * has only its top face up there, and the cube seen from a corner ends below
- * it.
+ * Play, pause and one move on, for every cube that turns. Round, because they
+ * are shapes rather than words.
+ *
+ * Over the cube, they take the two right-hand corners: the one place both
+ * cubes leave empty. The unfolded net has only its top and bottom faces up
+ * and down there, and the cube seen from a corner ends short of both. The
+ * layer lies over the whole cube but lets taps through to it, so a tap on the
+ * cube itself still reaches the cube.
  */
-.scramble__play,
-.recognition__play {
+.playback--corners {
   position: absolute;
-  inset-block-start: 0;
+  inset: 0;
+  pointer-events: none;
+}
+
+.playback--corners button {
+  position: absolute;
   inset-inline-end: 0;
   display: grid;
   place-items: center;
   width: 2.25rem;
   height: 2.25rem;
-  border: 1px solid var(--border);
+  min-height: 0;
+  padding: 0;
   border-radius: var(--radius-pill);
   background: var(--surface);
-  color: var(--muted);
+  pointer-events: auto;
+}
+
+.playback--corners .playback__toggle {
+  inset-block-start: 0;
+}
+
+.playback--corners .playback__step {
+  inset-block-end: 0;
+}
+
+/*
+ * Under the cube, the play button stays in the middle whether or not the step
+ * is beside it: a button that slid sideways when the cube started would be
+ * somewhere else by the time the pause was tapped.
+ */
+.playback--row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.playback--row button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: var(--radius-pill);
+}
+
+.playback--row .playback__toggle {
+  grid-column: 2;
+}
+
+.playback--row .playback__step {
+  grid-column: 3;
+  justify-self: start;
 }
 
 /* A short phone has no room for a big cube and a list of solves both. */
@@ -3058,11 +3103,11 @@ button[disabled] {
   min-width: 0;
   aspect-ratio: 1;
   overflow: hidden;
-  /* A tap surface once the question is over, not a button to look at. */
-  padding: 0;
-  border: none;
-  background: none;
-  min-height: 0;
+}
+
+/* A tap surface once the question is over, not a button to look at. */
+.recognition__stage.is-playable {
+  cursor: pointer;
 }
 
 .recognition__cube {
@@ -3329,6 +3374,7 @@ button[disabled] {
   position: relative;
   display: flex;
   justify-content: center;
+  cursor: pointer;
   /* A fixed height, not a floor: the player is lifted out of the flow to be
      drawn bigger than the box (below), and a stage that grew with it would
      shift the whole sheet the moment the cube started turning. */
@@ -3359,6 +3405,13 @@ button[disabled] {
   width: calc(12rem * var(--player-scale));
   height: calc(12rem * var(--player-scale));
   transform: translate(-50%, -50%);
+}
+
+/* The cross player's own box, so the buttons sit on the cube's corners and
+   not on the edges of the screen. */
+.drill__cross-stage {
+  position: relative;
+  cursor: pointer;
 }
 
 .case-player__loading {
@@ -3407,17 +3460,6 @@ button[disabled] {
 .case-progress button.is-active.is-known {
   color: var(--accent);
   border-color: var(--accent);
-}
-
-/* Round, because it is a shape rather than a word — the same play the timer
-   puts on its scramble. */
-.case-detail__play {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
-  border-radius: var(--radius-pill);
 }
 
 .case-detail__section {

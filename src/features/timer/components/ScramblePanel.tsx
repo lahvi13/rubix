@@ -1,13 +1,16 @@
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
-import { CloseIcon, PlayIcon, StopIcon } from '../../../components/Icons';
+import { CloseIcon } from '../../../components/Icons';
+import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import type { PinSource } from '../../../hooks/use-pinned-scramble';
+import { usePlayback, type PlaybackRequest } from '../../../hooks/use-playback';
 import { useSetting } from '../../../hooks/use-setting';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
+import { useTap } from '../../../hooks/use-tap';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { withWhiteTop } from '../../../lib/cube-skins';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE } from '../../../lib/twisty-view';
@@ -37,7 +40,7 @@ interface ScramblePanelProps {
  * The preview is drawn here from the app's own cube model, so it follows the
  * chosen skin and costs nothing to render. cubing.js is a heavy chunk, so the
  * 3D mode does not replace the picture — it adds a button that plays the
- * scramble and hands the picture back afterwards.
+ * scramble and hands the picture back once it has been played to the end.
  */
 export const ScramblePanel = memo(function ScramblePanel({
   scramble,
@@ -51,14 +54,14 @@ export const ScramblePanel = memo(function ScramblePanel({
   const [mode] = useSetting('ui.twistyMode');
   const [isPreviewShown] = useSetting('timer.showScramblePreview');
   const skin = useCubeSkin();
-  // Which scramble is being watched, rather than a flag: a new scramble means
-  // a new cube to look at, not the previous animation still running.
-  const [watched, setWatched] = useState<string | null>(null);
+  // Tied to the scramble: a new one means a new cube to look at, not the
+  // previous animation still running.
+  const playback = usePlayback(scramble ?? '');
+  const tap = useTap(playback.toggle);
   // Which move the cube is turning while the scramble is played back. Null
-  // whenever nothing is turning, which is the only gate it needs: the 3D
-  // preview replays without going through `watched` at all.
+  // whenever nothing is turning or paused, which is the only gate it needs.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
-  const isWatching = watched !== null && watched === scramble;
+  const isWatching = playback.status !== 'idle';
 
   // Drawn in the reader's own colours, flat or from a corner. The animated
   // cube is only fetched when someone asks to watch.
@@ -131,20 +134,18 @@ export const ScramblePanel = memo(function ScramblePanel({
             </div>
           ) : null}
           {scramble === null || !isPreviewShown ? null : (
-            /* The cube is the button. A label under it needed a line of its
+            /* A tap on the cube plays and pauses it; the buttons in its corner
+               say so and do the same. A label under it needed a line of its
                own on a screen that has none to spare, and it sat under the
                picture it belonged to. Both cubes share this box, so watching
                the scramble does not resize the screen under the thumb. */
-            <button
-              type="button"
-              className="scramble__stage"
-              aria-label={isWatching ? strings.scramble.showPicture : strings.scramble.replay}
-              onClick={() => setWatched(isWatching ? null : scramble)}
-            >
+            <div className="scramble__stage" {...tap}>
               {isWatching ? (
                 <SpatialPreview
                   scramble={scramble}
+                  request={playback.request}
                   onMove={setPlayingMove}
+                  onFinished={playback.stop}
                   /* Until the player is ready the still cube stays up: there
                      is nothing to animate yet, and a "loading" line in its
                      place is a flash of empty screen. */
@@ -153,10 +154,14 @@ export const ScramblePanel = memo(function ScramblePanel({
               ) : (
                 picture
               )}
-              <span className="scramble__play" aria-hidden="true">
-                {isWatching ? <StopIcon /> : <PlayIcon />}
-              </span>
-            </button>
+              <PlaybackButtons
+                status={playback.status}
+                onToggle={playback.toggle}
+                onStep={playback.step}
+                placement="corners"
+                playLabel={strings.scramble.replay}
+              />
+            </div>
           )}
         </>
       )}
@@ -225,17 +230,21 @@ function stateAfter(scramble: string) {
  */
 function SpatialPreview({
   scramble,
+  request,
   onMove,
+  onFinished,
   placeholder,
 }: {
   scramble: string;
+  request: PlaybackRequest;
   onMove: (index: number | null) => void;
+  onFinished: () => void;
   placeholder: ReactNode;
 }) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
-  usePlayingMove(player, isReady, onMove);
+  usePlayingMove(player, isReady, onMove, onFinished);
   useTwistySkin(player, isReady);
 
   useEffect(() => {
@@ -248,7 +257,7 @@ function SpatialPreview({
     };
   }, []);
 
-  const isDrawn = usePlayWhenDrawn(player, isReady, scramble);
+  const isDrawn = usePlayWhenDrawn(player, isReady, request);
 
   if (!isReady) return placeholder;
 

@@ -1,10 +1,11 @@
 import { useEffect, useState, type RefObject } from 'react';
+import type { PlaybackRequest } from './use-playback';
 import type { TwistyPlayerElement } from '../types/twisty';
 
 /**
- * Plays the player from the start, but not before its cube is on screen, and
- * again whenever `playKey` changes. Says whether the cube is there, so the
- * still picture it replaces can stay under it until then.
+ * Carries out what the player was last asked to do, but not before its cube
+ * is on screen. Says whether the cube is there, so the still picture it
+ * replaces can stay under it until then.
  *
  * The player's clock starts the moment it is told to play, and the first time
  * round its 3D scene takes a while to build — three.js, the puzzle, a shader
@@ -15,7 +16,7 @@ import type { TwistyPlayerElement } from '../types/twisty';
 export function usePlayWhenDrawn(
   player: RefObject<TwistyPlayerElement | null>,
   isReady: boolean,
-  playKey: string,
+  request: PlaybackRequest,
 ): boolean {
   const [isDrawn, setDrawn] = useState(false);
 
@@ -51,11 +52,45 @@ export function usePlayWhenDrawn(
     if (!isDrawn) return;
     const element = player.current;
     if (!element) return;
-    element.jumpToStart();
-    element.play();
-  }, [isDrawn, player, playKey]);
+    perform(element, request.kind);
+  }, [isDrawn, player, request]);
 
   return isDrawn;
+}
+
+function perform(element: TwistyPlayerElement, kind: PlaybackRequest['kind']): void {
+  switch (kind) {
+    case 'start':
+      element.jumpToStart();
+      element.play();
+      return;
+    case 'startStep':
+      element.jumpToStart();
+      untilMoveEnds(element);
+      return;
+    case 'resume':
+      element.play();
+      return;
+    case 'pause':
+    case 'step':
+      untilMoveEnds(element);
+  }
+}
+
+/**
+ * Plays to the end of the move that is turning, or through the next one when
+ * the cube is at rest. A pause that froze the cube wherever it was would leave
+ * a layer standing at an angle, which is no position a cube in the hand is
+ * ever in — and the move it stopped in would be neither done nor undone.
+ *
+ * Never from the end back round to the start: a pause asked for just as the
+ * last move finished would otherwise play the algorithm's first move.
+ */
+function untilMoveEnds(element: TwistyPlayerElement): void {
+  element.controller.animationController.play({
+    untilBoundary: 'move',
+    autoSkipToOtherEndIfStartingAtBoundary: false,
+  });
 }
 
 function nextFrame(): Promise<void> {

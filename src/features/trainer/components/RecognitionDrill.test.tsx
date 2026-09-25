@@ -175,8 +175,9 @@ describe('RecognitionDrill', () => {
     await user.click(firstCard());
     await screen.findByRole('status');
 
-    // The cube itself, not a control of its own beside it.
-    expect(screen.getByRole('button', { name: 'Play' })).toHaveClass('recognition__stage');
+    // On the cube, in its corner, and nothing to step through until it turns.
+    expect(screen.getByRole('button', { name: 'Play' }).closest('.recognition__stage')).not.toBeNull();
+    expect(screen.queryByRole('button', { name: 'Next move' })).toBeNull();
   });
 
   it('turns the cube round without ending the question', async () => {

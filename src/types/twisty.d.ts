@@ -24,8 +24,28 @@ export interface TwistyPlayerElement extends HTMLElement {
   /** The player's own state — only the part we listen to. */
   experimentalModel: {
     currentMoveInfo: TwistyProp<TwistyCurrentMoveInfo>;
-    playingInfo: TwistyProp<{ playing: boolean }>;
+    coarseTimelineInfo: TwistyProp<TwistyTimelineInfo>;
   };
+  /**
+   * What the player's own step button calls. `play()` on the element can only
+   * run to the end; this one can also stop at the end of the move that is
+   * turning, which is what a pause and a step both need.
+   */
+  controller: {
+    animationController: {
+      play(options?: {
+        untilBoundary?: 'move' | 'entire-timeline';
+        autoSkipToOtherEndIfStartingAtBoundary?: boolean;
+      }): void;
+    };
+  };
+}
+
+/** Whether the player is running, and whether it stands at either end. */
+export interface TwistyTimelineInfo {
+  playing: boolean;
+  atStart: boolean;
+  atEnd: boolean;
 }
 
 /**
