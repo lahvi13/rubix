@@ -704,14 +704,15 @@ button[disabled] {
  *
  * Over the cube, they take the two right-hand corners: the one place both
  * cubes leave empty. The unfolded net has only its top and bottom faces up
- * and down there, and the cube seen from a corner ends short of both. The
- * layer lies over the whole cube but lets taps through to it, so a tap on the
- * cube itself still reaches the cube.
+ * and down there, and the cube seen from a corner ends short of both.
+ *
+ * No box of their own: the buttons are placed against the cube's. A layer
+ * over the whole cube, even one that let every tap through, cost the drag
+ * that turns the cube on a phone — Chrome handed the gesture to the page
+ * after two moves and the cube stopped where the finger had just been.
  */
 .playback--corners {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+  display: contents;
 }
 
 .playback--corners button {
@@ -725,7 +726,6 @@ button[disabled] {
   padding: 0;
   border-radius: var(--radius-pill);
   background: var(--surface);
-  pointer-events: auto;
 }
 
 .playback--corners .playback__toggle {
