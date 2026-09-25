@@ -14,6 +14,7 @@ import {
 import { useSetting } from '../../../hooks/use-setting';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
+import { usePlaybackKeys } from '../../../hooks/use-playback-keys';
 import { useTap } from '../../../hooks/use-tap';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { withWhiteTop } from '../../../lib/cube-skins';
@@ -62,6 +63,8 @@ export const ScramblePanel = memo(function ScramblePanel({
   // previous animation still running.
   const playback = usePlayback(scramble ?? '');
   const tap = useTap(playback.toggle);
+  // Space is the timer's.
+  usePlaybackKeys(playback, { isActive: !hidden, withSpace: false });
   // Which move the cube is turning while the scramble is played back. Null
   // whenever nothing is turning or paused, which is the only gate it needs.
   const [playingMove, setPlayingMove] = useState<number | null>(null);

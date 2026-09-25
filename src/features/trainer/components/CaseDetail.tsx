@@ -11,6 +11,7 @@ import { caseAlias, caseTitle } from '../../../domain/alg/case-name';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { watchWrite } from '../../../lib/errors';
 import { usePlayback } from '../../../hooks/use-playback';
+import { usePlaybackKeys } from '../../../hooks/use-playback-keys';
 import { useTap } from '../../../hooks/use-tap';
 import { packLabel, strings } from '../../../lib/strings';
 import { useCaseDetail } from '../hooks/use-case-detail';
@@ -98,6 +99,7 @@ export function CaseDetail({
   const playback = usePlayback(`${caseId} ${formatAlg(moves)}`);
   const isPlaying = playback.status !== 'idle';
   const tap = useTap(playback.toggle);
+  usePlaybackKeys(playback, { isActive: true, withSpace: true });
   const stats = useCaseStat(caseId);
   const recognition = useRecognitionStat(caseId);
   const attempts = useCaseAttempts(caseId);

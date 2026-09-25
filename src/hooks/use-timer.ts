@@ -16,6 +16,7 @@ import { penaltyForInspection } from '../domain/solve/penalty';
 import type { Penalty } from '../db/types';
 import { eventTime, monotonicNow } from '../lib/clock';
 import { beep, primeBeep } from '../lib/beep';
+import { isTypingTarget } from '../lib/typing-target';
 import { useStayAwake } from './use-stay-awake';
 import { SETTING_DEFAULTS, getSetting, setSetting } from '../db/repositories/settings-repository';
 
@@ -347,20 +348,6 @@ function swallowTapClick(): void {
 function awaitingRelease(state: TimerState): boolean {
   if (state.status === 'stopped') return true;
   return state.status === 'running' && state.pressedAt !== null;
-}
-
-/**
- * Only text entry blocks the timer. Buttons and toggles deliberately do not:
- * after tapping the nav or a checkbox, focus stays on that control, and
- * treating it as a typing target would silently swallow every space bar press
- * from then on.
- */
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  if (target instanceof HTMLInputElement) {
-    return !['checkbox', 'radio', 'button', 'range'].includes(target.type);
-  }
-  return target.isContentEditable || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
 }
 
 /**

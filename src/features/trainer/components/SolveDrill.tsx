@@ -21,6 +21,7 @@ import {
   type PlaybackRequest,
 } from '../../../hooks/use-playback';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
+import { usePlaybackKeys } from '../../../hooks/use-playback-keys';
 import { useTap } from '../../../hooks/use-tap';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
@@ -394,6 +395,8 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
   const [isWatched, setWatched] = useState(false);
   const playback = usePlayback();
   const tap = useTap(playback.toggle);
+  // Space is the drill timer's.
+  usePlaybackKeys(playback, { isActive: isWatched, withSpace: false });
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   /** Which of the shortest solutions is the one on show and on the cube. */
   const [chosen, setChosen] = useState(0);

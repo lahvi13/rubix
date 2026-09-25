@@ -6,6 +6,7 @@ import { caseTitle } from '../../../domain/alg/case-name';
 import { formatAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { usePlayback, type Playback } from '../../../hooks/use-playback';
+import { usePlaybackKeys } from '../../../hooks/use-playback-keys';
 import { useSetting } from '../../../hooks/use-setting';
 import { useTap } from '../../../hooks/use-tap';
 import { formatTime } from '../../../lib/format';
@@ -63,6 +64,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
   const playback = usePlayback(questionKey);
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const isPlaying = outcome !== null && playback.status !== 'idle';
+  usePlaybackKeys(playback, { isActive: isPlaying, withSpace: true });
 
   // The cube plays from the angle the question was asked at — the one the
   // AUF was worked out for — so a cube turned round comes back first.
