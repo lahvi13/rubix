@@ -148,7 +148,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
                 stickering={chart.playerStickering}
                 request={playback.request}
                 onMove={setPlayingMove}
-                onFinished={playback.stop}
+                onStopped={playback.stopped}
                 placeholder={picture}
               />
             ) : (
@@ -230,6 +230,8 @@ function Stage({ canPlay, playback, children }: StageProps) {
         status={playback.status}
         onToggle={playback.toggle}
         onStep={playback.step}
+        onBack={playback.back}
+        position={playback.position}
         placement="corners"
       />
     </div>

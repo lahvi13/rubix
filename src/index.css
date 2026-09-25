@@ -702,9 +702,10 @@ button[disabled] {
  * Play, pause and one move on, for every cube that turns. Round, because they
  * are shapes rather than words.
  *
- * Over the cube, they take the two right-hand corners: the one place both
- * cubes leave empty. The unfolded net has only its top and bottom faces up
- * and down there, and the cube seen from a corner ends short of both.
+ * Over the cube, they take its corners: the places both cubes leave empty.
+ * The unfolded net has only its top and bottom faces up and down there, and
+ * the cube seen from a corner ends short of all four. Play is top right, the
+ * steps the two bottom corners — back on the left, on to the right.
  *
  * No box of their own: the buttons are placed against the cube's. A layer
  * over the whole cube, even one that let every tap through, cost the drag
@@ -736,10 +737,16 @@ button[disabled] {
   inset-block-end: 0;
 }
 
+.playback--corners .playback__back {
+  inset-block-end: 0;
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+}
+
 /*
- * Under the cube, the play button stays in the middle whether or not the step
- * is beside it: a button that slid sideways when the cube started would be
- * somewhere else by the time the pause was tapped.
+ * Under the cube, the play button stays in the middle whether or not the
+ * steps are beside it: a button that slid sideways when the cube paused would
+ * be somewhere else by the time it was tapped again.
  */
 .playback--row {
   display: grid;
@@ -765,6 +772,11 @@ button[disabled] {
 .playback--row .playback__step {
   grid-column: 3;
   justify-self: start;
+}
+
+.playback--row .playback__back {
+  grid-column: 1;
+  justify-self: end;
 }
 
 /* A short phone has no room for a big cube and a list of solves both. */

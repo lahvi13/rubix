@@ -40,6 +40,7 @@ export const cs: Strings = {
     pause: 'Pozastavit',
     resume: 'Pokračovat',
     step: 'Další tah',
+    back: 'Předchozí tah',
   },
   scramble: {
     label: 'Scramble',

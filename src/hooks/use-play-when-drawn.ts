@@ -74,20 +74,24 @@ function perform(element: TwistyPlayerElement, kind: PlaybackRequest['kind']): v
     case 'pause':
     case 'step':
       untilMoveEnds(element);
+      return;
+    case 'back':
+      untilMoveEnds(element, -1);
   }
 }
 
 /**
  * Plays to the end of the move that is turning, or through the next one when
- * the cube is at rest. A pause that froze the cube wherever it was would leave
+ * the cube is at rest — backwards, through the one before. A pause that froze the cube wherever it was would leave
  * a layer standing at an angle, which is no position a cube in the hand is
  * ever in — and the move it stopped in would be neither done nor undone.
  *
  * Never from the end back round to the start: a pause asked for just as the
  * last move finished would otherwise play the algorithm's first move.
  */
-function untilMoveEnds(element: TwistyPlayerElement): void {
+function untilMoveEnds(element: TwistyPlayerElement, direction: 1 | -1 = 1): void {
   element.controller.animationController.play({
+    direction,
     untilBoundary: 'move',
     autoSkipToOtherEndIfStartingAtBoundary: false,
   });

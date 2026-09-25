@@ -27,13 +27,15 @@ export interface TwistyPlayerElement extends HTMLElement {
     coarseTimelineInfo: TwistyProp<TwistyTimelineInfo>;
   };
   /**
-   * What the player's own step button calls. `play()` on the element can only
-   * run to the end; this one can also stop at the end of the move that is
-   * turning, which is what a pause and a step both need.
+   * What the player's own step buttons call. `play()` on the element can only
+   * run forwards to the end; this one can also stop at the end of the move
+   * that is turning, and run backwards — a pause and a step either way.
    */
   controller: {
     animationController: {
       play(options?: {
+        /** 1 forwards, -1 backwards. */
+        direction?: 1 | -1;
         untilBoundary?: 'move' | 'entire-timeline';
         autoSkipToOtherEndIfStartingAtBoundary?: boolean;
       }): void;

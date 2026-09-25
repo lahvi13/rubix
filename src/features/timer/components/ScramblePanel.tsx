@@ -6,7 +6,11 @@ import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import type { PinSource } from '../../../hooks/use-pinned-scramble';
-import { usePlayback, type PlaybackRequest } from '../../../hooks/use-playback';
+import {
+  usePlayback,
+  type PlaybackPosition,
+  type PlaybackRequest,
+} from '../../../hooks/use-playback';
 import { useSetting } from '../../../hooks/use-setting';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
@@ -99,7 +103,7 @@ export const ScramblePanel = memo(function ScramblePanel({
               aria-label={strings.scramble.edit(scramble)}
               onClick={onEdit}
             >
-              <ScrambleMoves scramble={scramble} playingMove={playingMove} />
+              <ScrambleMoves scramble={scramble} playingMove={isWatching ? playingMove : null} />
             </button>
           )}
           {pinnedSource === null || scramble === null ? null : (
@@ -145,7 +149,7 @@ export const ScramblePanel = memo(function ScramblePanel({
                   scramble={scramble}
                   request={playback.request}
                   onMove={setPlayingMove}
-                  onFinished={playback.stop}
+                  onStopped={playback.stopped}
                   /* Until the player is ready the still cube stays up: there
                      is nothing to animate yet, and a "loading" line in its
                      place is a flash of empty screen. */
@@ -158,6 +162,8 @@ export const ScramblePanel = memo(function ScramblePanel({
                 status={playback.status}
                 onToggle={playback.toggle}
                 onStep={playback.step}
+                onBack={playback.back}
+                position={playback.position}
                 placement="corners"
                 playLabel={strings.scramble.replay}
               />
@@ -232,19 +238,19 @@ function SpatialPreview({
   scramble,
   request,
   onMove,
-  onFinished,
+  onStopped,
   placeholder,
 }: {
   scramble: string;
   request: PlaybackRequest;
   onMove: (index: number | null) => void;
-  onFinished: () => void;
+  onStopped: (at: PlaybackPosition) => void;
   placeholder: ReactNode;
 }) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
-  usePlayingMove(player, isReady, onMove, onFinished);
+  usePlayingMove(player, isReady, onMove, onStopped);
   useTwistySkin(player, isReady);
 
   useEffect(() => {

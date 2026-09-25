@@ -66,3 +66,13 @@ export function StepIcon() {
     </svg>
   );
 }
+
+/** One move back: the step, mirrored. */
+export function BackIcon() {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M17.5 6.5v11L9 12z" />
+      <rect x="6" y="6.5" width="2.5" height="11" rx="1" />
+    </svg>
+  );
+}

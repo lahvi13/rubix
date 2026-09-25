@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { TwistyPlayerElement } from '../../../types/twisty';
-import type { PlaybackRequest } from '../../../hooks/use-playback';
+import type { PlaybackPosition, PlaybackRequest } from '../../../hooks/use-playback';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
@@ -29,10 +29,11 @@ interface CasePlayerProps {
   /** Which move is turning, so the written algorithm can say where the cube is. */
   onMove: (index: number | null) => void;
   /**
-   * The algorithm has been performed. The cube is solved by then — the case is
-   * over — so the still picture of the case is what belongs on screen again.
+   * The cube has come to rest, and where. Played to the end, the algorithm
+   * has been performed: the cube is solved by then — the case is over — so
+   * the still picture of the case is what belongs on screen again.
    */
-  onFinished: () => void;
+  onStopped: (at: PlaybackPosition) => void;
   /**
    * Shown while the player's chunk arrives. Where the player takes a still
    * picture's place, that picture is better than a line of text: a flash of
@@ -52,7 +53,7 @@ export function CasePlayer({
   stickering,
   request,
   onMove,
-  onFinished,
+  onStopped,
   placeholder,
 }: CasePlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
@@ -81,7 +82,7 @@ export function CasePlayer({
     element.experimentalStickeringMaskOrbits = mask;
   }, [isReady, mask]);
 
-  usePlayingMove(player, isReady, onMove, onFinished);
+  usePlayingMove(player, isReady, onMove, onStopped);
   useTwistySkin(player, isReady);
   const isDrawn = usePlayWhenDrawn(player, isReady, request);
 

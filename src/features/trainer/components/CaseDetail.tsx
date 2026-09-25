@@ -192,7 +192,7 @@ export function CaseDetail({
             stickering={playerStickering}
             request={playback.request}
             onMove={setPlayingMove}
-            onFinished={playback.stop}
+            onStopped={playback.stopped}
             placeholder={picture}
           />
         ) : (
@@ -205,6 +205,8 @@ export function CaseDetail({
           status={playback.status}
           onToggle={playback.toggle}
           onStep={playback.step}
+          onBack={playback.back}
+          position={playback.position}
           placement="row"
         />
       </div>

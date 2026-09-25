@@ -34,6 +34,7 @@ export const en = {
     pause: 'Pause',
     resume: 'Continue',
     step: 'Next move',
+    back: 'Previous move',
   },
   scramble: {
     label: 'Scramble',

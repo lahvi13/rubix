@@ -15,7 +15,11 @@ import type { Penalty } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
-import { usePlayback, type PlaybackRequest } from '../../../hooks/use-playback';
+import {
+  usePlayback,
+  type PlaybackPosition,
+  type PlaybackRequest,
+} from '../../../hooks/use-playback';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { useTap } from '../../../hooks/use-tap';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
@@ -436,21 +440,30 @@ function CrossSolution({ scramble }: CrossSolutionProps) {
                 alg={formatAlg(best)}
                 request={playback.request}
                 onMove={setPlayingMove}
-                onFinished={playback.stop}
+                onStopped={playback.stopped}
               />
               <PlaybackButtons
                 status={playback.status}
                 onToggle={playback.toggle}
                 onStep={playback.step}
+                onBack={playback.back}
+                position={playback.position}
                 placement="corners"
               />
             </div>
           ) : null}
+          {/* Played through, the cube stays on the cross it built, but no move
+              of it is still under way. */}
           <p className="drill__moves">
             {formatAlg(best)
               .split(' ')
               .map((move, index) => (
-                <span key={index + move} aria-current={index === playingMove ? 'step' : undefined}>
+                <span
+                  key={index + move}
+                  aria-current={
+                    playback.status !== 'idle' && index === playingMove ? 'step' : undefined
+                  }
+                >
                   {move + ' '}
                 </span>
               ))}
@@ -581,7 +594,7 @@ interface CrossPlayerProps {
   /** What the buttons last asked the cube to do. */
   request: PlaybackRequest;
   onMove: (index: number | null) => void;
-  onFinished: () => void;
+  onStopped: (at: PlaybackPosition) => void;
 }
 
 /**
@@ -594,7 +607,7 @@ interface CrossPlayerProps {
  *
  * It only arrives when somebody asks for it, chunk and all.
  */
-function CrossPlayer({ setupAlg, alg, request, onMove, onFinished }: CrossPlayerProps) {
+function CrossPlayer({ setupAlg, alg, request, onMove, onStopped }: CrossPlayerProps) {
   const player = useRef<TwistyPlayerElement | null>(null);
   const [isReady, setReady] = useState(false);
 
@@ -608,7 +621,7 @@ function CrossPlayer({ setupAlg, alg, request, onMove, onFinished }: CrossPlayer
     };
   }, []);
 
-  usePlayingMove(player, isReady, onMove, onFinished);
+  usePlayingMove(player, isReady, onMove, onStopped);
   // From below, the cross is the face the light leaves darkest. Half the shade
   // still says which face is the bottom, and leaves white looking white.
   useTwistySkin(player, isReady, { shadeStrength: 0.5 });
