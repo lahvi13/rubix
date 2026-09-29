@@ -67,6 +67,12 @@ storage and leaves the device only when you export it yourself. The one outside
 request is Cloudflare Web Analytics, which counts page views; it knows nothing
 about your solves and nothing waits for it.
 
+## Bugs and ideas
+
+[Open an issue](https://github.com/lahvi13/rubix/issues/new/choose) — or, without a
+GitHub account, write to the e-mail on the app's About screen. More in
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Running it
 
 Node 24 (see `.node-version`).

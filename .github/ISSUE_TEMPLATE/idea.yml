@@ -1,0 +1,17 @@
+name: Idea
+description: Something Rubix could do, or do better
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What are you trying to do?
+      description: The situation and what gets in the way — that matters more than the exact solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could Rubix help?
+    validations:
+      required: false
