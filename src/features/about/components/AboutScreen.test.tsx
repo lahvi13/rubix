@@ -23,6 +23,16 @@ describe('AboutScreen', () => {
     );
   });
 
+  it('opens a GitHub bug report with the build already filled in', () => {
+    render(<AboutScreen />);
+
+    const issue = screen.getByRole('link', { name: strings.about.issueLink });
+    const url = new URL(issue.getAttribute('href') ?? '');
+    expect(url.origin + url.pathname).toBe('https://github.com/lahvi13/rubix/issues/new');
+    expect(url.searchParams.get('template')).toBe('bug.yml');
+    expect(url.searchParams.get('version')).toBe(__APP_VERSION__);
+  });
+
   it('credits J Perm for the algorithms', () => {
     render(<AboutScreen />);
 

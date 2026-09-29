@@ -6,6 +6,7 @@ import { useAboutActions } from '../hooks/use-about-actions';
 import { InstallSection } from './InstallSection';
 
 const CONTACT = 'jan@lahvi.cz';
+const REPO = 'github.com/lahvi13/rubix';
 
 const UPDATE_MESSAGE: Record<UpdateCheck, string> = {
   current: strings.about.updateCurrent,
@@ -39,6 +40,8 @@ export function AboutScreen() {
   // The version rides along in the subject, so a report says which build it
   // is about without anybody having to be asked.
   const mailto = `mailto:${CONTACT}?subject=${encodeURIComponent(strings.about.version(__APP_VERSION__))}`;
+  // GitHub fills an issue form's field from a query parameter named after its id.
+  const issueUrl = `https://${REPO}/issues/new?template=bug.yml&version=${encodeURIComponent(__APP_VERSION__)}`;
 
   return (
     <main className="screen screen--scroll">
@@ -85,6 +88,18 @@ export function AboutScreen() {
         <h2 className="data-section__title">{strings.about.contactTitle}</h2>
         <p className="data-section__hint">
           {strings.about.contact} <a href={mailto}>{CONTACT}</a>
+        </p>
+        <p className="data-section__hint">
+          {strings.about.contactIssue}{' '}
+          <a href={issueUrl} target="_blank" rel="noopener noreferrer">
+            {strings.about.issueLink}
+          </a>
+        </p>
+        <p className="data-section__hint">
+          {strings.about.source}{' '}
+          <a href={`https://${REPO}`} target="_blank" rel="noopener noreferrer">
+            {REPO}
+          </a>
         </p>
       </section>
 
