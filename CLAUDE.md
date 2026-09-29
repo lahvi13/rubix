@@ -180,7 +180,9 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   (sezení, den), ne po každém pushi. Push nasazuje průběžně se starým číslem;
   nasazené sestavení rozliší commit za tečkou. Zvednout až na konci bloku jedním
   `chore(release)` podle nejvyšší změny v bloku (autor nechce, aby verze naskakovaly
-  po několika za den).
+  po několika za den). Release commit dostane anotovaný tag `vX.Y.Z` se zprávou
+  `Rubix X.Y.Z` a pushuje se s ním (`git push --follow-tags`) — tag stojí na
+  release commitu samotném, ne na tom, co přišlo po něm.
 - **repo je veřejné** (github.com/lahvi13/rubix, GPL-3.0-or-later, README pro
   návštěvníky). Commity jdou pod GitHub noreply adresou, soukromý e-mail autora
   v historii není a nesmí se tam dostat — ani v textu souboru nebo commit message.
