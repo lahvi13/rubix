@@ -181,6 +181,11 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   nasazené sestavení rozliší commit za tečkou. Zvednout až na konci bloku jedním
   `chore(release)` podle nejvyšší změny v bloku (autor nechce, aby verze naskakovaly
   po několika za den).
+- **repo je veřejné** (github.com/lahvi13/rubix, GPL-3.0-or-later, README pro
+  návštěvníky). Commity jdou pod GitHub noreply adresou, soukromý e-mail autora
+  v historii není a nesmí se tam dostat — ani v textu souboru nebo commit message.
+  Nic, co patří jen tomuhle stroji (cesty, tokeny, lokální poznámky), do repa
+  nepatří. Stará historie žije v soukromém `rubix-old`; nic se do něj nepushuje
 - cubing.js se importuje **dynamicky** (`await import('cubing/scramble')`), aby se
   nedostal do hlavního chunku
 - **statické obrázky kostky kreslí `components/CubeDiagram.tsx`**, ne twisty:
