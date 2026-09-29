@@ -164,6 +164,14 @@
      shape holds whatever size the square is drawn at. */
   --radius-sticker: 11%;
 
+  /* Motion is for arriving only: it says where a panel came from. Leaving is
+     instant — the thumb that closed it is already on its way to what is
+     under it. The curve starts fast and settles, so the panel is where it is
+     going before the eye has left the tap. */
+  --motion-fade: 160ms;
+  --motion-slide: 240ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
   /* The clock is read from further away than anything else on the screen. */
   --clock-size: clamp(3.5rem, 18vw, 9rem);
 
@@ -1226,6 +1234,32 @@ button[disabled] {
   }
 }
 
+/* The menu's wash comes with it every time; a sheet's only when it is the
+   first up (see components/Sheet.tsx). */
+@media (prefers-reduced-motion: no-preference) {
+  .app__menu {
+    animation: menu-drop var(--motion-fade) var(--motion-ease);
+  }
+
+  .app__scrim:not(.sheet-scrim),
+  .sheet-scrim.is-entering {
+    animation: fade-in var(--motion-fade) var(--motion-ease);
+  }
+}
+
+@keyframes menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-4)));
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
 .app__menu button {
   border-color: transparent;
   font-size: var(--text-lg);
@@ -1702,6 +1736,21 @@ button[disabled] {
     border-radius: 0;
     border-left: 1px solid var(--border);
     box-shadow: -0.75rem 0 1.5rem var(--scrim);
+    --sheet-from: translateX(100%);
+  }
+}
+
+/* In from the edge it is pinned to — the bottom, or the right on a wide
+   screen — by its whole length, so it reads as having been just out of view. */
+@media (prefers-reduced-motion: no-preference) {
+  .detail.is-entering {
+    animation: sheet-rise var(--motion-slide) var(--motion-ease);
+  }
+}
+
+@keyframes sheet-rise {
+  from {
+    transform: var(--sheet-from, translateY(100%));
   }
 }
 
