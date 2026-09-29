@@ -50,24 +50,34 @@ some tens of milliseconds, which is why 10 000 can open faster than 5 000.
 5. **The PB comes from a time-ordered index** (schema v4,
    `[puzzle+mode+penalty+rawMs]`). It used to walk every clean and +2 solve
    with a cursor, and a live query records every key a cursor hands it.
+6. **One read of the session's solves on the timer screen** (2026-09-29,
+   `hooks/use-session-solves.ts`). `useMiniStats` and `useSessionRecords` both
+   ran `listSolvesChronological` for the active session, so the same thousands
+   of rows were cloned and tracked twice after every solve. The timer now reads
+   them once and hands the array to both (`useRecordsOf`, `MiniStats solves`).
+   Measured the same way, 5 000 solves, four stops each:
+
+   | | longest block | total |
+   |---|---|---|
+   | before | 153–178 ms | 344–408 ms |
+   | after | 93–169 ms | 166–239 ms |
+
+   The seed for that run was written straight into IndexedDB from the page
+   (one `readwrite` transaction on `solves`, rows shaped as `Solve` in
+   `db/types.ts`, two thirds with four phases), followed by a reload.
 
 ## What is still open
 
 What remains at 10 000 is mostly Dexie's own per-query work: every live query
 result is deep-cloned for its subscriber, and every row an index query returns
-has its primary key recorded so the query knows when to re-run. Two ways to
-cut it, neither done yet:
+has its primary key recorded so the query knows when to re-run. One way to
+cut it further, not done yet:
 
-1. **One read of the session's solves on the timer screen.** `useMiniStats`
-   and `useSessionRecords` both run `listSolvesChronological` for the active
-   session, so the same thousands of rows are cloned and tracked twice after
-   every solve. Sharing one query is safe; it is a small restructuring of
-   where the timer screen gets those numbers from.
-2. **Dexie's `cache: 'immutable'`.** Results would be frozen and shared instead
+1. **Dexie's `cache: 'immutable'`.** Results would be frozen and shared instead
    of cloned per subscriber — probably the biggest single gain. It is also a
    change for the whole app: any code that mutates a query result or sorts one
    in place would start throwing, including in paths the tests do not reach.
    Only with an audit of every repository read first.
 
-Worth re-measuring before either: with ordinary numbers of solves (hundreds to
+Worth re-measuring before it: with ordinary numbers of solves (hundreds to
 a low few thousand) the current state is comfortably fast.

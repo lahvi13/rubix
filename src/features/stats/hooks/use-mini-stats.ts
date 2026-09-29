@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { listSolvesChronological } from '../../../db/repositories/solve-repository';
+import type { Solve } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
 import { currentAverage, type Average } from '../../../domain/stats/averages';
 import { sessionMean } from '../../../domain/stats/distribution';
@@ -18,12 +17,7 @@ export interface MiniStatsValues {
  * and a year of days — after every solve, on the screen where a stall right
  * after the stop is the one place it is felt.
  */
-export function useMiniStats(sessionId: string | null): MiniStatsValues | null {
-  const solves = useLiveQuery(
-    async () => (sessionId === null ? [] : listSolvesChronological(sessionId)),
-    [sessionId],
-  );
-
+export function useMiniStats(solves: readonly Solve[] | undefined): MiniStatsValues | null {
   return useMemo(() => {
     if (solves === undefined) return null;
     const finals = solves.map(finalMs);

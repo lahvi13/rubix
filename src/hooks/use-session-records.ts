@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { Puzzle } from '../db/types';
-import { getGlobalPbSolve, listSolvesChronological } from '../db/repositories/solve-repository';
+import type { Puzzle, Solve } from '../db/types';
+import { getGlobalPbSolve } from '../db/repositories/solve-repository';
 import { finalMs } from '../domain/solve/final-time';
 import { bestsOf, type Bests } from '../domain/stats/phases';
+import { useSessionSolves } from './use-session-solves';
 
 const NO_BESTS: Bests = { totalMs: null, phaseMs: [] };
 
@@ -28,10 +29,15 @@ export function useSessionRecords(
   puzzle: Puzzle,
   phaseKeys: readonly string[],
 ): SessionRecords {
-  const solves = useLiveQuery(
-    async () => (sessionId === null ? [] : listSolvesChronological(sessionId)),
-    [sessionId],
-  );
+  return useRecordsOf(useSessionSolves(sessionId), puzzle, phaseKeys);
+}
+
+/** The same, over a session's solves the caller has already read (`useSessionSolves`). */
+export function useRecordsOf(
+  solves: readonly Solve[] | undefined,
+  puzzle: Puzzle,
+  phaseKeys: readonly string[],
+): SessionRecords {
   // Its own query: no filter on one session can move the best of them all, and
   // re-reading every solve of the puzzle each time one is tapped would be work
   // for an answer already known.

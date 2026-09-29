@@ -18,7 +18,8 @@ import { useScramble } from '../../../hooks/use-scramble';
 import { pinScramble, unpinScramble, usePinnedScramble } from '../../../hooks/use-pinned-scramble';
 import { useBackToClose } from '../../../hooks/use-back-to-close';
 import { usePull } from '../../../hooks/use-pull';
-import { useSessionRecords } from '../../../hooks/use-session-records';
+import { useRecordsOf } from '../../../hooks/use-session-records';
+import { useSessionSolves } from '../../../hooks/use-session-solves';
 import { useSetting } from '../../../hooks/use-setting';
 import { useTimer, type CompletedAttempt } from '../../../hooks/use-timer';
 import { ScramblePanel } from './ScramblePanel';
@@ -216,7 +217,10 @@ export function TimerScreen() {
     () => methodPhases.map((phase) => phase.key),
     [methodPhases],
   );
-  const records = useSessionRecords(session?.id ?? null, PUZZLE, listedPhaseKeys);
+  // Read once for both the records and the numbers under the list — see
+  // useSessionSolves for why not twice.
+  const sessionSolves = useSessionSolves(session?.id ?? null);
+  const records = useRecordsOf(sessionSolves, PUZZLE, listedPhaseKeys);
   const showBrowsing = isBrowsing && status === 'idle';
   const { panel: sheetPanel, slot: sheetSlot, isSheet } = useSheetMotion(
     showBrowsing,
@@ -450,7 +454,7 @@ export function TimerScreen() {
             )}
           </h2>
           <InstallNudge />
-          <MiniStats sessionId={session?.id ?? null} />
+          <MiniStats solves={sessionSolves} />
           <SolveList
             solves={solves}
             total={total}
