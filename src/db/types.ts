@@ -10,10 +10,11 @@ export type PenaltySource = 'auto' | 'manual';
 export type SplitSource = 'mic' | 'smartcube' | 'manual';
 /**
  * Where the scramble a solve was timed on came from: drawn by the app, typed
- * in by the reader, or taken from an earlier solve to be solved again. A time
- * on a scramble somebody chose is not the same claim as one on a random one.
+ * in by the reader, taken from an earlier solve to be solved again, or opened
+ * from a link somebody shared. A time on a scramble somebody chose is not the
+ * same claim as one on a random one.
  */
-export type ScrambleSource = 'generated' | 'own' | 'history';
+export type ScrambleSource = 'generated' | 'own' | 'history' | 'shared';
 /**
  * How far the reader is with a case: not started, being worked on, in the
  * hands. The last is only ever theirs to say; the app moves a case on from

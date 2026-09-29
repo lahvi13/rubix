@@ -49,8 +49,13 @@ export const en = {
     hint: 'Type or paste your own — from a competition, say. It is used for one solve, then the scrambles are random again.',
     invalid: "Not a scramble — write moves like R U' F2.",
     use: 'Use it',
-    own: 'Your own scramble',
-    fromHistory: 'Scramble from the history',
+    /* Said beside a scramble the app did not draw, and kept with the solve. */
+    sources: {
+      own: 'Your own scramble',
+      history: 'Scramble from the history',
+      shared: 'Shared scramble',
+    },
+    toBeat: (time: string) => `${time} to beat`,
     unpin: 'Back to a random scramble',
   },
   timer: {
@@ -100,6 +105,16 @@ export const en = {
      * is beaten often, and it must not be mistaken for the rarer thing.
      */
     goalMark: '✓',
+    /*
+     * A shared scramble's time, against the one just done. Said whichever way
+     * it went: the attempt was made to find out.
+     */
+    challengeBeaten: (target: string, margin: string) => `Beat ${target} by ${margin}`,
+    challengeTied: (target: string) => `Tied ${target}`,
+    challengeMissed: (target: string, margin: string) => `Missed ${target} by ${margin}`,
+    challengeMissedDnf: (target: string) => `Missed ${target}`,
+    challengeTiedMark: '=',
+    challengeMissedMark: '✗',
   },
   splits: {
     bestPhase: (phase: string) => `Best ${phase} of this session`,
@@ -779,6 +794,9 @@ export const en = {
     busy: 'Drawing…',
     single: 'Single',
     failed: 'Could not make the picture',
+    /* Sent along with the picture, carrying the link that opens the scramble on a timer. */
+    challenge: (time: string, link: string) => `Can you beat ${time}? ${link}`,
+    tryScramble: (link: string) => `Try this scramble: ${link}`,
   },
   errors: {
     saveSolve: 'Could not save the solve',

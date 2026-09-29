@@ -26,7 +26,8 @@ function isRoute(value: string): value is Route {
 }
 
 function currentRoute(): Route {
-  const value = window.location.hash.replace(/^#\/?/, '');
+  // A link can carry more after the screen — a shared scramble does.
+  const value = window.location.hash.replace(/^#\/?/, '').split('?')[0] ?? '';
   return isRoute(value) ? value : DEFAULT_ROUTE;
 }
 

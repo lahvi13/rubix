@@ -963,6 +963,12 @@ button[disabled] {
   color: var(--text);
 }
 
+/* A shared time that was not beaten: said, since finding out was the point,
+   but not in a colour that reads as having won something. */
+.timer__note.is-short {
+  color: var(--muted);
+}
+
 .timer--holding .timer__value {
   color: var(--danger);
 }

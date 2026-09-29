@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Penalty, Solve, Split } from '../../db/types';
 import { bestsOf } from './phases';
-import { resultNote, resultRecord } from './records';
+import { challengeOutcome, resultNote, resultRecord, type ChallengeOutcome } from './records';
 
 const PHASES = ['cross', 'f2l', 'oll', 'pll'];
 
@@ -111,5 +111,45 @@ describe('resultNote', () => {
 
   it('says nothing about a goal that is not set', () => {
     expect(noteOf([solve(12_000), solve(14_000)], 12_000, null)).toBeNull();
+  });
+
+  it('answers a time to beat over a session best and a goal', () => {
+    const session = [solve(14_000), solve(13_000)];
+    const landed = session[1] ?? solve(0);
+    expect(resultNote(landed, PHASES, bestsOf(session, PHASES), 9000, 15_000, 13_500)).toEqual({
+      kind: 'challenge',
+      targetMs: 13_500,
+      outcome: { kind: 'beaten', marginMs: 500 },
+    });
+  });
+
+  it('lets a personal best speak over a time to beat', () => {
+    const session = [solve(14_000), solve(12_000)];
+    const landed = session[1] ?? solve(0);
+    expect(resultNote(landed, PHASES, bestsOf(session, PHASES), 12_000, null, 13_000)).toEqual({
+      kind: 'pb',
+    });
+  });
+
+  it('answers a time to beat for a DNF too', () => {
+    const landed = solve(9000, [], 'dnf');
+    expect(resultNote(landed, PHASES, bestsOf([landed], PHASES), null, null, 13_000)).toEqual({
+      kind: 'challenge',
+      targetMs: 13_000,
+      outcome: { kind: 'missed', marginMs: null },
+    });
+  });
+});
+
+describe('challengeOutcome', () => {
+  it.each<[string, number | null, number, ChallengeOutcome]>([
+    ['beaten', 12_340, 14_370, { kind: 'beaten', marginMs: 2030 }],
+    ['beaten by a hundredth', 14_369, 14_370, { kind: 'beaten', marginMs: 10 }],
+    ['tied to the hundredth', 14_378, 14_370, { kind: 'tied' }],
+    ['tied though some milliseconds faster', 14_372, 14_378, { kind: 'tied' }],
+    ['missed', 15_000, 14_370, { kind: 'missed', marginMs: 630 }],
+    ['missed by a DNF', null, 14_370, { kind: 'missed', marginMs: null }],
+  ])('%s', (_, resultMs, targetMs, outcome) => {
+    expect(challengeOutcome(resultMs, targetMs)).toEqual(outcome);
   });
 });

@@ -5,7 +5,6 @@ import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
-import type { PinSource } from '../../../hooks/use-pinned-scramble';
 import {
   usePlayback,
   type PlaybackPosition,
@@ -28,8 +27,8 @@ interface ScramblePanelProps {
   onRetry: () => void;
   /** Hidden while a solve is in progress — nothing must distract from the time. */
   hidden: boolean;
-  /** Where the scramble came from when the timer did not generate it; null when it did. */
-  pinnedSource: PinSource | null;
+  /** Where the scramble came from, said, when the timer did not generate it; null when it did. */
+  pinnedLabel: string | null;
   /** The scramble was tapped: the reader wants to type, paste or copy one. Kept stable. */
   onEdit: () => void;
   /** Back to the generated scramble. Kept stable. */
@@ -52,7 +51,7 @@ export const ScramblePanel = memo(function ScramblePanel({
   error,
   onRetry,
   hidden,
-  pinnedSource,
+  pinnedLabel,
   onEdit,
   onUnpin,
 }: ScramblePanelProps) {
@@ -109,11 +108,11 @@ export const ScramblePanel = memo(function ScramblePanel({
               <ScrambleMoves scramble={scramble} playingMove={isWatching ? playingMove : null} />
             </button>
           )}
-          {pinnedSource === null || scramble === null ? null : (
+          {pinnedLabel === null || scramble === null ? null : (
             /* Said out loud, because a scramble the reader did not ask the
                app for is one they may have forgotten they chose. */
             <p className="scramble__pinned">
-              {pinnedSource === 'own' ? strings.scramble.own : strings.scramble.fromHistory}
+              {pinnedLabel}
               <button
                 type="button"
                 className="scramble__unpin"

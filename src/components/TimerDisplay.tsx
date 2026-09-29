@@ -14,8 +14,11 @@ import { strings } from '../lib/strings';
  * names and the goal being chased.
  */
 export interface TimerNote {
-  /** A record of some size, or — quieter, and only failing one — a beaten goal. */
-  tier: 'pb' | 'session' | 'phase' | 'goal';
+  /**
+   * A record of some size, or — quieter, and only failing one — a beaten goal
+   * or shared time. Quietest of all, a shared time that was not beaten.
+   */
+  tier: 'pb' | 'session' | 'phase' | 'goal' | 'short';
   mark: string;
   label: string;
 }

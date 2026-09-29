@@ -15,6 +15,7 @@ type RawFile = Record<string, unknown>;
 const UPGRADES: Record<number, (file: RawFile) => RawFile> = {
   1: fillMissingFields,
   2: fillCaseProgress,
+  3: (file) => file,
 };
 
 /**
@@ -52,6 +53,13 @@ function fillCaseProgress(file: RawFile): RawFile {
   if (!isRecord(data)) return file;
   return { ...file, data: { ...data, algCases: fillEach(data.algCases, 'progress', 'new') } };
 }
+
+/*
+ * 3 -> 4 changes nothing in the file: it is the first format in which a solve
+ * can be on a shared scramble. The number moved so that an app from before
+ * refuses such a file as one from a newer version, which it is, rather than
+ * as a damaged one.
+ */
 
 function fillEach(rows: unknown, field: string, value: unknown): unknown {
   if (!Array.isArray(rows)) return rows;

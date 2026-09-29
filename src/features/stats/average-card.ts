@@ -29,6 +29,7 @@ export function averageCard(view: AverageWindowView): ShareCard {
       })
       .join(' '),
     date: dates,
+    cube: null,
   };
 }
 

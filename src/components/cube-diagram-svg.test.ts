@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseAlg } from '../domain/cube/notation';
 import { applyAlg, solvedState } from '../domain/cube/state';
 import { CUBE_SKINS, defaultSkin, skinById } from '../lib/cube-skins';
-import { diagramSvg, diagramUrl } from './cube-diagram-svg';
+import { diagramImageUrl, diagramSvg, diagramUrl } from './cube-diagram-svg';
 
 const moves = (text: string) => {
   const parsed = parseAlg(text);
@@ -66,5 +66,15 @@ describe('cube diagrams as text', () => {
 
     expect(url.startsWith('data:image/svg+xml,')).toBe(true);
     expect(decodeURIComponent(url.slice('data:image/svg+xml,'.length))).toContain('<polygon');
+  });
+
+  it('gives a picture for a canvas a size of its own, in the shape of the cube', () => {
+    const url = diagramImageUrl(tPerm, 'net', 'full', defaultSkin('dark'), 400);
+    const drawn = decodeURIComponent(url.slice('data:image/svg+xml,'.length));
+    const [, , boxWidth = 0, boxHeight = 0] =
+      /viewBox="([^"]+)"/.exec(drawn)?.[1]?.split(' ').map(Number) ?? [];
+
+    expect(drawn).toContain('width="400"');
+    expect(drawn).toContain(`height="${Math.round((400 * boxHeight) / boxWidth)}"`);
   });
 });

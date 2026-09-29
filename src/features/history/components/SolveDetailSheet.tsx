@@ -11,6 +11,8 @@ import { parseAlg } from '../../../domain/cube/notation';
 import { pinScramble } from '../../../hooks/use-pinned-scramble';
 import { useShareCard } from '../../../hooks/use-share-card';
 import { finalMs } from '../../../domain/solve/final-time';
+import { shareLinkFor } from '../../../domain/scramble/share-link';
+import { formatMs } from '../../../lib/format';
 import { solveCard, solveCardFilename } from '../solve-card';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
@@ -143,7 +145,18 @@ export function SolveDetailSheet({
               : resultMs === bests.totalMs
                 ? 'session'
                 : null;
-        card.share(solveCard(solve, record), solveCardFilename(solve));
+        // The scramble goes along as a link to open it on a timer — the one
+        // that can be solved again here can be solved again anywhere.
+        const link = canSolveAgain
+          ? shareLinkFor(window.location.origin, { scramble, targetMs: resultMs })
+          : null;
+        const message =
+          link === null
+            ? null
+            : resultMs === null
+              ? strings.share.tryScramble(link)
+              : strings.share.challenge(formatMs(resultMs), link);
+        card.share(solveCard(solve, record), solveCardFilename(solve), message);
       }}
       isSharing={card.isBusy}
       onClose={onClose}

@@ -176,7 +176,12 @@ const isSolveMode = memberOf<SolveMode>({ freestyle: true, drill: true, recognit
 const isPenalty = memberOf<Penalty>({ none: true, plus2: true, dnf: true });
 const isPenaltySource = memberOf<PenaltySource>({ auto: true, manual: true });
 const isSplitSource = memberOf<SplitSource>({ mic: true, smartcube: true, manual: true });
-const isScrambleSource = memberOf<ScrambleSource>({ generated: true, own: true, history: true });
+const isScrambleSource = memberOf<ScrambleSource>({
+  generated: true,
+  own: true,
+  history: true,
+  shared: true,
+});
 const isCaseProgress = memberOf<CaseProgress>({ new: true, learning: true, known: true });
 const isAlgorithmSource = memberOf<Algorithm['source']>({ pack: true, user: true });
 const isTriggerSource = memberOf<Trigger['source']>({ pack: true, user: true });

@@ -1,4 +1,6 @@
 import type { Solve } from '../../db/types';
+import { parseAlg } from '../../domain/cube/notation';
+import { applyAlg, solvedState } from '../../domain/cube/state';
 import { finalMs } from '../../domain/solve/final-time';
 import { formatDate, formatIsoDate, formatResult } from '../../lib/format';
 import type { ShareCard } from '../../lib/share-card';
@@ -14,11 +16,7 @@ export type SolveRecord = 'personal' | 'session' | null;
  */
 export function solveCard(solve: Solve, record: SolveRecord): ShareCard {
   const source =
-    solve.scrambleSource === 'own'
-      ? strings.scramble.own
-      : solve.scrambleSource === 'history'
-        ? strings.scramble.fromHistory
-        : null;
+    solve.scrambleSource === 'generated' ? null : strings.scramble.sources[solve.scrambleSource];
 
   return {
     kicker: source === null ? strings.share.single : `${strings.share.single} · ${source}`,
@@ -31,7 +29,15 @@ export function solveCard(solve: Solve, record: SolveRecord): ShareCard {
           : null,
     detail: solve.scramble,
     date: formatDate(solve.createdAt),
+    cube: scrambledCube(solve),
   };
+}
+
+/** Only a 3×3 is drawn, and only from a scramble that reads — an old import may not. */
+function scrambledCube(solve: Solve) {
+  if (solve.puzzle !== '333') return null;
+  const parsed = parseAlg(solve.scramble);
+  return parsed.ok && parsed.moves.length > 0 ? applyAlg(solvedState(), parsed.moves) : null;
 }
 
 export function solveCardFilename(solve: Solve): string {

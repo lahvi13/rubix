@@ -48,6 +48,27 @@ export function diagramUrl(
   return url;
 }
 
+/**
+ * A picture for a canvas rather than for the page, `width` pixels across. It
+ * has to carry its size: Firefox draws nothing for an SVG without one, and
+ * the page's pictures leave theirs to the stylesheet. Not cached — it is drawn
+ * once per picture shared.
+ */
+export function diagramImageUrl(
+  state: CubeState,
+  view: DiagramView,
+  stickering: Stickering,
+  skin: CubeSkin,
+  width: number,
+): string {
+  const drawn = diagramSvg(state, view, stickering, skin);
+  const [, , boxWidth = 1, boxHeight = 1] =
+    /viewBox="([^"]+)"/.exec(drawn)?.[1]?.split(' ').map(Number) ?? [];
+  const height = Math.round((width * boxHeight) / boxWidth);
+  const sized = drawn.replace('<svg ', `<svg width="${width}" height="${height}" `);
+  return `data:image/svg+xml,${encodeURIComponent(sized)}`;
+}
+
 export function diagramSvg(
   state: CubeState,
   view: DiagramView,

@@ -4,7 +4,7 @@ import { addSolve } from '../../../db/repositories/solve-repository';
 import { bestPhasesIn } from '../../../domain/stats/phases';
 import { resultNote, type ResultNote } from '../../../domain/stats/records';
 import { now } from '../../../lib/clock';
-import { formatGoal } from '../../../lib/format';
+import { formatGoal, formatMs } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { reportError, watchWrite } from '../../../lib/errors';
 import { InstallNudge } from '../../about';
@@ -39,6 +39,33 @@ function noteFor(note: ResultNote, phases: readonly MethodPhase[]): TimerNote {
   if (note.kind === 'pb') return { tier: 'pb', mark: star, label: strings.timer.recordPb };
   if (note.kind === 'session') {
     return { tier: 'session', mark: star, label: strings.timer.recordSession };
+  }
+  if (note.kind === 'challenge') {
+    const target = formatMs(note.targetMs);
+    const { outcome } = note;
+    // Beaten, it is said the way a beaten goal is; not beaten, quieter still.
+    if (outcome.kind === 'beaten') {
+      return {
+        tier: 'goal',
+        mark: strings.timer.goalMark,
+        label: strings.timer.challengeBeaten(target, formatMs(outcome.marginMs)),
+      };
+    }
+    if (outcome.kind === 'tied') {
+      return {
+        tier: 'short',
+        mark: strings.timer.challengeTiedMark,
+        label: strings.timer.challengeTied(target),
+      };
+    }
+    return {
+      tier: 'short',
+      mark: strings.timer.challengeMissedMark,
+      label:
+        outcome.marginMs === null
+          ? strings.timer.challengeMissedDnf(target)
+          : strings.timer.challengeMissed(target, formatMs(outcome.marginMs)),
+    };
   }
   if (note.kind === 'goal') {
     // Named the way the stats screen names it, so the goal reads as one thing.
@@ -89,6 +116,16 @@ export function TimerScreen() {
 
   const wasPinned = pinned !== null;
   const scrambleSource = pinned?.source ?? 'generated';
+  const targetMs = pinned?.source === 'shared' ? pinned.targetMs : null;
+  const pinnedLabel =
+    pinned === null
+      ? null
+      : targetMs === null
+        ? strings.scramble.sources[pinned.source]
+        : `${strings.scramble.sources[pinned.source]} · ${strings.scramble.toBeat(formatMs(targetMs))}`;
+  // The time the finished solve was out to beat. The scramble that carried it
+  // is gone by the time the result is read — it was for one solve.
+  const [solvedTargetMs, setSolvedTargetMs] = useState<number | null>(null);
   // A scramble chosen just now is one to show, even when it is the very one
   // just solved — which is what "solve it again" straight after a solve is.
   // Adjusted during render, or the panel would paint hidden first.
@@ -102,6 +139,7 @@ export function TimerScreen() {
     (attempt: CompletedAttempt) => {
       setShowResult(true);
       setSolvedScramble(current);
+      setSolvedTargetMs(targetMs);
       /*
        * And the list goes back down, if it was up. On a phone there is
        * nothing to start an attempt with while it is up — the clock is
@@ -155,7 +193,7 @@ export function TimerScreen() {
         strings.errors.saveSolve,
       );
     },
-    [session, scramble, current, wasPinned, scrambleSource, phaseKeys],
+    [session, scramble, current, wasPinned, scrambleSource, targetMs, phaseKeys],
   );
 
   const timer = useTimer(handleComplete, { phases: phaseKeys });
@@ -216,9 +254,16 @@ export function TimerScreen() {
   const goalMs = goalSetting > 0 ? goalSetting : null;
   const timerNote = useMemo(() => {
     if (shownSolve === null) return null;
-    const note = resultNote(shownSolve, listedPhaseKeys, records.bests, records.globalPbMs, goalMs);
+    const note = resultNote(
+      shownSolve,
+      listedPhaseKeys,
+      records.bests,
+      records.globalPbMs,
+      goalMs,
+      solvedTargetMs,
+    );
     return note === null ? null : noteFor(note, methodPhases);
-  }, [shownSolve, listedPhaseKeys, records, goalMs, methodPhases]);
+  }, [shownSolve, listedPhaseKeys, records, goalMs, solvedTargetMs, methodPhases]);
   // The same ring the lists draw round a phase that is the fastest it has
   // been, on the bar of the solve that just happened.
   const shownBestPhases = useMemo(
@@ -276,7 +321,7 @@ export function TimerScreen() {
           error={pinned === null ? scramble.error : null}
           onRetry={scramble.next}
           hidden={isEngaged || (resultVisible && current === solvedScramble)}
-          pinnedSource={pinned?.source ?? null}
+          pinnedLabel={pinnedLabel}
           onEdit={openScramble}
           onUnpin={unpinScramble}
         />

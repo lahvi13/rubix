@@ -55,8 +55,12 @@ export const cs: Strings = {
     hint: 'Napiš nebo vlož vlastní — třeba ze soutěže. Platí pro jedno složení, pak jsou scrambly zase náhodné.',
     invalid: "Tohle není scramble — piš tahy jako R U' F2.",
     use: 'Použít',
-    own: 'Vlastní scramble',
-    fromHistory: 'Scramble z historie',
+    sources: {
+      own: 'Vlastní scramble',
+      history: 'Scramble z historie',
+      shared: 'Sdílený scramble',
+    },
+    toBeat: (time: string) => `k překonání ${time}`,
     unpin: 'Zpět na náhodný scramble',
   },
   timer: {
@@ -87,6 +91,12 @@ export const cs: Strings = {
     recordPhases: (phases: string) => `Nejlepší ${phases}`,
     recordPhaseJoin: ' · ',
     goalMark: '✓',
+    challengeBeaten: (target: string, margin: string) => `Překonáno ${target} o ${margin}`,
+    challengeTied: (target: string) => `Vyrovnáno ${target}`,
+    challengeMissed: (target: string, margin: string) => `Na ${target} chybělo ${margin}`,
+    challengeMissedDnf: (target: string) => `${target} nepřekonáno`,
+    challengeTiedMark: '=',
+    challengeMissedMark: '✗',
   },
   splits: {
     bestPhase: (phase: string) => `Nejlepší ${phase} této session`,
@@ -722,6 +732,8 @@ export const cs: Strings = {
     busy: 'Kreslím…',
     single: 'Single',
     failed: 'Obrázek se nepodařilo vytvořit',
+    challenge: (time: string, link: string) => `Překonáš ${time}? ${link}`,
+    tryScramble: (link: string) => `Zkus tenhle scramble: ${link}`,
   },
   errors: {
     saveSolve: 'Složení se nepodařilo uložit',

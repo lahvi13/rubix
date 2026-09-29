@@ -50,14 +50,38 @@ export function resultRecord(
   return phases.length === 0 ? null : { kind: 'phase', phases };
 }
 
-/** A record, or failing one, the goal the time beat. */
-export type ResultNote = ResultRecord | { kind: 'goal'; goalMs: number };
+/**
+ * A shared scramble's time against the one just done on it. The margin is in
+ * whole hundredths, the way both times were read — 14.372 against 14.378 is
+ * 14.37 against 14.37 on every screen that shows them, so it is a tie here. Null for a DNF.
+ */
+export type ChallengeOutcome =
+  | { kind: 'beaten'; marginMs: number }
+  | { kind: 'tied' }
+  | { kind: 'missed'; marginMs: number | null };
+
+/** A record, the outcome of a challenge, or the goal the time beat. */
+export type ResultNote =
+  | ResultRecord
+  | { kind: 'challenge'; targetMs: number; outcome: ChallengeOutcome }
+  | { kind: 'goal'; goalMs: number };
+
+export function challengeOutcome(resultMs: number | null, targetMs: number): ChallengeOutcome {
+  if (resultMs === null) return { kind: 'missed', marginMs: null };
+  const marginMs = (Math.floor(targetMs / 10) - Math.floor(resultMs / 10)) * 10;
+  if (marginMs > 0) return { kind: 'beaten', marginMs };
+  return marginMs === 0 ? { kind: 'tied' } : { kind: 'missed', marginMs: -marginMs };
+}
 
 /**
  * What to say under a finished time: its record if it holds one, and only
  * otherwise that it beat the goal. A goal within reach is beaten often — that
  * is what chasing one looks like — so it must never talk over the rarer thing,
  * and a personal best that is also under the goal is a personal best.
+ *
+ * A time to beat — `targetMs`, from a shared scramble — is answered whichever
+ * way it went, and over everything but a personal best: it is what the
+ * attempt was for, and a personal best is news bigger than any one attempt.
  *
  * `goalMs` is null while no goal is set. Judged on the final time, by the rule
  * the stats screen counts with (`beatsGoal`), so a +2 can cost it and a DNF
@@ -69,8 +93,13 @@ export function resultNote(
   bests: Bests,
   globalPbMs: number | null,
   goalMs: number | null,
+  targetMs: number | null = null,
 ): ResultNote | null {
   const record = resultRecord(solve, phaseKeys, bests, globalPbMs);
+  if (record?.kind === 'pb') return record;
+  if (targetMs !== null) {
+    return { kind: 'challenge', targetMs, outcome: challengeOutcome(finalMs(solve), targetMs) };
+  }
   if (record !== null) return record;
   return goalMs !== null && beatsGoal(finalMs(solve), goalMs) ? { kind: 'goal', goalMs } : null;
 }

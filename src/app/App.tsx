@@ -15,6 +15,7 @@ import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute } from './router';
 import { useScrollMemory } from './use-scroll-memory';
+import { useSharedScrambleLink } from './use-shared-scramble-link';
 import { ErrorBanner } from './ErrorBanner';
 import { UndoBar } from './UndoBar';
 import { UpdatePrompt } from './UpdatePrompt';
@@ -22,6 +23,7 @@ import { UpdatePrompt } from './UpdatePrompt';
 export function App() {
   const route = useRoute();
   useScrollMemory(route);
+  useSharedScrambleLink();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [headerSlot, setHeaderSlot] = useState<HTMLDivElement | null>(null);
   // A screen that lived through a lost connection holds dead live queries; the

@@ -117,7 +117,7 @@ export function SolveDetail({
           makes — it may have been practised — so the solve keeps saying so. */}
       {solve.scrambleSource === 'generated' ? null : (
         <p className="detail__scramble-source">
-          {solve.scrambleSource === 'own' ? strings.scramble.own : strings.scramble.fromHistory}
+          {strings.scramble.sources[solve.scrambleSource]}
         </p>
       )}
       {onSolveAgain === undefined ? null : (

@@ -10,10 +10,14 @@ export function canShareFile(file: File): boolean {
 
 export type ShareOutcome = 'shared' | 'cancelled' | 'failed';
 
-/** Must be called straight from a tap: the share sheet needs user activation. */
-export async function shareFile(file: File): Promise<ShareOutcome> {
+/**
+ * Must be called straight from a tap: the share sheet needs user activation.
+ * `text` goes along as the message — as `text` and not `url`, because apps
+ * that take a file tend to drop a URL beside it but keep a caption.
+ */
+export async function shareFile(file: File, text: string | null = null): Promise<ShareOutcome> {
   try {
-    await navigator.share({ files: [file] });
+    await navigator.share(text === null ? { files: [file] } : { files: [file], text });
     return 'shared';
   } catch (cause) {
     return failureOf(cause);

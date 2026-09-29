@@ -68,4 +68,11 @@ describe('upgradeImportFormat', () => {
       data: { algCases: [{ id: 'pll-t', progress: 'new' }, { id: 'pll-y', progress: 'known' }] },
     });
   });
+
+  it('reads a format 3 file as it is', () => {
+    const data = { solves: [{ id: 's1', scrambleSource: 'history' }] };
+    const upgraded = upgradeImportFormat({ format: EXPORT_FORMAT, formatVersion: 3, data });
+
+    expect(upgraded).toEqual({ format: EXPORT_FORMAT, formatVersion: EXPORT_FORMAT_VERSION, data });
+  });
 });

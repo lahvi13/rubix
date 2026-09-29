@@ -5,6 +5,7 @@
  */
 
 import type { Face } from '../domain/cube/notation';
+import type { CubeState } from '../domain/cube/state';
 import { downloadBlob } from './download';
 import { canShareFile, shareFile } from './share';
 
@@ -19,12 +20,23 @@ export interface ShareCard {
   detail: string;
   /** When it was done. */
   date: string;
+  /**
+   * The cube the detail scrambles, drawn unfolded beside it — what somebody
+   * scrolling past can see without reading moves. Null where there is no one
+   * cube behind the card, as with an average.
+   */
+  cube: CubeState | null;
 }
 
 export interface CardLook {
   /** The reader's cube colours, for the name in the corner. */
   faces: Record<Face, string>;
+  /** `cube` drawn in the reader's skin, NET_WIDTH across, as an image URL. */
+  cube: string | null;
 }
+
+/** How wide the unfolded cube is drawn on the card. */
+export const NET_WIDTH = 400;
 
 /** Square, the one shape every place a cuber posts to shows whole. */
 const SIZE = 1080;
@@ -82,6 +94,13 @@ async function loadFaces(palette: Palette): Promise<void> {
       (font) => document.fonts.load(font).catch(() => []),
     ),
   );
+}
+
+async function loadImage(url: string): Promise<HTMLImageElement> {
+  const image = new Image();
+  image.src = url;
+  await image.decode();
+  return image;
 }
 
 /** Words onto lines no wider than the width, breaking only at spaces. */
@@ -147,7 +166,10 @@ function drawLogo(context: CanvasRenderingContext2D, palette: Palette, look: Car
 
 export async function renderShareCard(card: ShareCard, look: CardLook): Promise<Blob> {
   const palette = readPalette();
-  await loadFaces(palette);
+  const [cube] = await Promise.all([
+    look.cube === null ? null : loadImage(look.cube),
+    loadFaces(palette),
+  ]);
 
   const canvas = document.createElement('canvas');
   canvas.width = SIZE;
@@ -183,7 +205,6 @@ export async function renderShareCard(card: ShareCard, look: CardLook): Promise<
   // outline — which blew the pointed ends of its segments up into arrowheads.
   const headlineFont = (size: number) => `400 ${size}px ${palette.clock}`;
   const badgeFont = `600 40px ${palette.sans}`;
-  const detailFont = `500 36px ${palette.mono}`;
 
   const inkOf = (font: string, text: string) => {
     context.font = font;
@@ -195,18 +216,26 @@ export async function renderShareCard(card: ShareCard, look: CardLook): Promise<
   const kicker = inkOf(kickerFont, card.kicker);
   const headline = inkOf(headlineFont(headlineSize), card.headline);
   const badge = card.badge === null ? null : inkOf(badgeFont, card.badge);
+
+  // With a cube, the detail is the column beside it — the moves and the
+  // picture they make, read as one — and set a step smaller to fit there.
+  const CUBE_GAP = 48;
+  const columnX = PAD + NET_WIDTH + CUBE_GAP;
+  const detailFont = cube === null ? `500 36px ${palette.mono}` : `500 34px ${palette.mono}`;
+  const detailLineHeight = cube === null ? 52 : 50;
   context.font = detailFont;
-  const detailLines = wrap(context, card.detail, WIDTH).slice(0, 6);
-  const detailLineHeight = 52;
+  const detailLines = wrap(context, card.detail, cube === null ? WIDTH : SIZE - PAD - columnX).slice(0, 6);
+  const cubeHeight = cube === null ? 0 : (NET_WIDTH * cube.naturalHeight) / cube.naturalWidth;
 
   const GAP_AFTER_KICKER = 40;
   const GAP_AFTER_HEADLINE = 44;
-  const GAP_BEFORE_DETAIL = 56;
+  const GAP_BEFORE_DETAIL = cube === null ? 56 : 72;
   const kickerHeight = kicker.ascent + kicker.descent;
   const headlineHeight = headline.ascent + headline.descent;
   const badgeHeight = badge === null ? 0 : GAP_AFTER_HEADLINE + badge.ascent + badge.descent;
-  const detailHeight =
-    detailLines.length === 0 ? 0 : GAP_BEFORE_DETAIL + detailLines.length * detailLineHeight;
+  const linesHeight = detailLines.length * detailLineHeight;
+  const rowHeight = Math.max(cubeHeight, linesHeight);
+  const detailHeight = rowHeight === 0 ? 0 : GAP_BEFORE_DETAIL + rowHeight;
   const blockHeight = kickerHeight + GAP_AFTER_KICKER + headlineHeight + badgeHeight + detailHeight;
   let y = (SIZE - blockHeight) / 2;
 
@@ -229,13 +258,24 @@ export async function renderShareCard(card: ShareCard, look: CardLook): Promise<
     y += badge.ascent + badge.descent;
   }
 
-  if (detailLines.length > 0) {
+  if (rowHeight > 0) {
     y += GAP_BEFORE_DETAIL;
     context.font = detailFont;
     context.fillStyle = palette.muted;
-    for (const line of detailLines) {
-      context.fillText(line, SIZE / 2, y + 36);
-      y += detailLineHeight;
+    if (cube === null) {
+      for (const line of detailLines) {
+        context.fillText(line, SIZE / 2, y + 36);
+        y += detailLineHeight;
+      }
+    } else {
+      context.drawImage(cube, PAD, y + (rowHeight - cubeHeight) / 2, NET_WIDTH, cubeHeight);
+      context.textAlign = 'left';
+      let lineY = y + (rowHeight - linesHeight) / 2;
+      for (const line of detailLines) {
+        context.fillText(line, columnX, lineY + 34);
+        lineY += detailLineHeight;
+      }
+      context.textAlign = 'center';
     }
   }
 
@@ -261,12 +301,13 @@ export async function deliverShareCard(
   card: ShareCard,
   look: CardLook,
   filename: string,
+  message: string | null,
 ): Promise<CardOutcome> {
   const blob = await renderShareCard(card, look);
   const file = new File([blob], filename, { type: 'image/png' });
 
   if (canShareFile(file)) {
-    const outcome = await shareFile(file);
+    const outcome = await shareFile(file, message);
     if (outcome !== 'failed') return outcome;
   }
   downloadBlob(filename, blob);

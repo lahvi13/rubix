@@ -108,6 +108,15 @@ dostávají hotová data z domény.
   tlačítkem a obrázek se pak vrátí
 - scramble se ukládá ke každému solvu jako string; při reimportu se nikdy neregeneruje
 - ruční vložení scramblu (paste) pro trénink konkrétní situace
+- **sdílený scramble**: obrázek solve nese vedle tahů i rozvin (bílou nahoru jako
+  na timeru) a sdílení k němu přidá zprávu s odkazem
+  `#/timer?scramble=R_U-_F2&beat=14370` — tahy v zápisu alg.cubing.net (mezera `_`,
+  čárka `-`), aby je messenger neusekl, a finální čas v ms k překonání (u DNF chybí).
+  Všechno je za `#`, takže server scramble nikdy nevidí. Otevřený odkaz scramble
+  připne na timer se zdrojem `'shared'` a štítkem „k překonání“, adresu vrátí na
+  `#/timer` (reload ho nepřipne znovu) a po solvu řekne pod časem, jak to dopadlo —
+  přednost má jen osobní rekord. Odkaz se posílá jako `text`, ne `url`: aplikace,
+  které berou obrázek, URL vedle něj zahazují
 
 ### 3.3 Historie
 
@@ -632,7 +641,7 @@ interface Solve {
   caseId: string | null;  // vazba na AlgCase, jen pro drill a recognition
 
   scramble: string;
-  scrambleSource: ScrambleSource; // 'generated' | 'own' (napsaný) | 'history' (složený znovu); DB v5
+  scrambleSource: ScrambleSource; // 'generated' | 'own' (napsaný) | 'history' (složený znovu) | 'shared' (z odkazu); DB v5
   rawMs: number;          // naměřený čas bez penalty, integer
   penalty: Penalty;
   penaltySource: PenaltySource;
@@ -891,7 +900,7 @@ ani `isCustom: 1`.
 Import validuje `formatVersion` a odmítne novější, než umí. Migrace starších
 formátů žije v `src/db/migrations/import/`. Verze 2 přibyla s `scrambleSource`
 (DB v5); upgrade z 1 doplní chybějící `scrambleSource` i `label` u případů,
-který DB v3 přidala bez změny formátu — zálohy z doby před ním jinak nešly obnovit. Verze 3 přibyla s `progress` u případů (DB v6); upgrade z 2 ho doplní jako `'new'`.
+který DB v3 přidala bez změny formátu — zálohy z doby před ním jinak nešly obnovit. Verze 3 přibyla s `progress` u případů (DB v6); upgrade z 2 ho doplní jako `'new'`. Verze 4 přibyla se `scrambleSource: 'shared'`; upgrade z 3 soubor nemění, číslo se zvedlo, aby starší aplikace takový soubor odmítla jako novější, ne jako poškozený.
 
 ## 5. Obrazovky
 

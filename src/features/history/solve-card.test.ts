@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SPLITS_SCHEMA_VERSION, type Solve } from '../../db/types';
+import { parseAlg } from '../../domain/cube/notation';
+import { applyAlg, solvedState } from '../../domain/cube/state';
 import { solveCard, solveCardFilename, type SolveRecord } from './solve-card';
 
 function solve(overrides: Partial<Solve> = {}): Solve {
@@ -49,12 +51,27 @@ describe('solveCard', () => {
     ['generated', 'Single'],
     ['own', 'Single · Your own scramble'],
     ['history', 'Single · Scramble from the history'],
+    ['shared', 'Single · Shared scramble'],
   ])('says up top when the scramble was not drawn by the app: %s', (scrambleSource, kicker) => {
     expect(solveCard(solve({ scrambleSource }), null).kicker).toBe(kicker);
   });
 
   it('shows the scramble it was timed on', () => {
     expect(solveCard(solve(), null).detail).toBe("R U R' U' F2");
+  });
+
+  it('draws the cube the scramble makes', () => {
+    const parsed = parseAlg("R U R' U' F2");
+    const expected = parsed.ok ? applyAlg(solvedState(), parsed.moves) : null;
+    expect(solveCard(solve(), null).cube).toEqual(expected);
+  });
+
+  it.each<[string, Partial<Solve>]>([
+    ['another puzzle', { puzzle: '222' }],
+    ['a scramble that does not read', { scramble: 'R Q' }],
+    ['no scramble at all', { scramble: '' }],
+  ])('draws no cube for %s', (_name, overrides) => {
+    expect(solveCard(solve(overrides), null).cube).toBeNull();
   });
 
   it('names the file after the day of the solve', () => {
