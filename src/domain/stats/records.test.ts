@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Penalty, Solve, Split } from '../../db/types';
 import { bestsOf } from './phases';
-import { challengeOutcome, resultNote, resultRecord, type ChallengeOutcome } from './records';
+import {
+  challengeOutcome,
+  resultNote,
+  resultRecord,
+  type Challenge,
+  type ChallengeOutcome,
+} from './records';
 
 const PHASES = ['cross', 'f2l', 'oll', 'pll'];
 
@@ -116,8 +122,9 @@ describe('resultNote', () => {
   it('answers a time to beat over a session best and a goal', () => {
     const session = [solve(14_000), solve(13_000)];
     const landed = session[1] ?? solve(0);
-    expect(resultNote(landed, PHASES, bestsOf(session, PHASES), 9000, 15_000, 13_500)).toEqual({
+    expect(resultNote(landed, PHASES, bestsOf(session, PHASES), 9000, 15_000, single(13_500))).toEqual({
       kind: 'challenge',
+      count: 1,
       targetMs: 13_500,
       outcome: { kind: 'beaten', marginMs: 500 },
     });
@@ -126,17 +133,63 @@ describe('resultNote', () => {
   it('lets a personal best speak over a time to beat', () => {
     const session = [solve(14_000), solve(12_000)];
     const landed = session[1] ?? solve(0);
-    expect(resultNote(landed, PHASES, bestsOf(session, PHASES), 12_000, null, 13_000)).toEqual({
+    expect(resultNote(landed, PHASES, bestsOf(session, PHASES), 12_000, null, single(13_000))).toEqual({
       kind: 'pb',
     });
   });
 
   it('answers a time to beat for a DNF too', () => {
     const landed = solve(9000, [], 'dnf');
-    expect(resultNote(landed, PHASES, bestsOf([landed], PHASES), null, null, 13_000)).toEqual({
+    expect(resultNote(landed, PHASES, bestsOf([landed], PHASES), null, null, single(13_000))).toEqual({
       kind: 'challenge',
+      count: 1,
       targetMs: 13_000,
       outcome: { kind: 'missed', marginMs: null },
+    });
+  });
+});
+
+const single = (targetMs: number): Challenge => ({ targetMs, count: 1, earlierMs: [] });
+
+describe('resultNote for a shared average', () => {
+  // 11.00, 12.00, 13.00, 14.00 before; the trim cuts the best and the worst.
+  const earlierMs = [11_000, 12_000, 13_000, 14_000];
+  const ao5 = (targetMs: number, earlier: (number | null)[] = earlierMs): Challenge => ({
+    targetMs,
+    count: 5,
+    earlierMs: earlier,
+  });
+
+  it('answers on the last solve, with the average of all five', () => {
+    // 12.00, 13.00, 14.00 kept: 13.00 against 13.50.
+    const landed = solve(15_000);
+    expect(resultNote(landed, PHASES, bestsOf([landed], PHASES), null, null, ao5(13_500))).toEqual({
+      kind: 'challenge',
+      count: 5,
+      targetMs: 13_500,
+      outcome: { kind: 'beaten', marginMs: 500 },
+    });
+  });
+
+  it('answers over a personal best on the last solve', () => {
+    const landed = solve(9000);
+    expect(resultNote(landed, PHASES, bestsOf([landed], PHASES), 9000, null, ao5(12_000))?.kind).toBe(
+      'challenge',
+    );
+  });
+
+  it('counts a second DNF as a DNF average', () => {
+    const landed = solve(9000, [], 'dnf');
+    const note = resultNote(landed, PHASES, bestsOf([landed], PHASES), null, null, ao5(13_000, [11_000, null, 12_000, 13_000]));
+    expect(note).toEqual({ kind: 'challenge', count: 5, targetMs: 13_000, outcome: { kind: 'missed', marginMs: null } });
+  });
+
+  it('lets the solves before the last speak as any other', () => {
+    const session = [solve(14_000), solve(12_000)];
+    const landed = session[1] ?? solve(0);
+    const challenge = ao5(13_000, [14_000]);
+    expect(resultNote(landed, PHASES, bestsOf(session, PHASES), 9000, null, challenge)).toEqual({
+      kind: 'session',
     });
   });
 });

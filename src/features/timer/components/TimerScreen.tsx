@@ -2,7 +2,8 @@ import { useCallback, useMemo, useState } from 'react';
 import type { MethodPhase, Penalty } from '../../../db/types';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { bestPhasesIn } from '../../../domain/stats/phases';
-import { resultNote, type ResultNote } from '../../../domain/stats/records';
+import { resultNote, type Challenge, type ResultNote } from '../../../domain/stats/records';
+import { finalMs } from '../../../domain/solve/final-time';
 import { now } from '../../../lib/clock';
 import { formatGoal, formatMs } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -15,7 +16,12 @@ import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useSheetMotion } from '../hooks/use-sheet-motion';
 import { useScramble } from '../../../hooks/use-scramble';
-import { pinScramble, unpinScramble, usePinnedScramble } from '../../../hooks/use-pinned-scramble';
+import {
+  advancePin,
+  pinScramble,
+  unpinScramble,
+  usePinnedScramble,
+} from '../../../hooks/use-pinned-scramble';
 import { useBackToClose } from '../../../hooks/use-back-to-close';
 import { usePull } from '../../../hooks/use-pull';
 import { useRecordsOf } from '../../../hooks/use-session-records';
@@ -42,7 +48,10 @@ function noteFor(note: ResultNote, phases: readonly MethodPhase[]): TimerNote {
     return { tier: 'session', mark: star, label: strings.timer.recordSession };
   }
   if (note.kind === 'challenge') {
-    const target = formatMs(note.targetMs);
+    const target =
+      note.count === 1
+        ? formatMs(note.targetMs)
+        : strings.timer.challengeAverage(note.count, formatMs(note.targetMs));
     const { outcome } = note;
     // Beaten, it is said the way a beaten goal is; not beaten, quieter still.
     if (outcome.kind === 'beaten') {
@@ -117,16 +126,32 @@ export function TimerScreen() {
 
   const wasPinned = pinned !== null;
   const scrambleSource = pinned?.source ?? 'generated';
-  const targetMs = pinned?.source === 'shared' ? pinned.targetMs : null;
-  const pinnedLabel =
-    pinned === null
-      ? null
-      : targetMs === null
-        ? strings.scramble.sources[pinned.source]
-        : `${strings.scramble.sources[pinned.source]} · ${strings.scramble.toBeat(formatMs(targetMs))}`;
-  // The time the finished solve was out to beat. The scramble that carried it
-  // is gone by the time the result is read — it was for one solve.
-  const [solvedTargetMs, setSolvedTargetMs] = useState<number | null>(null);
+  // What the next solve is chasing, if it is one of a shared set with a time.
+  // Memoised on the pin, or the callback below would change every frame.
+  const challenge = useMemo((): Challenge | null => {
+    if (pinned?.source !== 'shared') return null;
+    const { targetMs, scrambles, resultsMs } = pinned.run;
+    return targetMs === null ? null : { targetMs, count: scrambles.length, earlierMs: resultsMs };
+  }, [pinned]);
+  const pinnedLabel = useMemo(() => {
+    if (pinned === null) return null;
+    if (pinned.source !== 'shared') return strings.scramble.sources[pinned.source];
+    const { run } = pinned;
+    const count = run.scrambles.length;
+    const named =
+      count === 1
+        ? strings.scramble.sources.shared
+        : strings.scramble.sharedRun(count, run.resultsMs.length + 1);
+    if (run.targetMs === null) return named;
+    const target =
+      count === 1
+        ? formatMs(run.targetMs)
+        : strings.timer.challengeAverage(count, formatMs(run.targetMs));
+    return `${named} · ${strings.scramble.toBeat(target)}`;
+  }, [pinned]);
+  // What the finished solve was chasing. The scramble that carried it is gone
+  // by the time the result is read — the next one of the set is up already.
+  const [solvedChallenge, setSolvedChallenge] = useState<Challenge | null>(null);
   // A scramble chosen just now is one to show, even when it is the very one
   // just solved — which is what "solve it again" straight after a solve is.
   // Adjusted during render, or the panel would paint hidden first.
@@ -140,7 +165,7 @@ export function TimerScreen() {
     (attempt: CompletedAttempt) => {
       setShowResult(true);
       setSolvedScramble(current);
-      setSolvedTargetMs(targetMs);
+      setSolvedChallenge(challenge);
       /*
        * And the list goes back down, if it was up. On a phone there is
        * nothing to start an attempt with while it is up — the clock is
@@ -186,15 +211,19 @@ export function TimerScreen() {
             })),
             phaseKeys,
           }).then(() => {
-            // A chosen scramble is for one solve; the generated one that was
-            // waiting under it is still unseen, so it comes back as it was.
-            if (wasPinned) unpinScramble();
-            else scramble.next();
+            // A chosen scramble is for one solve, or goes on to the next of a
+            // shared set; the generated one waiting under it is still unseen,
+            // so it comes back as it was.
+            if (wasPinned) {
+              advancePin(finalMs({ rawMs: Math.round(attempt.rawMs), penalty: attempt.penalty }));
+            } else {
+              scramble.next();
+            }
           }),
         strings.errors.saveSolve,
       );
     },
-    [session, scramble, current, wasPinned, scrambleSource, targetMs, phaseKeys],
+    [session, scramble, current, wasPinned, scrambleSource, challenge, phaseKeys],
   );
 
   const timer = useTimer(handleComplete, { phases: phaseKeys });
@@ -264,10 +293,10 @@ export function TimerScreen() {
       records.bests,
       records.globalPbMs,
       goalMs,
-      solvedTargetMs,
+      solvedChallenge,
     );
     return note === null ? null : noteFor(note, methodPhases);
-  }, [shownSolve, listedPhaseKeys, records, goalMs, solvedTargetMs, methodPhases]);
+  }, [shownSolve, listedPhaseKeys, records, goalMs, solvedChallenge, methodPhases]);
   // The same ring the lists draw round a phase that is the fastest it has
   // been, on the bar of the solve that just happened.
   const shownBestPhases = useMemo(

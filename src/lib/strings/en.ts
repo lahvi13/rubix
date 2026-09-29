@@ -55,6 +55,8 @@ export const en = {
       history: 'Scramble from the history',
       shared: 'Shared scramble',
     },
+    /* One of the scrambles of a shared average, counted as they come. */
+    sharedRun: (count: number, at: number) => `Shared ao${count} · ${at}/${count}`,
     toBeat: (time: string) => `${time} to beat`,
     unpin: 'Back to a random scramble',
   },
@@ -113,6 +115,8 @@ export const en = {
     challengeTied: (target: string) => `Tied ${target}`,
     challengeMissed: (target: string, margin: string) => `Missed ${target} by ${margin}`,
     challengeMissedDnf: (target: string) => `Missed ${target}`,
+    /* A shared average's time, where a shared single's would stand. */
+    challengeAverage: (count: number, time: string) => `ao${count} ${time}`,
     challengeTiedMark: '=',
     challengeMissedMark: '✗',
   },

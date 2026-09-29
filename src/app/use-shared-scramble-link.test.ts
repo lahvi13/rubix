@@ -20,7 +20,11 @@ describe('useSharedScrambleLink', () => {
     window.history.replaceState(null, '', "#/timer?scramble=R_U-_F2&beat=14370");
     const { result } = openApp();
 
-    expect(result.current).toEqual({ scramble: "R U' F2", source: 'shared', targetMs: 14370 });
+    expect(result.current).toEqual({
+      scramble: "R U' F2",
+      source: 'shared',
+      run: { scrambles: ["R U' F2"], targetMs: 14370, resultsMs: [] },
+    });
   });
 
   it('takes the link out of the address, so a reload does not bring it back', () => {

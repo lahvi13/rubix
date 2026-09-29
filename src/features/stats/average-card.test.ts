@@ -6,7 +6,14 @@ const DAY = 86_400_000;
 const START = Date.UTC(2026, 8, 20, 12);
 
 function row(resultMs: number | null, isTrimmed = false, day = 0): WindowSolve {
-  return { id: String(resultMs), resultMs, penalty: resultMs === null ? 'dnf' : 'none', isTrimmed, createdAt: START + day * DAY };
+  return {
+    id: String(resultMs),
+    resultMs,
+    penalty: resultMs === null ? 'dnf' : 'none',
+    isTrimmed,
+    createdAt: START + day * DAY,
+    scramble: "R U R' U'",
+  };
 }
 
 function view(solves: WindowSolve[], average: AverageWindowView['average'] = 12_000): AverageWindowView {

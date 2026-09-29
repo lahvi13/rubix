@@ -104,6 +104,8 @@ export interface WindowSolve {
   /** Cut by the trim, so it is in the window but not in the average. */
   isTrimmed: boolean;
   createdAt: number;
+  /** What it was timed on — the window's scrambles are what a shared average carries. */
+  scramble: string;
 }
 
 /** The solves behind one number in the averages table. */
@@ -359,6 +361,7 @@ export function useSessionStats(
             penalty: solve.penalty,
             isTrimmed: trimmed[offset] ?? false,
             createdAt: solve.createdAt,
+            scramble: solve.scramble,
           })),
         };
       },

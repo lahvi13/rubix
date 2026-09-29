@@ -1,7 +1,8 @@
 import { Sheet } from '../../../components/Sheet';
 import { useShareCard } from '../../../hooks/use-share-card';
+import { shareLinkFor } from '../../../domain/scramble/share-link';
 import { averageCard, averageCardFilename } from '../average-card';
-import { formatAverage, formatDate, formatResult } from '../../../lib/format';
+import { formatAverage, formatDate, formatMs, formatResult } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import type { AverageWindowView } from '../hooks/use-session-stats';
 
@@ -64,7 +65,24 @@ export function AverageSheet({ view, onOpenSolve, onClose }: AverageSheetProps) 
           type="button"
           className="average-sheet__share"
           disabled={card.isBusy}
-          onClick={() => card.share(averageCard(view), averageCardFilename(view))}
+          onClick={() => {
+            const average = view.average;
+            if (typeof average !== 'number') return;
+            // The same scrambles, in the same order, as a link to race the
+            // average on — for an ao5 or an ao12, whose links stay tappable.
+            const link = shareLinkFor(window.location.origin, {
+              scrambles: view.solves.map((solve) => solve.scramble),
+              targetMs: average,
+            });
+            const message =
+              link === null
+                ? null
+                : strings.share.challenge(
+                    strings.timer.challengeAverage(view.n, formatMs(average)),
+                    link,
+                  );
+            card.share(averageCard(view), averageCardFilename(view), message);
+          }}
         >
           {card.isBusy ? strings.share.busy : strings.share.action}
         </button>

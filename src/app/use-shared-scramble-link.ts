@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { readShareLink } from '../domain/scramble/share-link';
-import { pinSharedScramble } from '../hooks/use-pinned-scramble';
+import { pinSharedScrambles } from '../hooks/use-pinned-scramble';
 
 /**
  * A shared scramble arriving in the address: put on the timer, and the
@@ -15,7 +15,7 @@ export function useSharedScrambleLink(): void {
     const take = () => {
       const shared = readShareLink(window.location.hash);
       if (shared === null) return;
-      pinSharedScramble(shared);
+      pinSharedScrambles(shared);
       window.history.replaceState(window.history.state, '', '#/timer');
     };
     take();

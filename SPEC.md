@@ -117,6 +117,12 @@ dostávají hotová data z domény.
   `#/timer` (reload ho nepřipne znovu) a po solvu řekne pod časem, jak to dopadlo —
   přednost má jen osobní rekord. Odkaz se posílá jako `text`, ne `url`: aplikace,
   které berou obrázek, URL vedle něj zahazují
+- **sdílený průměr**: „Sdílet“ u ao5 / ao12 ve statistikách pošle stejný odkaz
+  s pěti / dvanácti parametry `scramble` v pořadí a průměrem v `beat` (delší okna
+  by daly odkaz, na který nikdo neťukne). Timer je naservíruje jeden po druhém se
+  štítkem „Sdílený ao5 · 2/5“, výsledky drží v paměti vedle připnutého scramblu
+  a po posledním spočítá průměr stejným pravidlem jako statistiky — ten má
+  přednost i před osobním rekordem, protože honil se průměr, ne ten jeden solve
 
 ### 3.3 Historie
 

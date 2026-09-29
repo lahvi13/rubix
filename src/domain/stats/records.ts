@@ -10,6 +10,7 @@
 
 import type { Solve } from '../../db/types';
 import { finalMs, isDnf } from '../solve/final-time';
+import { windowAverage } from './averages';
 import { beatsGoal } from './distribution';
 import { bestPhasesIn, type Bests } from './phases';
 
@@ -60,10 +61,21 @@ export type ChallengeOutcome =
   | { kind: 'tied' }
   | { kind: 'missed'; marginMs: number | null };
 
+/**
+ * A shared time being chased: the single or the average to beat, how many
+ * solves it is over (one, five, twelve), and the final times of those of them
+ * already done before this one — null for a DNF.
+ */
+export interface Challenge {
+  targetMs: number;
+  count: number;
+  earlierMs: readonly (number | null)[];
+}
+
 /** A record, the outcome of a challenge, or the goal the time beat. */
 export type ResultNote =
   | ResultRecord
-  | { kind: 'challenge'; targetMs: number; outcome: ChallengeOutcome }
+  | { kind: 'challenge'; count: number; targetMs: number; outcome: ChallengeOutcome }
   | { kind: 'goal'; goalMs: number };
 
 export function challengeOutcome(resultMs: number | null, targetMs: number): ChallengeOutcome {
@@ -79,9 +91,11 @@ export function challengeOutcome(resultMs: number | null, targetMs: number): Cha
  * is what chasing one looks like — so it must never talk over the rarer thing,
  * and a personal best that is also under the goal is a personal best.
  *
- * A time to beat — `targetMs`, from a shared scramble — is answered whichever
- * way it went, and over everything but a personal best: it is what the
- * attempt was for, and a personal best is news bigger than any one attempt.
+ * A shared single to beat is answered whichever way it went, and over
+ * everything but a personal best: it is what the attempt was for, and a
+ * personal best is news bigger than any one attempt. A shared average is
+ * answered on the last of its solves, over everything — that one solve is not
+ * what was being chased — and until then the solves speak as any other.
  *
  * `goalMs` is null while no goal is set. Judged on the final time, by the rule
  * the stats screen counts with (`beatsGoal`), so a +2 can cost it and a DNF
@@ -93,12 +107,19 @@ export function resultNote(
   bests: Bests,
   globalPbMs: number | null,
   goalMs: number | null,
-  targetMs: number | null = null,
+  challenge: Challenge | null = null,
 ): ResultNote | null {
   const record = resultRecord(solve, phaseKeys, bests, globalPbMs);
-  if (record?.kind === 'pb') return record;
-  if (targetMs !== null) {
-    return { kind: 'challenge', targetMs, outcome: challengeOutcome(finalMs(solve), targetMs) };
+  if (challenge !== null) {
+    const { targetMs, count, earlierMs } = challenge;
+    if (count === 1 && record?.kind !== 'pb') {
+      return { kind: 'challenge', count, targetMs, outcome: challengeOutcome(finalMs(solve), targetMs) };
+    }
+    if (count > 1 && earlierMs.length === count - 1) {
+      const average = windowAverage([...earlierMs, finalMs(solve)]);
+      const outcome = challengeOutcome(average === 'dnf' ? null : average, targetMs);
+      return { kind: 'challenge', count, targetMs, outcome };
+    }
   }
   if (record !== null) return record;
   return goalMs !== null && beatsGoal(finalMs(solve), goalMs) ? { kind: 'goal', goalMs } : null;
