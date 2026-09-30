@@ -89,6 +89,7 @@ export function SplitEditor({ solve, phases, bestPhases, onChange }: SplitEditor
 
               {split ? (
                 <SplitTimeInput
+                  key={split.atMs}
                   phase={phase}
                   atMs={split.atMs}
                   invalid={invalidPhase === phase.key}
@@ -150,7 +151,6 @@ function SplitTimeInput({ phase, atMs, invalid, onCommit }: SplitTimeInputProps)
 
   return (
     <input
-      key={atMs}
       className={invalid ? 'splits__at is-invalid' : 'splits__at'}
       value={value}
       inputMode="decimal"
