@@ -22,6 +22,10 @@
  *   room, where most of what else is heard comes from across it;
  * - voiced throughout, not in patches.
  *
+ * Calibrated, it also has to be the solver's own: about their pitch, and not
+ * much quieter than their "hop" (see VoiceProfile). Uncalibrated, any close,
+ * short voice counts — which is also how calibration itself listens.
+ *
  * Judging the whole sound means deciding after it ends, a few hundred
  * milliseconds late. The onset is dated back to where it began, so the delay
  * costs the time nothing.
@@ -41,7 +45,7 @@
  */
 
 /** Bumped whenever a change here makes old trial results incomparable. */
-export const DETECTOR_VERSION = 4;
+export const DETECTOR_VERSION = 5;
 
 const HOP_MS = 5;
 /** The band a voice's fundamental and first formant live in; clicks mostly do not. */
@@ -94,26 +98,140 @@ const VOICE_MIN_LOUDNESS_DB = 30;
 const REPEAT_MS = 600;
 /** How close to the sound's own median a hop's pitch has to be to count as steady. */
 const STEADY_SHARE = 0.2;
+/**
+ * Nothing is judged before the room has been heard for this long: until
+ * then its floor is unknown, and the first test on a phone put a word said
+ * in the opening second at +112 dB.
+ */
+const WARM_UP_MS = 500;
+/** Below this a hop is a microphone still waking up, handing over zeros — not the room. */
+const DIGITAL_SILENCE_DB = -110;
+
+/*
+ * Calibrated, a word has to be the solver's own: about their pitch, and not
+ * much quieter than their "hop". In the tests on a phone the solver's words
+ * held within a few dB of each other and a few hertz of 112, while what
+ * slipped through without calibration came in at 308 Hz, or 30 dB down.
+ */
+const PROFILE_LOUDNESS_MARGIN_DB = 15;
+/** How far off the solver's pitch a word may be, either way, as a ratio. */
+const PROFILE_PITCH_RATIO = 1.35;
+/** Words heard to calibrate from. */
+export const CALIBRATION_WORDS = 5;
+/**
+ * How alike the calibration words have to be. Not the first five sounds taken
+ * for a word: in a test on a phone two of those were strays at 250 and 320 Hz,
+ * while the solver's five "hop"s sat within 1 dB and 12 Hz of each other.
+ */
+const CALIBRATION_LOUDNESS_DB = 6;
+const CALIBRATION_PITCH_RATIO = 1.2;
+
+/** The solver's own "hop", as heard where the phone lies while they solve. */
+export interface VoiceProfile {
+  loudnessDb: number;
+  pitchHz: number;
+}
 
 /**
  * What a sound was taken for. Anything but 'voice' is turned away, and says
  * why — so a missed word shows which of its traits fell short.
  */
-export type Verdict = 'voice' | 'long' | 'short' | 'quiet' | 'unclear' | 'repeat';
+export type Verdict = 'voice' | 'long' | 'short' | 'quiet' | 'pitch' | 'unclear' | 'repeat';
 
-export const VERDICTS: readonly Verdict[] = ['voice', 'long', 'short', 'quiet', 'unclear', 'repeat'];
+export const VERDICTS: readonly Verdict[] = [
+  'voice',
+  'long',
+  'short',
+  'quiet',
+  'pitch',
+  'unclear',
+  'repeat',
+];
 
 export function isVerdict(value: unknown): value is Verdict {
   return VERDICTS.some((verdict) => verdict === value);
 }
 
-/** Judges a sound's shape. When several traits fall short, the first in this order is given. */
-export function judgeSound(durationMs: number, periodicity: number, loudnessDb: number): Verdict {
-  if (durationMs > VOICE_MAX_MS) return 'long';
-  if (durationMs < VOICE_MIN_MS) return 'short';
-  if (loudnessDb < VOICE_MIN_LOUDNESS_DB) return 'quiet';
-  if (periodicity < VOICE_MIN_PERIODICITY) return 'unclear';
+export interface SoundShape {
+  durationMs: number;
+  periodicity: number;
+  pitchHz: number;
+  loudnessDb: number;
+}
+
+/**
+ * Judges a sound's shape, against the solver's voice when there is a profile
+ * of it. When several traits fall short, the first in this order is given.
+ */
+export function judgeSound(sound: SoundShape, voice: VoiceProfile | null): Verdict {
+  if (sound.durationMs > VOICE_MAX_MS) return 'long';
+  if (sound.durationMs < VOICE_MIN_MS) return 'short';
+  const minLoudnessDb =
+    voice === null
+      ? VOICE_MIN_LOUDNESS_DB
+      : Math.max(VOICE_MIN_LOUDNESS_DB, voice.loudnessDb - PROFILE_LOUDNESS_MARGIN_DB);
+  if (sound.loudnessDb < minLoudnessDb) return 'quiet';
+  if (
+    voice !== null &&
+    (sound.pitchHz < voice.pitchHz / PROFILE_PITCH_RATIO ||
+      sound.pitchHz > voice.pitchHz * PROFILE_PITCH_RATIO)
+  ) {
+    return 'pitch';
+  }
+  if (sound.periodicity < VOICE_MIN_PERIODICITY) return 'unclear';
   return 'voice';
+}
+
+type CalibrationSound = Pick<Sound, 'verdict' | 'loudnessDb' | 'pitchHz'>;
+
+/**
+ * The largest group of alike words among the sounds heard while calibrating,
+ * the loudest group when two are as large. A word taken as a repeat counts:
+ * a stray just before it is what made it one.
+ */
+function calibrationGroup(sounds: readonly CalibrationSound[]): CalibrationSound[] {
+  const words = sounds.filter((sound) => sound.verdict === 'voice' || sound.verdict === 'repeat');
+  let best: CalibrationSound[] = [];
+  for (const word of words) {
+    const group = words.filter(
+      (other) =>
+        Math.abs(other.loudnessDb - word.loudnessDb) <= CALIBRATION_LOUDNESS_DB &&
+        Math.max(other.pitchHz, word.pitchHz) <=
+          Math.min(other.pitchHz, word.pitchHz) * CALIBRATION_PITCH_RATIO,
+    );
+    const isLarger = group.length > best.length;
+    const isLouder =
+      group.length === best.length &&
+      median(group.map((sound) => sound.loudnessDb)) > median(best.map((sound) => sound.loudnessDb));
+    if (isLarger || isLouder) best = group;
+  }
+  return best;
+}
+
+/** How many of the calibration words have been heard so far, alike enough to count. */
+export function calibrationProgress(sounds: readonly CalibrationSound[]): number {
+  return Math.min(CALIBRATION_WORDS, calibrationGroup(sounds).length);
+}
+
+/**
+ * The solver's voice, from the words heard while calibrating — or null until
+ * enough alike ones have been. Medians of the group, which strays are not in.
+ */
+export function calibrateVoice(sounds: readonly CalibrationSound[]): VoiceProfile | null {
+  const group = calibrationGroup(sounds);
+  if (group.length < CALIBRATION_WORDS) return null;
+  return {
+    loudnessDb: Math.round(median(group.map((word) => word.loudnessDb))),
+    pitchHz: Math.round(median(group.map((word) => word.pitchHz))),
+  };
+}
+
+function median(values: readonly number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1
+    ? (sorted[middle] ?? 0)
+    : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
 }
 
 export interface Sound {
@@ -235,8 +353,10 @@ export function periodicity(
   return into;
 }
 
-export function createOnsetDetector(sampleRate: number): OnsetDetector {
+/** `voice` null judges any close, short voice a word — how calibration itself listens. */
+export function createOnsetDetector(sampleRate: number, voice: VoiceProfile | null = null): OnsetDetector {
   const hopSamples = Math.max(1, Math.round((sampleRate * HOP_MS) / 1000));
+  const warmUpHops = Math.ceil(WARM_UP_MS / HOP_MS);
   const endGapHops = Math.ceil(END_GAP_MS / HOP_MS);
   const maxHops = Math.ceil(VOICE_MAX_MS / HOP_MS);
 
@@ -345,13 +465,13 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
   }
 
   function judge(): Sound {
-    const durationMs = (lastVoicedHop + 1) * HOP_MS;
-    let verdict = judgeSound(durationMs, periodicitySum / Math.max(1, voicedHops), loudestDb);
+    const sound = describe('voice', (lastVoicedHop + 1) * HOP_MS);
+    let verdict = judgeSound(sound, voice);
     if (verdict === 'voice') {
       if (soundStart - lastVoiceAt < repeatSamples) verdict = 'repeat';
       else lastVoiceAt = soundStart;
     }
-    return describe(verdict, durationMs);
+    return { ...sound, verdict };
   }
 
   function endHop(): Sound | null {
@@ -361,9 +481,12 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
     levelDb = toDb((meanSquare + previousHopMeanSquare) / 2);
     previousHopMeanSquare = meanSquare;
 
-    levels[levelsAt] = levelDb;
-    levelsAt = (levelsAt + 1) % levels.length;
-    levelCount = Math.min(levelCount + 1, levels.length);
+    if (levelDb > DIGITAL_SILENCE_DB) {
+      levels[levelsAt] = levelDb;
+      levelsAt = (levelsAt + 1) % levels.length;
+      levelCount = Math.min(levelCount + 1, levels.length);
+    }
+    if (levelCount < warmUpHops) return null;
     floorDb = floorOfRoom();
     gateDb = Math.max(floorDb + GATE_DB, MIN_LEVEL_DB);
 

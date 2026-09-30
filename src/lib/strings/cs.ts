@@ -613,6 +613,16 @@ export const cs: Strings = {
     meter: 'Hlasitost a čára, kterou musí hlas přejít',
     heard: (voices: number, others: number) =>
       `Řekni „hop“ — slyšeno ${voices}×; jiných zvuků ignorováno: ${others}.`,
+    uncalibrated:
+      'Zatím bez kalibrace, takže se počítá každý krátký hlas blízko telefonu. Po kalibraci se bude počítat jen ten tvůj.',
+    calibrated: (pitchHz: number, loudnessDb: number) =>
+      `Kalibrováno na tvůj hlas: asi ${pitchHz} Hz, ${loudnessDb} dB nad pozadím.`,
+    calibrate: 'Kalibrovat',
+    recalibrate: 'Kalibrovat znovu',
+    cancelCalibration: 'Zrušit kalibraci',
+    calibrateHint:
+      'Polož telefon tam, kde leží při skládání, a řekni pětkrát „hop“ — tak, jak ho budeš říkat při skládání.',
+    calibrating: (count: number, of: number) => `„Hop“ ${count} z ${of}`,
     soundsLegend:
       'Každý posouzený zvuk, nejnovější nahoře: za co ho vzal · délka · výška · jak zřetelně se opakuje · hlasitost nad pozadím.',
     verdicts: {
@@ -620,6 +630,7 @@ export const cs: Strings = {
       long: 'moc dlouhé',
       short: 'moc krátké',
       quiet: 'moc potichu',
+      pitch: 'jiný hlas',
       unclear: 'nezní jako hlas',
       repeat: 'opakování',
     },

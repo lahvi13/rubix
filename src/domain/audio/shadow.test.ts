@@ -128,4 +128,13 @@ describe('readShadowRecords', () => {
     const stored = { ...record([2000], [2040], 20_000, 2), sounds: [sound, { atMs: 'x' }] };
     expect(readShadowRecords([stored])).toEqual([{ ...stored, sounds: [sound] }]);
   });
+
+  it.each<[string, unknown, object]>([
+    ['a calibration', { loudnessDb: 65, pitchHz: 108 }, { voice: { loudnessDb: 65, pitchHz: 108 } }],
+    ['none yet', null, { voice: null }],
+    ['something unreadable, left out', { pitchHz: 'high' }, {}],
+  ])('keeps the voice a record was judged against: %s', (_, voice, expected) => {
+    const stored = { ...record([2000], [2040], 20_000, 5), voice };
+    expect(readShadowRecords([stored])).toEqual([{ ...record([2000], [2040], 20_000, 5), ...expected }]);
+  });
 });

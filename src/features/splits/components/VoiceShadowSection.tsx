@@ -1,10 +1,17 @@
-import { useState } from 'react';
-import { DETECTOR_VERSION } from '../../../domain/audio/onset';
+import { useRef, useState } from 'react';
+import {
+  CALIBRATION_WORDS,
+  DETECTOR_VERSION,
+  calibrateVoice,
+  calibrationProgress,
+  type VoiceProfile,
+} from '../../../domain/audio/onset';
 import { shadowSound, type ShadowSound } from '../../../domain/audio/shadow';
 import type { MicLevel } from '../../../lib/mic-listener';
 import { strings } from '../../../lib/strings';
 import { useSetting } from '../../../hooks/use-setting';
 import { useMic } from '../hooks/use-mic';
+import { useVoiceProfile } from '../hooks/use-voice-profile';
 import { useVoiceShadowLog } from '../hooks/use-voice-shadow-log';
 
 /** The span the meter draws: a quiet room at the bottom, shouting at the top. */
@@ -16,14 +23,20 @@ function meterPercent(db: number): number {
   return Math.min(100, Math.max(0, share * 100));
 }
 
-/** The voice trial's switch, a way to hear what the microphone hears, and the tally so far. */
+type Listening = 'off' | 'test' | 'calibrate';
+
+/**
+ * The voice trial's switch, its calibration, a way to hear what the
+ * microphone hears, and the tally so far.
+ */
 export function VoiceShadowSection() {
   const [isEnabled, setEnabled] = useSetting('audio.voiceShadow');
   const [splitMode] = useSetting('timer.splitMode');
+  const { voice, save } = useVoiceProfile();
   // Switching the trial on is a tap, which is what a browser wants before it
-  // asks for the microphone — so the test opens with it, and the question
+  // asks for the microphone — so listening starts with it, and the question
   // comes here rather than at the first solve.
-  const [isTesting, setTesting] = useState(false);
+  const [listening, setListening] = useState<Listening>('off');
   const [isCopied, setCopied] = useState(false);
   const log = useVoiceShadowLog();
   const { summary } = log;
@@ -38,7 +51,8 @@ export function VoiceShadowSection() {
           checked={isEnabled}
           onChange={(event) => {
             setEnabled(event.target.checked);
-            setTesting(event.target.checked);
+            // Uncalibrated, the first thing to do is to calibrate.
+            setListening(event.target.checked ? (voice === null ? 'calibrate' : 'test') : 'off');
           }}
         />
         {strings.voice.toggle}
@@ -51,11 +65,42 @@ export function VoiceShadowSection() {
             <p className="data-section__warning">{strings.voice.needsPhases}</p>
           )}
 
-          {isTesting ? <MicTest /> : null}
+          <p className="data-section__hint">
+            {voice === null
+              ? strings.voice.uncalibrated
+              : strings.voice.calibrated(voice.pitchHz, voice.loudnessDb)}
+          </p>
+
+          {listening === 'off' ? null : (
+            // Keyed, so calibrating and testing each start from nothing heard.
+            <MicTest
+              key={listening}
+              voice={voice}
+              isCalibrating={listening === 'calibrate'}
+              onCalibrated={(heard) => {
+                save(heard);
+                setListening('test');
+              }}
+            />
+          )}
           <div className="data-section__row">
-            <button type="button" onClick={() => setTesting((testing) => !testing)}>
-              {isTesting ? strings.voice.stopTest : strings.voice.test}
-            </button>
+            {listening === 'calibrate' ? (
+              <button type="button" onClick={() => setListening('off')}>
+                {strings.voice.cancelCalibration}
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setListening(listening === 'test' ? 'off' : 'test')}
+                >
+                  {listening === 'test' ? strings.voice.stopTest : strings.voice.test}
+                </button>
+                <button type="button" onClick={() => setListening('calibrate')}>
+                  {voice === null ? strings.voice.calibrate : strings.voice.recalibrate}
+                </button>
+              </>
+            )}
           </div>
 
           <p className="data-section__hint data-section__hint--after">
@@ -99,25 +144,49 @@ const KEPT_SOUNDS = 60;
  * The microphone, open for as long as this is on screen, with what it hears —
  * every sound it judged and why, so a "hop" that was missed shows which of
  * its traits fell short.
+ *
+ * Calibrating, it listens as the uncalibrated detector does and hands over
+ * the solver's voice once it has heard five alike words.
  */
-function MicTest() {
+function MicTest({
+  voice,
+  isCalibrating,
+  onCalibrated,
+}: {
+  voice: VoiceProfile | null;
+  isCalibrating: boolean;
+  onCalibrated: (voice: VoiceProfile) => void;
+}) {
   const [heard, setHeard] = useState({ voices: 0, others: 0 });
   const [sounds, setSounds] = useState<readonly ShadowSound[]>([]);
   const [isCopied, setCopied] = useState(false);
   const [level, setLevel] = useState<MicLevel | null>(null);
-  const { status } = useMic(true, {
-    // The others are counted too: a clatter that is heard and turned away is
-    // the test passing, and it should look like it.
-    onSound: ({ atMs, ...traits }) => {
-      const isVoice = traits.verdict === 'voice';
-      setHeard((count) =>
-        isVoice ? { ...count, voices: count.voices + 1 } : { ...count, others: count.others + 1 },
-      );
-      setSounds((kept) => [shadowSound(atMs, traits), ...kept].slice(0, KEPT_SOUNDS));
-      setCopied(false);
+  const [progress, setProgress] = useState(0);
+  // Every sound since calibrating began; the list below keeps only the latest.
+  const calibration = useRef<ShadowSound[]>([]);
+  const { status } = useMic(
+    true,
+    {
+      // The others are counted too: a clatter that is heard and turned away is
+      // the test passing, and it should look like it.
+      onSound: ({ atMs, ...traits }) => {
+        const sound = shadowSound(atMs, traits);
+        const isVoice = traits.verdict === 'voice';
+        setHeard((count) =>
+          isVoice ? { ...count, voices: count.voices + 1 } : { ...count, others: count.others + 1 },
+        );
+        setSounds((kept) => [sound, ...kept].slice(0, KEPT_SOUNDS));
+        setCopied(false);
+        if (!isCalibrating) return;
+        calibration.current.push(sound);
+        setProgress(calibrationProgress(calibration.current));
+        const calibrated = calibrateVoice(calibration.current);
+        if (calibrated !== null) onCalibrated(calibrated);
+      },
+      onLevel: setLevel,
     },
-    onLevel: setLevel,
-  });
+    isCalibrating ? null : voice,
+  );
 
   if (status.kind === 'failed') {
     return <p className="data-section__warning">{strings.voice.failed[status.reason]}</p>;
@@ -134,7 +203,16 @@ function MicTest() {
         />
         <span className="mic-meter__gate" style={{ left: `${meterPercent(level.gateDb)}%` }} />
       </div>
-      <p className="data-section__hint">{strings.voice.heard(heard.voices, heard.others)}</p>
+      {isCalibrating ? (
+        <>
+          <p className="data-section__hint">{strings.voice.calibrateHint}</p>
+          <p className="voice-calibration">
+            {strings.voice.calibrating(progress, CALIBRATION_WORDS)}
+          </p>
+        </>
+      ) : (
+        <p className="data-section__hint">{strings.voice.heard(heard.voices, heard.others)}</p>
+      )}
 
       {sounds.length === 0 ? null : (
         <>

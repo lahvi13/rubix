@@ -9,7 +9,7 @@
  * detector tuned against them, can go over the same solves again.
  */
 
-import { isVerdict, type Sound, type Verdict } from './onset';
+import { isVerdict, type Sound, type Verdict, type VoiceProfile } from './onset';
 
 /** How far a voice may be from a tap and still be the same boundary. */
 export const MATCH_WINDOW_MS = 400;
@@ -45,6 +45,8 @@ export interface ShadowRecord {
    * detector 2 wrote them without a verdict, and they are not read back.
    */
   sounds?: readonly ShadowSound[];
+  /** The calibration the sounds were judged against; null before calibration, absent before detector 5. */
+  voice?: VoiceProfile | null;
 }
 
 export function shadowSound(atMs: number, sound: Omit<Sound, 'at'>): ShadowSound {
@@ -176,13 +178,27 @@ export function readShadowRecords(stored: readonly unknown[]): ShadowRecord[] {
     ) {
       continue;
     }
-    records.push(
-      Array.isArray(sounds)
-        ? { detector, rawMs, splitMs, voiceMs, sounds: sounds.filter(isShadowSound) }
-        : { detector, rawMs, splitMs, voiceMs },
-    );
+    const voice = readVoice(record.voice);
+    records.push({
+      detector,
+      rawMs,
+      splitMs,
+      voiceMs,
+      ...(Array.isArray(sounds) ? { sounds: sounds.filter(isShadowSound) } : {}),
+      ...(voice === undefined ? {} : { voice }),
+    });
   }
   return records;
+}
+
+/** A stored calibration; undefined when there is none to read, as in older records. */
+function readVoice(value: unknown): VoiceProfile | null | undefined {
+  if (value === null) return null;
+  if (typeof value !== 'object') return undefined;
+  const voice: Partial<Record<keyof VoiceProfile, unknown>> = value;
+  return typeof voice.loudnessDb === 'number' && typeof voice.pitchHz === 'number'
+    ? { loudnessDb: voice.loudnessDb, pitchHz: voice.pitchHz }
+    : undefined;
 }
 
 function isShadowSound(value: unknown): value is ShadowSound {

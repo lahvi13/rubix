@@ -503,6 +503,19 @@ Rozhodnuto při stavbě zkoušky:
   vrcholem zvuku; práh hlasitosti je **30 dB** (uprostřed mezery, s rezervou
   na telefon dál na stole), a protože hlavní práci dělá hlasitost, zbytek je
   volnější: 60–600 ms, průměrná periodicita ≥ 0,55
+- **kalibrace na hlas řešitele** (detektor 5). Dva testy s přesně pěti „hop“:
+  hop vždy +64–68 dB a 104–123 Hz (hlasitost ±4 dB), a přesto prošla falešná
+  „hop“ na 250–320 Hz kolem +35 dB — a jedno takové těsně před skutečným
+  slovem ho zahodilo jako `repeat`. V Nastavení se proto kalibruje: telefon
+  tam, kde leží při skládání, 5× „hop“; pak se bere jen zvuk ve výšce ±35 %
+  kolem té naměřené (`pitch` = „jiný hlas“) a nejvýš o 15 dB tišší (nikdy pod
+  30 dB). Kalibrace nebere prvních pět „hlasů“ (v tom testu by to byla většinou
+  falešná), ale **největší skupinu pěti navzájem podobných** (±6 dB, výška
+  ±20 %) a z ní medián; `audio.voiceLoudnessDb` / `audio.voicePitchHz`,
+  device-local, 0 = nekalibrováno. Bez kalibrace platí pravidla detektoru 4
+- **nic se nesoudí, dokud detektor neslyšel místnost** (500 ms) a nuly od
+  probouzejícího se mikrofonu se do pozadí nepočítají — první vteřina testu
+  jinak vycházela „+112 dB“
 - **po přijatém „hop“ se 600 ms další nepřijme** (`repeat`). Důrazné „hop“ drží
   „p“ zavřené a po uvolnění ještě krátce zazní hlas; v2 to občas počítala
   dvakrát. Konce fází jsou od sebe sekundy, takže to nic nestojí
@@ -930,6 +943,8 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `stats.chartWindow` | 0 | 100 |
 | `audio.voiceShadow` | **1** | `false` |
 | `audio.voiceShadowLog` | **1** | `[]` |
+| `audio.voiceLoudnessDb` | **1** | 0 |
+| `audio.voicePitchHz` | **1** | 0 |
 | `schema.splitsVersion` | 0 | 1 |
 
 ### 4.6 Seed data

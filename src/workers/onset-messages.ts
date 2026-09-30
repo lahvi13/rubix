@@ -4,7 +4,7 @@
  * registers itself on load, which only works inside the audio worklet.
  */
 
-import { isVerdict, type Sound } from '../domain/audio/onset';
+import { isVerdict, type Sound, type VoiceProfile } from '../domain/audio/onset';
 
 export const ONSET_PROCESSOR = 'rubix-onset';
 
@@ -18,6 +18,24 @@ export type OnsetProcessorMessage =
    * from these, and the level meter draws them.
    */
   | { type: 'level'; frame: number; levelDb: number; gateDb: number };
+
+/** What the page hands the processor when it creates it. */
+export interface OnsetProcessorOptions {
+  voice: VoiceProfile | null;
+}
+
+/** Checked on arrival, like the messages: the options cross a thread boundary too. */
+export function readProcessorOptions(value: unknown): OnsetProcessorOptions {
+  if (typeof value !== 'object' || value === null) return { voice: null };
+  const options: Partial<Record<keyof OnsetProcessorOptions, unknown>> = value;
+  const voice = options.voice;
+  if (typeof voice !== 'object' || voice === null) return { voice: null };
+  const profile: Partial<Record<keyof VoiceProfile, unknown>> = voice;
+  const { loudnessDb, pitchHz } = profile;
+  return typeof loudnessDb === 'number' && typeof pitchHz === 'number' && pitchHz > 0
+    ? { voice: { loudnessDb, pitchHz } }
+    : { voice: null };
+}
 
 type Fields = 'type' | 'frame' | 'levelDb' | 'gateDb' | keyof SoundTraits;
 

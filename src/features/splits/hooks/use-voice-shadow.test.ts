@@ -1,19 +1,21 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DETECTOR_VERSION, type Verdict } from '../../../domain/audio/onset';
+import { DETECTOR_VERSION, type Verdict, type VoiceProfile } from '../../../domain/audio/onset';
 import type { TimerState } from '../../../domain/timer/timer-machine';
 import { db } from '../../../db/schema';
-import { getSetting } from '../../../db/repositories/settings-repository';
+import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import type { MicHandlers } from '../../../lib/mic-listener';
 import { useVoiceShadow } from './use-voice-shadow';
 
 // The microphone is the one thing a test cannot have: it is stood in for by
 // a listener the test speaks into itself.
 let handlers: MicHandlers | null = null;
+let openedFor: VoiceProfile | null | undefined;
 vi.mock('../../../lib/mic-listener', () => ({
   MicError: class extends Error {},
-  openMic: (given: MicHandlers) => {
+  openMic: (given: MicHandlers, voice: VoiceProfile | null) => {
     handlers = given;
+    openedFor = voice;
     return Promise.resolve({ resume: () => {}, close: () => {} });
   },
 }));
@@ -60,6 +62,7 @@ async function listening(initial: TimerState = IDLE) {
 describe('useVoiceShadow', () => {
   beforeEach(async () => {
     handlers = null;
+    openedFor = undefined;
     await Promise.all(db.tables.map((table) => table.clear()));
   });
 
@@ -92,6 +95,7 @@ describe('useVoiceShadow', () => {
           rawMs: 9000,
           voiceMs: [2040, 8950],
           sounds: [kept(2040), kept(4000, 'unclear'), kept(8950)],
+          voice: null,
         },
       ]),
     );
@@ -112,8 +116,24 @@ describe('useVoiceShadow', () => {
     );
     const log = await getSetting('audio.voiceShadowLog');
     expect(log).toEqual([
-      { detector: DETECTOR_VERSION, splitMs: [], rawMs: 5000, voiceMs: [], sounds: [] },
+      { detector: DETECTOR_VERSION, splitMs: [], rawMs: 5000, voiceMs: [], sounds: [], voice: null },
     ]);
+  });
+
+  it('listens for the calibrated voice, and says so in the record', async () => {
+    await setSetting('audio.voiceLoudnessDb', 65);
+    await setSetting('audio.voicePitchHz', 108);
+    const { rerender } = await listening();
+    const solver = { loudnessDb: 65, pitchHz: 108 };
+    await waitFor(() => expect(openedFor).toEqual(solver));
+
+    rerender({ state: running(1000) });
+    rerender({ state: stopped(4000, []) });
+    await waitFor(
+      async () =>
+        expect(await getSetting('audio.voiceShadowLog')).toMatchObject([{ voice: solver }]),
+      SETTLED,
+    );
   });
 
   it('keeps the microphone shut while the trial is off', () => {

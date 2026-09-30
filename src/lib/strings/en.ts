@@ -678,6 +678,16 @@ export const en = {
     meter: 'Loudness, and the line a voice has to cross',
     heard: (voices: number, others: number) =>
       `Say “hop” — heard ${voices} ${voices === 1 ? 'time' : 'times'}; ${others} other ${others === 1 ? 'sound' : 'sounds'} ignored.`,
+    uncalibrated:
+      'Not calibrated yet, so any short voice close to the phone counts. Calibrate to have only yours count.',
+    calibrated: (pitchHz: number, loudnessDb: number) =>
+      `Calibrated to your voice: about ${pitchHz} Hz, ${loudnessDb} dB above the room.`,
+    calibrate: 'Calibrate',
+    recalibrate: 'Calibrate again',
+    cancelCalibration: 'Cancel calibrating',
+    calibrateHint:
+      'Put the phone where it lies while you solve, and say “hop” five times, the way you will say it then.',
+    calibrating: (count: number, of: number) => `“Hop” ${count} of ${of}`,
     soundsLegend:
       'Each sound it judged, newest first: what it took it for · length · pitch · how clearly it repeats · loudness above the room.',
     verdicts: {
@@ -685,6 +695,7 @@ export const en = {
       long: 'too long',
       short: 'too short',
       quiet: 'too quiet',
+      pitch: 'not your voice',
       unclear: 'not a voice',
       repeat: 'repeat',
     },

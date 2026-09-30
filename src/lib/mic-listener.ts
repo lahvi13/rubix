@@ -6,7 +6,13 @@
  */
 
 import processorUrl from '../workers/onset-processor.ts?worker&url';
-import { ONSET_PROCESSOR, readOnsetMessage, type SoundTraits } from '../workers/onset-messages';
+import type { VoiceProfile } from '../domain/audio/onset';
+import {
+  ONSET_PROCESSOR,
+  readOnsetMessage,
+  type OnsetProcessorOptions,
+  type SoundTraits,
+} from '../workers/onset-messages';
 import { eventTime } from './clock';
 
 export type MicFailure = 'denied' | 'unavailable';
@@ -46,7 +52,11 @@ export interface MicListener {
 /** Heartbeats the clock is read from: a couple of seconds' worth. */
 const CLOCK_READINGS = 64;
 
-export async function openMic(handlers: MicHandlers): Promise<MicListener> {
+/** `voice` is the solver's calibrated voice, or null to take any close, short voice. */
+export async function openMic(
+  handlers: MicHandlers,
+  voice: VoiceProfile | null,
+): Promise<MicListener> {
   if (
     typeof navigator.mediaDevices?.getUserMedia !== 'function' ||
     typeof AudioWorkletNode === 'undefined'
@@ -80,10 +90,12 @@ export async function openMic(handlers: MicHandlers): Promise<MicListener> {
   try {
     await context.audioWorklet.addModule(processorUrl);
     source = context.createMediaStreamSource(stream);
+    const processorOptions: OnsetProcessorOptions = { voice };
     node = new AudioWorkletNode(context, ONSET_PROCESSOR, {
       numberOfInputs: 1,
       numberOfOutputs: 1,
       outputChannelCount: [1],
+      processorOptions,
     });
     source.connect(node);
     // Some engines only run a node something downstream pulls on. The

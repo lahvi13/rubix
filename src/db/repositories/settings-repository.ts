@@ -145,6 +145,14 @@ export interface SettingValues {
    * a different record may have written it.
    */
   'audio.voiceShadowLog': readonly unknown[];
+  /**
+   * The solver's calibrated "hop": how loud above the room, and at what
+   * pitch, as heard where the phone lies while they solve. 0 for not
+   * calibrated. Device-local twice over — another phone hears another voice
+   * from another distance.
+   */
+  'audio.voiceLoudnessDb': number;
+  'audio.voicePitchHz': number;
   /** When the backup reminder was last put off, 0 for never. */
   'data.backupReminderSnoozedAt': number;
 }
@@ -194,6 +202,8 @@ export const SETTING_DEFAULTS: SettingValues = {
   'data.lastExportBytes': 0,
   'audio.voiceShadow': false,
   'audio.voiceShadowLog': [],
+  'audio.voiceLoudnessDb': 0,
+  'audio.voicePitchHz': 0,
   'data.backupReminderSnoozedAt': 0,
 };
 

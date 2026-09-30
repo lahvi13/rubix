@@ -4237,6 +4237,14 @@ button[disabled] {
   background: var(--accent);
 }
 
+/* How far calibration has got: the one thing to read while speaking at the phone. */
+.voice-calibration {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-2xl);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
 /* What the test heard, newest first: the verdict, then what it rests on. */
 .mic-sounds {
   list-style: none;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { MicError, openMic, type MicFailure, type MicHandlers, type MicListener } from '../../../lib/mic-listener';
+import type { VoiceProfile } from '../../../domain/audio/onset';
 import { logQuietly } from '../../../lib/errors';
 
 export type MicStatus =
@@ -24,11 +25,17 @@ function isPageVisible(): boolean {
  * The microphone, open while `isWanted` — and while the page is in front: a
  * hidden page has nothing to listen for, and a microphone left open behind it
  * is one the phone keeps flagging as in use.
+ *
+ * `voice` goes to the detector when the microphone opens, so a new one opens
+ * it again.
  */
 export function useMic(
   isWanted: boolean,
   handlers: MicHandlers,
+  voice: VoiceProfile | null,
 ): { status: MicStatus; resume: () => void } {
+  const loudnessDb = voice?.loudnessDb ?? null;
+  const pitchHz = voice?.pitchHz ?? null;
   const isVisible = useSyncExternalStore(subscribeVisibility, isPageVisible);
   const isOpen = isWanted && isVisible;
   // How the last opening ended; null while it is still under way.
@@ -43,10 +50,13 @@ export function useMic(
   useEffect(() => {
     if (!isOpen) return;
     let isCancelled = false;
-    openMic({
-      onSound: (sound) => handlersRef.current.onSound(sound),
-      onLevel: (level) => handlersRef.current.onLevel?.(level),
-    }).then(
+    openMic(
+      {
+        onSound: (sound) => handlersRef.current.onSound(sound),
+        onLevel: (level) => handlersRef.current.onLevel?.(level),
+      },
+      loudnessDb === null || pitchHz === null ? null : { loudnessDb, pitchHz },
+    ).then(
       (opened) => {
         // Closed again before it finished opening: the effect is gone.
         if (isCancelled) {
@@ -71,7 +81,7 @@ export function useMic(
       listener.current = null;
       setOutcome(null);
     };
-  }, [isOpen]);
+  }, [isOpen, loudnessDb, pitchHz]);
 
   const resume = useCallback(() => listener.current?.resume(), []);
   return { status: isOpen ? (outcome ?? OPENING) : OFF, resume };

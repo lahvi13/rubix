@@ -11,6 +11,7 @@ import type { TimerState } from '../../../domain/timer/timer-machine';
 import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import { logQuietly } from '../../../lib/errors';
 import { useMic, type MicStatus } from './use-mic';
+import { useVoiceProfile } from './use-voice-profile';
 
 /**
  * How long after the clock stops a sound can still arrive: each is judged
@@ -48,14 +49,19 @@ export function useVoiceShadow(state: TimerState, isEnabled: boolean): VoiceShad
   const settling = useRef<number | null>(null);
   const [result, setResult] = useState<ShadowMatch | null>(null);
 
-  const { status, resume } = useMic(isEnabled, {
-    onSound: ({ atMs, ...traits }) => {
-      const current = run.current;
-      if (current && atMs >= current.startedAt) {
-        current.sounds.push(shadowSound(atMs - current.startedAt, traits));
-      }
+  const { voice } = useVoiceProfile();
+  const { status, resume } = useMic(
+    isEnabled,
+    {
+      onSound: ({ atMs, ...traits }) => {
+        const current = run.current;
+        if (current && atMs >= current.startedAt) {
+          current.sounds.push(shadowSound(atMs - current.startedAt, traits));
+        }
+      },
     },
-  });
+    voice,
+  );
 
   useEffect(() => {
     if (!isEnabled) return;
@@ -85,6 +91,7 @@ export function useVoiceShadow(state: TimerState, isEnabled: boolean): VoiceShad
             rawMs,
             voiceMs: finished.sounds.filter((sound) => sound.verdict === 'voice').map((sound) => sound.atMs),
             sounds: [...finished.sounds],
+            voice,
           };
           setResult(matchShadow(record));
           void appendRecord(record);
@@ -96,7 +103,7 @@ export function useVoiceShadow(state: TimerState, isEnabled: boolean): VoiceShad
         if (settling.current === null) run.current = null;
         return;
     }
-  }, [state, isEnabled, resume]);
+  }, [state, isEnabled, resume, voice]);
 
   useEffect(
     () => () => {

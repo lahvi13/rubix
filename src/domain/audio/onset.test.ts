@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { createOnsetDetector, judgeSound, periodicity, type Sound, type Verdict } from './onset';
+import {
+  calibrateVoice,
+  calibrationProgress,
+  createOnsetDetector,
+  judgeSound,
+  periodicity,
+  type Sound,
+  type Verdict,
+  type VoiceProfile,
+} from './onset';
 
 const RATE = 48_000;
 
@@ -53,8 +62,13 @@ function click(signal: Float32Array, atMs: number, amplitude: number, seed: numb
 }
 
 /** Every sound judged, with its start in ms. */
-function sounds(signal: Float32Array, block = 128, rate = RATE): (Sound & { atMs: number })[] {
-  const detector = createOnsetDetector(rate);
+function sounds(
+  signal: Float32Array,
+  block = 128,
+  rate = RATE,
+  voice: VoiceProfile | null = null,
+): (Sound & { atMs: number })[] {
+  const detector = createOnsetDetector(rate, voice);
   const heard: (Sound & { atMs: number })[] = [];
   for (let offset = 0; offset < signal.length; offset += block) {
     for (const sound of detector.push(signal.subarray(offset, offset + block))) {
@@ -183,6 +197,35 @@ describe('createOnsetDetector', () => {
     expect(heard.slice(1).every((sound) => sound.verdict !== 'voice')).toBe(true);
   });
 
+  it('judges nothing before it has heard the room', () => {
+    const signal = room(2000);
+    vowel(signal, 100, 150, 0.1);
+    vowel(signal, 1000, 150, 0.1);
+    const heard = sounds(signal);
+    expect(heard).toHaveLength(1);
+    expectNear(heard[0]?.atMs, 1000);
+  });
+
+  it('does not take a microphone still handing over zeros for a silent room', () => {
+    const waking = samples(3000);
+    waking.set(room(2000), 1000 * 48);
+    vowel(waking, 2000, 150, 0.1);
+    const awake = room(2000);
+    vowel(awake, 1000, 150, 0.1);
+    const [late] = sounds(waking);
+    const [usual] = sounds(awake);
+    expect(late?.verdict).toBe('voice');
+    expect(Math.abs((late?.loudnessDb ?? 0) - (usual?.loudnessDb ?? 0))).toBeLessThan(3);
+  });
+
+  it('calibrated, takes only the solver', () => {
+    const signal = room(4000);
+    vowel(signal, 1000, 150, 0.1, 150);
+    vowel(signal, 2500, 150, 0.1, 300);
+    const solver: VoiceProfile = { loudnessDb: 57, pitchHz: 150 };
+    expect(sounds(signal, 128, RATE, solver).map((sound) => sound.verdict)).toEqual(['voice', 'pitch']);
+  });
+
   it('hears an emphatic "hop", its p released after a long hold, as one word', () => {
     const signal = room(2000);
     vowel(signal, 1000, 150, 0.1);
@@ -266,7 +309,78 @@ describe('judgeSound', () => {
     ['too long outranks the rest', 900, 0.3, 5, 'long'],
     ['too quiet outranks unclear', 150, 0.3, 5, 'quiet'],
   ])('%s', (_, durationMs, periodicityScore, loudnessDb, verdict) => {
-    expect(judgeSound(durationMs, periodicityScore, loudnessDb)).toBe(verdict);
+    expect(judgeSound({ durationMs, periodicity: periodicityScore, pitchHz: 110, loudnessDb }, null)).toBe(
+      verdict,
+    );
+  });
+
+  // The solver of the tests on a phone: "hop" at about 110 Hz, 65 dB above the room.
+  const SOLVER: VoiceProfile = { loudnessDb: 65, pitchHz: 110 };
+
+  it.each<[string, number, number, Verdict]>([
+    ['their own "hop"', 110, 65, 'voice'],
+    ['a little lower and softer', 90, 52, 'voice'],
+    ['emphatic, and higher for it', 140, 70, 'voice'],
+    // What slipped through uncalibrated, taking the place of the next real word.
+    ['a stray at 308 Hz', 308, 39, 'quiet'],
+    ['a stray at their pitch, 30 dB down', 111, 33, 'quiet'],
+    ['somebody else, as loud as they are', 220, 65, 'pitch'],
+    ['a hum far below them', 60, 65, 'pitch'],
+  ])('calibrated: %s', (_, pitchHz, loudnessDb, verdict) => {
+    expect(judgeSound({ durationMs: 200, periodicity: 0.8, pitchHz, loudnessDb }, SOLVER)).toBe(verdict);
+  });
+
+  it('never asks less loudness of a calibrated word than of any word', () => {
+    const quietSolver: VoiceProfile = { loudnessDb: 35, pitchHz: 110 };
+    expect(
+      judgeSound({ durationMs: 200, periodicity: 0.8, pitchHz: 110, loudnessDb: 25 }, quietSolver),
+    ).toBe('quiet');
+  });
+});
+
+describe('calibrateVoice', () => {
+  function word(pitchHz: number, loudnessDb: number, verdict: Verdict = 'voice') {
+    return { verdict, pitchHz, loudnessDb };
+  }
+
+  // The second five-"hop" test on a phone, in the order it was heard.
+  const TEST = [
+    word(200, 53),
+    word(151, 77, 'repeat'),
+    word(222, 59),
+    word(205, 51, 'unclear'),
+    word(114, 65),
+    word(250, 35),
+    word(116, 65, 'repeat'),
+    word(320, 34),
+    word(105, 66, 'repeat'),
+    word(105, 33),
+    word(104, 65),
+    word(258, 33, 'repeat'),
+    word(104, 65),
+    word(258, 30, 'repeat'),
+  ];
+
+  it('finds the five words alike among the strays', () => {
+    expect(calibrateVoice(TEST)).toEqual({ loudnessDb: 65, pitchHz: 105 });
+    expect(calibrationProgress(TEST)).toBe(5);
+  });
+
+  it('waits until five alike words have been heard', () => {
+    const early = TEST.slice(0, 10);
+    expect(calibrateVoice(early)).toBeNull();
+    expect(calibrationProgress(early)).toBe(3);
+  });
+
+  it('takes the louder of two groups as large as each other', () => {
+    const quiet = Array.from({ length: 5 }, () => word(220, 35));
+    const loud = Array.from({ length: 5 }, () => word(110, 60));
+    expect(calibrateVoice([...quiet, ...loud])).toEqual({ loudnessDb: 60, pitchHz: 110 });
+  });
+
+  it('ignores what was not a word at all', () => {
+    const noise = Array.from({ length: 6 }, () => word(110, 60, 'quiet'));
+    expect(calibrateVoice(noise)).toBeNull();
   });
 });
 

@@ -5,18 +5,23 @@
  * the sound itself.
  */
 
-import { createOnsetDetector } from '../domain/audio/onset';
-import { ONSET_PROCESSOR, type OnsetProcessorMessage } from './onset-messages';
+import { createOnsetDetector, type OnsetDetector } from '../domain/audio/onset';
+import {
+  ONSET_PROCESSOR,
+  readProcessorOptions,
+  type OnsetProcessorMessage,
+} from './onset-messages';
 
 // The AudioWorkletGlobalScope, which the DOM typings do not describe.
 declare const sampleRate: number;
 declare const currentFrame: number;
 declare abstract class AudioWorkletProcessor {
+  constructor(options?: { processorOptions?: unknown });
   readonly port: MessagePort;
 }
 declare function registerProcessor(
   name: string,
-  processor: new () => AudioWorkletProcessor & {
+  processor: new (options?: { processorOptions?: unknown }) => AudioWorkletProcessor & {
     process(inputs: Float32Array[][]): boolean;
   },
 ): void;
@@ -25,9 +30,14 @@ declare function registerProcessor(
 const HEARTBEAT_BLOCKS = 16;
 
 class OnsetProcessor extends AudioWorkletProcessor {
-  private readonly detector = createOnsetDetector(sampleRate);
+  private readonly detector: OnsetDetector;
   private pushed = 0;
   private blocks = 0;
+
+  constructor(options?: { processorOptions?: unknown }) {
+    super(options);
+    this.detector = createOnsetDetector(sampleRate, readProcessorOptions(options?.processorOptions).voice);
+  }
 
   process(inputs: Float32Array[][]): boolean {
     const channel = inputs[0]?.[0];
