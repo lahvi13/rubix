@@ -680,8 +680,8 @@ export const en = {
       `Say “hop” — heard ${voices} ${voices === 1 ? 'time' : 'times'}; ${others} other ${others === 1 ? 'sound' : 'sounds'} ignored.`,
     uncalibrated:
       'Not calibrated yet, so any short voice close to the phone counts. Calibrate to have only yours count.',
-    calibrated: (pitchHz: number, loudnessDb: number) =>
-      `Calibrated to your voice: about ${pitchHz} Hz, ${loudnessDb} dB above the room.`,
+    calibrated: (loudnessDb: number) =>
+      `Calibrated to your voice: your “hop” is about ${loudnessDb} dB above the room, and a word has to come close to that.`,
     calibrate: 'Calibrate',
     recalibrate: 'Calibrate again',
     cancelCalibration: 'Cancel calibrating',
@@ -695,7 +695,6 @@ export const en = {
       long: 'too long',
       short: 'too short',
       quiet: 'too quiet',
-      pitch: 'not your voice',
       unclear: 'not a voice',
       repeat: 'repeat',
     },

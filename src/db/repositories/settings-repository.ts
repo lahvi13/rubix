@@ -146,13 +146,14 @@ export interface SettingValues {
    */
   'audio.voiceShadowLog': readonly unknown[];
   /**
-   * The solver's calibrated "hop": how loud above the room, and at what
-   * pitch, as heard where the phone lies while they solve. 0 for not
-   * calibrated. Device-local twice over — another phone hears another voice
-   * from another distance.
+   * The solver's calibrated "hop": how loud above the room, as heard where
+   * the phone lies while they solve. 0 for not calibrated. Device-local twice
+   * over — another phone hears another voice from another distance.
+   *
+   * 'audio.voicePitchHz' went with pitch as a test of the voice. Nothing reads
+   * it, and being device-local no backup carries it, so the key is gone too.
    */
   'audio.voiceLoudnessDb': number;
-  'audio.voicePitchHz': number;
   /** When the backup reminder was last put off, 0 for never. */
   'data.backupReminderSnoozedAt': number;
 }
@@ -203,7 +204,6 @@ export const SETTING_DEFAULTS: SettingValues = {
   'audio.voiceShadow': false,
   'audio.voiceShadowLog': [],
   'audio.voiceLoudnessDb': 0,
-  'audio.voicePitchHz': 0,
   'data.backupReminderSnoozedAt': 0,
 };
 

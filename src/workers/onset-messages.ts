@@ -31,9 +31,9 @@ export function readProcessorOptions(value: unknown): OnsetProcessorOptions {
   const voice = options.voice;
   if (typeof voice !== 'object' || voice === null) return { voice: null };
   const profile: Partial<Record<keyof VoiceProfile, unknown>> = voice;
-  const { loudnessDb, pitchHz } = profile;
-  return typeof loudnessDb === 'number' && typeof pitchHz === 'number' && pitchHz > 0
-    ? { voice: { loudnessDb, pitchHz } }
+  const { loudnessDb } = profile;
+  return typeof loudnessDb === 'number' && loudnessDb > 0
+    ? { voice: { loudnessDb } }
     : { voice: null };
 }
 

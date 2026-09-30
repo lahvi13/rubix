@@ -122,9 +122,8 @@ describe('useVoiceShadow', () => {
 
   it('listens for the calibrated voice, and says so in the record', async () => {
     await setSetting('audio.voiceLoudnessDb', 65);
-    await setSetting('audio.voicePitchHz', 108);
     const { rerender } = await listening();
-    const solver = { loudnessDb: 65, pitchHz: 108 };
+    const solver = { loudnessDb: 65 };
     await waitFor(() => expect(openedFor).toEqual(solver));
 
     rerender({ state: running(1000) });

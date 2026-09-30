@@ -68,7 +68,7 @@ export function VoiceShadowSection() {
           <p className="data-section__hint">
             {voice === null
               ? strings.voice.uncalibrated
-              : strings.voice.calibrated(voice.pitchHz, voice.loudnessDb)}
+              : strings.voice.calibrated(voice.loudnessDb)}
           </p>
 
           {listening === 'off' ? null : (

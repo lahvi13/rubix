@@ -147,7 +147,7 @@ describe('createOnsetDetector', () => {
 
   it('turns away a tone that goes on far longer than a word', () => {
     const signal = room(3000);
-    vowel(signal, 1000, 800, 0.1);
+    vowel(signal, 1000, 1200, 0.1);
     const heard = sounds(signal);
     expect(heard.map((sound) => sound.verdict)).toEqual(['long']);
     // Turned away for its length, but still described: the log is for tuning.
@@ -218,12 +218,18 @@ describe('createOnsetDetector', () => {
     expect(Math.abs((late?.loudnessDb ?? 0) - (usual?.loudnessDb ?? 0))).toBeLessThan(3);
   });
 
-  it('calibrated, takes only the solver', () => {
-    const signal = room(4000);
+  it('calibrated, takes words about as loud as the solver, at any pitch', () => {
+    const signal = room(5500);
     vowel(signal, 1000, 150, 0.1, 150);
     vowel(signal, 2500, 150, 0.1, 300);
-    const solver: VoiceProfile = { loudnessDb: 57, pitchHz: 150 };
-    expect(sounds(signal, 128, RATE, solver).map((sound) => sound.verdict)).toEqual(['voice', 'pitch']);
+    // About 16 dB below the calibrated "hop".
+    vowel(signal, 4000, 150, 0.015, 150);
+    const solver: VoiceProfile = { loudnessDb: 57 };
+    expect(sounds(signal, 128, RATE, solver).map((sound) => sound.verdict)).toEqual([
+      'voice',
+      'voice',
+      'quiet',
+    ]);
   });
 
   it('hears an emphatic "hop", its p released after a long hold, as one word', () => {
@@ -297,11 +303,11 @@ describe('judgeSound', () => {
   it.each<[string, number, number, number, Verdict]>([
     ['a clear, close word', 150, 0.9, 40, 'voice'],
     ['the shortest word taken', 60, 0.9, 40, 'voice'],
-    ['the longest word taken', 600, 0.9, 40, 'voice'],
+    ['the longest word taken', 800, 0.9, 40, 'voice'],
     ['the quietest word taken', 150, 0.9, 30, 'voice'],
     ['the least periodic word taken', 150, 0.55, 40, 'voice'],
     ['a blip', 55, 0.9, 40, 'short'],
-    ['speech that runs on', 605, 0.9, 40, 'long'],
+    ['speech that runs on', 805, 0.9, 40, 'long'],
     // The loudest of everything but the words in the first test on a phone was 18 dB.
     ['a clink across the room', 150, 0.9, 18, 'quiet'],
     ['just under the line', 150, 0.9, 29, 'quiet'],
@@ -309,77 +315,71 @@ describe('judgeSound', () => {
     ['too long outranks the rest', 900, 0.3, 5, 'long'],
     ['too quiet outranks unclear', 150, 0.3, 5, 'quiet'],
   ])('%s', (_, durationMs, periodicityScore, loudnessDb, verdict) => {
-    expect(judgeSound({ durationMs, periodicity: periodicityScore, pitchHz: 110, loudnessDb }, null)).toBe(
-      verdict,
-    );
+    expect(judgeSound({ durationMs, periodicity: periodicityScore, loudnessDb }, null)).toBe(verdict);
   });
 
-  // The solver of the tests on a phone: "hop" at about 110 Hz, 65 dB above the room.
-  const SOLVER: VoiceProfile = { loudnessDb: 65, pitchHz: 110 };
+  // The solver of the tests on a phone: "hop" about 65 dB above the room.
+  const SOLVER: VoiceProfile = { loudnessDb: 65 };
 
-  it.each<[string, number, number, Verdict]>([
-    ['their own "hop"', 110, 65, 'voice'],
-    ['a little lower and softer', 90, 52, 'voice'],
-    ['emphatic, and higher for it', 140, 70, 'voice'],
+  it.each<[string, number, Verdict]>([
+    ['their own "hop"', 65, 'voice'],
+    ['softer, or said further off', 52, 'voice'],
+    ['emphatic', 70, 'voice'],
+    ['the softest taken', 50, 'voice'],
     // What slipped through uncalibrated, taking the place of the next real word.
-    ['a stray at 308 Hz', 308, 39, 'quiet'],
-    ['a stray at their pitch, 30 dB down', 111, 33, 'quiet'],
-    ['somebody else, as loud as they are', 220, 65, 'pitch'],
-    ['a hum far below them', 60, 65, 'pitch'],
-  ])('calibrated: %s', (_, pitchHz, loudnessDb, verdict) => {
-    expect(judgeSound({ durationMs: 200, periodicity: 0.8, pitchHz, loudnessDb }, SOLVER)).toBe(verdict);
+    ['a stray at 308 Hz', 39, 'quiet'],
+    ['a stray at their pitch, 30 dB down', 33, 'quiet'],
+    ['just under the line', 49, 'quiet'],
+  ])('calibrated: %s', (_, loudnessDb, verdict) => {
+    expect(judgeSound({ durationMs: 200, periodicity: 0.8, loudnessDb }, SOLVER)).toBe(verdict);
   });
 
   it('never asks less loudness of a calibrated word than of any word', () => {
-    const quietSolver: VoiceProfile = { loudnessDb: 35, pitchHz: 110 };
-    expect(
-      judgeSound({ durationMs: 200, periodicity: 0.8, pitchHz: 110, loudnessDb: 25 }, quietSolver),
-    ).toBe('quiet');
+    expect(judgeSound({ durationMs: 200, periodicity: 0.8, loudnessDb: 25 }, { loudnessDb: 35 })).toBe(
+      'quiet',
+    );
   });
 });
 
 describe('calibrateVoice', () => {
-  function word(pitchHz: number, loudnessDb: number, verdict: Verdict = 'voice') {
-    return { verdict, pitchHz, loudnessDb };
+  function word(loudnessDb: number, verdict: Verdict = 'voice') {
+    return { verdict, loudnessDb };
   }
 
-  // The second five-"hop" test on a phone, in the order it was heard.
+  // The second five-"hop" test on a phone, in the order it was heard, from
+  // its first word on: the strays at 34-35 dB came between the words.
   const TEST = [
-    word(200, 53),
-    word(151, 77, 'repeat'),
-    word(222, 59),
-    word(205, 51, 'unclear'),
-    word(114, 65),
-    word(250, 35),
-    word(116, 65, 'repeat'),
-    word(320, 34),
-    word(105, 66, 'repeat'),
-    word(105, 33),
-    word(104, 65),
-    word(258, 33, 'repeat'),
-    word(104, 65),
-    word(258, 30, 'repeat'),
+    word(65),
+    word(35),
+    word(65, 'repeat'),
+    word(34),
+    word(66, 'repeat'),
+    word(33),
+    word(65),
+    word(33, 'repeat'),
+    word(65),
+    word(30, 'repeat'),
   ];
 
   it('finds the five words alike among the strays', () => {
-    expect(calibrateVoice(TEST)).toEqual({ loudnessDb: 65, pitchHz: 105 });
+    expect(calibrateVoice(TEST)).toEqual({ loudnessDb: 65 });
     expect(calibrationProgress(TEST)).toBe(5);
   });
 
   it('waits until five alike words have been heard', () => {
-    const early = TEST.slice(0, 10);
+    const early = TEST.slice(0, 6);
     expect(calibrateVoice(early)).toBeNull();
     expect(calibrationProgress(early)).toBe(3);
   });
 
   it('takes the louder of two groups as large as each other', () => {
-    const quiet = Array.from({ length: 5 }, () => word(220, 35));
-    const loud = Array.from({ length: 5 }, () => word(110, 60));
-    expect(calibrateVoice([...quiet, ...loud])).toEqual({ loudnessDb: 60, pitchHz: 110 });
+    const quiet = Array.from({ length: 5 }, () => word(35));
+    const loud = Array.from({ length: 5 }, () => word(60));
+    expect(calibrateVoice([...quiet, ...loud])).toEqual({ loudnessDb: 60 });
   });
 
   it('ignores what was not a word at all', () => {
-    const noise = Array.from({ length: 6 }, () => word(110, 60, 'quiet'));
+    const noise = Array.from({ length: 6 }, () => word(60, 'quiet'));
     expect(calibrateVoice(noise)).toBeNull();
   });
 });

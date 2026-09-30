@@ -513,6 +513,15 @@ Rozhodnuto při stavbě zkoušky:
   falešná), ale **největší skupinu pěti navzájem podobných** (±6 dB, výška
   ±20 %) a z ní medián; `audio.voiceLoudnessDb` / `audio.voicePitchHz`,
   device-local, 0 = nekalibrováno. Bez kalibrace platí pravidla detektoru 4
+- **výška z rozhodování vypadla, kalibruje se jen hlasitost** (detektor 6).
+  Pásmo začíná na 150 Hz, nad základním tónem hlubokého hlasu (~110 Hz), takže
+  odhad výšky skáče na harmonické: táž „hop“ v jednom testu vyšla 111, 178, 205
+  a 320 Hz — kalibrace nenašla pět podobných a kontrola výšky slova odmítala
+  jako „jiný hlas“. Hlasitost přitom ve všech čtyřech testech dělila spolehlivě
+  (hop +60–70 dB, jinak nejvýš +39). Výška zůstává jen v diagnostice;
+  `audio.voicePitchHz` zmizel (device-local, žádná záloha ho nenese). Dvě „hop“
+  ještě vyšla 600 ms dlouhá, proto zvuk končí 15 dB (ne 20) pod vrcholem a limit
+  je 800 ms
 - **nic se nesoudí, dokud detektor neslyšel místnost** (500 ms) a nuly od
   probouzejícího se mikrofonu se do pozadí nepočítají — první vteřina testu
   jinak vycházela „+112 dB“
@@ -944,7 +953,6 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `audio.voiceShadow` | **1** | `false` |
 | `audio.voiceShadowLog` | **1** | `[]` |
 | `audio.voiceLoudnessDb` | **1** | 0 |
-| `audio.voicePitchHz` | **1** | 0 |
 | `schema.splitsVersion` | 0 | 1 |
 
 ### 4.6 Seed data

@@ -196,9 +196,7 @@ function readVoice(value: unknown): VoiceProfile | null | undefined {
   if (value === null) return null;
   if (typeof value !== 'object') return undefined;
   const voice: Partial<Record<keyof VoiceProfile, unknown>> = value;
-  return typeof voice.loudnessDb === 'number' && typeof voice.pitchHz === 'number'
-    ? { loudnessDb: voice.loudnessDb, pitchHz: voice.pitchHz }
-    : undefined;
+  return typeof voice.loudnessDb === 'number' ? { loudnessDb: voice.loudnessDb } : undefined;
 }
 
 function isShadowSound(value: unknown): value is ShadowSound {

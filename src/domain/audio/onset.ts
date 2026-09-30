@@ -22,9 +22,9 @@
  *   room, where most of what else is heard comes from across it;
  * - voiced throughout, not in patches.
  *
- * Calibrated, it also has to be the solver's own: about their pitch, and not
- * much quieter than their "hop" (see VoiceProfile). Uncalibrated, any close,
- * short voice counts — which is also how calibration itself listens.
+ * Calibrated, it also has to be nearly as loud as the solver's own "hop"
+ * (see VoiceProfile). Uncalibrated, any close, short voice counts — which is
+ * also how calibration itself listens.
  *
  * Judging the whole sound means deciding after it ends, a few hundred
  * milliseconds late. The onset is dated back to where it began, so the delay
@@ -45,7 +45,7 @@
  */
 
 /** Bumped whenever a change here makes old trial results incomparable. */
-export const DETECTOR_VERSION = 5;
+export const DETECTOR_VERSION = 6;
 
 const HOP_MS = 5;
 /** The band a voice's fundamental and first formant live in; clicks mostly do not. */
@@ -76,16 +76,17 @@ const END_GAP_MS = 150;
  * Measured against the room's floor instead, a word said close to the phone
  * dragged its echo along: the room rang on above the floor, periodic still,
  * and every "hop" of the first test on a phone was turned away as too long.
+ * 20 dB still let a couple through at 600 ms; 15 cuts the ringing sooner.
  */
-const SOUND_SPAN_DB = 20;
+const SOUND_SPAN_DB = 15;
 
 /*
  * What a sound has to be to be taken for "hop". Loudness does most of the
- * work: in that first test on a phone the solver's words stood 61–70 dB
- * above the room, and nothing else in it more than 18.
+ * work: in four tests on a phone the solver's words stood 60–70 dB above the
+ * room, and nothing else in it more than 39 once the detector had heard it.
  */
 const VOICE_MIN_MS = 60;
-const VOICE_MAX_MS = 600;
+const VOICE_MAX_MS = 800;
 /** Mean periodicity over the whole sound, not its best moment. */
 const VOICE_MIN_PERIODICITY = 0.55;
 /** Loudest hop above the floor: close to the phone, not across the room. */
@@ -108,45 +109,38 @@ const WARM_UP_MS = 500;
 const DIGITAL_SILENCE_DB = -110;
 
 /*
- * Calibrated, a word has to be the solver's own: about their pitch, and not
- * much quieter than their "hop". In the tests on a phone the solver's words
- * held within a few dB of each other and a few hertz of 112, while what
- * slipped through without calibration came in at 308 Hz, or 30 dB down.
+ * Calibrated, a word may not be much quieter than the solver's own "hop".
+ * In the tests on a phone their words held within a few dB of each other,
+ * while what slipped through without calibration came in 25 dB and more
+ * below them.
+ *
+ * Pitch was tried as a second test and dropped: the band starts above a low
+ * voice's fundamental, so the pitch found jumps to its harmonics — the same
+ * solver's "hop" came out at 111, 178, 205 and 320 Hz in one test, and was
+ * turned away as somebody else's. It is still measured, for the log.
  */
 const PROFILE_LOUDNESS_MARGIN_DB = 15;
-/** How far off the solver's pitch a word may be, either way, as a ratio. */
-const PROFILE_PITCH_RATIO = 1.35;
 /** Words heard to calibrate from. */
 export const CALIBRATION_WORDS = 5;
 /**
- * How alike the calibration words have to be. Not the first five sounds taken
- * for a word: in a test on a phone two of those were strays at 250 and 320 Hz,
- * while the solver's five "hop"s sat within 1 dB and 12 Hz of each other.
+ * How alike in loudness the calibration words have to be. Not the first five
+ * sounds taken for a word: in a test on a phone two of those were strays 30 dB
+ * down, while the solver's five "hop"s sat within 1 dB of each other.
  */
 const CALIBRATION_LOUDNESS_DB = 6;
-const CALIBRATION_PITCH_RATIO = 1.2;
 
 /** The solver's own "hop", as heard where the phone lies while they solve. */
 export interface VoiceProfile {
   loudnessDb: number;
-  pitchHz: number;
 }
 
 /**
  * What a sound was taken for. Anything but 'voice' is turned away, and says
  * why — so a missed word shows which of its traits fell short.
  */
-export type Verdict = 'voice' | 'long' | 'short' | 'quiet' | 'pitch' | 'unclear' | 'repeat';
+export type Verdict = 'voice' | 'long' | 'short' | 'quiet' | 'unclear' | 'repeat';
 
-export const VERDICTS: readonly Verdict[] = [
-  'voice',
-  'long',
-  'short',
-  'quiet',
-  'pitch',
-  'unclear',
-  'repeat',
-];
+export const VERDICTS: readonly Verdict[] = ['voice', 'long', 'short', 'quiet', 'unclear', 'repeat'];
 
 export function isVerdict(value: unknown): value is Verdict {
   return VERDICTS.some((verdict) => verdict === value);
@@ -155,7 +149,6 @@ export function isVerdict(value: unknown): value is Verdict {
 export interface SoundShape {
   durationMs: number;
   periodicity: number;
-  pitchHz: number;
   loudnessDb: number;
 }
 
@@ -171,18 +164,11 @@ export function judgeSound(sound: SoundShape, voice: VoiceProfile | null): Verdi
       ? VOICE_MIN_LOUDNESS_DB
       : Math.max(VOICE_MIN_LOUDNESS_DB, voice.loudnessDb - PROFILE_LOUDNESS_MARGIN_DB);
   if (sound.loudnessDb < minLoudnessDb) return 'quiet';
-  if (
-    voice !== null &&
-    (sound.pitchHz < voice.pitchHz / PROFILE_PITCH_RATIO ||
-      sound.pitchHz > voice.pitchHz * PROFILE_PITCH_RATIO)
-  ) {
-    return 'pitch';
-  }
   if (sound.periodicity < VOICE_MIN_PERIODICITY) return 'unclear';
   return 'voice';
 }
 
-type CalibrationSound = Pick<Sound, 'verdict' | 'loudnessDb' | 'pitchHz'>;
+type CalibrationSound = Pick<Sound, 'verdict' | 'loudnessDb'>;
 
 /**
  * The largest group of alike words among the sounds heard while calibrating,
@@ -194,10 +180,7 @@ function calibrationGroup(sounds: readonly CalibrationSound[]): CalibrationSound
   let best: CalibrationSound[] = [];
   for (const word of words) {
     const group = words.filter(
-      (other) =>
-        Math.abs(other.loudnessDb - word.loudnessDb) <= CALIBRATION_LOUDNESS_DB &&
-        Math.max(other.pitchHz, word.pitchHz) <=
-          Math.min(other.pitchHz, word.pitchHz) * CALIBRATION_PITCH_RATIO,
+      (other) => Math.abs(other.loudnessDb - word.loudnessDb) <= CALIBRATION_LOUDNESS_DB,
     );
     const isLarger = group.length > best.length;
     const isLouder =
@@ -220,10 +203,7 @@ export function calibrationProgress(sounds: readonly CalibrationSound[]): number
 export function calibrateVoice(sounds: readonly CalibrationSound[]): VoiceProfile | null {
   const group = calibrationGroup(sounds);
   if (group.length < CALIBRATION_WORDS) return null;
-  return {
-    loudnessDb: Math.round(median(group.map((word) => word.loudnessDb))),
-    pitchHz: Math.round(median(group.map((word) => word.pitchHz))),
-  };
+  return { loudnessDb: Math.round(median(group.map((word) => word.loudnessDb))) };
 }
 
 function median(values: readonly number[]): number {

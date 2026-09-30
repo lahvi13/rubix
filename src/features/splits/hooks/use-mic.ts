@@ -35,7 +35,6 @@ export function useMic(
   voice: VoiceProfile | null,
 ): { status: MicStatus; resume: () => void } {
   const loudnessDb = voice?.loudnessDb ?? null;
-  const pitchHz = voice?.pitchHz ?? null;
   const isVisible = useSyncExternalStore(subscribeVisibility, isPageVisible);
   const isOpen = isWanted && isVisible;
   // How the last opening ended; null while it is still under way.
@@ -55,7 +54,7 @@ export function useMic(
         onSound: (sound) => handlersRef.current.onSound(sound),
         onLevel: (level) => handlersRef.current.onLevel?.(level),
       },
-      loudnessDb === null || pitchHz === null ? null : { loudnessDb, pitchHz },
+      loudnessDb === null ? null : { loudnessDb },
     ).then(
       (opened) => {
         // Closed again before it finished opening: the effect is gone.
@@ -81,7 +80,7 @@ export function useMic(
       listener.current = null;
       setOutcome(null);
     };
-  }, [isOpen, loudnessDb, pitchHz]);
+  }, [isOpen, loudnessDb]);
 
   const resume = useCallback(() => listener.current?.resume(), []);
   return { status: isOpen ? (outcome ?? OPENING) : OFF, resume };
