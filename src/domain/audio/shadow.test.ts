@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   matchShadow,
   readShadowRecords,
+  shadowSound,
   summariseShadow,
   type ShadowMatch,
   type ShadowRecord,
@@ -104,5 +105,27 @@ describe('readShadowRecords', () => {
     expect(
       readShadowRecords([good, null, 'x', { ...good, voiceMs: ['a'] }, { ...good, rawMs: undefined }]),
     ).toEqual([good]);
+  });
+
+  it('keeps the sounds it can read, and the record without the ones it cannot', () => {
+    const sound = shadowSound(2040.4, {
+      isVoice: true,
+      durationMs: 152,
+      periodicity: 0.9345,
+      pitchHz: 181.6,
+      steadiness: 0.971,
+      loudnessDb: 31.7,
+    });
+    expect(sound).toEqual({
+      atMs: 2040,
+      isVoice: true,
+      durationMs: 152,
+      periodicity: 0.93,
+      pitchHz: 182,
+      steadiness: 0.97,
+      loudnessDb: 32,
+    });
+    const stored = { ...record([2000], [2040], 20_000, 2), sounds: [sound, { atMs: 'x' }] };
+    expect(readShadowRecords([stored])).toEqual([{ ...stored, sounds: [sound] }]);
   });
 });

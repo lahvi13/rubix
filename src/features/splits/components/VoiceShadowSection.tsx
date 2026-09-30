@@ -91,10 +91,15 @@ export function VoiceShadowSection() {
 
 /** The microphone, open for as long as this is on screen, with what it hears. */
 function MicTest() {
-  const [heard, setHeard] = useState(0);
+  const [heard, setHeard] = useState({ voices: 0, others: 0 });
   const [level, setLevel] = useState<MicLevel | null>(null);
   const { status } = useMic(true, {
-    onVoice: () => setHeard((count) => count + 1),
+    // The others are counted too: a clatter that is heard and turned away is
+    // the test passing, and it should look like it.
+    onSound: ({ isVoice }) =>
+      setHeard((count) =>
+        isVoice ? { ...count, voices: count.voices + 1 } : { ...count, others: count.others + 1 },
+      ),
     onLevel: setLevel,
   });
 
@@ -113,7 +118,7 @@ function MicTest() {
         />
         <span className="mic-meter__gate" style={{ left: `${meterPercent(level.gateDb)}%` }} />
       </div>
-      <p className="data-section__hint">{strings.voice.heard(heard)}</p>
+      <p className="data-section__hint">{strings.voice.heard(heard.voices, heard.others)}</p>
     </>
   );
 }

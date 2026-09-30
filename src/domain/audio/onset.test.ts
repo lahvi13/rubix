@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createOnsetDetector, periodicity } from './onset';
+import { createOnsetDetector, periodicity, type Sound } from './onset';
 
 const RATE = 48_000;
 
@@ -52,16 +52,23 @@ function click(signal: Float32Array, atMs: number, amplitude: number, seed: numb
   }
 }
 
-/** Where each voice heard began, in ms. */
-function detect(signal: Float32Array, block = 128, rate = RATE): number[] {
+/** Every sound judged, with its start in ms. */
+function sounds(signal: Float32Array, block = 128, rate = RATE): (Sound & { atMs: number })[] {
   const detector = createOnsetDetector(rate);
-  const onsets: number[] = [];
+  const heard: (Sound & { atMs: number })[] = [];
   for (let offset = 0; offset < signal.length; offset += block) {
-    for (const at of detector.push(signal.subarray(offset, offset + block))) {
-      onsets.push((at / rate) * 1000);
+    for (const sound of detector.push(signal.subarray(offset, offset + block))) {
+      heard.push({ ...sound, atMs: (sound.at / rate) * 1000 });
     }
   }
-  return onsets;
+  return heard;
+}
+
+/** Where each sound taken for the word began, in ms. */
+function detect(signal: Float32Array, block = 128, rate = RATE): number[] {
+  return sounds(signal, block, rate)
+    .filter((sound) => sound.isVoice)
+    .map((sound) => sound.atMs);
 }
 
 /** How far off the date of a vowel's start may be; a tap is no closer than this either. */
@@ -79,7 +86,7 @@ function room(ms: number, rate = RATE): Float32Array {
 
 describe('createOnsetDetector', () => {
   it('hears nothing in a quiet room', () => {
-    expect(detect(room(3000))).toEqual([]);
+    expect(sounds(room(3000))).toEqual([]);
   });
 
   it('dates a word back to where it began', () => {
@@ -88,6 +95,19 @@ describe('createOnsetDetector', () => {
     const onsets = detect(signal);
     expect(onsets).toHaveLength(1);
     expectNear(onsets[0], 1000);
+  });
+
+  it('says what it judged the word on', () => {
+    const signal = room(2000);
+    vowel(signal, 1000, 150, 0.1, 180);
+    const [word] = sounds(signal);
+    expect(word?.durationMs).toBeGreaterThanOrEqual(120);
+    expect(word?.durationMs).toBeLessThanOrEqual(170);
+    expect(word?.periodicity).toBeGreaterThan(0.9);
+    expect(word?.pitchHz).toBeGreaterThan(170);
+    expect(word?.pitchHz).toBeLessThan(190);
+    expect(word?.steadiness).toBeGreaterThan(0.9);
+    expect(word?.loudnessDb).toBeGreaterThan(30);
   });
 
   it.each([
@@ -111,14 +131,28 @@ describe('createOnsetDetector', () => {
     expect(detect(signal)).toEqual([]);
   });
 
-  it('hears a word said in the middle of turning', () => {
+  it('turns away a tone that goes on far longer than a word', () => {
+    const signal = room(3000);
+    vowel(signal, 1000, 800, 0.1);
+    const heard = sounds(signal);
+    expect(heard.filter((sound) => sound.isVoice)).toEqual([]);
+    expect(heard).toHaveLength(1);
+  });
+
+  it('turns away running speech in the background', () => {
     const signal = room(4000);
-    noise(signal, 1000, 3000, 0.02, 3);
-    for (let ms = 1000; ms < 3000; ms += 90) click(signal, ms, 0.3, ms);
-    vowel(signal, 2000, 150, 0.1);
-    const onsets = detect(signal);
-    expect(onsets).toHaveLength(1);
-    expectNear(onsets[0], 2000);
+    for (let ms = 1000; ms < 2800; ms += 230) vowel(signal, ms, 150, 0.1, 130 + (ms % 40));
+    expect(detect(signal)).toEqual([]);
+  });
+
+  it('turns away a voice from across the room', () => {
+    const signal = room(4000);
+    noise(signal, 0, 4000, 0.02, 4);
+    // Clearly periodic, but only about 11 dB above the room.
+    vowel(signal, 2000, 150, 0.004);
+    const heard = sounds(signal);
+    expect(heard.filter((sound) => sound.isVoice)).toEqual([]);
+    expect(heard.some((sound) => sound.loudnessDb < 15)).toBe(true);
   });
 
   it('hears two words as two', () => {
@@ -133,6 +167,16 @@ describe('createOnsetDetector', () => {
     vowel(signal, 1000, 120, 0.1);
     vowel(signal, 1180, 120, 0.1);
     expect(detect(signal)).toHaveLength(1);
+  });
+
+  it('hears a word said in the middle of turning', () => {
+    const signal = room(4000);
+    noise(signal, 1000, 3000, 0.02, 3);
+    for (let ms = 1000; ms < 3000; ms += 90) click(signal, ms, 0.3, ms);
+    vowel(signal, 2000, 150, 0.1);
+    const onsets = detect(signal);
+    expect(onsets).toHaveLength(1);
+    expectNear(onsets[0], 2000);
   });
 
   it('is not left deaf behind a rattle that never stops', () => {
@@ -150,7 +194,7 @@ describe('createOnsetDetector', () => {
     vowel(signal, 700, 150, 0.1);
     noise(signal, 1300, 1500, 0.1, 5);
     vowel(signal, 2000, 150, 0.1);
-    expect(detect(signal, 441)).toEqual(detect(signal, 128));
+    expect(sounds(signal, 441)).toEqual(sounds(signal, 128));
   });
 
   it('works at 44.1 kHz too', () => {
@@ -176,18 +220,26 @@ describe('createOnsetDetector', () => {
 });
 
 describe('periodicity', () => {
-  it.each<[string, (i: number) => number, number, number]>([
-    ['a tone at a pitch in range', (i) => Math.sin((2 * Math.PI * i) / 60), 0.9, 1.01],
+  function measure(source: (i: number) => number) {
+    const window = new Float32Array(320);
+    for (let i = 0; i < window.length; i++) window[i] = source(i);
+    return periodicity(window, 20, 114, new Float32Array(116), { r: 0, lag: 0 });
+  }
+
+  it('finds a tone and its period, not twice its period', () => {
+    // 8 kHz / 50 samples = 160 Hz, whose double (100 samples) is also in range.
+    const found = measure((i) => Math.sin((2 * Math.PI * i) / 50) + 0.5 * Math.sin((4 * Math.PI * i) / 50));
+    expect(found.r).toBeGreaterThan(0.9);
+    expect(found.lag).toBe(50);
+  });
+
+  it.each<[string, (i: number) => number]>([
     ['noise', (() => {
       const next = random(11);
       return () => next();
-    })(), 0, 0.3],
-    ['silence', () => 0, 0, 0.01],
-  ])('%s', (_, source, low, high) => {
-    const window = new Float32Array(600);
-    for (let i = 0; i < window.length; i++) window[i] = source(i);
-    const value = periodicity(window, 30, 172);
-    expect(value).toBeGreaterThanOrEqual(low);
-    expect(value).toBeLessThanOrEqual(high);
+    })()],
+    ['silence', () => 0],
+  ])('finds little in %s', (_, source) => {
+    expect(measure(source).r).toBeLessThan(0.3);
   });
 });

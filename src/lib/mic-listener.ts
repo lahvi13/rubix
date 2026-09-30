@@ -1,11 +1,12 @@
 /**
  * The microphone, opened for the onset processor and nothing else. The stream
- * goes straight into the audio worklet; the page gets back only when a voice
- * began and how loud the room is. Nothing is recorded, kept or sent.
+ * goes straight into the audio worklet; the page gets back only when each
+ * sound began, what it was judged on, and how loud the room is. Nothing is
+ * recorded, kept or sent.
  */
 
 import processorUrl from '../workers/onset-processor.ts?worker&url';
-import { ONSET_PROCESSOR, readOnsetMessage } from '../workers/onset-messages';
+import { ONSET_PROCESSOR, readOnsetMessage, type SoundTraits } from '../workers/onset-messages';
 import { eventTime } from './clock';
 
 export type MicFailure = 'denied' | 'unavailable';
@@ -21,13 +22,18 @@ export class MicError extends Error {
 
 export interface MicLevel {
   levelDb: number;
-  /** What a voice has to reach right now to be heard. */
+  /** What a hop has to reach right now to be part of a sound. */
   gateDb: number;
 }
 
+export interface HeardSound extends SoundTraits {
+  /** Where it began, on the monotonic clock the timer measures with. */
+  atMs: number;
+}
+
 export interface MicHandlers {
-  /** A voice began, on the monotonic clock the timer measures with. */
-  onVoice(atMs: number): void;
+  /** A sound was judged — taken for the word or not. */
+  onSound(sound: HeardSound): void;
   onLevel?(level: MicLevel): void;
 }
 
@@ -110,8 +116,16 @@ export async function openMic(handlers: MicHandlers): Promise<MicListener> {
       handlers.onLevel?.({ levelDb: message.levelDb, gateDb: message.gateDb });
       return;
     }
-    // A voice before the first heartbeat is dated by its own message instead.
-    handlers.onVoice(contextMs + (clockOffsetMs ?? eventTime(event.timeStamp) - contextMs));
+    // A sound before the first heartbeat is dated by its own message instead.
+    handlers.onSound({
+      atMs: contextMs + (clockOffsetMs ?? eventTime(event.timeStamp) - contextMs),
+      isVoice: message.isVoice,
+      durationMs: message.durationMs,
+      periodicity: message.periodicity,
+      pitchHz: message.pitchHz,
+      steadiness: message.steadiness,
+      loudnessDb: message.loudnessDb,
+    });
   };
 
   const resume = () => {

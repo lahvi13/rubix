@@ -676,7 +676,8 @@ export const en = {
       unavailable: 'This device has no microphone the app can use.',
     },
     meter: 'Loudness, and the line a voice has to cross',
-    heard: (count: number) => `Say “hop” — heard ${count} ${count === 1 ? 'time' : 'times'}.`,
+    heard: (voices: number, others: number) =>
+      `Say “hop” — heard ${voices} ${voices === 1 ? 'time' : 'times'}; ${others} other ${others === 1 ? 'sound' : 'sounds'} ignored.`,
     summaryEmpty: 'No solve has been timed with the trial yet.',
     summary: (solves: number, heard: number, boundaries: number, extra: number) =>
       `${solves} ${solves === 1 ? 'solve' : 'solves'}: heard ${heard} of ${boundaries} phase ends, ${extra} false ${extra === 1 ? 'alarm' : 'alarms'}.`,

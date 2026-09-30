@@ -44,7 +44,7 @@ export function useMic(
     if (!isOpen) return;
     let isCancelled = false;
     openMic({
-      onVoice: (atMs) => handlersRef.current.onVoice(atMs),
+      onSound: (sound) => handlersRef.current.onSound(sound),
       onLevel: (level) => handlersRef.current.onLevel?.(level),
     }).then(
       (opened) => {

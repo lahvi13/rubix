@@ -611,7 +611,8 @@ export const cs: Strings = {
       unavailable: 'Tohle zařízení nemá mikrofon, který by aplikace mohla použít.',
     },
     meter: 'Hlasitost a čára, kterou musí hlas přejít',
-    heard: (count: number) => `Řekni „hop“ — slyšeno ${count}×.`,
+    heard: (voices: number, others: number) =>
+      `Řekni „hop“ — slyšeno ${voices}×; jiných zvuků ignorováno: ${others}.`,
     summaryEmpty: 'Se zkouškou zatím žádné složení neproběhlo.',
     summary: (solves: number, heard: number, boundaries: number, extra: number) =>
       `${solves} složení: zachyceno ${heard} z ${boundaries} konců fází, ${extra} ${plural(extra, 'falešný poplach', 'falešné poplachy', 'falešných poplachů')}.`,

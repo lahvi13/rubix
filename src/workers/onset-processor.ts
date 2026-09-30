@@ -1,7 +1,8 @@
 /**
  * The microphone's samples go this far and no further: the detector runs here,
- * on the audio thread, and what crosses back to the page is where a voice
- * began and how loud the room is — numbers, never sound.
+ * on the audio thread, and what crosses back to the page is where each sound
+ * began, what it was judged on, and how loud the room is — numbers, never
+ * the sound itself.
  */
 
 import { createOnsetDetector } from '../domain/audio/onset';
@@ -36,8 +37,8 @@ class OnsetProcessor extends AudioWorkletProcessor {
 
     // Counted back from the end of this block, not forward from the first:
     // a block the engine dropped would otherwise shift every onset after it.
-    for (const at of this.detector.push(channel)) {
-      this.post({ type: 'onset', frame: endFrame - (this.pushed - at) });
+    for (const { at, ...traits } of this.detector.push(channel)) {
+      this.post({ type: 'sound', frame: endFrame - (this.pushed - at), ...traits });
     }
     if (++this.blocks % HEARTBEAT_BLOCKS === 0) {
       this.post({

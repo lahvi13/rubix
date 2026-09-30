@@ -1,19 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import { DETECTOR_VERSION } from '../../../domain/audio/onset';
-import { matchShadow, type ShadowMatch, type ShadowRecord } from '../../../domain/audio/shadow';
+import {
+  matchShadow,
+  shadowSound,
+  type ShadowMatch,
+  type ShadowRecord,
+  type ShadowSound,
+} from '../../../domain/audio/shadow';
 import type { TimerState } from '../../../domain/timer/timer-machine';
 import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import { logQuietly } from '../../../lib/errors';
 import { useMic, type MicStatus } from './use-mic';
 
 /**
- * How long after the clock stops a voice can still arrive: one is only
- * decided on once it has held for a while, and "hop" said with the last tap
- * is decided on after the stop.
+ * How long after the clock stops a sound can still arrive: each is judged
+ * only once it has ended — up to half a second of word and the quiet after
+ * it — and "hop" said with the last tap ends after the stop.
  */
-const SETTLE_MS = 500;
-/** A few evenings of trying. The tally is what matters, not the history. */
-const LOG_LIMIT = 300;
+const SETTLE_MS = 1000;
+/**
+ * A few evenings of trying. Every sound of a solve is kept with its traits,
+ * so a record is a few kilobytes; the tally is what matters, not the history.
+ */
+const LOG_LIMIT = 100;
 
 export interface VoiceShadow {
   mic: MicStatus;
@@ -23,7 +32,7 @@ export interface VoiceShadow {
 
 interface Run {
   startedAt: number;
-  voiceMs: number[];
+  sounds: ShadowSound[];
 }
 
 /**
@@ -40,10 +49,10 @@ export function useVoiceShadow(state: TimerState, isEnabled: boolean): VoiceShad
   const [result, setResult] = useState<ShadowMatch | null>(null);
 
   const { status, resume } = useMic(isEnabled, {
-    onVoice: (atMs) => {
+    onSound: ({ atMs, ...traits }) => {
       const current = run.current;
       if (current && atMs >= current.startedAt) {
-        current.voiceMs.push(Math.round(atMs - current.startedAt));
+        current.sounds.push(shadowSound(atMs - current.startedAt, traits));
       }
     },
   });
@@ -59,7 +68,7 @@ export function useVoiceShadow(state: TimerState, isEnabled: boolean): VoiceShad
         return;
       case 'running':
         if (run.current?.startedAt !== state.startedAt) {
-          run.current = { startedAt: state.startedAt, voiceMs: [] };
+          run.current = { startedAt: state.startedAt, sounds: [] };
           setResult(null);
         }
         return;
@@ -74,7 +83,8 @@ export function useVoiceShadow(state: TimerState, isEnabled: boolean): VoiceShad
             detector: DETECTOR_VERSION,
             splitMs: [...splitMs],
             rawMs,
-            voiceMs: [...finished.voiceMs],
+            voiceMs: finished.sounds.filter((sound) => sound.isVoice).map((sound) => sound.atMs),
+            sounds: [...finished.sounds],
           };
           setResult(matchShadow(record));
           void appendRecord(record);

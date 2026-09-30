@@ -9,8 +9,28 @@
  * detector tuned against them, can go over the same solves again.
  */
 
+import type { Sound } from './onset';
+
 /** How far a voice may be from a tap and still be the same boundary. */
 export const MATCH_WINDOW_MS = 400;
+
+/**
+ * One sound the detector judged, taken or not, with what it was judged on —
+ * kept so the next tuning can be read off real rooms. Rounded: it is read by
+ * a person, and a log of a hundred solves should stay small.
+ */
+export interface ShadowSound {
+  /** From the start of the solve. */
+  atMs: number;
+  isVoice: boolean;
+  durationMs: number;
+  /** 0–1, two decimals. */
+  periodicity: number;
+  pitchHz: number;
+  /** 0–1, two decimals. */
+  steadiness: number;
+  loudnessDb: number;
+}
 
 export interface ShadowRecord {
   /** DETECTOR_VERSION of the detector that heard it. */
@@ -20,6 +40,21 @@ export interface ShadowRecord {
   rawMs: number;
   /** Voices heard during the solve, from its start. */
   voiceMs: readonly number[];
+  /** Every sound judged during the solve. Absent from records of detector 1. */
+  sounds?: readonly ShadowSound[];
+}
+
+export function shadowSound(atMs: number, sound: Omit<Sound, 'at'>): ShadowSound {
+  const hundredths = (value: number) => Math.round(value * 100) / 100;
+  return {
+    atMs: Math.round(atMs),
+    isVoice: sound.isVoice,
+    durationMs: Math.round(sound.durationMs),
+    periodicity: hundredths(sound.periodicity),
+    pitchHz: Math.round(sound.pitchHz),
+    steadiness: hundredths(sound.steadiness),
+    loudnessDb: Math.round(sound.loudnessDb),
+  };
 }
 
 export interface ShadowMatch {
@@ -125,17 +160,36 @@ function quantile(values: readonly number[], q: number): number | null {
  * this one, so it is checked rather than trusted.
  */
 export function readShadowRecords(stored: readonly unknown[]): ShadowRecord[] {
-  return stored.filter(isShadowRecord);
+  const records: ShadowRecord[] = [];
+  for (const value of stored) {
+    if (typeof value !== 'object' || value === null) continue;
+    const record: Partial<Record<keyof ShadowRecord, unknown>> = value;
+    const { detector, rawMs, splitMs, voiceMs, sounds } = record;
+    if (
+      typeof detector !== 'number' ||
+      typeof rawMs !== 'number' ||
+      !isNumberList(splitMs) ||
+      !isNumberList(voiceMs)
+    ) {
+      continue;
+    }
+    records.push(
+      Array.isArray(sounds)
+        ? { detector, rawMs, splitMs, voiceMs, sounds: sounds.filter(isShadowSound) }
+        : { detector, rawMs, splitMs, voiceMs },
+    );
+  }
+  return records;
 }
 
-function isShadowRecord(value: unknown): value is ShadowRecord {
+function isShadowSound(value: unknown): value is ShadowSound {
   if (typeof value !== 'object' || value === null) return false;
-  const record: Partial<Record<keyof ShadowRecord, unknown>> = value;
+  const sound: Partial<Record<keyof ShadowSound, unknown>> = value;
   return (
-    typeof record.detector === 'number' &&
-    typeof record.rawMs === 'number' &&
-    isNumberList(record.splitMs) &&
-    isNumberList(record.voiceMs)
+    typeof sound.isVoice === 'boolean' &&
+    [sound.atMs, sound.durationMs, sound.periodicity, sound.pitchHz, sound.steadiness, sound.loudnessDb].every(
+      (field) => typeof field === 'number',
+    )
   );
 }
 

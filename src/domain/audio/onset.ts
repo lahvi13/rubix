@@ -3,16 +3,32 @@
  * when it began. Not speech recognition: what is said does not matter, only
  * that a voice started.
  *
- * The enemy is the cube itself. A layer clicking is a short broadband crack,
- * and a finger tapping the cube or the table is the same kind of sound — so
- * rather than listen for a tap, this listens for a voice, which differs from
- * the cube in being periodic: a vowel repeats at its pitch, turning noise does
- * not. Every hop asks whether the last few tens of milliseconds repeat, and a
- * voice is a stretch that keeps repeating for CONFIRM_MS.
+ * The enemy is everything else in the room. A layer clicking is a short
+ * broadband crack, and a finger tapping the cube or the table is the same kind
+ * of sound — so rather than listen for a tap, this listens for a voice, which
+ * differs from noise in being periodic: a vowel repeats at its pitch. Every
+ * hop asks whether the last few tens of milliseconds repeat.
  *
- * Periodicity decides, loudness only gates. Deciding on loudness first meant
- * that a solve's turning noise, loud and long, held the detector busy — and
- * the word said mid-turn, straight into the next phase, was never heard.
+ * Periodic is not enough, though. The first trial on a phone heard a "voice"
+ * every second and a half in an ordinary room: a squeak, a clink, somebody
+ * talking next door all repeat for a moment. So nothing is decided on a hop
+ * or two any more. The voiced hops are gathered into one sound, and the sound
+ * is judged whole once it has ended — by its shape:
+ *
+ * - short and on its own. "Hop" is one syllable with quiet either side;
+ *   speech in the background, or a television, runs its syllables together
+ *   into a sound far too long to be it;
+ * - close. The solver speaks a hand's length from the phone, well above the
+ *   room, where most of what else is heard comes from across it;
+ * - voiced throughout, not in patches.
+ *
+ * Judging the whole sound means deciding after it ends, a few hundred
+ * milliseconds late. The onset is dated back to where it began, so the delay
+ * costs the time nothing.
+ *
+ * Every sound judged is reported, taken or not, with what it was judged on:
+ * the trial keeps those numbers so the next tuning is made against the room
+ * rather than against a guess.
  *
  * The gate floats above a floor that follows the room: a low percentile of the
  * recent level, which a rattle that goes on becomes part of within a fraction
@@ -25,24 +41,18 @@
  */
 
 /** Bumped whenever a change here makes old trial results incomparable. */
-export const DETECTOR_VERSION = 1;
+export const DETECTOR_VERSION = 2;
 
 const HOP_MS = 5;
 /** The band a voice's fundamental and first formant live in; clicks mostly do not. */
 const LOW_CUT_HZ = 150;
 const HIGH_CUT_HZ = 1000;
-/** How far above the floor a voice has to be to count. */
+/** How far above the floor a hop has to be to be part of a sound at all. */
 const GATE_DB = 6;
 /** Below this nothing counts, however quiet the room: dead silence is not a floor to measure from. */
 const MIN_LEVEL_DB = -70;
 const FLOOR_WINDOW_MS = 1500;
 const FLOOR_PERCENTILE = 0.2;
-/** How long a voice has to hold before it is one. */
-const CONFIRM_MS = 50;
-/** Unvoiced hops a candidate survives: a consonant inside a word. */
-const CANDIDATE_GAP_HOPS = 2;
-/** Unvoiced time needed after a word before the next one can start. */
-const REARM_MS = 150;
 /** The voicing check runs on a thinned copy of the band — the band ends at 1 kHz. */
 const VOICING_RATE_HZ = 8000;
 const VOICING_WINDOW_MS = 40;
@@ -50,20 +60,50 @@ const PITCH_MIN_HZ = 70;
 const PITCH_MAX_HZ = 400;
 /** Normalised autocorrelation a hop has to reach at some pitch to be voiced. */
 const VOICED = 0.5;
+/**
+ * Unvoiced time that ends a sound. Shorter gaps are a consonant inside the
+ * word, or the gap between two syllables of running speech — which is what
+ * makes running speech one long sound instead of many short ones.
+ */
+const END_GAP_MS = 150;
+
+/** What a sound has to be to be taken for "hop". */
+const VOICE_MIN_MS = 60;
+const VOICE_MAX_MS = 450;
+/** Mean periodicity over the whole sound, not its best moment. */
+const VOICE_MIN_PERIODICITY = 0.65;
+/** Loudest hop above the floor: close to the phone, not across the room. */
+const VOICE_MIN_LOUDNESS_DB = 15;
+/** How close to the sound's own median a hop's pitch has to be to count as steady. */
+const STEADY_SHARE = 0.2;
+
+export interface Sound {
+  /** Sample index into the stream (counted from the first sample pushed) where it began. */
+  at: number;
+  /** Taken for the word, or turned away. */
+  isVoice: boolean;
+  /** From its first voiced hop to its last. */
+  durationMs: number;
+  /** Mean normalised autocorrelation over its voiced hops, 0–1. */
+  periodicity: number;
+  /** Median pitch of its voiced hops. */
+  pitchHz: number;
+  /** Share of its voiced hops within STEADY_SHARE of that median, 0–1. */
+  steadiness: number;
+  /** Its loudest hop above the room's floor. */
+  loudnessDb: number;
+}
 
 export interface OnsetDetector {
-  /**
-   * Feeds the next samples of the stream. Returns where each voice decided on
-   * inside them began, as sample indices counted from the first sample pushed.
-   */
-  push(samples: Float32Array): readonly number[];
+  /** Feeds the next samples of the stream; returns every sound that ended inside them. */
+  push(samples: Float32Array): readonly Sound[];
   /** Band level of the last hop, in dB relative to full scale. */
   readonly levelDb: number;
-  /** The level a voice has to reach right now to count. */
+  /** The level a hop has to reach right now to be part of a sound. */
   readonly gateDb: number;
 }
 
-const NOTHING: readonly number[] = [];
+const NOTHING: readonly Sound[] = [];
 
 interface Biquad {
   b0: number;
@@ -105,13 +145,31 @@ function toDb(meanSquare: number): number {
   return 10 * Math.log10(meanSquare + 1e-12);
 }
 
+export interface Periodicity {
+  /** Normalised autocorrelation at the period found, 0–1. */
+  r: number;
+  /** The period found, in samples; 0 when nothing repeats. */
+  lag: number;
+}
+
 /**
- * The strongest normalised autocorrelation of `window` at any lag in
- * [minLag, maxLag] — near 1 for a vowel at its pitch period, low for noise.
+ * How strongly `window` repeats at a lag in [minLag, maxLag], and at which.
+ * Written into `into`, so the audio thread allocates nothing per hop.
+ *
+ * A signal that repeats every T also repeats every 2T, often almost as
+ * strongly, so the shortest lag that comes close to the best is taken as the
+ * period — the best alone would put a voice an octave low half the time.
  */
-export function periodicity(window: Float32Array, minLag: number, maxLag: number): number {
+export function periodicity(
+  window: Float32Array,
+  minLag: number,
+  maxLag: number,
+  scores: Float32Array,
+  into: Periodicity,
+): Periodicity {
   let best = 0;
-  for (let lag = minLag; lag <= maxLag && lag < window.length; lag++) {
+  const last = Math.min(maxLag, window.length - 1);
+  for (let lag = minLag; lag <= last; lag++) {
     let xy = 0;
     let xx = 0;
     let yy = 0;
@@ -123,15 +181,26 @@ export function periodicity(window: Float32Array, minLag: number, maxLag: number
       yy += b * b;
     }
     const r = xy / Math.sqrt(xx * yy + 1e-20);
+    scores[lag] = r;
     if (r > best) best = r;
   }
-  return best;
+  into.r = best;
+  into.lag = 0;
+  for (let lag = minLag; lag <= last; lag++) {
+    const r = scores[lag] ?? 0;
+    const isPeak = r >= (scores[lag - 1] ?? 0) && r >= (scores[lag + 1] ?? 0);
+    if (r >= best * 0.9 && isPeak) {
+      into.lag = lag;
+      break;
+    }
+  }
+  return into;
 }
 
 export function createOnsetDetector(sampleRate: number): OnsetDetector {
   const hopSamples = Math.max(1, Math.round((sampleRate * HOP_MS) / 1000));
-  const confirmHops = Math.ceil(CONFIRM_MS / HOP_MS);
-  const rearmHops = Math.ceil(REARM_MS / HOP_MS);
+  const endGapHops = Math.ceil(END_GAP_MS / HOP_MS);
+  const maxHops = Math.ceil(VOICE_MAX_MS / HOP_MS);
 
   const highpass = biquad('highpass', LOW_CUT_HZ, sampleRate);
   const lowpass = biquad('lowpass', HIGH_CUT_HZ, sampleRate);
@@ -142,11 +211,13 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
   const window = new Float32Array(ring.length);
   const minLag = Math.floor(voicingRate / PITCH_MAX_HZ);
   const maxLag = Math.min(Math.ceil(voicingRate / PITCH_MIN_HZ), Math.floor(ring.length / 2));
+  const scores = new Float32Array(maxLag + 2);
+  const found: Periodicity = { r: 0, lag: 0 };
   let ringAt = 0;
   /*
-   * Periodicity only shows once the vowel fills most of the window, so a hop
-   * is first found voiced about this long after the voice began — and that
-   * is where the onset is dated back to.
+   * Periodicity only shows once the vowel fills enough of the window, so a
+   * hop is first found voiced about this long after the voice began — and
+   * that is where the onset is dated back to.
    */
   const voicingDelaySamples = Math.round(ring.length * decimation * 0.25);
 
@@ -160,14 +231,25 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
   let hopSum = 0;
   let previousHopMeanSquare = 0;
   let levelDb = -100;
+  let floorDb = -100;
   let gateDb = MIN_LEVEL_DB;
 
-  let phase: 'quiet' | 'candidate' | 'active' = 'quiet';
-  let candidateStart = 0;
+  /*
+   * 'quiet': waiting for a voiced hop. 'sound': gathering one. 'overlong': a
+   * sound already too long to be the word, waited out without being gathered.
+   */
+  let phase: 'quiet' | 'sound' | 'overlong' = 'quiet';
+  let soundStart = 0;
+  let hopsSinceStart = 0;
+  let lastVoicedHop = 0;
+  let gapHops = 0;
   let voicedHops = 0;
-  let unvoicedHops = 0;
+  let periodicitySum = 0;
+  let loudestDb = -Infinity;
+  // One pitch per voiced hop of the sound; a sound past VOICE_MAX_MS is not gathered.
+  const pitches = new Float32Array(maxHops + endGapHops + 1);
 
-  function floorDb(): number {
+  function floorOfRoom(): number {
     // Sorted in place: a percentile of a copy, with nothing allocated.
     const count = levelCount;
     for (let i = 0; i < count; i++) sorted[i] = levels[i] ?? 0;
@@ -176,14 +258,63 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
     return view[Math.floor((count - 1) * FLOOR_PERCENTILE)] ?? -100;
   }
 
-  function isVoicedHop(): boolean {
+  /** Voiced this hop? Leaves the periodicity it measured in `found`. */
+  function measureHop(): boolean {
+    found.r = 0;
+    found.lag = 0;
     if (levelDb < gateDb) return false;
     // Oldest sample first, the way the autocorrelation reads it.
     for (let i = 0; i < ring.length; i++) window[i] = ring[(ringAt + i) % ring.length] ?? 0;
-    return periodicity(window, minLag, maxLag) >= VOICED;
+    periodicity(window, minLag, maxLag, scores, found);
+    return found.r >= VOICED && found.lag > 0;
   }
 
-  function endHop(): number | null {
+  function gather(): void {
+    pitches[voicedHops] = voicingRate / found.lag;
+    voicedHops++;
+    periodicitySum += found.r;
+    loudestDb = Math.max(loudestDb, levelDb - floorDb);
+    lastVoicedHop = hopsSinceStart;
+  }
+
+  function judge(): Sound {
+    const durationMs = (lastVoicedHop + 1) * HOP_MS;
+    const view = pitches.subarray(0, voicedHops);
+    view.sort();
+    const pitchHz = view[Math.floor((voicedHops - 1) / 2)] ?? 0;
+    let steady = 0;
+    for (let i = 0; i < voicedHops; i++) {
+      if (Math.abs((view[i] ?? 0) - pitchHz) <= pitchHz * STEADY_SHARE) steady++;
+    }
+    const meanPeriodicity = periodicitySum / Math.max(1, voicedHops);
+    return {
+      at: soundStart,
+      isVoice:
+        durationMs >= VOICE_MIN_MS &&
+        durationMs <= VOICE_MAX_MS &&
+        meanPeriodicity >= VOICE_MIN_PERIODICITY &&
+        loudestDb >= VOICE_MIN_LOUDNESS_DB,
+      durationMs,
+      periodicity: meanPeriodicity,
+      pitchHz,
+      steadiness: steady / Math.max(1, voicedHops),
+      loudnessDb: loudestDb,
+    };
+  }
+
+  function overlong(): Sound {
+    return {
+      at: soundStart,
+      isVoice: false,
+      durationMs: hopsSinceStart * HOP_MS,
+      periodicity: periodicitySum / Math.max(1, voicedHops),
+      pitchHz: 0,
+      steadiness: 0,
+      loudnessDb: loudestDb,
+    };
+  }
+
+  function endHop(): Sound | null {
     const meanSquare = hopSum / hopSamples;
     // Two hops, not one: a low voice's pitch period is longer than a hop, and
     // one hop alone flickers with where in the period it happened to fall.
@@ -193,47 +324,54 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
     levels[levelsAt] = levelDb;
     levelsAt = (levelsAt + 1) % levels.length;
     levelCount = Math.min(levelCount + 1, levels.length);
-    gateDb = Math.max(floorDb() + GATE_DB, MIN_LEVEL_DB);
+    floorDb = floorOfRoom();
+    gateDb = Math.max(floorDb + GATE_DB, MIN_LEVEL_DB);
 
-    const isVoiced = isVoicedHop();
-    let onset: number | null = null;
+    const isVoiced = measureHop();
 
     switch (phase) {
       case 'quiet':
+        if (!isVoiced) return null;
+        phase = 'sound';
+        soundStart = Math.max(0, position - voicingDelaySamples);
+        hopsSinceStart = 0;
+        gapHops = 0;
+        voicedHops = 0;
+        periodicitySum = 0;
+        loudestDb = -Infinity;
+        gather();
+        return null;
+      case 'sound':
+        hopsSinceStart++;
         if (isVoiced) {
-          phase = 'candidate';
-          candidateStart = Math.max(0, position - voicingDelaySamples);
-          voicedHops = 1;
-          unvoicedHops = 0;
-        }
-        break;
-      case 'candidate':
-        if (isVoiced) {
-          voicedHops++;
-          unvoicedHops = 0;
-        } else if (++unvoicedHops > CANDIDATE_GAP_HOPS) {
-          // Periodic, but not for long enough to be a word: a cube ringing
-          // for a moment after a click.
+          gapHops = 0;
+          gather();
+        } else if (++gapHops >= endGapHops) {
+          // The gap that ended it was quiet enough to start the next one from.
           phase = 'quiet';
-          break;
+          return judge();
         }
-        if (voicedHops >= confirmHops) {
-          onset = candidateStart;
-          phase = 'active';
-          unvoicedHops = 0;
+        if (hopsSinceStart >= maxHops) {
+          phase = 'overlong';
+          gapHops = 0;
+          return overlong();
         }
-        break;
-      case 'active':
-        unvoicedHops = isVoiced ? 0 : unvoicedHops + 1;
-        if (unvoicedHops >= rearmHops) phase = 'quiet';
-        break;
+        return null;
+      case 'overlong':
+        hopsSinceStart++;
+        if (!isVoiced) {
+          gapHops++;
+          if (gapHops >= endGapHops) phase = 'quiet';
+        } else {
+          gapHops = 0;
+        }
+        return null;
     }
-    return onset;
   }
 
   return {
     push(samples) {
-      let onsets: number[] | null = null;
+      let sounds: Sound[] | null = null;
       for (let i = 0; i < samples.length; i++) {
         const band = filter(lowpass, filter(highpass, samples[i] ?? 0));
         if (position % decimation === 0) {
@@ -244,13 +382,13 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
         hopFill++;
         position++;
         if (hopFill === hopSamples) {
-          const onset = endHop();
+          const sound = endHop();
           hopFill = 0;
           hopSum = 0;
-          if (onset !== null) (onsets ??= []).push(onset);
+          if (sound !== null) (sounds ??= []).push(sound);
         }
       }
-      return onsets ?? NOTHING;
+      return sounds ?? NOTHING;
     },
     get levelDb() {
       return levelDb;

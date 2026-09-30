@@ -476,11 +476,21 @@ Rozhodnuto při stavbě zkoušky:
 
 - **rozhoduje periodicita, hlasitost je jen brána.** `domain/audio/onset.ts`
   (pásmo 150–1000 Hz, hop 5 ms) se každý hop ptá, jestli se posledních 40 ms
-  opakuje s periodou hlasu (70–400 Hz, normovaná autokorelace ≥ 0,5). Hlas je
-  úsek, který zní periodicky aspoň 50 ms; onset se datuje zpátky na jeho začátek,
-  takže čekání na rozhodnutí čas nezkreslí. Rozhodovat nejdřív podle energie
-  znamenalo, že dlouhé chrastění tahů držel detektor „obsazený“ a slovo řečené
-  během otáčení se ztratilo (test to chytil)
+  opakuje s periodou hlasu (70–400 Hz, normovaná autokorelace ≥ 0,5).
+  Rozhodovat nejdřív podle energie znamenalo, že dlouhé chrastění tahů držel
+  detektor „obsazený“ a slovo řečené během otáčení se ztratilo (test to chytil)
+- **periodicita nestačí — soudí se celý zvuk** (detektor 2). První zkouška na
+  telefonu (v1, rozhodovala po 50 ms znělosti) slyšela „hlas“ každou 1,5 s;
+  ve tichu fungovala, ruchy v místnosti (vrznutí, cinknutí, řeč vedle) brala
+  jako „hop“. Znělé hopy se teď sbírají do jednoho zvuku, který končí 150 ms
+  bez znělosti, a posoudí se až celý: **60–450 ms** (souvislá řeč a televize se
+  slijí do delšího), **průměrná** periodicita ≥ 0,65 a vrchol **≥ 15 dB nad
+  pozadím** (mluví se kousek od telefonu, ruchy jdou přes místnost). Rozhodnutí
+  přijde až po konci slova, onset se datuje zpátky na jeho začátek
+- **každý posouzený zvuk se zapisuje i s tím, podle čeho se soudil** (délka,
+  periodicita, výška, stabilita výšky, hlasitost) — přijatý i odmítnutý. Další
+  ladění se dělá proti skutečné místnosti, ne proti odhadu; nikdy se neukládá
+  zvuk, jen tahle čísla
 - **práh plave:** brána je 6 dB nad 20. percentilem hladiny za posledních 1,5 s.
   Chrastění, které trvá, se do percentilu dostane za zlomek sekundy; slovo ani
   cvaknutí ne
@@ -495,9 +505,9 @@ Rozhodnuto při stavbě zkoušky:
   dál určuje ťuknutí. Po solvu se hlas spáruje s ťuknutími (`domain/audio/shadow.ts`,
   okno ±400 ms, nejbližší páry napřed) a pod pruhem fází se ukáže „Hlas 3/3 · +40
   +60 +30 ms“; v Nastavení souhrn (zachyceno / falešné poplachy / typický posun ±
-  rozptyl), živý měřič, test a „zkopírovat podrobnosti“. Syrové záznamy
-  (`audio.voiceShadowLog`, posledních 300 solvů) nesou verzi detektoru, souhrn
-  počítá jen s aktuální. Do exportu nejdou
+  rozptyl), živý měřič, test (slyšená „hop“ i ignorované zvuky) a „zkopírovat
+  podrobnosti“. Syrové záznamy (`audio.voiceShadowLog`, posledních 100 solvů)
+  nesou verzi detektoru, souhrn počítá jen s aktuální. Do exportu nejdou
 - mikrofon je otevřený jen na timeru ve fázovém režimu se zapnutou zkouškou a
   jen když je stránka vidět
 

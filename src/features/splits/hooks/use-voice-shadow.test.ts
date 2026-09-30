@@ -1,5 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DETECTOR_VERSION } from '../../../domain/audio/onset';
 import type { TimerState } from '../../../domain/timer/timer-machine';
 import { db } from '../../../db/schema';
 import { getSetting } from '../../../db/repositories/settings-repository';
@@ -27,9 +28,25 @@ function stopped(rawMs: number, splitMs: number[]): TimerState {
   return { status: 'stopped', rawMs, inspectionMs: null, splitMs };
 }
 
-function say(atMs: number) {
+/** The hook waits a second after the stop for sounds still being judged. */
+const SETTLED = { timeout: 3000 };
+
+const TRAITS = {
+  durationMs: 150,
+  periodicity: 0.9,
+  pitchHz: 150,
+  steadiness: 1,
+  loudnessDb: 30,
+};
+
+/** A sound heard at `atMs`; the detector took it for the word unless told otherwise. */
+function hear(atMs: number, isVoice = true) {
   if (handlers === null) throw new Error('The microphone was never opened');
-  handlers.onVoice(atMs);
+  handlers.onSound({ atMs, isVoice, ...TRAITS });
+}
+
+function kept(atMs: number, isVoice = true) {
+  return { atMs, isVoice, ...TRAITS };
 }
 
 async function listening(initial: TimerState = IDLE) {
@@ -49,24 +66,33 @@ describe('useVoiceShadow', () => {
   it('compares what it heard with the taps once the solve has stopped', async () => {
     const { result, rerender } = await listening();
     rerender({ state: running(1000) });
-    say(900); // inspection's last words, before the clock started
-    say(3040);
+    hear(900); // inspection's last words, before the clock started
+    hear(3040);
+    hear(5000, false); // a clatter the detector turned away
     rerender({ state: running(1000, [2000]) });
-    say(9950); // said with the stop
+    hear(9950); // said with the stop
     rerender({ state: stopped(9000, [2000]) });
     rerender({ state: { status: 'idle', lastRawMs: 9000 } });
 
-    await waitFor(() =>
-      expect(result.current.result).toEqual({
-        boundaries: 1,
-        heard: 1,
-        extra: 0,
-        offsetsMs: [40],
-      }),
+    await waitFor(
+      () =>
+        expect(result.current.result).toEqual({
+          boundaries: 1,
+          heard: 1,
+          extra: 0,
+          offsetsMs: [40],
+        }),
+      SETTLED,
     );
     await waitFor(async () =>
       expect(await getSetting('audio.voiceShadowLog')).toEqual([
-        { detector: 1, splitMs: [2000], rawMs: 9000, voiceMs: [2040, 8950] },
+        {
+          detector: DETECTOR_VERSION,
+          splitMs: [2000],
+          rawMs: 9000,
+          voiceMs: [2040, 8950],
+          sounds: [kept(2040), kept(4000, false), kept(8950)],
+        },
       ]),
     );
   });
@@ -74,16 +100,20 @@ describe('useVoiceShadow', () => {
   it('forgets an attempt abandoned before it stopped', async () => {
     const { result, rerender } = await listening();
     rerender({ state: running(1000) });
-    say(3040);
+    hear(3040);
     rerender({ state: IDLE });
     rerender({ state: running(20_000) });
     rerender({ state: stopped(5000, []) });
 
-    await waitFor(() =>
-      expect(result.current.result).toEqual({ boundaries: 0, heard: 0, extra: 0, offsetsMs: [] }),
+    await waitFor(
+      () =>
+        expect(result.current.result).toEqual({ boundaries: 0, heard: 0, extra: 0, offsetsMs: [] }),
+      SETTLED,
     );
     const log = await getSetting('audio.voiceShadowLog');
-    expect(log).toEqual([{ detector: 1, splitMs: [], rawMs: 5000, voiceMs: [] }]);
+    expect(log).toEqual([
+      { detector: DETECTOR_VERSION, splitMs: [], rawMs: 5000, voiceMs: [], sounds: [] },
+    ]);
   });
 
   it('keeps the microphone shut while the trial is off', () => {
