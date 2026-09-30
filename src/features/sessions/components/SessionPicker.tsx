@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Sheet } from '../../../components/Sheet';
 import { formatDate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -37,6 +37,9 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+  // Escape takes the field away, and a browser that blurs a field on its way
+  // out of the page would save the name that was just cancelled.
+  const isCancellingRename = useRef(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const removeSession = useRemoveSession();
 
@@ -82,9 +85,18 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
                 autoFocus
                 value={editingName}
                 onChange={(event) => setEditingName(event.target.value)}
-                onBlur={() => submitRename(session.id)}
+                onBlur={() => {
+                  if (isCancellingRename.current) return;
+                  submitRename(session.id);
+                }}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') submitRename(session.id);
+                  if (event.key === 'Escape') {
+                    // The rename, not the whole picker.
+                    event.stopPropagation();
+                    isCancellingRename.current = true;
+                    setEditingId(null);
+                  }
                 }}
                 aria-label={strings.sessions.rename}
               />
@@ -115,6 +127,7 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
                 <button
                   type="button"
                   onClick={() => {
+                    isCancellingRename.current = false;
                     setEditingId(session.id);
                     setEditingName(session.name);
                   }}

@@ -52,6 +52,17 @@ describe('useKeyCapture', () => {
     expect(onEscape).toHaveBeenCalledOnce();
   });
 
+  it('leaves Escape to a field that takes it for itself', () => {
+    const onEscape = vi.fn();
+    renderHook(() => useKeyCapture(true, onEscape));
+    const field = add('input');
+    field.addEventListener('keydown', (event) => event.stopPropagation());
+
+    press(field, 'Escape');
+
+    expect(onEscape).not.toHaveBeenCalled();
+  });
+
   it('does nothing while inactive', () => {
     const onEscape = vi.fn();
     renderHook(() => useKeyCapture(false, onEscape));

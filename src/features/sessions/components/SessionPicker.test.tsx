@@ -55,6 +55,36 @@ describe('SessionPicker', () => {
     });
     expect(onClose).toHaveBeenCalled();
   });
+  describe('renaming', () => {
+    it('renames on Enter', async () => {
+      await getOrCreateActiveSession('333', 'freestyle');
+      const user = userEvent.setup();
+
+      render(<SessionPicker onClose={vi.fn()} />);
+      await user.click(await screen.findByRole('button', { name: 'Rename' }));
+      await user.clear(screen.getByRole('textbox', { name: 'Rename' }));
+      await user.type(screen.getByRole('textbox', { name: 'Rename' }), 'Morning{Enter}');
+
+      await waitFor(async () => {
+        expect((await getActiveSession('333', 'freestyle'))?.name).toBe('Morning');
+      });
+    });
+
+    it('takes Escape back to the name as it was, and keeps the picker open', async () => {
+      await getOrCreateActiveSession('333', 'freestyle');
+      const onClose = vi.fn();
+      const user = userEvent.setup();
+
+      render(<SessionPicker onClose={onClose} />);
+      await user.click(await screen.findByRole('button', { name: 'Rename' }));
+      await user.type(screen.getByRole('textbox', { name: 'Rename' }), ' typo{Escape}');
+
+      expect(screen.queryByRole('textbox', { name: 'Rename' })).not.toBeInTheDocument();
+      expect(onClose).not.toHaveBeenCalled();
+      expect((await getActiveSession('333', 'freestyle'))?.name).toBe('Default');
+    });
+  });
+
   describe('choosing a destination', () => {
     it('hands the choice back and leaves the active session alone', async () => {
       const active = await getOrCreateActiveSession('333', 'freestyle');
