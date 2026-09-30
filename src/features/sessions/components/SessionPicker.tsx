@@ -85,7 +85,6 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
                 onBlur={() => submitRename(session.id)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') submitRename(session.id);
-                  if (event.key === 'Escape') setEditingId(null);
                 }}
                 aria-label={strings.sessions.rename}
               />
