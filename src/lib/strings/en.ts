@@ -661,6 +661,39 @@ export const en = {
     showLearnHint:
       'A walk through one whole solve, in the menu as Learn. Hiding it changes nothing else — the sets it points at stay where they are.',
   },
+  /* The voice trial: the microphone listens alongside the phase taps. */
+  voice: {
+    title: 'Phases by voice (trial)',
+    toggle: 'Listen alongside the taps',
+    hint: 'While you time by phase, the microphone listens too. Say a short word — “hop” — each time you tap the end of a phase. The taps still decide the times; after every solve you see what your voice would have measured. The sound is only measured, on this device: nothing is recorded or sent.',
+    needsPhases: 'It listens only while solves are timed by phase — switch that on above.',
+    test: 'Test the microphone',
+    stopTest: 'Stop',
+    opening: 'Opening the microphone…',
+    failed: {
+      denied:
+        'The microphone is blocked for this app. Allow it in the browser’s settings for this site, then try again.',
+      unavailable: 'This device has no microphone the app can use.',
+    },
+    meter: 'Loudness, and the line a voice has to cross',
+    heard: (count: number) => `Say “hop” — heard ${count} ${count === 1 ? 'time' : 'times'}.`,
+    summaryEmpty: 'No solve has been timed with the trial yet.',
+    summary: (solves: number, heard: number, boundaries: number, extra: number) =>
+      `${solves} ${solves === 1 ? 'solve' : 'solves'}: heard ${heard} of ${boundaries} phase ends, ${extra} false ${extra === 1 ? 'alarm' : 'alarms'}.`,
+    offset: (medianMs: number, spreadMs: number) =>
+      medianMs === 0
+        ? `Your voice lands right on the tap, give or take ${spreadMs} ms.`
+        : `Your voice comes ${Math.abs(medianMs)} ms ${medianMs > 0 ? 'after' : 'before'} the tap, give or take ${spreadMs} ms.`,
+    copy: 'Copy the details',
+    copied: 'Copied.',
+    clear: 'Clear the results',
+    noteHeard: (heard: number, boundaries: number) => `Voice ${heard}/${boundaries}`,
+    noteExtra: (extra: number) => `${extra} false ${extra === 1 ? 'alarm' : 'alarms'}`,
+    noteFailed: {
+      denied: 'Voice: the microphone is blocked',
+      unavailable: 'Voice: no microphone',
+    },
+  },
   data: {
     exportTitle: 'Backup',
     exportHint:

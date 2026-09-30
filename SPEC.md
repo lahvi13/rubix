@@ -468,13 +468,43 @@ od kostky.
 - zdroj každého splitu je uložen (`mic` / `smartcube` / `manual`) — ruční je zatím
   jediný, který se zapisuje
 
-**Detekce nástupu zvuku (krok 2, zatím se nestaví — viz fáze 6):** uživatel na konci
-fáze klepne na stůl / kostku, `AudioWorklet` počítá krátkodobou energii a onset je
-překročení adaptivního prahu nad klouzavým průměrem + `refractoryMs` (default 250 ms)
-na potlačení zákmitů; kalibrace v nastavení (výběr vstupu, práh, gain, live meter,
-test detekce). **Nejde o rozpoznávání řeči** a nikdy nesmí odejít žádný zvuk mimo
-zařízení. Splity se přiřazují k fázím **v pořadí** podle definice metody a chybějící
-hranice je povolená — přesně ten případ, na který je pravidlo „nezměřeno" výše.
+**Fáze hlasem (krok 2 — zatím jen jako zkouška, viz fáze 6):** uživatel na konci
+fáze řekne krátké slovo („hop“) a obě ruce mu zůstanou na kostce. Původní návrh
+(klepnout na stůl / kostku + energetický práh) je opuštěný: klepnutí je krátký
+širokopásmový ráz stejně jako cvaknutí vrstvy a energie je od sebe neodliší.
+Rozhodnuto při stavbě zkoušky:
+
+- **rozhoduje periodicita, hlasitost je jen brána.** `domain/audio/onset.ts`
+  (pásmo 150–1000 Hz, hop 5 ms) se každý hop ptá, jestli se posledních 40 ms
+  opakuje s periodou hlasu (70–400 Hz, normovaná autokorelace ≥ 0,5). Hlas je
+  úsek, který zní periodicky aspoň 50 ms; onset se datuje zpátky na jeho začátek,
+  takže čekání na rozhodnutí čas nezkreslí. Rozhodovat nejdřív podle energie
+  znamenalo, že dlouhé chrastění tahů držel detektor „obsazený“ a slovo řečené
+  během otáčení se ztratilo (test to chytil)
+- **práh plave:** brána je 6 dB nad 20. percentilem hladiny za posledních 1,5 s.
+  Chrastění, které trvá, se do percentilu dostane za zlomek sekundy; slovo ani
+  cvaknutí ne
+- **hlas nikdy nezastaví solve** — posouvá jen vnitřní hranice; poslední fázi
+  ukončí fyzický stisk jako dnes
+- `AudioWorklet` (`workers/onset-processor.ts`) posílá stránce jen čísla snímků a
+  hladinu, nikdy vzorky. Hodiny zvuku se převádějí na `performance.now()` z
+  heartbeatů (minimum ze zpoždění posledních ~2 s). Nejde o rozpoznávání řeči a
+  nikdy nesmí odejít žádný zvuk mimo zařízení
+- **stínový režim (co je postavené):** přepínač v Nastavení (`audio.voiceShadow`,
+  device-local) — při měření po fázích mikrofon poslouchá **vedle ťukání**, časy
+  dál určuje ťuknutí. Po solvu se hlas spáruje s ťuknutími (`domain/audio/shadow.ts`,
+  okno ±400 ms, nejbližší páry napřed) a pod pruhem fází se ukáže „Hlas 3/3 · +40
+  +60 +30 ms“; v Nastavení souhrn (zachyceno / falešné poplachy / typický posun ±
+  rozptyl), živý měřič, test a „zkopírovat podrobnosti“. Syrové záznamy
+  (`audio.voiceShadowLog`, posledních 300 solvů) nesou verzi detektoru, souhrn
+  počítá jen s aktuální. Do exportu nejdou
+- mikrofon je otevřený jen na timeru ve fázovém režimu se zapnutou zkouškou a
+  jen když je stránka vidět
+
+Až stínová data řeknou, že hlas stačí, splity se budou zapisovat se
+`source: 'mic'` a přiřazovat k fázím **v pořadí** podle definice metody;
+chybějící hranice je povolená — přesně ten případ, na který je pravidlo
+„nezměřeno" výše.
 
 Model je navržený tak, aby změna sémantiky nebolela: splity jsou **embedded pole
 uvnitř solvu** (ne vlastní tabulka, žádné cizí klíče k migraci), `phase` je volný
@@ -873,9 +903,8 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `trainer.drillCaseIds` | 0 | `[]` |
 | `trainer.crossFront` | 0 | `'F'` |
 | `stats.chartWindow` | 0 | 100 |
-| `audio.inputDeviceId` | **1** | `null` |
-| `audio.thresholdDb` | **1** | -30 |
-| `audio.refractoryMs` | **1** | 250 |
+| `audio.voiceShadow` | **1** | `false` |
+| `audio.voiceShadowLog` | **1** | `[]` |
 | `schema.splitsVersion` | 0 | 1 |
 
 ### 4.6 Seed data
@@ -1041,12 +1070,13 @@ nemigruje.
    Zápis splitů do solvu, pruh fází po solvu, zobrazení a editace splitů v detailu,
    průměrné časy fází ve statistikách. Žádný mikrofon, žádné nové riziko.
    **Sémantika splitů je rozhodnutá a zapsaná v 3.6.**
-2. **Detekce nástupu zvuku** (`AudioWorklet`) za tímtéž rozhraním. **Zatím se
-   nestaví**: jestli se vyplatí, se pozná až podle toho, jestli se fázové časy
-   doopravdy používají. Model se kvůli tomu nemění (`Split.source`), takže
-   rozhodnutí smí přijít později — a smart cube (fáze 8) řeší totéž přesněji.
-   Chybí k němu onset detektor za rozhraním `SplitSource` a kalibrace v nastavení;
-   všechno ostatní (uložení, editace, statistiky) už stojí z kroku 1.
+2. **Fáze hlasem** (`AudioWorklet`) za tímtéž rozhraním. Fázové časy se ručně
+   používají a odkládání kostky kvůli ťuknutí je to, co brzdí — proto se staví,
+   ale **nejdřív jako stínový režim**: detektor, párování s ťuknutím a souhrn
+   v Nastavení stojí (3.6), hlas zatím nic nezapisuje. Jestli ho pustit k
+   `Split.source = 'mic'`, rozhodnou stínová data z reálných solvů na telefonu
+   (kolik hranic zachytí, kolik falešných poplachů, jak stálý je posun). Model se
+   kvůli tomu nemění a smart cube (fáze 8) řeší totéž přesněji.
 
 **Vedený solve** (scramble → cross → F2L → OLL → PLL s mezičasy) patří sem, ne do
 drillu: drill měří jeden případ, tohle měří jeden solve po fázích.

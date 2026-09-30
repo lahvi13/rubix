@@ -133,6 +133,18 @@ export interface SettingValues {
   'data.lastExportAt': number;
   /** How big that backup file was, 0 when unknown. */
   'data.lastExportBytes': number;
+  /**
+   * Device-local, as everything about audio is: the microphone listens
+   * alongside the phase taps and reports what a voice would have measured
+   * (the voice trial, SPEC 3.6). The taps still decide the times.
+   */
+  'audio.voiceShadow': boolean;
+  /**
+   * What the voice trial heard, one ShadowRecord per solve, newest last.
+   * Unknown until read through `readShadowRecords`: a version of the app with
+   * a different record may have written it.
+   */
+  'audio.voiceShadowLog': readonly unknown[];
   /** When the backup reminder was last put off, 0 for never. */
   'data.backupReminderSnoozedAt': number;
 }
@@ -180,6 +192,8 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.trendByDay': false,
   'data.lastExportAt': 0,
   'data.lastExportBytes': 0,
+  'audio.voiceShadow': false,
+  'audio.voiceShadowLog': [],
   'data.backupReminderSnoozedAt': 0,
 };
 

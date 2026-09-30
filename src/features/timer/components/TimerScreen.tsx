@@ -11,7 +11,7 @@ import { reportError, watchWrite } from '../../../lib/errors';
 import { InstallNudge } from '../../about';
 import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
-import { PhaseBar, PhaseRun, usePhases } from '../../splits';
+import { PhaseBar, PhaseRun, usePhases, useVoiceShadow, VoiceShadowNote } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useSheetMotion } from '../hooks/use-sheet-motion';
@@ -228,6 +228,10 @@ export function TimerScreen() {
 
   const timer = useTimer(handleComplete, { phases: phaseKeys });
   const status = timer.state.status;
+  // The voice trial listens only where there are taps to compare it with.
+  const [isVoiceShadowOn] = useSetting('audio.voiceShadow');
+  const isShadowing = isVoiceShadowOn && phaseKeys.length > 0;
+  const voice = useVoiceShadow(timer.state, isShadowing);
   /*
    * From the first touch until the time is read: inspection, the hold, the
    * solve. The scramble has been performed by then and the list is not being
@@ -395,6 +399,12 @@ export function TimerScreen() {
             rawMs={shownSolve.rawMs}
             bestPhases={shownBestPhases}
           />
+        ) : null}
+
+        {/* A microphone that would not open is said at rest too, not only
+            after a solve that was timed without it. */}
+        {isShadowing && !isEngaged && (resultVisible || voice.mic.kind === 'failed') ? (
+          <VoiceShadowNote mic={voice.mic} result={voice.result} />
         ) : null}
       </div>
 

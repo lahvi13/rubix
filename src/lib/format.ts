@@ -281,6 +281,13 @@ function roughly(value: number): string {
   return value < 10 ? value.toFixed(1) : String(Math.round(value));
 }
 
+/** A small signed difference in ms, without the unit: "+40", "−50", "±0". */
+export function formatSigned(ms: number): string {
+  const rounded = Math.round(ms);
+  const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '±';
+  return `${sign}${Math.abs(rounded)}`;
+}
+
 export { MS_PER_MINUTE, MS_PER_SECOND };
 /**
  * The day a timestamp falls on, in the reader's own timezone, as something

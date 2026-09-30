@@ -47,6 +47,7 @@ src/
     cube/         # vlastní model kostky: notace, stav (54 nálepek), pohledy na případ
     alg/          # triggery — rozpad algoritmu na pojmenované úseky
     transfer/     # formát exportu, validace importu, plán merge/replace
+    audio/        # detektor hlasu (běží v AudioWorkletu) a párování hlasu s ťuknutím
   features/
     timer/  history/  stats/  trainer/  splits/  data-transfer/  settings/
       components/   # React komponenty téhle feature

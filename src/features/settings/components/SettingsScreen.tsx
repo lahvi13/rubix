@@ -17,6 +17,7 @@ import { RUNNING_DISPLAYS, type RunningDisplay } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useSetting } from '../../../hooks/use-setting';
 import { useResolvedTheme } from '../../../hooks/use-appearance';
+import { VoiceShadowSection } from '../../splits';
 
 /** A case with some colour in it, so a skin can be judged before it is chosen. */
 const PREVIEW_SETUP = "R U R' U' R' F R2 U' R' U' R U R' F'";
@@ -267,6 +268,8 @@ export function SettingsScreen() {
         </label>
         <p className="data-section__hint">{strings.settings.splitModeHint}</p>
       </section>
+
+      <VoiceShadowSection />
 
       <section className="data-section">
         <h2 className="data-section__title">{strings.settings.trainer}</h2>

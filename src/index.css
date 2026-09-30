@@ -4217,6 +4217,34 @@ button[disabled] {
   gap: var(--space-3);
 }
 
+/* What the microphone hears, against the line a voice has to cross. */
+.mic-meter {
+  position: relative;
+  height: 0.5rem;
+  margin: 0 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--tint);
+  overflow: hidden;
+}
+
+.mic-meter__level {
+  display: block;
+  height: 100%;
+  background: var(--muted);
+}
+
+.mic-meter__level.is-loud {
+  background: var(--accent);
+}
+
+.mic-meter__gate {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--text);
+}
+
 /* What there is to lose, read at full strength — it is the reason to press export. */
 .backup-status {
   list-style: none;
@@ -4737,6 +4765,15 @@ input[type='radio'] {
 
 .phase-bar--labels {
   padding: 0 var(--space-2);
+}
+
+/* The voice trial's verdict on the solve above it: a reading, not a result. */
+.voice-note {
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
 }
 
 .phase-bar__track {

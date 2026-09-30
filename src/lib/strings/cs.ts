@@ -597,6 +597,39 @@ export const cs: Strings = {
     showLearnHint:
       'Průchod jedním celým složením, v menu jako Pro začátečníky. Skrytí nic jiného nezmění — sady, na které odkazuje, zůstanou tam, kde jsou.',
   },
+  voice: {
+    title: 'Fáze hlasem (zkouška)',
+    toggle: 'Poslouchat vedle ťukání',
+    hint: 'Když měříš po fázích, poslouchá zároveň mikrofon. Pokaždé, když ťukneš na konec fáze, řekni krátké slovo — třeba „hop“. Časy dál určuje ťukání; po každém složení uvidíš, co by naměřil hlas. Zvuk se jen měří, a to v tomhle zařízení: nic se nenahrává ani neposílá.',
+    needsPhases: 'Poslouchá jen tehdy, když měříš po fázích — to zapneš výš.',
+    test: 'Vyzkoušet mikrofon',
+    stopTest: 'Zastavit',
+    opening: 'Otevírám mikrofon…',
+    failed: {
+      denied:
+        'Mikrofon má aplikace zakázaný. Povol ho v nastavení prohlížeče pro tenhle web a zkus to znovu.',
+      unavailable: 'Tohle zařízení nemá mikrofon, který by aplikace mohla použít.',
+    },
+    meter: 'Hlasitost a čára, kterou musí hlas přejít',
+    heard: (count: number) => `Řekni „hop“ — slyšeno ${count}×.`,
+    summaryEmpty: 'Se zkouškou zatím žádné složení neproběhlo.',
+    summary: (solves: number, heard: number, boundaries: number, extra: number) =>
+      `${solves} složení: zachyceno ${heard} z ${boundaries} konců fází, ${extra} ${plural(extra, 'falešný poplach', 'falešné poplachy', 'falešných poplachů')}.`,
+    offset: (medianMs: number, spreadMs: number) =>
+      medianMs === 0
+        ? `Hlas přichází přesně s ťuknutím, ± ${spreadMs} ms.`
+        : `Hlas přichází ${Math.abs(medianMs)} ms ${medianMs > 0 ? 'po ťuknutí' : 'před ťuknutím'}, ± ${spreadMs} ms.`,
+    copy: 'Zkopírovat podrobnosti',
+    copied: 'Zkopírováno.',
+    clear: 'Smazat výsledky',
+    noteHeard: (heard: number, boundaries: number) => `Hlas ${heard}/${boundaries}`,
+    noteExtra: (extra: number) =>
+      `${extra} ${plural(extra, 'falešný poplach', 'falešné poplachy', 'falešných poplachů')}`,
+    noteFailed: {
+      denied: 'Hlas: mikrofon je zakázaný',
+      unavailable: 'Hlas: žádný mikrofon',
+    },
+  },
   data: {
     exportTitle: 'Záloha',
     exportHint:
