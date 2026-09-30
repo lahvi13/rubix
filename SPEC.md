@@ -939,32 +939,48 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 
 | key | deviceLocal | default |
 |---|---|---|
-| `timer.holdThresholdMs` | 0 | 300 |
-| `timer.inspectionEnabled` | 0 | 1 |
+| `timer.holdThresholdMs` | 0 | `300` |
+| `timer.inspectionEnabled` | 0 | `false` |
 | `timer.inspectionCues` | 0 | `[8000, 12000]` |
 | `timer.showScramblePreview` | 0 | `true` |
 | `timer.splitMode` | 0 | `'total'` |
 | `timer.runningDisplay` | 0 | `'hundredths'` (`tenths` / `seconds` / `hidden` — jen co hodiny ukazují během běhu) |
-| `ui.theme` | 1 | `'system'` |
+| `ui.theme` | **1** | `'dark'` |
 | `ui.font` | 0 | `'sans'` |
 | `ui.textSize` | **1** | `'medium'` |
-| `ui.clockSize` | **1** | `'medium'` |
-| `ui.twistyMode` | 0 | `'2D'` |
+| `ui.clockSize` | **1** | `'large'` |
+| `ui.clockFace` | 0 | `'digital'` |
+| `ui.twistyMode` | 0 | `'3D'` |
 | `ui.cubeSkin` | 0 | `'classic'` |
 | `ui.showLearn` | 0 | `true` |
-| `trainer.twoLookDefault` | 0 | `false` |
-| `trainer.showAlgs` | 0 | `false` |
+| `ui.learnExplanations` | 0 | `true` |
+| `ui.installNudgeDismissed` | **1** | `false` |
+| `trainer.twoLookDefault` | 0 | `true` |
+| `trainer.showAlgs` | 0 | `true` |
 | `trainer.showRotationAlgs` | 0 | `true` |
+| `trainer.setId` | 0 | `'f2l'` |
+| `trainer.lastLevels` | 0 | `[]` |
 | `trainer.drillSetId` | 0 | `'pll'` |
 | `trainer.drillMode` | 0 | `'solve'` |
 | `trainer.drillCaseIds` | 0 | `[]` |
 | `trainer.crossFront` | 0 | `'F'` |
-| `stats.chartWindow` | 0 | 100 |
+| `stats.chartWindow` | 0 | `100` |
+| `stats.phaseTrendMode` | 0 | `'stacked'` |
+| `stats.phaseTrendSmoothed` | 0 | `false` |
+| `stats.scope` | 0 | `'all'` |
+| `stats.goalMs` | 0 | `0` (bez cíle) |
+| `stats.trendByDay` | 0 | `false` |
 | `stats.tagId` | 0 | `''` (bez tagu) |
+| `data.lastExportAt` | **1** | `0` |
+| `data.lastExportBytes` | **1** | `0` |
 | `audio.voiceShadow` | **1** | `false` |
 | `audio.voiceShadowLog` | **1** | `[]` |
-| `audio.voiceLoudnessDb` | **1** | 0 |
-| `schema.splitsVersion` | 0 | 1 |
+| `audio.voiceLoudnessDb` | **1** | `0` |
+| `data.backupReminderSnoozedAt` | **1** | `0` |
+
+Zdroj pravdy je `SETTING_DEFAULTS` v `db/repositories/settings-repository.ts`,
+podle kterého je tahle tabulka opsaná; co je vázané na zařízení, říká
+`DEVICE_LOCAL_PREFIXES` tamtéž (do zálohy nejde).
 
 ### 4.6 Seed data
 
