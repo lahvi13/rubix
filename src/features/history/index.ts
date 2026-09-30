@@ -5,3 +5,4 @@ export const HistoryScreen = lazy(() =>
   import('./components/HistoryScreen').then((module) => ({ default: module.HistoryScreen })),
 );
 export { SolveDetailSheet } from './components/SolveDetailSheet';
+export { useTags } from './hooks/use-tags';

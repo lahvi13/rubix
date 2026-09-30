@@ -127,6 +127,12 @@ export interface SettingValues {
    */
   'stats.trendByDay': boolean;
   /**
+   * The one tag the stats read, '' for every solve. Kept like the scope, so
+   * somebody following their one-handed times finds them there next time; a
+   * tag deleted since reads as no tag at all.
+   */
+  'stats.tagId': string;
+  /**
    * When this device last wrote a backup, 0 for never. Device-local: a backup
    * restored elsewhere says nothing about whether that device is backed up.
    */
@@ -199,6 +205,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.scope': 'all',
   'stats.goalMs': 0,
   'stats.trendByDay': false,
+  'stats.tagId': '',
   'data.lastExportAt': 0,
   'data.lastExportBytes': 0,
   'audio.voiceShadow': false,

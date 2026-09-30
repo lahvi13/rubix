@@ -160,6 +160,13 @@ kromě PB, které je globální per `puzzle`.
 - DNF rate, +2 rate
 - histogram časů (šířka koše odvozená z rozsahu, min. 0,5 s)
 - trend rolling ao12 (line chart, osa X = index solvu)
+- **filtr podle tagu**: pod volbou rozsahu řada tagů, jen když nějaký tag existuje.
+  Zvolený tag omezí všechno na obrazovce — průměry, grafy, rekordy, cíl, praxi i fáze —
+  na solvy s tagem; PB single zůstává globální. U „Posledních 100“ se nejdřív filtruje
+  tag a pak bere posledních 100 (posledních 100 OH solvů, ne OH solvy z posledních 100).
+  Jeden tag najednou, zvolený svítí a řádek pod ním ho jmenuje, aby se filtrované číslo
+  nečetlo jako celkové. Volba se pamatuje (`stats.tagId`); tag mezitím smazaný se čte
+  jako žádný
 
 **Pravidla průměrů:**
 
@@ -953,6 +960,7 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `trainer.drillCaseIds` | 0 | `[]` |
 | `trainer.crossFront` | 0 | `'F'` |
 | `stats.chartWindow` | 0 | 100 |
+| `stats.tagId` | 0 | `''` (bez tagu) |
 | `audio.voiceShadow` | **1** | `false` |
 | `audio.voiceShadowLog` | **1** | `[]` |
 | `audio.voiceLoudnessDb` | **1** | 0 |

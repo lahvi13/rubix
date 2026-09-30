@@ -10,6 +10,7 @@ import {
 } from '../../../db/repositories/session-repository';
 import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import { addSolve, updateSolve } from '../../../db/repositories/solve-repository';
+import { createTag } from '../../../db/repositories/tag-repository';
 import { StatsScreen } from './StatsScreen';
 
 // The charts are dumb by contract and jsdom has no layout for Recharts to
@@ -231,6 +232,86 @@ describe('StatsScreen', () => {
     });
     // And reading it did not move anybody: the active session is untouched.
     expect((await getActiveSession('333', 'freestyle'))?.id).toBe(sessionId);
+  });
+
+  describe('by tag', () => {
+    const tagRow = () => screen.getByRole('group', { name: 'Only solves with this tag' });
+
+    it('reads only the solves with the chosen tag, and remembers it', async () => {
+      const oh = await createTag('OH');
+      for (const rawMs of [10_000, 20_000]) {
+        await updateSolve((await seedSolve(sessionId, rawMs)).id, { tagIds: [oh.id] });
+      }
+      await seedSolve(sessionId, 60_000);
+      const user = userEvent.setup();
+
+      render(<StatsScreen />);
+      await screen.findByText('3 solves');
+      await user.click(within(tagRow()).getByRole('button', { name: 'OH' }));
+
+      expect(await screen.findByText('2 solves · tagged OH')).toBeInTheDocument();
+      expect(screen.getByText('Mean').parentElement).toHaveTextContent('15.00');
+      expect(await getSetting('stats.tagId')).toBe(oh.id);
+
+      // The same chip again turns it off.
+      await user.click(within(tagRow()).getByRole('button', { name: 'OH' }));
+
+      expect(await screen.findByText('3 solves')).toBeInTheDocument();
+      expect(await getSetting('stats.tagId')).toBe('');
+    });
+
+    it('takes the latest hundred of the tag, not the tagged among the latest hundred', async () => {
+      const oh = await createTag('OH');
+      for (let i = 0; i < 3; i += 1) {
+        await updateSolve((await seedSolve(sessionId, 20_000)).id, { tagIds: [oh.id] });
+      }
+      for (let i = 0; i < 100; i += 1) await seedSolve(sessionId, 10_000);
+      await setSetting('stats.scope', 'recent');
+      await setSetting('stats.tagId', oh.id);
+
+      render(<StatsScreen />);
+
+      expect(await screen.findByText('3 solves · tagged OH')).toBeInTheDocument();
+      expect(screen.getByText('Mean').parentElement).toHaveTextContent('20.00');
+    });
+
+    it('says so when nothing carries the tag yet, and keeps the way out in reach', async () => {
+      const oh = await createTag('OH');
+      await seedSolve(sessionId, 10_000);
+      await setSetting('stats.tagId', oh.id);
+
+      render(<StatsScreen />);
+
+      expect(await screen.findByText('No solves with this tag yet.')).toBeInTheDocument();
+      expect(within(tagRow()).getByRole('button', { name: 'OH' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+    });
+
+    it('reads a tag deleted since as no tag at all', async () => {
+      await createTag('OH');
+      await seedSolve(sessionId, 10_000);
+      await seedSolve(sessionId, 20_000);
+      await setSetting('stats.tagId', 'deleted-tag');
+
+      render(<StatsScreen />);
+
+      expect(await screen.findByText('2 solves')).toBeInTheDocument();
+      expect(screen.queryByText(/tagged/)).not.toBeInTheDocument();
+    });
+
+    it('offers no tag row until there is a tag', async () => {
+      await seedSolve(sessionId, 10_000);
+      await seedSolve(sessionId, 20_000);
+
+      render(<StatsScreen />);
+
+      await screen.findByText('2 solves');
+      expect(
+        screen.queryByRole('group', { name: 'Only solves with this tag' }),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it('leaves a best that has no solve behind it unpressable', async () => {

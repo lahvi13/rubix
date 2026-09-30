@@ -446,6 +446,13 @@
   background: var(--surface-raised);
 }
 
+/* Heads a row that would otherwise read as more of the row above it. */
+.chart-modes__label {
+  align-self: center;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
 /*
  * The readout, in a row of its own under the plot rather than over it (see
  * chart-theme.ts). Recharts renders into this box; the height is held so that

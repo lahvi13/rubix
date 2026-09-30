@@ -39,6 +39,7 @@ import {
   type PhaseTrendPoint,
 } from '../../../domain/stats/phases';
 import { recordProgression } from '../../../domain/stats/progression';
+import { solvesInScope } from '../../../domain/stats/scope';
 import {
   calendarDays,
   dayNumber,
@@ -158,7 +159,10 @@ export interface GoalStats {
 
 export interface SessionStats {
   solveCount: number;
-  /** Every solve the source could have read — more than solveCount only for 'recent'. */
+  /**
+   * Every solve the source could have read, the tag's only when there is one —
+   * more than solveCount only for 'recent'.
+   */
   availableCount: number;
   windows: WindowStats[];
   sessionBestMs: number | null;
@@ -214,6 +218,8 @@ export function useSessionStats(
   source: StatsSource | null,
   puzzle: Puzzle,
   phaseKeys: readonly string[] = [],
+  /** Only the solves carrying this tag; null for all of them. */
+  tagId: string | null = null,
 ): SessionStats | null {
   const kind = source?.kind ?? null;
   const sessionId = source?.kind === 'session' ? source.sessionId : null;
@@ -228,7 +234,11 @@ export function useSessionStats(
 
   return useMemo(() => {
     if (loaded === undefined) return null;
-    const solves = kind === 'recent' ? loaded.slice(-RECENT_SOLVES) : loaded;
+    const { pool, read: solves } = solvesInScope(
+      loaded,
+      tagId,
+      kind === 'recent' ? RECENT_SOLVES : null,
+    );
 
     const finals = solves.map(finalMs);
     const rolling = rollingAverage(finals, TREND_WINDOW);
@@ -267,10 +277,10 @@ export function useSessionStats(
     // Practice is a question about the calendar, not about how many solves
     // are being read: the latest hundred can start partway through the month.
     const practiceDays =
-      solves === loaded
+      solves === pool
         ? summaries
         : summariseDays(
-            loaded.map((solve) => ({ dayKey: dayKey(solve.createdAt), finalMs: finalMs(solve) })),
+            pool.map((solve) => ({ dayKey: dayKey(solve.createdAt), finalMs: finalMs(solve) })),
           );
     const countByDay = new Map(practiceDays.map((summary) => [summary.dayKey, summary.count]));
     const recentDays = calendarDays(dayKey(now()), PRACTICE_DAYS).map((key) => ({
@@ -282,7 +292,7 @@ export function useSessionStats(
 
     return {
       solveCount: solves.length,
-      availableCount: loaded.length,
+      availableCount: pool.length,
       windows: AVERAGE_WINDOWS.map((n) => ({
         n,
         current: currentAverage(finals, n),
@@ -366,5 +376,5 @@ export function useSessionStats(
         };
       },
     };
-  }, [loaded, kind, globalPb, chartWindow, goalMs, phaseKeys]);
+  }, [loaded, kind, tagId, globalPb, chartWindow, goalMs, phaseKeys]);
 }

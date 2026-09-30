@@ -9,7 +9,7 @@ import { useSetting } from '../../../hooks/use-setting';
 import { formatAverage, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { BackupReminder } from '../../data-transfer';
-import { SolveDetailSheet } from '../../history';
+import { SolveDetailSheet, useTags } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseAverages, usePhases } from '../../splits';
 import { useStatsScope } from '../hooks/use-stats-scope';
@@ -149,6 +149,13 @@ export function StatsScreen() {
   const phases = usePhases(session?.methodId ?? null);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   const [scope, setScope] = useStatsScope();
+  const tags = useTags();
+  const [storedTagId, setTagId] = useSetting('stats.tagId');
+  // A tag deleted since reads as no tag, not as a screen of nothing. Until the
+  // tags are in, the stored one is trusted, so the numbers are not drawn over
+  // every solve first and then redrawn over the tag's.
+  const tag = tags.byId.get(storedTagId) ?? null;
+  const tagId = storedTagId === '' ? null : tags.isLoaded ? (tag?.id ?? null) : storedTagId;
   const stats = useSessionStats(
     scope === undefined
       ? null
@@ -157,6 +164,7 @@ export function StatsScreen() {
         : { kind: scope },
     PUZZLE,
     phaseKeys,
+    tagId,
   );
   const isAllSessions = scope !== 'session';
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
@@ -169,7 +177,9 @@ export function StatsScreen() {
     null,
   );
 
-  if (stats === null || scope === undefined) return <main className="screen screen--scroll" />;
+  if (stats === null || scope === undefined || (tagId !== null && !tags.isLoaded)) {
+    return <main className="screen screen--scroll" />;
+  }
   // Across sessions the best of what is read is usually the PB itself, and a
   // second card with the same number on it is not a second fact. It shows
   // when they differ — a PB set in a session since archived, or before the
@@ -207,6 +217,27 @@ export function StatsScreen() {
               </button>
             ))}
           </div>
+          {/* Only there once there is a tag to read by. The one chosen stays
+              lit, and is named in the line below, so a filtered number is
+              never mistaken for the whole story. */}
+          {tags.tags.length > 0 ? (
+            <div className="chart-modes" role="group" aria-label={strings.stats.tagFilter}>
+              <span className="chart-modes__label" aria-hidden="true">
+                {strings.stats.tagLabel}
+              </span>
+              {tags.tags.map((candidate) => (
+                <button
+                  key={candidate.id}
+                  type="button"
+                  className={candidate.id === tagId ? 'is-active' : undefined}
+                  aria-pressed={candidate.id === tagId}
+                  onClick={() => setTagId(candidate.id === tagId ? '' : candidate.id)}
+                >
+                  {candidate.name}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <p className="history__summary">
             {/* Only a session can be switched; over all of them the name would
                 lead into a picker that changes nothing on this screen. */}
@@ -228,13 +259,18 @@ export function StatsScreen() {
               {stats.availableCount > stats.solveCount
                 ? strings.stats.solvesOf(stats.solveCount, stats.availableCount)
                 : `${stats.solveCount} ${strings.stats.solves}`}
+              {tag === null ? null : ` · ${strings.stats.withTag(tag.name)}`}
             </span>
           </p>
         </div>
 
         {stats.solveCount === 0 ? (
           <p className="solves__empty">
-            {isAllSessions ? strings.stats.emptyAll : strings.stats.empty}
+            {tag !== null
+              ? strings.stats.emptyTag
+              : isAllSessions
+                ? strings.stats.emptyAll
+                : strings.stats.empty}
           </p>
         ) : (
           <>
@@ -258,7 +294,7 @@ export function StatsScreen() {
               />
               {hasBestCard ? (
                 <StatCard
-                  label={BEST_LABEL[scope]}
+                  label={tag === null ? BEST_LABEL[scope] : `${BEST_LABEL[scope]} · ${tag.name}`}
                   value={formatAverage(stats.sessionBestMs)}
                   // One colour, of the strongest thing it is — the history's rule.
                   tier={sessionBestTier(stats.sessionBestMs, stats.globalPbMs)}
