@@ -46,6 +46,7 @@
 /* On the same element as .scramble__text, and after it so that it wins. */
 .scramble__loading {
   font-size: var(--text-md);
+  font-weight: 400;
   color: var(--muted);
 }
 
