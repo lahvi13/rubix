@@ -213,7 +213,7 @@ export const en = {
     tagLabel: 'Tag',
     withTag: (name: string) => `tagged ${name}`,
     emptyTag: 'No solves with this tag yet.',
-    solves: 'solves',
+    solveCount: (count: number) => `${count} ${count === 1 ? 'solve' : 'solves'}`,
     averages: 'Averages',
     current: 'Current',
     best: 'Best',

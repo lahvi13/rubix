@@ -258,7 +258,7 @@ export function StatsScreen() {
               {isAllSessions ? null : '· '}
               {stats.availableCount > stats.solveCount
                 ? strings.stats.solvesOf(stats.solveCount, stats.availableCount)
-                : `${stats.solveCount} ${strings.stats.solves}`}
+                : strings.stats.solveCount(stats.solveCount)}
               {tag === null ? null : ` · ${strings.stats.withTag(tag.name)}`}
             </span>
           </p>

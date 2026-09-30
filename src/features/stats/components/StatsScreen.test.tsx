@@ -55,6 +55,17 @@ describe('StatsScreen', () => {
     expect(await screen.findByText('No solves yet.')).toBeInTheDocument();
   });
 
+  it.each([
+    [1, '1 solve'],
+    [2, '2 solves'],
+  ])('counts %i solve(s) in words that agree with the number', async (count, text) => {
+    for (let i = 0; i < count; i += 1) await seedSolve(sessionId, 10_000);
+
+    render(<StatsScreen />);
+
+    expect(await screen.findByText(text)).toBeInTheDocument();
+  });
+
   it('reads every session by default, and one when asked', async () => {
     const elsewhere = await createSession('Evening', '333', 'freestyle');
     await seedSolve(elsewhere.id, 10_000);

@@ -195,7 +195,7 @@ export const cs: Strings = {
     tagLabel: 'Tag',
     withTag: (name: string) => `s tagem ${name}`,
     emptyTag: 'S tímto tagem zatím žádná složení.',
-    solves: 'složení',
+    solveCount: (count: number) => `${count} složení`,
     averages: 'Průměry',
     current: 'Aktuální',
     best: 'Nejlepší',

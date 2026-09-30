@@ -61,7 +61,7 @@ export function PhaseAverages({ rows, phases, measuredCount, solveCount }: Phase
                     style={{ color: phaseColour(index, phases.length) }}
                     // A column built from fewer solves than the row is not
                     // wrong, but it is not the same sample either.
-                    title={`${phase.count} ${strings.stats.solves}`}
+                    title={strings.stats.solveCount(phase.count)}
                   >
                     {formatAverage(phase.ms)}
                   </td>
