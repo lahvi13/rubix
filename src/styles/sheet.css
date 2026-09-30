@@ -1,0 +1,158 @@
+/* Solve detail */
+
+.detail {
+  position: fixed;
+  /*
+   * Over everything, the pinned header included: on a wide screen this is a
+   * panel down the right-hand side starting at the top, and the header was
+   * covering the strip with the close button in it. The header stays reachable
+   * beside it — the panel is only as wide as it needs to be.
+   */
+  z-index: 50;
+  inset-inline: 0;
+  bottom: 0;
+  max-height: 85dvh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  /* The panel has to read as lying over the screen rather than as more of
+     it. On a dark ground the surface colour is barely a step up from the
+     background and a hairline border disappears, so the edge is carried by
+     a shadow cast upwards onto what it covers. */
+  box-shadow: 0 -0.75rem 1.5rem var(--scrim);
+  /* No padding at the top: the bar pinned there carries it instead. A
+     sticky box cannot rise above its containing block, so any padding here
+     is a strip of scrolling content showing above the bar. */
+  padding: 0 var(--space-6);
+  /* The sheet is pinned to the bottom edge, so the home indicator lies over
+     its last row — the tags and the delete button. */
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  /* Up and down is the browser's, across is ours: without this the browser
+     can claim a sideways drag and cancel the pointer mid-swipe. Pinch stays
+     with the browser so the panel can still be zoomed. */
+  touch-action: pan-y pinch-zoom;
+}
+
+/*
+ * The panel scrolls rather than fits, so nothing in it may be squeezed to
+ * make room: a flex item shrunk below its content keeps drawing, and the
+ * algorithm ended up written across the heading under it.
+ */
+.detail > * {
+  flex-shrink: 0;
+}
+
+@media (min-width: 720px) {
+  .detail {
+    inset: 0 0 auto auto;
+    height: 100dvh;
+    max-height: none;
+    width: 26rem;
+    border-radius: 0;
+    border-left: 1px solid var(--border);
+    box-shadow: -0.75rem 0 1.5rem var(--scrim);
+    --sheet-from: translateX(100%);
+  }
+}
+
+/* In from the edge it is pinned to — the bottom, or the right on a wide
+   screen — by its whole length, so it reads as having been just out of view. */
+@media (prefers-reduced-motion: no-preference) {
+  .detail.is-entering {
+    animation: sheet-rise var(--motion-slide) var(--motion-ease);
+  }
+}
+
+@keyframes sheet-rise {
+  from {
+    transform: var(--sheet-from, translateY(100%));
+  }
+}
+
+.detail__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detail__header button {
+  border: none;
+  padding: 0;
+  font-size: var(--text-2xl);
+}
+
+/* A target for a thumb around a small cross. */
+.detail__close {
+  /* The bar it sits in is not a button row: an icon on its own, the same
+     weight as the steps beside it. */
+  border: none;
+  background: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-height: 0;
+  margin-inline-end: calc(var(--space-2) * -1);
+  color: var(--muted);
+}
+
+/* The bar every sheet wears: the way out at its end, and the way through the
+   sequence at the other when there is one. */
+.sheet__bar {
+  /* Pinned: the panel is taller than the screen, and both the way out and
+     the way through it scrolled away with the content. It carries the panel's
+     top padding itself so its box starts where the scrollport does, and the
+     negative side margins let it span the full width with the content passing
+     under it rather than beside it. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-inline: calc(var(--space-6) * -1);
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* As quiet as the close button beside it. Stepping through is an offer, not
+   the reason the panel is open, and it sits next to text fields and a
+   delete — none of which it may shout over. */
+.sheet__pager {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+}
+
+.sheet__step {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-height: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* An end of the sequence: still there, so the count does not jump about. */
+.sheet__step[disabled] {
+  opacity: 0.25;
+}
+
+.sheet__position {
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Nothing but the close button: it keeps to its own end of the row. */
+.detail__header--bare {
+  justify-content: flex-end;
+}

@@ -1,0 +1,294 @@
+/* Scramble */
+
+.scramble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  min-height: 4rem;
+}
+
+.scramble--hidden {
+  visibility: hidden;
+}
+
+/* The loading line over an invisible scramble, so the rows are held before
+   the moves arrive. */
+.scramble__placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* No width of its own in ch: the grid inside is measured in the scramble's
+     larger type, and this box would come out narrower and wrap an extra row. */
+  width: 100%;
+}
+
+.scramble__placeholder > * {
+  grid-area: 1 / 1;
+}
+
+.scramble__placeholder .scramble__moves {
+  visibility: hidden;
+}
+
+.scramble__loading {
+  font-size: var(--text-md);
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.scramble__text {
+  margin: 0;
+  max-width: 40ch;
+  text-align: center;
+  /* The scramble is read at arm's length with a cube in both hands. */
+  font-size: clamp(1.15rem, 4.4vw, 1.6rem);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  line-height: 1.5;
+  user-select: text;
+}
+
+/* One move per cell, so the columns line up down the rows. */
+.scramble__moves {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(2.8ch, 1fr));
+  justify-items: start;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 26ch;
+}
+
+.scramble__moves span {
+  /* The trailing space is for the clipboard, not for the eye. */
+  white-space: pre;
+}
+
+/* The scramble is the way to change it, so it is a tap surface — and must
+   still read as the scramble, not as a button. */
+.scramble__edit {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+}
+
+/* Said quietly, in the accent: a scramble the app did not draw. */
+.scramble__pinned {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+
+.scramble__unpin {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: none;
+  color: var(--muted);
+}
+
+.scramble-sheet__title {
+  margin: calc(var(--space-5) * -1) 0 0;
+  font-size: var(--text-xl);
+}
+
+.scramble-sheet__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.scramble-sheet__form textarea {
+  resize: none;
+  font-family: var(--font-mono);
+}
+
+/* The one this panel is for at the thumb's end. */
+.scramble-sheet__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/*
+ * The move the cube is turning, while a scramble or an algorithm is played
+ * back. The move itself changes colour rather than getting a mark of its own:
+ * the scramble is a grid of left-aligned cells, so anything centred under a
+ * cell is not centred under the move in it. Colour needs no alignment, and it
+ * cannot collide with the row below.
+ */
+.scramble__moves span[aria-current],
+.drill__moves span[aria-current],
+.recognition__auf[aria-current],
+.alg__move[aria-current] {
+  color: var(--accent);
+}
+
+.scramble__error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/*
+ * One box for the still cube and the animated one. They are different shapes —
+ * an unfolded net is wide, a cube seen from a corner is square — and swapping
+ * one for the other used to resize the screen under the reader's thumb.
+ */
+.scramble__stage {
+  /*
+   * The box both cubes are drawn in, as two lengths rather than percentages of
+   * it: a percentage height inside here resolves against the picture, not the
+   * box, and the square cube came out taller than its box and lost its bottom
+   * corner to the clipping.
+   */
+  --stage-width: min(260px, 70vw);
+  --stage-height: min(220px, 60vw);
+
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--stage-width);
+  height: var(--stage-height);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/*
+ * The player draws its cube inside a margin of its own, so at the size of the
+ * box it comes out visibly smaller than the one we draw. It gets a bigger box
+ * and the stage clips the margin away — scaling the canvas instead would only
+ * blur it.
+ */
+.scramble__player {
+  /* Enough to make up for the player's own margin, with room left for the
+     layer that is turning: mid-move the cube is wider than it is at rest, and
+     the box clips. The number is the size of the still picture this replaces —
+     swapping one cube for the other must not resize it — which is why the
+     ground under it takes a little clipping at the edge rather than the cube
+     being shrunk to fit. */
+  width: calc(var(--stage-width) * var(--player-scale));
+  height: calc(var(--stage-height) * var(--player-scale));
+  /*
+   * Centred by hand: a grid item that overflows its area is aligned to the
+   * start instead of the centre — the browser would rather push content off
+   * one edge than off two — and the cube ended up hanging out of the bottom
+   * right corner.
+   */
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/*
+ * Play, pause and one move on, for every cube that turns. Round, because they
+ * are shapes rather than words.
+ *
+ * Over the cube, they take its corners: the places both cubes leave empty.
+ * The unfolded net has only its top and bottom faces up and down there, and
+ * the cube seen from a corner ends short of all four. Play is top right, the
+ * steps the two bottom corners — back on the left, on to the right.
+ *
+ * No box of their own: the buttons are placed against the cube's. A layer
+ * over the whole cube, even one that let every tap through, cost the drag
+ * that turns the cube on a phone — Chrome handed the gesture to the page
+ * after two moves and the cube stopped where the finger had just been.
+ */
+.playback--corners {
+  display: contents;
+}
+
+.playback--corners button {
+  position: absolute;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+}
+
+.playback--corners .playback__toggle {
+  inset-block-start: 0;
+}
+
+.playback--corners .playback__step {
+  inset-block-end: 0;
+}
+
+.playback--corners .playback__back {
+  inset-block-end: 0;
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+}
+
+/*
+ * Under the cube, the play button stays in the middle whether or not the
+ * steps are beside it: a button that slid sideways when the cube paused would
+ * be somewhere else by the time it was tapped again.
+ */
+.playback--row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.playback--row button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: var(--radius-pill);
+}
+
+.playback--row .playback__toggle {
+  grid-column: 2;
+}
+
+.playback--row .playback__step {
+  grid-column: 3;
+  justify-self: start;
+}
+
+.playback--row .playback__back {
+  grid-column: 1;
+  justify-self: end;
+}
+
+/* A short phone has no room for a big cube and a list of solves both. */
+@media (max-height: 900px) {
+  .scramble__stage {
+    --stage-width: min(210px, 58vw);
+    --stage-height: min(170px, 47vw);
+  }
+}
+
+/*
+ * The flat preview is an unfolded cube: four faces across, three down. The
+ * cube seen from a corner is square. Both are sized by the box they share
+ * rather than by a width of their own: 'height: 100%' on a centred grid item
+ * resolves to the picture's own height, not the box's, and the square one came
+ * out taller than the box and had its bottom clipped off.
+ */
+.scramble__preview {
+  width: auto;
+  height: auto;
+  max-width: var(--stage-width);
+  max-height: var(--stage-height);
+}

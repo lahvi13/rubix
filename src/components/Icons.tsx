@@ -1,7 +1,7 @@
 /**
  * The few shapes that stand in for a word. They live together so that the
  * trainer's play button is the same play button as the timer's, and so their
- * size and weight come from one rule (`.icon` in index.css) instead of from
+ * size and weight come from one rule (`.icon` in styles/base.css) instead of from
  * whichever screen drew them.
  *
  * All of them are decorative: the button around an icon carries the label.

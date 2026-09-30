@@ -1,0 +1,131 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  /* The timer surface is press-and-hold; browser gestures must stay out of it. */
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /*
+   * Every tap in a timer is two taps in a row somewhere. Safari answers that
+   * with a zoom, and answers a single tap by waiting to find out whether a
+   * second one is coming. `manipulation` drops the double-tap gesture and
+   * keeps scrolling and pinch-zoom, which are the ones a reader needs.
+   */
+  touch-action: manipulation;
+  /* The grey block Safari flashes over whatever was tapped. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Read out but not drawn. For the places where a mark carries its meaning in
+ * colour or shape: the colour is the quick way to see it, this is the only way
+ * to hear it. Not `display: none`, which would take it out of the page for a
+ * screen reader as well.
+ */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
+ * Buttons.
+ *
+ * One shape for every one of them: a quiet outline, a muted label, a thumb's
+ * worth of height. A component says how a button is laid out — never what it
+ * looks like — and a state says what it means: the choice that is on, the
+ * action a panel is for, the one there is no undo for.
+ *
+ * Anything that is a tapped surface rather than a button (a case card, the
+ * scrim behind the menu, a colour swatch) paints itself over this.
+ */
+button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-md);
+  padding: var(--space-3) var(--space-5);
+  /* The phone is the main device and a finger is not a pointer. */
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+/* The button a panel is there for reads at full strength, not as an aside.
+   Wrapped in :where() so that a state — active, primary, dangerous — still
+   wins over it without having to be written more specifically. */
+:where(.update-prompt, .session-form, .drill__picker-actions, .case-detail__controls, .data-section)
+  button {
+  color: var(--text);
+}
+
+/*
+ * An icon stands in for a word: same size everywhere, and it takes the colour
+ * of the button around it, which is what says whether it is on or dangerous.
+ * The button keeps the label in aria-label, since nothing is written on it.
+ */
+.icon {
+  display: block;
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: currentColor;
+}
+
+/* Shapes that are strokes rather than areas: a cross, a chevron. */
+.icon--stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+/* The choice that is on, and the action its panel exists for. */
+button.is-active,
+button.is-primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* The browser's own link blue is drawn for a white page and reads poorly on a
+   dark one. */
+a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
+button.is-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+button[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Hover is a desktop idea; on a phone it fires on tap and then sticks. */
+@media (hover: hover) {
+  button:hover:not([disabled]) {
+    color: var(--text);
+  }
+}
+
+/*
+ * One focus ring for everything that takes focus. The browser's own is drawn
+ * for a white page and disappears on a dark one.
+ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

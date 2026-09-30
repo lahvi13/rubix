@@ -1,0 +1,48 @@
+/* Troubleshooting */
+
+/*
+ * The line the folded section leaves behind: the two things worth knowing
+ * without unfolding it. Full width with the chevron at its end, like the drill's
+ * case pool, so it reads as a way in.
+ */
+.diagnostics__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: start;
+  font-size: var(--text-sm);
+}
+
+.diagnostics__bad {
+  color: var(--danger);
+}
+
+.diagnostics__tools {
+  margin-top: var(--space-5);
+}
+
+.diagnostics__log {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.diagnostics__when {
+  display: block;
+  font-size: var(--text-2xs);
+  opacity: 0.75;
+}
+
+.scramble__loading {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--muted);
+}

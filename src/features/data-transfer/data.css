@@ -1,0 +1,122 @@
+/* What there is to lose, read at full strength — it is the reason to press export. */
+.backup-status {
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+/* Only once there is a fresh backup to send; set apart from the export row it follows. */
+.backup-share,
+.backup-csv {
+  margin-top: var(--space-5);
+}
+
+.backup-status__refused {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+}
+
+/* What an import could not take, said plainly rather than as a table. */
+.data-section__list {
+  margin: 0 0 var(--space-5);
+  padding-inline-start: var(--space-6);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.data-section__list li {
+  margin-bottom: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+
+.import-modes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4) var(--space-5);
+}
+
+.import-modes legend {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.import-modes__option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--space-4);
+  align-items: baseline;
+  cursor: pointer;
+}
+
+.import-modes__hint {
+  grid-column: 2;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-md);
+}
+
+.preview-table th,
+.preview-table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-table thead th,
+.preview-table tbody th {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.preview-table tbody th {
+  text-align: left;
+  color: var(--text);
+}
+
+.import-preview__actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.import-result {
+  margin-top: var(--space-5);
+  font-size: var(--text-md);
+}
+
+.import-totals {
+  display: flex;
+  gap: var(--space-7);
+  margin: var(--space-3) 0 0;
+}
+
+.import-totals__item {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.import-totals__item dt {
+  color: var(--muted);
+}
+
+.import-totals__item dd {
+  margin: 0;
+}

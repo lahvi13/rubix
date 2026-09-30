@@ -1,0 +1,171 @@
+/* Timer */
+
+.scramble-slot {
+  position: relative;
+}
+
+.result-bar__next {
+  border-color: var(--accent);
+  color: var(--accent);
+  padding-inline: var(--space-7);
+}
+
+/* Invisible full-screen surface: while the clock runs, any tap stops it. */
+.timer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  touch-action: none;
+  /* A finger held still on the screen is how a solve starts, and it is also
+     the gesture Safari answers with a magnifier and a copy menu. */
+  -webkit-touch-callout: none;
+}
+
+/* Abbreviated in the heading (see strings.ts), so they are set like one. */
+.solves-panel__toggle {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+/*
+ * The clock with the attempt over and the answer up. The time stays — it is
+ * what the attempt was for, and the case's own row repeats it below — but the
+ * surface is no longer a button, so a thumb that lands here does nothing
+ * rather than quietly starting a rep whose answer is already on screen.
+ */
+.timer.is-locked {
+  cursor: default;
+  opacity: 0.75;
+  /*
+   * Back to being page. The clock forbids the browser its own gestures so
+   * that a hold arms the timer instead of scrolling; with nothing left to
+   * arm, that only meant a drag begun on the digits went nowhere — and the
+   * digits sit in the middle of a screen that now scrolls.
+   */
+  touch-action: auto;
+}
+
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  touch-action: none;
+  /* As on the overlay: the hold that arms the clock must not raise a
+     magnifier over the digits it is about to start. */
+  -webkit-touch-callout: none;
+}
+
+/* The clock and the ring around it share a box, and its font size is the
+   clock's, so the ring can be measured in the digits it surrounds. */
+.timer__clock {
+  position: relative;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--clock-size) * var(--clock-scale, 1));
+}
+
+/* Running, the clock is all there is to look at, so it takes the room. */
+.timer--running .timer__clock {
+  font-size: calc(var(--clock-size) * var(--clock-scale, 1) * 1.22);
+}
+
+/* The inspection countdown, under the number it belongs to. */
+.timer__countdown {
+  width: min(15rem, 62vw);
+  height: 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--tint);
+  overflow: hidden;
+}
+
+.timer__countdown-left {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  /* The number and the bar are one signal; the colour is set on the pair. */
+  background: currentColor;
+  transform-origin: left;
+}
+
+.timer__value {
+  font-family: var(--font-clock);
+  font-size: 1em;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* Quieter and smaller, but the same colour: the clock goes green when it is
+   armed and red while it is held, and the hundredths belong to it. */
+.timer__hundredths {
+  font-size: 0.62em;
+  font-weight: 600;
+  opacity: 0.55;
+}
+
+/* "Solving", in place of a time the reader asked not to see: words, so not in
+   the seven-segment face, and quiet, since there is nothing in it to read. */
+.timer__words {
+  font-family: var(--font-ui);
+  font-size: 0.4em;
+  font-weight: 600;
+  opacity: 0.55;
+}
+
+.timer__hint {
+  margin: 0;
+  min-height: 1.25rem;
+  font-size: var(--text-md);
+  color: var(--muted);
+}
+
+/*
+ * What the finished time was worth, in the line the hint leaves empty. Set
+ * like the rest of the app's records — the star, and the two colours the
+ * lists already use for them — so that it is recognised rather than read.
+ */
+.timer__note {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* The one record above a session's own; the lists give it the same colour. */
+.timer__note.is-pb {
+  color: var(--record);
+}
+
+/*
+ * A beaten goal, said in the same voice but without the records' colour. A
+ * goal within reach is beaten on a good share of solves — that is what
+ * chasing one looks like — and a line that lit up like a record every other
+ * time would stop meaning anything, the records along with it.
+ */
+.timer__note.is-goal {
+  color: var(--text);
+}
+
+/* A shared time that was not beaten: said, since finding out was the point,
+   but not in a colour that reads as having won something. */
+.timer__note.is-short {
+  color: var(--muted);
+}
+
+.timer--holding .timer__value {
+  color: var(--danger);
+}
+
+.timer--armed .timer__value {
+  color: var(--accent);
+}
+
+.timer--inspecting .timer__clock {
+  gap: var(--space-4);
+}

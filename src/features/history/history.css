@@ -1,0 +1,368 @@
+/* Filters */
+
+/*
+ * One line that scrolls sideways, however many tags there are. Wrapping put
+ * a second row of chips over the list with the third tag and a row more with
+ * every few after it; the penalty and record filters come first, so they are
+ * the ones in view.
+ *
+ * Run out to the edges of the screen, so a chip that does not fit slides
+ * under the edge of the glass — which is what says the row goes on — rather
+ * than being cut off in mid-air at the gutter. The block padding is room for
+ * the focus ring, which the scroller would otherwise clip.
+ */
+.filters {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-6)) var(--space-4);
+  padding: var(--space-2) var(--space-6);
+  scroll-padding-inline: var(--space-6);
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
+}
+
+.filters button {
+  flex: none;
+  border-radius: var(--radius-pill);
+}
+
+/*
+ * A filter is on or off, not right or wrong, so it takes no colour that
+ * means something: the accent is a session's best and the gold is the best
+ * there has ever been, and a chip wearing either would be read as a verdict.
+ * It changes weight instead — ring, fill and text all at once, because the
+ * fill alone was a shade off the background on a dark ground and the ring
+ * was not changing at all.
+ */
+.filters button.is-active {
+  border-color: var(--text);
+  color: var(--text);
+  background: var(--surface-raised);
+  font-weight: 600;
+}
+
+/* Not a filter but the way to the tags themselves: dotted, like every
+   other text button that opens something. */
+.filters__edit {
+  border-style: dashed;
+}
+
+/* History */
+
+.history__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/*
+ * The day a run of solves belongs to. Pinned under the app's own header so
+ * that scrolling a long session always says which day is being read — the
+ * question a hundred undated times cannot answer.
+ */
+.history__day {
+  grid-column: 1 / -1;
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  /* Space above belongs to the padding, not to a margin: pinned, the heading
+     paints its padding but never its margin, and the row sliding under would
+     surface through the gap. */
+  margin: 0;
+  padding: var(--space-5) 0 var(--space-4);
+  background: var(--bg);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* The first one opens the list, so it needs no room above it. */
+.history__day:first-child {
+  padding-top: 0;
+}
+
+/* Only there while something is selected, so it may take a row of its own
+   rather than squeeze in beside the counts. */
+/* Tags */
+
+.day-picker {
+  gap: var(--space-5);
+}
+
+.day-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* A row of the picker: the date, and how much was done that day. */
+.day {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+}
+
+.day.is-active {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.day__count {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.tag-panel {
+  gap: var(--space-5);
+}
+
+.tag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* A card like the session's: the name has to stay wide enough to type in,
+   which it is not with a count and a button beside it on a phone. */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+}
+
+/* The tag's own colour on the edge of its name, the way the chips wear it. */
+.tag-row__name {
+  flex: 1 1 8rem;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+}
+
+.tag-row__usage {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* Pushed to the far end of the summary, away from the session it would
+   otherwise read as belonging to. */
+.history__select {
+  margin-left: auto;
+}
+
+.history__selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/*
+ * The list is one grid, and every row lays itself on its columns: the
+ * selection box, the tag stack, the time, the phase bar, the clock. Shared
+ * columns are what make the bars line up — each starts and ends where the one
+ * above it does, so a phase can be compared down the list at a glance — and
+ * sized by what is in them, the time's column is as wide as the widest time
+ * on screen rather than as wide as the widest time could ever be.
+ *
+ * No column gap: the box and the tags are empty columns most of the time, and
+ * a gap beside an empty column is still a gap. Each cell keeps its own room.
+ */
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+  row-gap: var(--space-1);
+}
+
+.history__row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
+}
+
+.history__row > input[type='checkbox'] {
+  grid-column: 1;
+  margin: 0 var(--space-4) 0 0;
+}
+
+.history__open {
+  grid-column: 2 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: var(--space-3) 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Every cell names its column: a solve timed as a whole has no bar, and
+   without it the clock would slide into the bar's place. */
+.history__time {
+  grid-column: 2;
+  padding-right: var(--space-4);
+  white-space: nowrap;
+}
+
+.history__open .solve-phases {
+  grid-column: 3;
+  margin-top: 0;
+  min-width: 0;
+}
+
+/*
+ * The best result among the solves the filters match. Colour and weight only:
+ * a badge would have to fit in a row that is already three things wide, and
+ * there is exactly one of these on screen at a time.
+ */
+.history__time.is-best {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.history__time.is-record {
+  color: var(--record);
+}
+
+/* The same two tiers wherever a time is written: the timer's list and the
+   detail's big number read like the history's rows, or the mark would have
+   to be learnt again on each screen. */
+.solves__time.is-best,
+.detail__result.is-best,
+.stat-card__value.is-best {
+  color: var(--accent);
+}
+
+.solves__time.is-record,
+.detail__result.is-record,
+.stat-card__value.is-record {
+  color: var(--record);
+}
+
+/* Beside a phase's name in the editor, at the weight the row can carry. */
+.splits__best {
+  margin-left: 0.35em;
+  font-size: 0.7em;
+  vertical-align: super;
+  color: var(--accent);
+}
+
+/*
+ * The row holds a best — the result, or the fastest one of its phases has
+ * been. Lit as a whole, because the point of the mark is to be found while
+ * scrolling past, and a number in a colour is not something anyone catches at
+ * that speed. Raised rather than tinted: the row already carries the phase
+ * colours, and a wash behind them would fight with every one of them.
+ */
+.history__row.is-notable,
+.solves__row.is-notable {
+  background: var(--surface-raised);
+  box-shadow: inset 2px 0 0 var(--accent);
+  /* The ring around a best block breaks the block off its ground, so the
+     ground it is told about has to be this row's, not the list's. */
+  --bar-ground: var(--surface-raised);
+}
+
+/*
+ * Attached to the time, which is what it is about. Small and superscript so
+ * a record is announced without shouting over the number that earned it.
+ */
+/* What the reader put on the row: their own mark, and whether there is a note
+   to read. Lifted out of the meta's grey, since that is what was hiding them. */
+.history__flag {
+  margin-left: 0.4em;
+  color: var(--text);
+}
+
+.history__best {
+  margin-left: 0.3em;
+  font-size: 0.62em;
+  vertical-align: super;
+  color: var(--accent);
+}
+
+/* The best there has ever been outranks the best of this session, so it is
+   the one that changes colour. */
+.history__best.is-record {
+  color: var(--record);
+}
+
+/* Clocks to the left, so they stand in a column of their own and a mark
+   trails after its clock instead of pushing it out of line. */
+.history__meta {
+  grid-column: 4;
+  padding-left: var(--space-4);
+  text-align: left;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+/* A row is one line tall, and a stack of four dots still fits in it. */
+.history__tags {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.history__tags:not(:empty) {
+  margin-right: var(--space-3);
+}
+
+.history__dot {
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: 50%;
+}
+
+/* Dashed, because it is the edge of the list rather than an action on it. */
+.load-more {
+  margin-top: var(--space-5);
+  width: 100%;
+  border-style: dashed;
+}

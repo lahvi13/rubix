@@ -1,0 +1,67 @@
+/* Settings */
+
+.skins {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.skin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.skin--active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.skin input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The radio is hidden inside the card, so the card wears the focus ring. */
+.skin:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.skin__preview {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-md);
+}
+
+.settings-row__choices {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* A setting whose choices are too big to sit on the label's line — the skins.
+   The label still has to read like the ones that do fit. */
+.settings-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-md);
+}

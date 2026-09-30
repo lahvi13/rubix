@@ -1,0 +1,79 @@
+/* Data — export, import, wipe */
+
+.data-section {
+  background: var(--surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin: 0 auto var(--space-6);
+  max-width: var(--form-width);
+}
+
+/* About */
+
+.about__version {
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  color: var(--text);
+}
+
+.about__credits {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.data-section--danger {
+  border-color: var(--danger);
+}
+
+.data-section__title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.data-section__subtitle {
+  margin: var(--space-6) 0 var(--space-3);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.data-section__hint {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* A hint about the buttons above it, not about the section below. */
+.data-section__hint--after {
+  margin: var(--space-4) 0 0;
+}
+
+.data-section__error {
+  margin: var(--space-5) 0 0;
+  font-size: var(--text-md);
+  color: var(--danger);
+}
+
+.data-section__warning {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--danger);
+}
+
+/* Wraps: at phone width three buttons side by side squeeze their labels. */
+.data-section__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

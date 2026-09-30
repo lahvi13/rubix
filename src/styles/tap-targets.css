@@ -1,0 +1,66 @@
+/* Tap targets
+ *
+ * The phone is the main device, and a finger is not a mouse pointer: every
+ * control that is tapped rather than aimed at gets at least ~44px of height.
+ * These rules sit last on purpose — they override the compact paddings above
+ * without each component having to remember the rule.
+ */
+
+.app__menu-toggle {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-2xl);
+}
+
+/* A field under 16px makes the phone zoom the page when it is focused, which
+   moves the whole layout under the reader's thumb. The floor is in real pixels
+   because the text-size setting must not be able to push a field below it. */
+.detail input,
+.detail textarea,
+.session-form input,
+.session input,
+.goal__form input,
+.tag-row__name,
+.triggers input,
+.triggers__add input,
+.variants__add input,
+.variants__add textarea {
+  font-size: max(1rem, 16px);
+}
+
+/* A checkbox at the browser's default 13px is the smallest thing on any
+   screen; the label around it carries the rest of the hit area. */
+input[type='checkbox'],
+input[type='radio'] {
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.toggle,
+.import-modes__option {
+  min-height: 2.75rem;
+  gap: var(--space-4);
+}
+
+.history__row,
+.history__open {
+  min-height: 2.75rem;
+}
+
+/* A dotted-underline text button is still a button you hit with a thumb. */
+.solves-panel__session,
+.session-switch {
+  padding: var(--space-4) 0;
+  min-height: 2.25rem;
+}
+
+/* The card's own tap area: two lines of text are already tall enough, but the
+   floor holds when a session has a short name and no solves in it yet. */
+.session__name {
+  min-height: 2.75rem;
+}

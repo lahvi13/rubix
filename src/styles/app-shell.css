@@ -1,0 +1,99 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/*
+ * A screen that does not scroll is exactly the viewport, and it has to be told
+ * so: without a definite height its rows size to their content, and a session
+ * with fifty solves in it stretches the page to fifty rows instead of letting
+ * the list scroll inside.
+ */
+.app:not(:has(.screen--scroll)) {
+  height: 100dvh;
+}
+
+/*
+ * Pinned to the top: the way out of a screen has to stay reachable however far
+ * down the reader is. One height, always — it used to shrink once the page had
+ * moved, which bought about ten pixels and paid for them with a jump partway
+ * through every scroll.
+ */
+.app__header {
+  position: sticky;
+  top: 0;
+  min-height: var(--header-height);
+  /* Above the timer's press surface: with a solve under way the rest of the
+     screen belongs to the clock, but the way out must not. */
+  z-index: 40;
+  background: var(--bg);
+  padding: var(--space-2) var(--space-5);
+  /* Held sideways the notch is beside the header, not above it. On a wide
+     screen the header's controls keep to the page's own width, so the menu
+     and a screen's tabs line up with the content under them instead of
+     sitting out at the edges of the monitor. */
+  padding-inline-start: max(var(--space-5), env(safe-area-inset-left), (100% - var(--page-width)) / 2);
+  padding-inline-end: max(var(--space-5), env(safe-area-inset-right), (100% - var(--page-width)) / 2);
+  border-bottom: 1px solid var(--border);
+}
+
+/*
+ * With a solve under way the header belongs to the clock as much as the rest
+ * of the screen: a tap up here is a thumb that missed with a cube in both
+ * hands, and it should stop the timer the way a tap anywhere else does. The
+ * taps fall through to the press surface, which reaches under the header.
+ *
+ * Only the way out still answers, and whatever it opens with it — a menu that
+ * came up mid-solve and could not be tapped back down would be a trap.
+ */
+.app:has(.screen--solving) .app__header {
+  pointer-events: none;
+}
+
+.app:has(.screen--solving) :is(.app__menu-toggle, .app__menu, .app__scrim) {
+  pointer-events: auto;
+}
+
+.app__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: 0;
+  margin-inline-end: auto;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The screen name, now that the tabs no longer say where you are. */
+.app__route {
+  color: var(--text);
+}
+
+.screen {
+  display: grid;
+  min-height: 0;
+  /* The scramble takes what it needs; the clock and the list share the rest,
+     with the list given the larger half — it is the part that is read.
+     The clock's share is a floor, not a ceiling: with the phases of a finished
+     solve written under it the row needs more than its share, and centred
+     content that overflows ends up beneath the list — whose top border then
+     draws a line straight through the phase labels. */
+  grid-template-rows: auto minmax(min-content, 0.9fr) minmax(0, 2.2fr);
+  flex: 1;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  /*
+   * The viewport is `viewport-fit=cover`, so the page reaches under the home
+   * indicator and, held sideways, under the notch. These keep the content out
+   * of both: the last solve in the list and the Load more button at the foot
+   * of the history were the ones sitting under the bar. `max()` rather than a
+   * sum, so a device without insets keeps exactly the padding above.
+   */
+  padding-inline-start: max(var(--page-gutter), env(safe-area-inset-left));
+  padding-inline-end: max(var(--page-gutter), env(safe-area-inset-right));
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+}

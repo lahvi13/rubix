@@ -1,0 +1,541 @@
+/* Stats */
+
+
+.stats {
+  --stats-nav-height: calc(2rem + var(--space-3) * 2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: var(--page-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/*
+ * The section links, pinned under the header. One row of small pills and no
+ * more: it takes that height off every screenful, so a row that wraps would be
+ * charging twice. Too many for the width, it scrolls sideways instead.
+ */
+.stats-nav {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* The pinned row paints its padding, never a margin: the cards sliding
+     under would show through a gap. */
+  margin-block: calc(var(--space-6) * -1) 0;
+  padding-block: var(--space-3);
+  background: var(--bg);
+}
+
+.stats-nav button {
+  flex: none;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  padding: 0 var(--space-4);
+  min-height: 2rem;
+}
+
+/* A linked section stops below both the header and the pinned links. */
+.stats [id^='stats-'] {
+  scroll-margin-top: calc(var(--header-height) + var(--stats-nav-height) + var(--space-4));
+}
+
+/*
+ * Six slots — six cards for a session, five over every session with the PB
+ * across two — so the columns are two or three and nothing else. Left to
+ * auto-fit, the desktop width came out at five across and left the last card
+ * alone on a row of its own.
+ */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (min-width: 34rem) {
+  .stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+}
+
+/* A card that opens something is a button, so it has to be told back out of
+   the button family and into looking like the cards beside it. Only the
+   chevron says it leads anywhere. */
+.stat-card--open {
+  position: relative;
+  border: none;
+  min-height: 0;
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.stat-card--open::after {
+  content: '›';
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-4);
+  font-size: var(--text-lg);
+  color: var(--muted);
+}
+
+.stat-card__label {
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.stat-card__value {
+  font-size: var(--text-3xl);
+}
+
+/* The card's second figure, when one card carries two of the same kind. */
+.stat-card__detail {
+  font-size: var(--text-lg);
+  color: var(--muted);
+}
+
+.stat-card--wide {
+  grid-column: span 2;
+}
+
+.stats__section-title {
+  margin: 0 0 var(--space-4);
+  /* The header is pinned, so anything scrolled to has to stop below it. */
+  scroll-margin-top: var(--header-height);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.averages-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.averages-table th,
+.averages-table td {
+  text-align: right;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Flush with the section title above, so both tables start where it does. */
+.averages-table tr > :first-child {
+  padding-inline-start: 0;
+}
+
+.averages-table tr > :last-child {
+  padding-inline-end: 0;
+}
+
+.averages-table tbody th {
+  text-align: left;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.averages-table thead th {
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* The number opens the solves it was made of. A surface, not a button: it
+   keeps the table's own look and says it can be pressed the way the session
+   name does, with a dotted underline. */
+.averages-table__open {
+  border: none;
+  padding: 0;
+  min-height: 2rem;
+  color: var(--text);
+  font-size: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--muted);
+  text-underline-offset: 0.25em;
+}
+
+/* Three figures over the practice chart, read before the bars are. */
+.practice__figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-5);
+}
+
+.practice__figures dt {
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.practice__figures dd {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-2xl);
+}
+
+.goal__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.goal__form input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-4);
+}
+
+.goal__form input.is-invalid {
+  border-color: var(--danger);
+}
+
+.goal__form .detail__error,
+.goal__form .goal__format {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.goal__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.goal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.goal__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.goal__name {
+  flex: 1;
+  font-size: var(--text-2xl);
+}
+
+.goal__rates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.goal__rates dd {
+  margin: 0;
+}
+
+/* One row per time a record fell: the time, what it took off, and when. */
+.records {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-content: center;
+  align-items: baseline;
+  gap: var(--space-5);
+  width: 100%;
+  min-height: 2.75rem;
+  border: none;
+  background: var(--surface);
+  color: var(--text);
+  text-align: start;
+}
+
+.record__time {
+  font-size: var(--text-lg);
+}
+
+.record.is-best .record__time {
+  color: var(--accent);
+}
+
+.record.is-record .record__time {
+  color: var(--record);
+}
+
+.record__date {
+  min-width: 5.5rem;
+  text-align: end;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.records__more {
+  margin-top: var(--space-4);
+}
+
+.average-sheet {
+  gap: var(--space-5);
+}
+
+/* The row above holds only the close button; the heading takes back its gap,
+   as the session picker's does. */
+.average-sheet__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin: calc(var(--space-5) * -1) 0 0;
+  font-size: var(--text-xl);
+}
+
+.average-sheet__value {
+  font-size: var(--text-3xl);
+}
+
+/* Wrapped like a line of text, so an ao100 is a screenful and not a hundred
+   rows to scroll past. */
+.average-sheet__solves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0 0 var(--space-6);
+  list-style: none;
+}
+
+.average-sheet__solve {
+  color: var(--text);
+  padding-inline: var(--space-4);
+}
+
+.average-sheet__solve.is-trimmed {
+  color: var(--muted);
+}
+
+.average-sheet__share {
+  align-self: flex-start;
+}
+
+.chart-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  scroll-margin-top: var(--header-height);
+}
+
+/* Recharts makes the plot focusable so the keyboard can walk its points, and a
+   tap focuses it too — which left the browser's ring drawn round the plot as
+   if it were a frame. The ring stays for the keyboard, where it means
+   something. */
+.chart-card :focus:not(:focus-visible) {
+  outline: none;
+}
+
+/*
+ * What the chart cannot say for itself: which colour is which, and what the
+ * numbers along the bottom count. A chart in a card with a table above it
+ * still has to be readable on its own — the table is not always on screen.
+ */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-2xs);
+  color: var(--muted);
+}
+
+.chart-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.chart-legend__swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--radius-sm);
+  flex: none;
+  /* Held whether or not a swatch has an edge, so that one legend's squares
+     are all the same size. */
+  border: 1px solid transparent;
+}
+
+/* A series drawn as a mark to beat rather than as data reads as a rule, not
+   a block — the same dashes the reference line is drawn with. */
+.chart-legend__swatch.is-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+}
+
+.chart-legend__swatch.is-reference {
+  height: 0;
+  border-width: 2px 0 0;
+  border-top-style: dashed;
+  border-radius: 0;
+}
+
+.chart-legend__swatch.is-reference.is-solid {
+  border-top-style: solid;
+}
+
+.chart-note {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-2xs);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.chart-note--above {
+  margin: calc(var(--space-4) * -1) 0 var(--space-4);
+}
+
+/* How the phase trend is being read, above the chart it changes. */
+.chart-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.chart-modes button {
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  padding: var(--space-3) var(--space-5);
+  min-height: 2rem;
+}
+
+.chart-modes button.is-active {
+  border-color: var(--border);
+  color: var(--text);
+  background: var(--surface-raised);
+}
+
+/*
+ * The readout, in a row of its own under the plot rather than over it (see
+ * chart-theme.ts). Recharts renders into this box; the height is held so that
+ * moving from a point with a note to one without does not shift the legend.
+ */
+.chart-readout {
+  min-height: 3.5rem;
+  margin-top: var(--space-4);
+}
+
+.chart-readout__hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.chart-tooltip {
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.chart-tooltip__title {
+  margin: 0 0 var(--space-2);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Two columns: four phases in two lines instead of four, which is what kept
+   the old box nearly as tall as the chart. */
+.chart-tooltip__rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--space-7);
+  margin: 0;
+}
+
+.chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.chart-tooltip__row dt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--muted);
+}
+
+.chart-tooltip__row dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip__row.is-summary dd {
+  font-weight: 600;
+}
+
+.chart-tooltip__swatch {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-sm);
+  flex: none;
+}
+
+.chart-tooltip__note {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+}
+
+/* Mini stats on the timer screen */
+
+.mini-stats {
+  display: flex;
+  gap: var(--space-7);
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-md);
+}
+
+.mini-stats__item {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.mini-stats__item dt {
+  color: var(--muted);
+}
+
+.mini-stats__item dd {
+  margin: 0;
+}

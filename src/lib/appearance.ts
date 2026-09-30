@@ -53,7 +53,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   cubeSkin: 'classic',
 };
 
-/** Must match --bg in index.css: this is the same surface, painted by the browser. */
+/** Must match --bg in styles/tokens.css: this is the same surface, painted by the browser. */
 const CHROME_COLOUR: Record<ResolvedTheme, string> = {
   light: '#e9ecf2',
   dark: '#0f1115',

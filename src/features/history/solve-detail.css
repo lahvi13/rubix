@@ -1,0 +1,121 @@
+/* The time on the left, what can be done with it on the right. */
+.detail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.detail__result {
+  font-size: var(--text-4xl);
+}
+
+.detail__scramble {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  color: var(--muted);
+  user-select: text;
+}
+
+/* In the accent, as on the timer while it was being solved. */
+.detail__scramble-source {
+  margin: calc(var(--space-6) * -1 + var(--space-2)) 0 0;
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+
+/* Under the scramble it acts on, and no wider than its words. */
+.detail__again {
+  align-self: flex-start;
+}
+
+.detail__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--text-md);
+  color: var(--muted);
+}
+
+.detail__row--buttons {
+  flex-direction: row;
+  gap: var(--space-3);
+}
+
+.detail input,
+.detail textarea,
+.session-form input,
+.session input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-4) var(--space-4);
+  font: inherit;
+}
+
+.detail input.is-invalid,
+.detail textarea.is-invalid {
+  border-color: var(--danger);
+}
+
+.detail__error {
+  color: var(--danger);
+  font-size: var(--text-xs);
+}
+
+.detail__row--buttons button.is-active {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.detail__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tag {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.tag--on {
+  color: var(--text);
+  background: var(--tint);
+}
+
+.detail__tag-add {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.detail__tag-add input {
+  flex: 1;
+}
+
+.detail__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-5);
+}
+
+.detail__footer-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.detail__meta {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}

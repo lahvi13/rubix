@@ -1,0 +1,163 @@
+/* Trainer */
+
+/*
+ * Three rows, narrowing from what is being looked at to what can be done with
+ * it: which set, which route through it, and then the drill and the two
+ * references. They used to be one row, which on a phone was wider than the
+ * screen — the last button wrapped and sat alone under the set names, reading
+ * as one of them.
+ */
+.trainer__sets,
+.trainer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-3);
+  width: 100%;
+}
+
+/* Only the last of the three carries the gap down to the cases. */
+.trainer__actions {
+  margin-bottom: var(--space-6);
+}
+
+.trainer__spacer {
+  flex: 1;
+}
+
+.trainer__looks {
+  display: flex;
+  gap: var(--space-2);
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-3);
+  width: 100%;
+}
+
+/* Two halves of one switch, so they are joined rather than spaced. */
+.trainer__looks button {
+  background: var(--surface);
+  border-radius: 0;
+}
+
+.trainer__looks button:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.trainer__looks button:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.trainer__looks button.is-active {
+  color: var(--text);
+}
+
+/* The case count sits quietly beside the name of the route. */
+.trainer__looks span {
+  opacity: 0.6;
+  font-size: var(--text-2xs);
+}
+
+.trainer__group {
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-7);
+  width: 100%;
+}
+
+.trainer__group-title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  /* Reading the group names is half of finding a case; --muted is too quiet. */
+  color: var(--text);
+  opacity: 0.72;
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: var(--space-4);
+}
+
+/* How far the reader is with the case, as an edge — the way a solve row in the
+   history carries a best. Amber while it is being learned, green once known;
+   a case not started has none, so a fresh set stays as quiet as it was. */
+.case-card.is-learning {
+  box-shadow: inset 4px 0 0 var(--warn);
+}
+
+.case-card.is-known {
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.case-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--surface-raised);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  /* A set is up to 57 cards, each a cube drawn from 54 stickers. Laying out
+     and painting the ones nobody has scrolled to yet is what made the trainer
+     take seconds to appear on a phone — and while it did, nothing else on the
+     main thread could answer, taps included. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 7rem;
+}
+
+.case-card:hover,
+.case-card:focus-visible {
+  border-color: var(--accent);
+}
+
+/*
+ * The corner the cube leaves empty: drawn from a corner, it comes nowhere near
+ * the top right, and the name above it is centred.
+ */
+.case-card__marks {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+}
+
+.case-card__mark {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: var(--radius-pill);
+}
+
+/* Green for a choice made, the colour a chosen thing wears everywhere here. */
+.case-card__mark.is-own {
+  background: var(--accent);
+}
+
+/*
+ * Amber, not red. Red in this app is the colour of something with no way back;
+ * an algorithm that takes a slot apart is a price, and one worth paying while
+ * the slot is not built yet.
+ */
+.case-card__mark.is-slot {
+  background: var(--warn);
+}
+
+.case-card__diagram {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+/* Above the cube, the way the case sheet names it. */
+.case-card__name {
+  font-size: var(--text-xs);
+  color: var(--text);
+}

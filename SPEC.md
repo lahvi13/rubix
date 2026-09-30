@@ -1030,7 +1030,8 @@ historie případu nesmazala jedním minutím).
 
 **Dotykové cíle**: co se na telefonu ťuká prstem, má aspoň ~44 px výšky. Zaškrtávátko
 se nezvětšuje samo o sobě — plochu nese `<label>` kolem něj. Pravidla jsou pohromadě
-na konci `index.css`, aby si je nemusela pamatovat každá komponenta zvlášť.
+v `styles/tap-targets.css`, importovaném za styly obrazovek, které přebíjí, aby si je
+nemusela pamatovat každá komponenta zvlášť.
 
 **Když databáze přestane odpovídat**: IndexedDB umí spojení zavřít pod rukama
 (Android zmrazí PWA na pozadí) a zápis může uvíznout ve frontě, která se sama

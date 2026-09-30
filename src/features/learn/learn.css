@@ -1,0 +1,193 @@
+/* The beginner's guide */
+
+.learn {
+  --learn-nav-height: calc(2.5rem + var(--space-3) * 2);
+  padding-bottom: var(--space-7);
+}
+
+.learn__intro,
+.learn__step {
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-6);
+}
+
+.learn__intro {
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* On a phone the cube and the moves need the width more than the card needs
+   its margin. */
+.learn__step {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  scroll-margin-top: calc(var(--header-height) + var(--learn-nav-height) + var(--space-4));
+}
+
+@media (min-width: 34rem) {
+  .learn__step {
+    padding: var(--space-6);
+  }
+}
+
+/*
+ * The steps by number, pinned under the header: the guide is looked up far
+ * more often than it is read, and what is looked up is one step. Seven equal
+ * slots fit a phone without scrolling sideways. The pinned row paints its
+ * padding, never a margin, or the steps sliding under would show through.
+ */
+.learn__nav {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  display: flex;
+  gap: var(--space-3);
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-4);
+  padding-block: var(--space-3);
+  background: var(--bg);
+}
+
+.learn__nav button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The number is the step; the words are what it is called. */
+.learn__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.learn__number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--surface-raised);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.learn__text {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--text);
+  opacity: 0.86;
+}
+
+.learn__figure {
+  margin: 0 0 var(--space-5);
+}
+
+/* Wide enough to read the matching sides on, and no wider. */
+.learn__net {
+  display: block;
+  width: 100%;
+  max-width: 15rem;
+  margin: 0 auto var(--space-3);
+}
+
+.learn__caption {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* The row of things the page itself offers, before the guide starts. */
+.learn__tools {
+  display: flex;
+  gap: var(--space-3);
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-5);
+}
+
+.learn__dismiss {
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-6);
+}
+
+.learn__dismiss .toggle {
+  margin-bottom: var(--space-2);
+}
+
+.learn__credit {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/*
+ * The one algorithm of a step: its name across the top, the way every other
+ * case on the page is named, and under it the picture beside the moves — the
+ * picture is a thumbnail, the algorithm is the thing being read.
+ */
+.learn__key {
+  align-items: stretch;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  text-align: left;
+}
+
+.learn__key-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.learn__key-diagram {
+  flex: none;
+  width: 4.5rem;
+}
+
+.learn__caption--left {
+  text-align: left;
+  margin-top: var(--space-3);
+}
+
+.learn__more {
+  margin-top: var(--space-4);
+}
+
+/* The situations the same algorithm has to be run from again. */
+.learn__holds {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.learn__hold {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.learn__hold-diagram {
+  flex: none;
+  width: 3.5rem;
+}
+
+@media (min-width: 34rem) {
+  .learn__holds {
+    grid-template-columns: 1fr 1fr;
+  }
+}

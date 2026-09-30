@@ -1,0 +1,357 @@
+/* Case detail */
+
+.case-detail {
+  gap: var(--space-5);
+}
+
+/* The family above the name: quieter than it, because it says which kind of
+   case this is and the name says which one. */
+.case-detail__group {
+  margin: 0 0 calc(var(--space-3) * -1);
+  text-align: center;
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* The name and the picture are read as one thing, so they sit together
+   rather than a panel's width apart. Only downwards now: the negative top
+   margin used to tuck the name beside a header row holding nothing but the
+   close button, and that row is the shared bar these days. */
+.case-detail__name {
+  margin: 0 0 calc(var(--space-5) * -1);
+  text-align: center;
+  font-size: var(--text-2xl);
+}
+
+/* The pack's own name, under the reader's. Its negative margin is the one the
+   name gave up when it stopped being the last line before the picture. */
+.case-detail__alias {
+  margin: 0 0 calc(var(--space-5) * -1);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.case-detail__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  /* A fixed height, not a floor: the player is lifted out of the flow to be
+     drawn bigger than the box (below), and a stage that grew with it would
+     shift the whole sheet the moment the cube started turning. */
+  height: 12rem;
+  overflow: hidden;
+}
+
+.case-detail__diagram {
+  width: 12rem;
+  height: 12rem;
+}
+
+.case-player {
+  width: 12rem;
+  height: 12rem;
+}
+
+/*
+ * The same trick the scramble preview plays: the player draws its cube inside
+ * a margin of its own, so at the size of the box it comes out visibly smaller
+ * than the picture it replaces. It gets a bigger box, centred by hand because
+ * it no longer takes part in the layout, and the stage clips the margin away.
+ */
+.case-detail__stage .case-player {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: calc(12rem * var(--player-scale));
+  height: calc(12rem * var(--player-scale));
+  transform: translate(-50%, -50%);
+}
+
+/* The cross player's own box, so the buttons sit on the cube's corners and
+   not on the edges of the screen. */
+.drill__cross-stage {
+  position: relative;
+  cursor: pointer;
+}
+
+.case-player__loading {
+  margin: auto;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.case-detail__controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+/* Three steps of one switch, joined as the 2-Look / Full one is. The step that
+   is on takes the colour its edge has on the card. */
+.case-progress {
+  display: flex;
+  justify-content: center;
+}
+
+.case-progress button {
+  background: var(--surface);
+  border-radius: 0;
+  padding-inline: var(--space-5);
+}
+
+.case-progress button:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.case-progress button:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.case-progress button.is-active {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.case-progress button.is-active.is-learning {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.case-progress button.is-active.is-known {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.case-detail__section {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* Algorithm text with its triggers named */
+
+/*
+ * Laid out as text rather than as a row of boxes. Every part is an
+ * inline-block, so a long algorithm breaks between triggers before it breaks
+ * inside one — the reader never meets half a name — and a trigger too long for
+ * a line of its own breaks with box-decoration-break, which gives each of its
+ * lines its own padding and rounded ends instead of one rectangle cut in half.
+ */
+.alg {
+  color: var(--text);
+  display: block;
+  text-align: center;
+  font-size: clamp(1.8rem, 8.5vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.alg--play {
+  background: none;
+  border: none;
+  color: inherit;
+  /* Not `font: inherit` — that would drop the size .alg sets on this element. */
+  font-family: inherit;
+  padding: var(--space-2);
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Moves that are only moves flow like text: they fill the line and break
+   wherever they have to, so none of them is left standing on a line alone. */
+.alg__part {
+  margin-inline: calc(var(--space-4) / 2);
+}
+
+/*
+ * A block of moves that holds together: a trigger, which has a name and a
+ * colour, or a bracket the algorithm was written with, which has neither.
+ * One shape for both — same corner, same padding, same weight of line against
+ * fill — so that the only difference between them is the one that means
+ * something. Two shapes would have read as two mechanisms.
+ */
+.alg__part--trigger,
+.alg__part--group {
+  /* A block is one thing. It goes to the next line whole, and only a block too
+     wide for a line of its own breaks — with both halves keeping their ends,
+     see box-decoration-break below. */
+  display: inline-block;
+  max-width: 100%;
+  margin-block-start: var(--space-2);
+  text-align: center;
+  /* Its own last line sits on the line's baseline, so the moves inside it
+     line up with the moves beside it rather than with its box. */
+  vertical-align: baseline;
+}
+
+.alg__part--trigger .alg__moves,
+.alg__part--group .alg__moves {
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.alg__part--trigger .alg__moves {
+  background: color-mix(in srgb, var(--trigger-colour, var(--accent)) 26%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--trigger-colour, var(--accent)) 45%, transparent);
+}
+
+/*
+ * The bracket, in the same proportions and no colour of its own. Taken from
+ * the text rather than from --border, which is the line between two panels and
+ * on the dark theme is all but the same colour as the panel it sits on: drawn
+ * in that, the bracket was there and could not be seen.
+ *
+ * The fill does the work and the line only closes it, which is how a trigger
+ * is built too. A heavy line over a faint fill was the other way round, and
+ * beside an R or an L it landed close enough to the letter's own upright to
+ * read as part of it.
+ */
+.alg__part--group .alg__moves {
+  background: color-mix(in srgb, var(--text) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 45%, transparent);
+}
+
+/*
+ * The same algorithm on a case card, which is a thumb wide: the blocks keep
+ * their colours and lose their names — there is no room for a word over every
+ * trigger, and by the list the reader knows the colours.
+ */
+.alg--compact {
+  width: 100%;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.alg--compact .alg__part {
+  margin-inline: calc(var(--space-2) / 2);
+}
+
+.alg--compact .alg__part--trigger,
+.alg--compact .alg__part--group {
+  margin-block-start: 0;
+}
+
+.alg--compact .alg__part--trigger .alg__moves,
+.alg--compact .alg__part--group .alg__moves {
+  padding: 0 var(--space-1);
+}
+
+.alg__label {
+  display: block;
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--trigger-colour, var(--accent)) var(--ink-strength), var(--ink-floor));
+}
+
+/* Moves that are only moves: the same height as a block beside them, and no
+   width of their own to keep them off the text either side. */
+.alg__part--loose .alg__moves {
+  padding: var(--space-1) 0;
+}
+
+/* Variants */
+
+.variants {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/*
+ * The moves on a line of their own, what they are and what can be done with
+ * them underneath: two buttons beside a long algorithm left it a column a few
+ * moves wide, and the sheet is no wider on a desktop.
+ */
+.variants__item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+}
+
+/* Lined up under the moves rather than under the radio. */
+.variants__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-inline-start: calc(1.4rem + var(--space-3));
+}
+
+.variants__meta .variants__source {
+  flex: 1;
+}
+
+.variants__pick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.variants__moves {
+  overflow-wrap: anywhere;
+}
+
+.variants__source {
+  font-size: var(--text-2xs);
+  color: var(--muted);
+}
+
+/*
+ * The one reason that is a warning rather than a note. Louder than the rest of
+ * the list because it is the only one that says what an algorithm costs, and
+ * it has to be read before the radio beside it is tapped rather than after.
+ */
+.variants__source.is-slot {
+  color: var(--warn);
+}
+
+/* One per variant, in a list of them: the quietest button in the app. */
+.variants__item button {
+  min-height: 0;
+  padding: var(--space-1) var(--space-4);
+  font-size: var(--text-2xs);
+}
+
+.variants__add {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.variants__add input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The whole algorithm in view, the buttons under it at the thumb's end. */
+.variants__add--alg {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.variants__add--alg textarea {
+  flex: 1 1 100%;
+  min-width: 0;
+  resize: none;
+  field-sizing: content;
+}

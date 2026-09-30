@@ -12,10 +12,10 @@ import type { Face } from '../domain/cube/notation';
 import { contrast, parseHex, shiftToContrast, toHex, type Rgb } from './colour';
 import { PHASE_SLOTS, SLOT_FACE } from './phase-colours';
 
-/** Must match the light side of --surface in index.css: the card a phase is read on. */
+/** Must match the light side of --surface in styles/tokens.css: the card a phase is read on. */
 const PAPER: Rgb = { r: 0xfa, g: 0xfb, b: 0xfc };
 
-/** Must match --ink-floor in index.css. */
+/** Must match --ink-floor in styles/tokens.css. */
 const INK_FLOOR: Rgb = { r: 0x0b, g: 0x0d, b: 0x12 };
 
 /**

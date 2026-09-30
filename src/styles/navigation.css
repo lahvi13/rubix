@@ -1,0 +1,175 @@
+/* Update prompt */
+
+.update-prompt {
+  position: fixed;
+  inset-inline: 1rem;
+  bottom: 1rem;
+  /* Clear of the home indicator: this one is tapped, and a tap that lands on
+     the indicator swipes the app away instead. */
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  font-size: var(--text-lg);
+}
+
+/* Navigation */
+
+.app__header {
+  display: flex;
+  /* A screen's own controls beside its name go onto a line of their own
+     rather than off the edge, on a narrow phone with large text. */
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+}
+
+.app__header-slot:empty {
+  display: none;
+}
+
+/* The drill's tabs in the header: no rule of their own under them — the
+   header has one — and only as wide as their words. */
+.app__header .drill__tabs {
+  border-bottom: none;
+  gap: var(--space-2);
+}
+
+.app__header .drill__tabs button {
+  flex: 0 0 auto;
+  padding-inline: var(--space-4);
+  min-height: 2.25rem;
+}
+
+.app__menu-toggle {
+  color: var(--text);
+  line-height: 1;
+}
+
+/* Covers everything below the header so any tap outside closes the menu. */
+.app__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  background: var(--scrim);
+  border: none;
+  padding: 0;
+  cursor: default;
+}
+
+/*
+ * A sheet's wash goes over the header too, unlike the menu's. The menu drops
+ * out of the header and needs it lit; a sheet covers the screen and says so
+ * with aria-modal, which would be a lie while the way out of the screen sat
+ * above the wash still taking taps.
+ */
+.sheet-scrim {
+  z-index: 45;
+}
+
+.app__menu {
+  position: absolute;
+  top: 100%;
+  /* Off the header's padding box, which reaches into the notch in landscape,
+     and under the button that opened it once the header keeps to the page's
+     width on a wide screen. */
+  inset-inline-start: max(env(safe-area-inset-left, 0px), (100% - var(--page-width)) / 2);
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: min(15rem, 80vw);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) 0;
+}
+
+/* Wider than the page, it hangs under the button rather than off the edge of
+   the window, so both of its lower corners are free. */
+@media (min-width: 52rem) {
+  .app__menu {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+}
+
+/* The menu's wash comes with it every time; a sheet's only when it is the
+   first up (see components/Sheet.tsx). */
+@media (prefers-reduced-motion: no-preference) {
+  .app__menu {
+    animation: menu-drop var(--motion-fade) var(--motion-ease);
+  }
+
+  .app__scrim:not(.sheet-scrim),
+  .sheet-scrim.is-entering {
+    animation: fade-in var(--motion-fade) var(--motion-ease);
+  }
+}
+
+@keyframes menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-4)));
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.app__menu button {
+  border-color: transparent;
+  font-size: var(--text-lg);
+  padding: var(--space-4) var(--space-5);
+  text-align: start;
+}
+
+.app__menu-rule {
+  margin: var(--space-4) var(--space-5);
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.app__menu button.is-active {
+  border-color: var(--border);
+  color: var(--text);
+  background: var(--bg);
+}
+
+.screen--scroll {
+  display: block;
+}
+
+/*
+ * The drill scrolls as a page, but keeps the three rows: while it is timing,
+ * the scramble, the clock and the answer have to sit exactly where they sat a
+ * moment ago, and a block layout would walk the clock up the screen as the
+ * scramble grew. So the first two rows keep their bands and the answer takes
+ * whatever it needs — the cross's is a solution, its alternatives and a cube
+ * playing it, which was never going to fit in a third of a phone.
+ */
+.screen--drill {
+  display: grid;
+  /*
+   * Exactly one viewport tall, and told so rather than left to the content —
+   * the rows are shares, and shares of a height that moves are rows that move.
+   * The clock has to be in the same place at the end of a solve as it was at
+   * the start, and the cross answer that arrives at that moment is longer than
+   * the row it lands in.
+   *
+   * So the row keeps its size and the answer overflows it. Nothing clips it on
+   * the way out, so the page grows instead, which is the scrolling the cross
+   * needs — a solution, its alternatives and a cube performing it were never
+   * going to fit in a third of a phone.
+   */
+  flex: none;
+  height: calc(100dvh - var(--header-height));
+  grid-template-rows: auto minmax(min-content, 0.9fr) minmax(0, 2.2fr);
+}

@@ -1,0 +1,228 @@
+/*
+ * One palette, two themes. `light-dark()` picks a side from the element's
+ * colour scheme, so the system preference is honoured with no JavaScript at
+ * all and an explicit choice is one attribute on <html> (see lib/theme.ts).
+ */
+:root {
+  color-scheme: light dark;
+
+  --bg: light-dark(#e9ecf2, #0f1115);
+  --surface: light-dark(#fafbfc, #171a21);
+  /* Cards that hold a cube need to sit above the background, not in it —
+     towards the light in either theme. */
+  --surface-raised: light-dark(#ffffff, #232936);
+  --border: light-dark(#d9dde5, #262b36);
+  --text: light-dark(#15181f, #e8eaf0);
+  --muted: light-dark(#5d6575, #868ea3);
+  --accent: light-dark(#15803d, #4ade80);
+  --warn: light-dark(#a35a06, #fbbf24);
+  /* The all-time best. Its own token rather than --warn's gold, which means
+     a +2: the two would sit in one sheet meaning opposite things. Gold has
+     to darken for a light ground and brighten for a dark one, or it reads as
+     grey on one of them. */
+  --record: light-dark(#946300, #ffd24a);
+  --danger: light-dark(#c62d2d, #f87171);
+
+  /* A wash over whatever an open menu or sheet is covering. */
+  --scrim: light-dark(rgb(15 24 40 / 32%), rgb(0 0 0 / 45%));
+  /* The faintest fill that still reads as "this one is on". */
+  --tint: light-dark(rgb(21 24 31 / 7%), rgb(255 255 255 / 8%));
+
+  /*
+   * Stored colours — a trigger's — were picked to glow on a dark background
+   * and go weak as ink on a white one, so light mode darkens them towards this
+   * floor before writing with them. The strength cannot ride light-dark(),
+   * which takes colours and not percentages, so it is written out per theme
+   * below; the ring around the chosen swatch is what says which colour it is,
+   * and the text only has to stay readable.
+   */
+  --ink-strength: 55%;
+  --ink-floor: #0b0d12;
+
+  /*
+   * The phase colours — --phase-<slot> as ink, --phase-fill-<slot> as an area —
+   * are not written here. They are the faces of the cube skin the reader picked,
+   * put on the root by lib/phase-palette.ts as light-dark() pairs, because
+   * darkening a face for paper takes a measurement CSS cannot make: the yellow
+   * one needs far more of it than the green.
+   */
+
+  /*
+   * What a share written across a grey block — several phases whose boundary
+   * was never recorded — is set in; a phase's own block picks its lettering in
+   * lib/phase-palette.ts. The far end
+   * of the page's own ground rather than --bg itself: the ink it lies on is
+   * only just dark enough to carry text, and the few percent between the page
+   * and white is the margin that keeps the number readable.
+   */
+  --phase-share-ink: light-dark(#ffffff, #0f1115);
+
+  /*
+   * One type scale, in sixteenths of a rem so every step lands on a whole
+   * pixel at the default size. A rule picks a step; nothing writes its own
+   * size, which is what kept twenty of them in here.
+   */
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.875rem;
+  --text-lg: 0.9375rem;
+  --text-xl: 1rem;
+  --text-2xl: 1.125rem;
+  --text-3xl: 1.3125rem;
+  --text-4xl: 2rem;
+
+  /*
+   * Spacing, on a four-pixel grid with two smaller steps for the gaps inside a
+   * control. Same rule as the type scale: a rule picks a step, it does not
+   * invent one — there were twenty-one different gaps in here before.
+   */
+  --space-1: 0.125rem;
+  --space-2: 0.25rem;
+  --space-3: 0.375rem;
+  --space-4: 0.5rem;
+  --space-5: 0.75rem;
+  --space-6: 1rem;
+  --space-7: 1.5rem;
+  --space-8: 2rem;
+
+  /*
+   * How wide a screen grows in a wide window. One measure for every screen
+   * that is worked in, so moving between them does not move the page's edges;
+   * a narrower one for the forms (settings, data, about), whose rows of a
+   * label and a control come apart when stretched. The gutter is the side
+   * padding that centres a page-width column, never less than the phone's.
+   */
+  --page-width: 48rem;
+  --form-width: 40rem;
+  --page-gutter: max(var(--space-6), (100% - var(--page-width)) / 2);
+
+  /* Corners: sm for what sits inside a card, md for controls, lg and xl for
+     the cards themselves, pill for anything that reads as a tag. */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-pill: 999px;
+  /* The corner a sticker wears in the cube diagrams — rx 2 on an 18-unit cell
+     in components/cube-diagram-svg.ts. A ratio rather than a length, so the
+     shape holds whatever size the square is drawn at. */
+  --radius-sticker: 11%;
+
+  /* Motion is for arriving only: it says where a panel came from. Leaving is
+     instant — the thumb that closed it is already on its way to what is
+     under it. The curve starts fast and settles, so the panel is where it is
+     going before the eye has left the tap. */
+  --motion-fade: 160ms;
+  --motion-slide: 240ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* The clock is read from further away than anything else on the screen. */
+  --clock-size: clamp(3.5rem, 18vw, 9rem);
+
+  /*
+   * How much bigger than the still picture the animated cube's box is. The
+   * player draws its cube inside a margin of its own, so it needs the bigger
+   * box to come out the picture's size. Measured, not judged: the two cubes
+   * were overlaid and the pixels compared, and 1.2 differs least — the 1.25
+   * this used to be read as the cube swelling when it replaced the picture.
+   * Its perspective makes the sides a touch wider than the picture's
+   * isometric ones at any size; this splits that difference.
+   */
+  --player-scale: 1.2;
+
+  /*
+   * What the pinned header takes off the top of the page. Written from the
+   * same tokens the header is built from, so a scroll target that has to clear
+   * it grows with the text size the way the bar itself does.
+   *
+   * The menu button is what makes the bar as tall as it is, not the title
+   * beside it: measured against a line of text this came out sixteen pixels
+   * short, and anything pinned or scrolled to that height sat under the bar
+   * rather than below it.
+   */
+  --header-height: calc(2.5rem + var(--space-2) * 2 + 1px);
+
+  /*
+   * Which face the app is set in. The bundled pair is the default; 'system'
+   * hands both slots back to the device, for a reader who wants the phone's
+   * own typeface. Moves and times are always monospaced — a scramble is read
+   * symbol by symbol.
+   */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+  --font-ui: var(--font-sans);
+  /* The clock has a face of its own, the way a stopwatch does. */
+  --font-clock: var(--font-ui);
+
+
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--text);
+  /* Nearly every number in here is a time, and a time that changes width as it
+     counts is a time that is hard to read. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* An explicit choice overrides the system preference; 'system' sets neither. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ink-strength: 100%;
+  }
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --ink-strength: 55%;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ink-strength: 100%;
+}
+
+/* The face the reader chose; 'sans' is the default and needs no rule. */
+:root[data-font='mono'] {
+  --font-ui: var(--font-mono);
+}
+
+:root[data-font='system'] {
+  --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', monospace;
+}
+
+/*
+ * Text size is one multiplier on the root. Every size and gap in here is in
+ * rem, so the layout grows with the letters instead of leaving them to collide
+ * with the padding around them.
+ */
+:root[data-text-size='small'] {
+  font-size: 93.75%;
+}
+
+:root[data-text-size='large'] {
+  font-size: 112.5%;
+}
+
+:root[data-clock-face='mono'] {
+  --font-clock: var(--font-mono);
+}
+
+/*
+ * Seven segments, as on a stopwatch. The face is much wider than a proportional
+ * one, so the same clock size has to be worth fewer pixels here or a minute-long
+ * solve runs off a phone.
+ */
+:root[data-clock-face='digital'] {
+  --font-clock: 'DSEG7 Classic', var(--font-mono);
+  --clock-scale: 0.72;
+}
+
+/* The clock is set apart from the rest: it is read with a cube in both hands. */
+:root[data-clock-size='small'] {
+  --clock-size: clamp(2.6rem, 13vw, 6.5rem);
+}
+
+:root[data-clock-size='large'] {
+  --clock-size: clamp(4.4rem, 23vw, 11.5rem);
+}

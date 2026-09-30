@@ -1,0 +1,87 @@
+/* Crash screen (error boundary) */
+
+.crash {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.crash__message {
+  margin: 0;
+  color: var(--muted);
+}
+
+.crash__reload {
+  border-color: var(--accent);
+  color: var(--accent);
+  padding-inline: var(--space-7);
+}
+
+.error-banner {
+  position: fixed;
+  inset-inline: 1rem;
+  top: 1rem;
+  top: calc(1rem + env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--danger);
+  font-size: var(--text-md);
+  z-index: 10;
+}
+
+.error-banner button {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* Side by side and never squeezed: the message is what gives way. */
+.error-banner__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-3);
+}
+
+/*
+ * The way back from a delete. At the bottom, where the thumb already is, and
+ * over everything: the screen underneath has usually moved on by the time it
+ * appears.
+ */
+.undo-bar {
+  position: fixed;
+  inset-inline: 1rem;
+  bottom: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-size: var(--text-md);
+  /* Over the sheets, not under them. A session is deleted from inside one
+     that stays open afterwards, and an offer to undo hidden behind a panel
+     is the promise this bar exists to keep, broken. */
+  z-index: 60;
+}
+
+.undo-bar__message {
+  min-width: 0;
+  color: var(--text);
+}
+
+.undo-bar button {
+  flex: none;
+}

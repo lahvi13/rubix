@@ -1,0 +1,158 @@
+/* Solves */
+
+.solves-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-4);
+}
+
+.solves-panel--hidden {
+  visibility: hidden;
+}
+
+.solves-panel__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.solves-panel .solves {
+  min-height: 0;
+  overflow-y: auto;
+  /* Scrolled to its end, this list hands nothing on to the page behind it. */
+  overscroll-behavior: contain;
+}
+
+/*
+ * Down at the bottom the list is a peek, not a scroller: it is dragged up to
+ * be read, and the drag has to arrive whole. A scrollable list loses it — the
+ * browser claims the gesture after a dozen pixels, and a claimed gesture is
+ * one the page never hears the end of. Worse, it grants no user activation,
+ * without which Chrome marks the panel's history entry as one to skip and the
+ * back press leaves the app. The grip that puts the list away has always been
+ * `touch-action: none` for the first half of that reason; this is the same
+ * rule, applied to the half of the gesture that opens it.
+ */
+.screen:not(.screen--browsing) .solves-panel .solves {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/*
+ * The grip that puts the list away, shown only while it is up. Drawn as the
+ * bar every sheet is dragged by, because that is the gesture it takes — and
+ * touch-action none, or the browser would treat the drag as a scroll and
+ * cancel it, which is exactly what stopped the list itself from carrying it.
+ */
+.solves-panel__grip {
+  position: relative;
+  align-self: center;
+  width: 2.5rem;
+  height: 0.25rem;
+  min-height: 0;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  touch-action: none;
+  cursor: grab;
+}
+
+/* The bar is four pixels tall; the thumb needs a good deal more than that. */
+.solves-panel__grip::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  block-size: 2.5rem;
+  margin-block-start: -1.125rem;
+}
+
+.solves {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.solves__empty {
+  color: var(--muted);
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+/*
+ * The time on one side, the actions on the other, and the phase bar across
+ * both — never wrapped. Wrapping put the three buttons of the newest solve on
+ * a line of their own at the largest text size, which is a row twice as tall
+ * as every other one.
+ */
+.solves__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+/* The time is the way into the solve, the same as in the history. */
+.solves__open {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  color: inherit;
+  text-align: start;
+}
+
+.solves__index,
+.solves__meta {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* Whatever room is left after the time and the buttons — it is the one part
+   of the row that may be cut short. */
+.solves__meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.solves__time {
+  font-size: var(--text-xl);
+}
+
+.solves__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/*
+ * Smaller than a button standing on its own: three of these share a row with
+ * the time they belong to, and at the largest text size the row is only wide
+ * enough for all of it once they stop being sized like buttons elsewhere.
+ */
+.solves__actions button {
+  min-height: 2.25rem;
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.solves__actions button.is-active {
+  border-color: var(--warn);
+  color: var(--warn);
+}

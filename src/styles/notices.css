@@ -1,0 +1,68 @@
+/* Notice — an action said it happened */
+
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  max-width: var(--form-width);
+  margin: 0 auto var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-size: var(--text-md);
+}
+
+.notice__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4) var(--space-6);
+  min-width: 0;
+}
+
+.notice__body code {
+  overflow-wrap: anywhere;
+  color: var(--accent);
+}
+
+.notice button {
+  flex: none;
+}
+
+/*
+ * Backup reminder — at the top of the stats, until a backup or "Not now".
+ * Outlined like a notice, because it is one; it stays until answered.
+ */
+
+.backup-reminder,
+.install-nudge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.backup-reminder__message,
+.install-nudge__message {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.backup-reminder__actions,
+.install-nudge__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* Above the timer's mini stats, where it takes a line from the list, not the clock. */
+.install-nudge {
+  margin-bottom: var(--space-4);
+}

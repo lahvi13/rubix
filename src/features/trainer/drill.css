@@ -1,0 +1,572 @@
+/* Drill */
+
+/* Same three rows as the timer screen: what to do, the clock, what happened. */
+.drill__setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+}
+
+/* Hidden, not removed: the clock must not jump when the solve starts. */
+.drill__setup.is-hidden {
+  visibility: hidden;
+}
+
+/*
+ * The set row and the line that everything else folds behind. Tight together,
+ * because they are one control: the row says which set, the line says what is
+ * being done with it.
+ */
+.drill__bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-5);
+}
+
+/* The trainer's own rows carry a margin for a page that scrolls; inside the
+   fold the gap above does the spacing. */
+.drill__bar .trainer__sets,
+.drill__bar .trainer__looks,
+.drill__setup-panel .trainer__looks {
+  margin-bottom: 0;
+}
+
+.drill__setup-fold {
+  width: 100%;
+}
+
+/* The drill's two halves, as tabs over everything else on the screen: a line
+   under the row, the one that is on underlined in the accent. Drawn unlike the
+   set buttons below them, so the two rows are never read as one. */
+.drill__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.drill__tabs button {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: -1px;
+}
+
+.drill__tabs button.is-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.drill__tabs button[disabled] {
+  opacity: 0.35;
+}
+
+.drill__setup-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.drill__pool {
+  width: 100%;
+}
+
+/*
+ * The line a folded panel leaves behind. Full width with the chevron at its
+ * end, so it reads as a way in rather than as one more option in a row — on
+ * the drill it is the only route back to the set list and to the other half
+ * of the screen, and a button the width of its own text does not say so.
+ */
+.drill__pool-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
+}
+
+.drill__picker {
+  margin-top: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.drill__picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.drill__chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: var(--space-2);
+  max-height: 45dvh;
+  overflow-y: auto;
+}
+
+.drill__chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+
+.drill__scramble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 4rem;
+}
+
+/* Where the cross scramble lands. Sized like the timer's own preview, but by
+   the height of the screen rather than its width: this one shares the page
+   with a clock that must not be pushed off the bottom, and the flat net is
+   the wide shape of the two. */
+.drill__scramble-cube {
+  width: auto;
+  height: auto;
+  max-width: min(260px, 62vw);
+  max-height: min(170px, 20dvh);
+}
+
+/* Read at arm's length with a cube in both hands, so bigger than body text
+   by a long way; the clamp keeps a 21-move cross scramble on the screen. */
+.drill__moves {
+  margin: 0;
+  max-width: 30ch;
+  text-align: center;
+  font-size: clamp(1.4rem, 6vw, 2.1rem);
+  font-family: var(--font-mono);
+  line-height: 1.5;
+  user-select: text;
+}
+
+.drill__hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-align: center;
+}
+
+.drill__answer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 3rem;
+}
+
+/*
+ * The answer overflows its row on purpose — that is what the page scrolls for
+ * — so nothing in it may be squeezed to make it fit. A flex column shrinks its
+ * items when it runs short, and an item whose content is not its own (the
+ * cube playing the cross builds itself into a shadow root) has no natural
+ * height to stop at: it went to nought pixels, animating where nobody could
+ * see it, while the moves lit up in the text below.
+ */
+.drill__answer > * {
+  flex-shrink: 0;
+}
+
+.drill__case-name {
+  margin: 0;
+  font-size: var(--text-2xl);
+}
+
+.drill__diagram {
+  width: min(9rem, 40vw);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.drill__stats {
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
+}
+
+/* The answer shares a screen with the clock and the case picture, so the
+   algorithm is read at a glance rather than at case-sheet size. */
+.drill__answer .alg {
+  font-size: clamp(1.1rem, 5vw, 1.6rem);
+}
+
+.drill__fronts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+/* On its own line under the swatches, whatever the row wrapped to. */
+.drill__fronts-hint {
+  flex-basis: 100%;
+}
+
+/* A colour you tap, so it is a target for a thumb, not a dot. */
+.drill__front {
+  width: 2.4rem;
+  height: 2.4rem;
+  /* Its size is its own; the family's thumb-height floor would stretch it. */
+  min-height: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 0;
+  cursor: pointer;
+}
+
+.drill__front.is-active {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--bg) inset;
+}
+
+/* The other shortest solutions: there to be compared, so quieter than the
+   first but still in the same monospaced shape. */
+/*
+ * A line of moves to tap, not a button: it keeps the list's own type and
+ * colour and takes only the height a thumb needs, because the button family
+ * would otherwise paint an outline round every alternative and turn a quiet
+ * list into a row of controls competing with the solution above it.
+ */
+.drill__alternatives button {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.drill__alternatives {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  color: var(--muted);
+  text-align: center;
+}
+
+.drill__picker-done {
+  width: 100%;
+  margin-top: var(--space-4);
+  border-color: var(--accent);
+  color: var(--accent);
+  min-height: 2.75rem;
+}
+
+.drill__give-up {
+  padding-inline: var(--space-7);
+  min-height: 2.75rem;
+}
+
+/* Recognition: which case is this, with no cube in your hands */
+
+.recognition {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+}
+
+/* Big enough to read two side faces from arm's length, and no bigger: the
+   cards under it are what the eye has to travel to and back. */
+/* The box, not the picture, carries the size: the cube that replaces the
+   picture must neither move the cards nor shrink, and it is drawn bigger than
+   the box and clipped, as in the case sheet, because it keeps a margin of its
+   own around the cube. */
+/* The cube with a button either side of it. The sides share what the cube
+   leaves equally, so the cube stays centred whatever the buttons say; a
+   button that needs more room than that takes it from the cube, which may
+   shrink, rather than being squeezed onto two lines. */
+.recognition__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.recognition__side {
+  flex: 1 1 0;
+  display: flex;
+}
+
+.recognition__side--start {
+  justify-content: flex-end;
+}
+
+.recognition__side--end {
+  justify-content: flex-start;
+}
+
+.recognition__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 1 min(60vw, 26dvh, 12rem);
+  min-width: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+/* A tap surface once the question is over, not a button to look at. */
+.recognition__stage.is-playable {
+  cursor: pointer;
+}
+
+.recognition__cube {
+  width: 100%;
+  height: 100%;
+}
+
+.recognition__stage .case-player {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: calc(100% * var(--player-scale));
+  height: calc(100% * var(--player-scale));
+  transform: translate(-50%, -50%);
+}
+
+/*
+ * A phone whose usable height is under about 800px — most of them, once the
+ * browser or the system bars have taken their share. The six cards are the
+ * half of this screen that has to be complete: a second row cut off by the
+ * fold is a round played on three answers. So the space comes out of the
+ * gaps and out of the cube, which is still large enough to read two faces.
+ */
+@media (max-height: 800px) {
+  .recognition {
+    gap: var(--space-4);
+  }
+
+  .recognition__stage {
+    flex-basis: min(60vw, 22dvh, 12rem);
+  }
+}
+
+.recognition__turn {
+  min-height: 2.75rem;
+}
+
+.recognition__prompt {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.recognition__verdict {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.recognition__verdict.is-correct .recognition__mark {
+  color: var(--accent);
+}
+
+.recognition__verdict.is-wrong .recognition__mark {
+  color: var(--danger);
+}
+
+.recognition__answer {
+  font-weight: 600;
+}
+
+.recognition__time {
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+
+/* The algorithm, and in front of it the turn this particular angle asks for.
+   Set apart rather than run together: the AUF belongs to the question, the
+   algorithm belongs to the case. */
+.recognition__solution {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.recognition__auf {
+  font-family: var(--font-mono);
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+}
+
+/* Smaller than in the case sheet, where the algorithm is what you came for.
+   Here it is the footnote to an answer, and at the sheet's size it pushed the
+   cards — the thing that was just being compared — off the screen. */
+.recognition__solution .alg {
+  font-size: clamp(1rem, 4.5vw, 1.4rem);
+}
+
+/* The two things done to the cube itself, side by side under it. Moving on
+   used to sit under the cards, where on a short screen it was below the fold
+   and cost a scroll every round; here it is above them and never moves. */
+/* Three across, two down: the set list packs as many cards in a row as it
+   can fit, which is right for reading a whole set and wrong here — six cards
+   in fours leaves a ragged second row, and each one is a cube to be compared
+   against another cube, not an icon. */
+.recognition__options {
+  width: 100%;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (min-width: 40rem) {
+  .recognition__options {
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  }
+}
+
+/* Once it is answered, the cards say what happened without a word: the right
+   one lights up, the one tapped instead is marked, and the rest step back so
+   the eye goes to the two that matter. */
+.case-card.is-correct {
+  border-color: var(--accent);
+}
+
+.case-card.is-wrong {
+  border-color: var(--danger);
+}
+
+.case-card.is-dimmed {
+  opacity: 0.45;
+}
+
+/* What a set has cost so far, and where to start next */
+
+.set-summary {
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-6);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.set-summary--empty {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/* A width from the data is the one thing the rule cannot know; the colours
+   are the ones the cards' edges use. */
+.set-summary__bar {
+  display: flex;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  overflow: hidden;
+}
+
+.set-summary__bar-known {
+  background: var(--accent);
+}
+
+.set-summary__bar-learning {
+  background: var(--warn);
+}
+
+.set-summary__counts {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--muted);
+}
+
+.set-summary__slowest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.set-summary__chip {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.set-summary__chip span {
+  color: var(--warn);
+}
+
+/* Drill attempts, as a list you can correct */
+
+.attempts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.attempts__row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.attempts__time {
+}
+
+.attempts__when {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.attempts__wipe {
+  align-self: flex-start;
+  font-size: var(--text-sm);
+}
+
+.attempts__wipe.is-armed {
+  border-color: var(--danger);
+  color: var(--danger);
+}

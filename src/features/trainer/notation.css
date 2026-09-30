@@ -1,0 +1,240 @@
+/* Notation reference and triggers */
+
+.notation,
+.triggers {
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-7);
+  width: 100%;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.notation__hint {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.notation__row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.notation__item {
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-2xs);
+  font-weight: 600;
+}
+
+.notation__diagram {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+/*
+ * A list of lines rather than a stack of cards. A trigger is read far more
+ * often than it is edited — most of the time the reader only wants to see
+ * which ones are on and what they stand for — so that is what a row is, and
+ * the boxes that change it wait behind a tap.
+ */
+.triggers__list {
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.trigger {
+  border-block-end: 1px solid var(--border);
+}
+
+.trigger:last-child {
+  border-block-end: none;
+}
+
+/* The one that is open is a card again, to say where the boxes belong. */
+.trigger.is-open {
+  background: var(--surface-raised);
+  border-radius: var(--radius-md);
+  border-block-end-color: transparent;
+}
+
+.trigger__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-inline: var(--space-3);
+}
+
+/* The whole line opens it; the tick is the only other thing on it. */
+.trigger__open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border: none;
+  background: none;
+  padding: var(--space-4) var(--space-2);
+  text-align: start;
+}
+
+.trigger__label {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--trigger-colour, var(--accent)) var(--ink-strength), var(--ink-floor));
+}
+
+/* What it stands for, quietly, and last to have room taken from it. */
+.trigger__preview {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: end;
+  font-size: var(--text-2xs);
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.trigger__preview.is-invalid {
+  color: var(--danger);
+}
+
+/* Where the delete button would be on a trigger the reader made. */
+.trigger__note {
+  margin: 0;
+  font-size: var(--text-2xs);
+  color: var(--muted);
+}
+
+.trigger__editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.trigger__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.trigger__toggle {
+  display: flex;
+  align-items: center;
+}
+
+.trigger__toggle input {
+  width: 1.35rem;
+  height: 1.35rem;
+  accent-color: var(--accent);
+}
+
+/* Class alone loses to `.triggers input`, which sets a colour of its own. */
+.triggers .trigger__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 700;
+  /* Written in the trigger's own colour, darkened for a light background the
+     same way the labels over an algorithm are. */
+  color: color-mix(in srgb, var(--trigger-colour, var(--accent)) var(--ink-strength), var(--ink-floor));
+}
+
+.trigger__moves {
+  width: 100%;
+  letter-spacing: 0.03em;
+}
+
+.triggers input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: inherit;
+  padding: var(--space-4) var(--space-4);
+}
+
+.triggers input.is-invalid {
+  border-color: var(--danger);
+}
+
+.trigger__delete,
+.triggers__add button {
+  padding: var(--space-4) var(--space-6);
+  flex: 0 0 auto;
+}
+
+/*
+ * Six to a row, however many colours there are and however large the text is.
+ * They were one row of however-many, which held while there were eight and
+ * broke at twelve: a dozen swatches across a phone came out narrower than
+ * their own gaps and ran over the edge of the card. Two rows of six leaves
+ * each of them something to aim at.
+ */
+.trigger__colours {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-3);
+  /* On a wide screen they stop growing and stay swatch-sized. */
+  max-width: 24rem;
+}
+
+/* A sticker off the cube, not a dot: the same square with the same corner the
+   diagrams draw, so a colour reads as a colour of the cube. */
+.trigger__colour {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sticker);
+  cursor: pointer;
+}
+
+.trigger__colour.is-active {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--bg);
+  /* Grown from the middle, so the row's columns stay where they are. */
+  transform: scale(1.12);
+}
+
+/* The form is a card, because it is the one place here that is all controls. */
+.triggers__add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background: var(--surface-raised);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.triggers__add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.triggers__add input {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+@media (min-width: 34rem) {
+  .triggers__add button {
+    flex: 0 0 auto;
+  }
+}
