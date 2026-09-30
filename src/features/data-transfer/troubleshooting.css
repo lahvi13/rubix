@@ -40,9 +40,3 @@
   font-size: var(--text-2xs);
   opacity: 0.75;
 }
-
-.scramble__loading {
-  margin: 0;
-  font-size: var(--text-md);
-  color: var(--muted);
-}

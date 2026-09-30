@@ -126,12 +126,6 @@
   padding: 0 var(--space-4) var(--space-4);
 }
 
-.trigger__head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
 .trigger__toggle {
   display: flex;
   align-items: center;

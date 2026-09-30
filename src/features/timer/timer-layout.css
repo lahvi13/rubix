@@ -1,0 +1,129 @@
+/* The timer screen: its rows, and the list of solves that rises over them */
+
+/*
+ * From the first touch until the time is read, the clock is the only thing on
+ * screen: the scramble has been performed and the list is not being read. The
+ * rows give up their space rather than the clock leaving the page — a fixed
+ * layer over the whole viewport is a repaint of everything, and on a phone
+ * that reads as a flash at the worst possible moment.
+ *
+ * Giving the clock the whole screen is also what keeps it off the cube: at the
+ * largest text size, a countdown does not fit in a share of the screen.
+ */
+.screen--solving {
+  grid-template-rows: 0 1fr 0;
+  gap: 0;
+}
+
+.screen--solving .scramble-slot,
+.screen--solving .solves-slot {
+  overflow: hidden;
+}
+
+/*
+ * The other way round: the list pulled up over the cube, to be read. Not by
+ * giving it the rows — a layout can only swap, and the screen used to change
+ * from one to the other in a single frame. The rows stay as they are, and the
+ * list is lifted out of its slot and slid up over them (`useSheetMotion`).
+ * The scramble and the clock underneath never move, so there is nothing on
+ * screen that jumps; there is only the list, travelling.
+ */
+.screen:has(> .solves-slot) {
+  position: relative;
+}
+
+/* On its way up it starts a peek's height from the top and full height, so
+   most of it is below the screen; that part is not the page's to scroll to. */
+.screen:has(> .solves-slot > .is-sheet) {
+  overflow-y: clip;
+}
+
+.solves-slot {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+}
+
+/* Over the screen's content box exactly — the space the rows used to hand it —
+   and opaque, since what it covers is still laid out underneath. */
+.solves-panel.is-sheet {
+  position: absolute;
+  z-index: 1;
+  inset-block: var(--space-6) max(var(--space-6), env(safe-area-inset-bottom));
+  inset-inline: max(var(--page-gutter), env(safe-area-inset-left))
+    max(var(--page-gutter), env(safe-area-inset-right));
+  background: var(--bg);
+}
+
+/*
+ * The control that pulls the list up and puts it back. Drawn as a button
+ * rather than as a bare chevron: in a row of words a hairline arrow is not
+ * something anyone finds.
+ */
+.solves-panel__more {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: var(--tint);
+  color: var(--text);
+}
+
+/*
+ * With the list up this is the way back out, so it stops being a hint and
+ * becomes a control: bigger, filled and ringed. Closed it can stay quiet,
+ * because the list underneath is already an invitation to scroll it.
+ */
+.solves-panel__more[aria-expanded='true'] {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-color: var(--muted);
+  background: var(--surface-raised);
+}
+
+.solves-panel__more svg {
+  display: block;
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.timer-slot {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-7);
+  min-height: 0;
+}
+
+/*
+ * The session on one side, the two switches on the other, and on a narrow
+ * phone the switches drop to a line of their own. Floated, they ran off the
+ * edge of the panel instead of wrapping.
+ */
+.solves-panel__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+}
+
+/* Pushed to the far side, and the count stays next to the name it counts. */
+.solves-panel__toggles {
+  margin-inline-start: auto;
+}
+
+.solves-panel__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 var(--space-5);
+}

@@ -31,12 +31,6 @@
   visibility: hidden;
 }
 
-.scramble__loading {
-  font-size: var(--text-md);
-  font-weight: 400;
-  color: var(--muted);
-}
-
 .scramble__text {
   margin: 0;
   max-width: 40ch;
@@ -47,6 +41,12 @@
   font-family: var(--font-mono);
   line-height: 1.5;
   user-select: text;
+}
+
+/* On the same element as .scramble__text, and after it so that it wins. */
+.scramble__loading {
+  font-size: var(--text-md);
+  color: var(--muted);
 }
 
 /* One move per cell, so the columns line up down the rows. */
@@ -188,87 +188,6 @@
   inset-block-start: 50%;
   inset-inline-start: 50%;
   transform: translate(-50%, -50%);
-}
-
-/*
- * Play, pause and one move on, for every cube that turns. Round, because they
- * are shapes rather than words.
- *
- * Over the cube, they take its corners: the places both cubes leave empty.
- * The unfolded net has only its top and bottom faces up and down there, and
- * the cube seen from a corner ends short of all four. Play is top right, the
- * steps the two bottom corners — back on the left, on to the right.
- *
- * No box of their own: the buttons are placed against the cube's. A layer
- * over the whole cube, even one that let every tap through, cost the drag
- * that turns the cube on a phone — Chrome handed the gesture to the page
- * after two moves and the cube stopped where the finger had just been.
- */
-.playback--corners {
-  display: contents;
-}
-
-.playback--corners button {
-  position: absolute;
-  inset-inline-end: 0;
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  min-height: 0;
-  padding: 0;
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-}
-
-.playback--corners .playback__toggle {
-  inset-block-start: 0;
-}
-
-.playback--corners .playback__step {
-  inset-block-end: 0;
-}
-
-.playback--corners .playback__back {
-  inset-block-end: 0;
-  inset-inline-end: auto;
-  inset-inline-start: 0;
-}
-
-/*
- * Under the cube, the play button stays in the middle whether or not the
- * steps are beside it: a button that slid sideways when the cube paused would
- * be somewhere else by the time it was tapped again.
- */
-.playback--row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-}
-
-.playback--row button {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
-  border-radius: var(--radius-pill);
-}
-
-.playback--row .playback__toggle {
-  grid-column: 2;
-}
-
-.playback--row .playback__step {
-  grid-column: 3;
-  justify-self: start;
-}
-
-.playback--row .playback__back {
-  grid-column: 1;
-  justify-self: end;
 }
 
 /* A short phone has no room for a big cube and a list of solves both. */

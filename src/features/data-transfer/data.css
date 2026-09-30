@@ -97,11 +97,6 @@
   margin-top: var(--space-6);
 }
 
-.import-result {
-  margin-top: var(--space-5);
-  font-size: var(--text-md);
-}
-
 .import-totals {
   display: flex;
   gap: var(--space-7);

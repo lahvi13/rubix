@@ -1,0 +1,19 @@
+/* About */
+
+.about__version {
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  color: var(--text);
+}
+
+.about__credits {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--muted);
+}
