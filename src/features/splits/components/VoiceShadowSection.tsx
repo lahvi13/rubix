@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { DETECTOR_VERSION } from '../../../domain/audio/onset';
+import { shadowSound, type ShadowSound } from '../../../domain/audio/shadow';
 import type { MicLevel } from '../../../lib/mic-listener';
 import { strings } from '../../../lib/strings';
 import { useSetting } from '../../../hooks/use-setting';
@@ -89,17 +91,31 @@ export function VoiceShadowSection() {
   );
 }
 
-/** The microphone, open for as long as this is on screen, with what it hears. */
+/** Rows shown under the meter; the copy takes more. */
+const SHOWN_SOUNDS = 8;
+const KEPT_SOUNDS = 60;
+
+/**
+ * The microphone, open for as long as this is on screen, with what it hears —
+ * every sound it judged and why, so a "hop" that was missed shows which of
+ * its traits fell short.
+ */
 function MicTest() {
   const [heard, setHeard] = useState({ voices: 0, others: 0 });
+  const [sounds, setSounds] = useState<readonly ShadowSound[]>([]);
+  const [isCopied, setCopied] = useState(false);
   const [level, setLevel] = useState<MicLevel | null>(null);
   const { status } = useMic(true, {
     // The others are counted too: a clatter that is heard and turned away is
     // the test passing, and it should look like it.
-    onSound: ({ isVoice }) =>
+    onSound: ({ atMs, ...traits }) => {
+      const isVoice = traits.verdict === 'voice';
       setHeard((count) =>
         isVoice ? { ...count, voices: count.voices + 1 } : { ...count, others: count.others + 1 },
-      ),
+      );
+      setSounds((kept) => [shadowSound(atMs, traits), ...kept].slice(0, KEPT_SOUNDS));
+      setCopied(false);
+    },
     onLevel: setLevel,
   });
 
@@ -119,6 +135,44 @@ function MicTest() {
         <span className="mic-meter__gate" style={{ left: `${meterPercent(level.gateDb)}%` }} />
       </div>
       <p className="data-section__hint">{strings.voice.heard(heard.voices, heard.others)}</p>
+
+      {sounds.length === 0 ? null : (
+        <>
+          <p className="data-section__hint">{strings.voice.soundsLegend}</p>
+          <ol className="mic-sounds">
+            {sounds.slice(0, SHOWN_SOUNDS).map((sound) => (
+              <li
+                key={sound.atMs}
+                className={sound.verdict === 'voice' ? 'mic-sounds__row is-voice' : 'mic-sounds__row'}
+              >
+                <span className="mic-sounds__verdict">{strings.voice.verdicts[sound.verdict]}</span>
+                <span>
+                  {strings.voice.traits(
+                    sound.durationMs,
+                    sound.pitchHz,
+                    sound.periodicity,
+                    sound.loudnessDb,
+                  )}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <div className="data-section__row">
+            <button
+              type="button"
+              onClick={() => {
+                const details = JSON.stringify({ detector: DETECTOR_VERSION, test: sounds });
+                navigator.clipboard.writeText(details).then(
+                  () => setCopied(true),
+                  () => setCopied(false),
+                );
+              }}
+            >
+              {isCopied ? strings.voice.copied : strings.voice.copySounds}
+            </button>
+          </div>
+        </>
+      )}
     </>
   );
 }

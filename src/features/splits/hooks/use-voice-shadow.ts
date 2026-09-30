@@ -83,7 +83,7 @@ export function useVoiceShadow(state: TimerState, isEnabled: boolean): VoiceShad
             detector: DETECTOR_VERSION,
             splitMs: [...splitMs],
             rawMs,
-            voiceMs: finished.sounds.filter((sound) => sound.isVoice).map((sound) => sound.atMs),
+            voiceMs: finished.sounds.filter((sound) => sound.verdict === 'voice').map((sound) => sound.atMs),
             sounds: [...finished.sounds],
           };
           setResult(matchShadow(record));

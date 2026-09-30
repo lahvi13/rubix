@@ -4237,6 +4237,35 @@ button[disabled] {
   background: var(--accent);
 }
 
+/* What the test heard, newest first: the verdict, then what it rests on. */
+.mic-sounds {
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* Wraps rather than squeezes: at phone width the numbers go under the verdict. */
+.mic-sounds__row {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-5);
+}
+
+.mic-sounds__verdict {
+  min-width: 7.5em;
+  color: var(--text);
+}
+
+.mic-sounds__row.is-voice .mic-sounds__verdict {
+  color: var(--accent);
+}
+
 .mic-meter__gate {
   position: absolute;
   top: 0;

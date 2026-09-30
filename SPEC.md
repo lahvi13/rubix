@@ -491,6 +491,13 @@ Rozhodnuto při stavbě zkoušky:
   periodicita, výška, stabilita výšky, hlasitost) — přijatý i odmítnutý. Další
   ladění se dělá proti skutečné místnosti, ne proti odhadu; nikdy se neukládá
   zvuk, jen tahle čísla
+- **odmítnutý zvuk říká proč** (detektor 3): verdikt `voice | long | short |
+  quiet | unclear | repeat`, při víc důvodech ten první v tomhle pořadí. Test v
+  Nastavení vypisuje posledních pár zvuků s verdiktem a čísly a dají se
+  zkopírovat — v2 na telefonu „hop“ občas nezaznamenal a nebylo vidět proč
+- **po přijatém „hop“ se 600 ms další nepřijme** (`repeat`). Důrazné „hop“ drží
+  „p“ zavřené a po uvolnění ještě krátce zazní hlas; v2 to občas počítala
+  dvakrát. Konce fází jsou od sebe sekundy, takže to nic nestojí
 - **práh plave:** brána je 6 dB nad 20. percentilem hladiny za posledních 1,5 s.
   Chrastění, které trvá, se do percentilu dostane za zlomek sekundy; slovo ani
   cvaknutí ne

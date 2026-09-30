@@ -41,7 +41,7 @@
  */
 
 /** Bumped whenever a change here makes old trial results incomparable. */
-export const DETECTOR_VERSION = 2;
+export const DETECTOR_VERSION = 3;
 
 const HOP_MS = 5;
 /** The band a voice's fundamental and first formant live in; clicks mostly do not. */
@@ -74,14 +74,40 @@ const VOICE_MAX_MS = 450;
 const VOICE_MIN_PERIODICITY = 0.65;
 /** Loudest hop above the floor: close to the phone, not across the room. */
 const VOICE_MIN_LOUDNESS_DB = 15;
+/**
+ * After a word is taken, how long before another can be. An emphatic "hop"
+ * holds the p shut and releases it with a breath of voice of its own, which
+ * was heard as a second word. Phases end seconds apart, so this costs nothing.
+ */
+const REPEAT_MS = 600;
 /** How close to the sound's own median a hop's pitch has to be to count as steady. */
 const STEADY_SHARE = 0.2;
+
+/**
+ * What a sound was taken for. Anything but 'voice' is turned away, and says
+ * why — so a missed word shows which of its traits fell short.
+ */
+export type Verdict = 'voice' | 'long' | 'short' | 'quiet' | 'unclear' | 'repeat';
+
+export const VERDICTS: readonly Verdict[] = ['voice', 'long', 'short', 'quiet', 'unclear', 'repeat'];
+
+export function isVerdict(value: unknown): value is Verdict {
+  return VERDICTS.some((verdict) => verdict === value);
+}
+
+/** Judges a sound's shape. When several traits fall short, the first in this order is given. */
+export function judgeSound(durationMs: number, periodicity: number, loudnessDb: number): Verdict {
+  if (durationMs > VOICE_MAX_MS) return 'long';
+  if (durationMs < VOICE_MIN_MS) return 'short';
+  if (loudnessDb < VOICE_MIN_LOUDNESS_DB) return 'quiet';
+  if (periodicity < VOICE_MIN_PERIODICITY) return 'unclear';
+  return 'voice';
+}
 
 export interface Sound {
   /** Sample index into the stream (counted from the first sample pushed) where it began. */
   at: number;
-  /** Taken for the word, or turned away. */
-  isVoice: boolean;
+  verdict: Verdict;
   /** From its first voiced hop to its last. */
   durationMs: number;
   /** Mean normalised autocorrelation over its voiced hops, 0–1. */
@@ -246,6 +272,8 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
   let voicedHops = 0;
   let periodicitySum = 0;
   let loudestDb = -Infinity;
+  const repeatSamples = Math.round((sampleRate * REPEAT_MS) / 1000);
+  let lastVoiceAt = -Infinity;
   // One pitch per voiced hop of the sound; a sound past VOICE_MAX_MS is not gathered.
   const pitches = new Float32Array(maxHops + endGapHops + 1);
 
@@ -277,8 +305,8 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
     lastVoicedHop = hopsSinceStart;
   }
 
-  function judge(): Sound {
-    const durationMs = (lastVoicedHop + 1) * HOP_MS;
+  /** The sound gathered so far, as it would be judged with this verdict and length. */
+  function describe(verdict: Verdict, durationMs: number): Sound {
     const view = pitches.subarray(0, voicedHops);
     view.sort();
     const pitchHz = view[Math.floor((voicedHops - 1) / 2)] ?? 0;
@@ -286,32 +314,25 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
     for (let i = 0; i < voicedHops; i++) {
       if (Math.abs((view[i] ?? 0) - pitchHz) <= pitchHz * STEADY_SHARE) steady++;
     }
-    const meanPeriodicity = periodicitySum / Math.max(1, voicedHops);
     return {
       at: soundStart,
-      isVoice:
-        durationMs >= VOICE_MIN_MS &&
-        durationMs <= VOICE_MAX_MS &&
-        meanPeriodicity >= VOICE_MIN_PERIODICITY &&
-        loudestDb >= VOICE_MIN_LOUDNESS_DB,
+      verdict,
       durationMs,
-      periodicity: meanPeriodicity,
+      periodicity: periodicitySum / Math.max(1, voicedHops),
       pitchHz,
       steadiness: steady / Math.max(1, voicedHops),
       loudnessDb: loudestDb,
     };
   }
 
-  function overlong(): Sound {
-    return {
-      at: soundStart,
-      isVoice: false,
-      durationMs: hopsSinceStart * HOP_MS,
-      periodicity: periodicitySum / Math.max(1, voicedHops),
-      pitchHz: 0,
-      steadiness: 0,
-      loudnessDb: loudestDb,
-    };
+  function judge(): Sound {
+    const durationMs = (lastVoicedHop + 1) * HOP_MS;
+    let verdict = judgeSound(durationMs, periodicitySum / Math.max(1, voicedHops), loudestDb);
+    if (verdict === 'voice') {
+      if (soundStart - lastVoiceAt < repeatSamples) verdict = 'repeat';
+      else lastVoiceAt = soundStart;
+    }
+    return describe(verdict, durationMs);
   }
 
   function endHop(): Sound | null {
@@ -354,7 +375,7 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
         if (hopsSinceStart >= maxHops) {
           phase = 'overlong';
           gapHops = 0;
-          return overlong();
+          return describe('long', hopsSinceStart * HOP_MS);
         }
         return null;
       case 'overlong':

@@ -678,6 +678,19 @@ export const en = {
     meter: 'Loudness, and the line a voice has to cross',
     heard: (voices: number, others: number) =>
       `Say “hop” — heard ${voices} ${voices === 1 ? 'time' : 'times'}; ${others} other ${others === 1 ? 'sound' : 'sounds'} ignored.`,
+    soundsLegend:
+      'Each sound it judged, newest first: what it took it for · length · pitch · how clearly it repeats · loudness above the room.',
+    verdicts: {
+      voice: 'hop',
+      long: 'too long',
+      short: 'too short',
+      quiet: 'too quiet',
+      unclear: 'not a voice',
+      repeat: 'repeat',
+    },
+    traits: (durationMs: number, pitchHz: number, periodicity: number, loudnessDb: number) =>
+      `${durationMs} ms · ${pitchHz} Hz · ${Math.round(periodicity * 100)} % · +${loudnessDb} dB`,
+    copySounds: 'Copy these sounds',
     summaryEmpty: 'No solve has been timed with the trial yet.',
     summary: (solves: number, heard: number, boundaries: number, extra: number) =>
       `${solves} ${solves === 1 ? 'solve' : 'solves'}: heard ${heard} of ${boundaries} phase ends, ${extra} false ${extra === 1 ? 'alarm' : 'alarms'}.`,

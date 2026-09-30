@@ -4,7 +4,7 @@
  * registers itself on load, which only works inside the audio worklet.
  */
 
-import type { Sound } from '../domain/audio/onset';
+import { isVerdict, type Sound } from '../domain/audio/onset';
 
 export const ONSET_PROCESSOR = 'rubix-onset';
 
@@ -33,9 +33,9 @@ export function readOnsetMessage(data: unknown): OnsetProcessorMessage | null {
     return { type: 'level', frame, levelDb, gateDb };
   }
   if (message.type === 'sound') {
-    const { isVoice, durationMs, periodicity, pitchHz, steadiness, loudnessDb } = message;
+    const { verdict, durationMs, periodicity, pitchHz, steadiness, loudnessDb } = message;
     if (
-      typeof isVoice !== 'boolean' ||
+      !isVerdict(verdict) ||
       typeof durationMs !== 'number' ||
       typeof periodicity !== 'number' ||
       typeof pitchHz !== 'number' ||
@@ -44,7 +44,7 @@ export function readOnsetMessage(data: unknown): OnsetProcessorMessage | null {
     ) {
       return null;
     }
-    return { type: 'sound', frame, isVoice, durationMs, periodicity, pitchHz, steadiness, loudnessDb };
+    return { type: 'sound', frame, verdict, durationMs, periodicity, pitchHz, steadiness, loudnessDb };
   }
   return null;
 }

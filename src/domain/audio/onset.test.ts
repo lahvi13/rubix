@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createOnsetDetector, periodicity, type Sound } from './onset';
+import { createOnsetDetector, judgeSound, periodicity, type Sound, type Verdict } from './onset';
 
 const RATE = 48_000;
 
@@ -67,7 +67,7 @@ function sounds(signal: Float32Array, block = 128, rate = RATE): (Sound & { atMs
 /** Where each sound taken for the word began, in ms. */
 function detect(signal: Float32Array, block = 128, rate = RATE): number[] {
   return sounds(signal, block, rate)
-    .filter((sound) => sound.isVoice)
+    .filter((sound) => sound.verdict === 'voice')
     .map((sound) => sound.atMs);
 }
 
@@ -135,8 +135,9 @@ describe('createOnsetDetector', () => {
     const signal = room(3000);
     vowel(signal, 1000, 800, 0.1);
     const heard = sounds(signal);
-    expect(heard.filter((sound) => sound.isVoice)).toEqual([]);
-    expect(heard).toHaveLength(1);
+    expect(heard.map((sound) => sound.verdict)).toEqual(['long']);
+    // Turned away for its length, but still described: the log is for tuning.
+    expect(heard[0]?.pitchHz).toBeCloseTo(150, -1);
   });
 
   it('turns away running speech in the background', () => {
@@ -148,18 +149,27 @@ describe('createOnsetDetector', () => {
   it('turns away a voice from across the room', () => {
     const signal = room(4000);
     noise(signal, 0, 4000, 0.02, 4);
-    // Clearly periodic, but only about 11 dB above the room.
+    // Periodic, but only about 11 dB above the room — which also leaves it
+    // voiced only in patches, so which reason is given varies.
     vowel(signal, 2000, 150, 0.004);
-    const heard = sounds(signal);
-    expect(heard.filter((sound) => sound.isVoice)).toEqual([]);
-    expect(heard.some((sound) => sound.loudnessDb < 15)).toBe(true);
+    expect(detect(signal)).toEqual([]);
   });
 
   it('hears two words as two', () => {
     const signal = room(2500);
     vowel(signal, 800, 150, 0.1);
-    vowel(signal, 1400, 150, 0.1);
+    vowel(signal, 1600, 150, 0.1);
     expect(detect(signal)).toHaveLength(2);
+  });
+
+  it('hears an emphatic "hop", its p released after a long hold, as one word', () => {
+    const signal = room(2000);
+    vowel(signal, 1000, 150, 0.1);
+    // The breath of voice after the p, past the gap that ends a sound.
+    vowel(signal, 1330, 80, 0.08);
+    const heard = sounds(signal);
+    expect(heard.map((sound) => sound.verdict)).toEqual(['voice', 'repeat']);
+    expectNear(heard[0]?.atMs, 1000);
   });
 
   it('hears two syllables of one word as one', () => {
@@ -216,6 +226,22 @@ describe('createOnsetDetector', () => {
     detector.push(signal);
     expect(detector.levelDb).toBeGreaterThan(quiet + 30);
     expect(detector.levelDb).toBeGreaterThan(detector.gateDb);
+  });
+});
+
+describe('judgeSound', () => {
+  it.each<[string, number, number, number, Verdict]>([
+    ['a clear, close word', 150, 0.9, 30, 'voice'],
+    ['the shortest word taken', 60, 0.9, 30, 'voice'],
+    ['the longest word taken', 450, 0.9, 30, 'voice'],
+    ['a blip', 55, 0.9, 30, 'short'],
+    ['speech that runs on', 455, 0.9, 30, 'long'],
+    ['a word from across the room', 150, 0.9, 14, 'quiet'],
+    ['a squeak that repeats only in patches', 150, 0.6, 30, 'unclear'],
+    ['too long outranks the rest', 900, 0.3, 5, 'long'],
+    ['too quiet outranks unclear', 150, 0.3, 5, 'quiet'],
+  ])('%s', (_, durationMs, periodicityScore, loudnessDb, verdict) => {
+    expect(judgeSound(durationMs, periodicityScore, loudnessDb)).toBe(verdict);
   });
 });
 

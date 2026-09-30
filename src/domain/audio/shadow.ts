@@ -9,7 +9,7 @@
  * detector tuned against them, can go over the same solves again.
  */
 
-import type { Sound } from './onset';
+import { isVerdict, type Sound, type Verdict } from './onset';
 
 /** How far a voice may be from a tap and still be the same boundary. */
 export const MATCH_WINDOW_MS = 400;
@@ -22,7 +22,7 @@ export const MATCH_WINDOW_MS = 400;
 export interface ShadowSound {
   /** From the start of the solve. */
   atMs: number;
-  isVoice: boolean;
+  verdict: Verdict;
   durationMs: number;
   /** 0–1, two decimals. */
   periodicity: number;
@@ -40,7 +40,10 @@ export interface ShadowRecord {
   rawMs: number;
   /** Voices heard during the solve, from its start. */
   voiceMs: readonly number[];
-  /** Every sound judged during the solve. Absent from records of detector 1. */
+  /**
+   * Every sound judged during the solve. Absent from records of detector 1;
+   * detector 2 wrote them without a verdict, and they are not read back.
+   */
   sounds?: readonly ShadowSound[];
 }
 
@@ -48,7 +51,7 @@ export function shadowSound(atMs: number, sound: Omit<Sound, 'at'>): ShadowSound
   const hundredths = (value: number) => Math.round(value * 100) / 100;
   return {
     atMs: Math.round(atMs),
-    isVoice: sound.isVoice,
+    verdict: sound.verdict,
     durationMs: Math.round(sound.durationMs),
     periodicity: hundredths(sound.periodicity),
     pitchHz: Math.round(sound.pitchHz),
@@ -186,7 +189,7 @@ function isShadowSound(value: unknown): value is ShadowSound {
   if (typeof value !== 'object' || value === null) return false;
   const sound: Partial<Record<keyof ShadowSound, unknown>> = value;
   return (
-    typeof sound.isVoice === 'boolean' &&
+    isVerdict(sound.verdict) &&
     [sound.atMs, sound.durationMs, sound.periodicity, sound.pitchHz, sound.steadiness, sound.loudnessDb].every(
       (field) => typeof field === 'number',
     )

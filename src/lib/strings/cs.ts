@@ -613,6 +613,19 @@ export const cs: Strings = {
     meter: 'Hlasitost a čára, kterou musí hlas přejít',
     heard: (voices: number, others: number) =>
       `Řekni „hop“ — slyšeno ${voices}×; jiných zvuků ignorováno: ${others}.`,
+    soundsLegend:
+      'Každý posouzený zvuk, nejnovější nahoře: za co ho vzal · délka · výška · jak zřetelně se opakuje · hlasitost nad pozadím.',
+    verdicts: {
+      voice: 'hop',
+      long: 'moc dlouhé',
+      short: 'moc krátké',
+      quiet: 'moc potichu',
+      unclear: 'nezní jako hlas',
+      repeat: 'opakování',
+    },
+    traits: (durationMs: number, pitchHz: number, periodicity: number, loudnessDb: number) =>
+      `${durationMs} ms · ${pitchHz} Hz · ${Math.round(periodicity * 100)} % · +${loudnessDb} dB`,
+    copySounds: 'Zkopírovat tyto zvuky',
     summaryEmpty: 'Se zkouškou zatím žádné složení neproběhlo.',
     summary: (solves: number, heard: number, boundaries: number, extra: number) =>
       `${solves} složení: zachyceno ${heard} z ${boundaries} konců fází, ${extra} ${plural(extra, 'falešný poplach', 'falešné poplachy', 'falešných poplachů')}.`,

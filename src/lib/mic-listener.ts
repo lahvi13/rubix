@@ -119,7 +119,7 @@ export async function openMic(handlers: MicHandlers): Promise<MicListener> {
     // A sound before the first heartbeat is dated by its own message instead.
     handlers.onSound({
       atMs: contextMs + (clockOffsetMs ?? eventTime(event.timeStamp) - contextMs),
-      isVoice: message.isVoice,
+      verdict: message.verdict,
       durationMs: message.durationMs,
       periodicity: message.periodicity,
       pitchHz: message.pitchHz,

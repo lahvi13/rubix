@@ -109,7 +109,7 @@ describe('readShadowRecords', () => {
 
   it('keeps the sounds it can read, and the record without the ones it cannot', () => {
     const sound = shadowSound(2040.4, {
-      isVoice: true,
+      verdict: 'voice',
       durationMs: 152,
       periodicity: 0.9345,
       pitchHz: 181.6,
@@ -118,7 +118,7 @@ describe('readShadowRecords', () => {
     });
     expect(sound).toEqual({
       atMs: 2040,
-      isVoice: true,
+      verdict: 'voice',
       durationMs: 152,
       periodicity: 0.93,
       pitchHz: 182,

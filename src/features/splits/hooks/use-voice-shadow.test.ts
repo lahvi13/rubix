@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DETECTOR_VERSION } from '../../../domain/audio/onset';
+import { DETECTOR_VERSION, type Verdict } from '../../../domain/audio/onset';
 import type { TimerState } from '../../../domain/timer/timer-machine';
 import { db } from '../../../db/schema';
 import { getSetting } from '../../../db/repositories/settings-repository';
@@ -40,13 +40,13 @@ const TRAITS = {
 };
 
 /** A sound heard at `atMs`; the detector took it for the word unless told otherwise. */
-function hear(atMs: number, isVoice = true) {
+function hear(atMs: number, verdict: Verdict = 'voice') {
   if (handlers === null) throw new Error('The microphone was never opened');
-  handlers.onSound({ atMs, isVoice, ...TRAITS });
+  handlers.onSound({ atMs, verdict, ...TRAITS });
 }
 
-function kept(atMs: number, isVoice = true) {
-  return { atMs, isVoice, ...TRAITS };
+function kept(atMs: number, verdict: Verdict = 'voice') {
+  return { atMs, verdict, ...TRAITS };
 }
 
 async function listening(initial: TimerState = IDLE) {
@@ -68,7 +68,7 @@ describe('useVoiceShadow', () => {
     rerender({ state: running(1000) });
     hear(900); // inspection's last words, before the clock started
     hear(3040);
-    hear(5000, false); // a clatter the detector turned away
+    hear(5000, 'unclear'); // a clatter the detector turned away
     rerender({ state: running(1000, [2000]) });
     hear(9950); // said with the stop
     rerender({ state: stopped(9000, [2000]) });
@@ -91,7 +91,7 @@ describe('useVoiceShadow', () => {
           splitMs: [2000],
           rawMs: 9000,
           voiceMs: [2040, 8950],
-          sounds: [kept(2040), kept(4000, false), kept(8950)],
+          sounds: [kept(2040), kept(4000, 'unclear'), kept(8950)],
         },
       ]),
     );
