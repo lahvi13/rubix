@@ -123,7 +123,7 @@ describe('DataScreen', () => {
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, 'click')
       .mockImplementation(() => undefined);
-    const share = vi.fn((_: ShareData) => Promise.resolve());
+    const share = vi.fn<(data: ShareData) => Promise<void>>(() => Promise.resolve());
     Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true });
     Object.defineProperty(navigator, 'share', { value: share, configurable: true });
     const user = userEvent.setup();

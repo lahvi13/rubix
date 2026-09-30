@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ChevronIcon } from '../../../components/Icons';
 import { Notice } from '../../../components/Notice';
 import {
@@ -449,10 +449,13 @@ function Troubleshooting() {
   // Folded while there is nothing to see, and unfolded by a failure that turns
   // up while the screen is open. A connection that is merely closed does not
   // unfold it: the phone closes it all the time and the next read reopens it,
-  // and one that really cannot come back logs a failure of its own.
-  useEffect(() => {
+  // and one that really cannot come back logs a failure of its own. Adjusted
+  // during render, or the section would paint folded first.
+  const [hadFailures, setHadFailures] = useState(hasFailures);
+  if (hasFailures !== hadFailures) {
+    setHadFailures(hasFailures);
     if (hasFailures) setExpanded(true);
-  }, [hasFailures]);
+  }
 
   return (
     <section className="data-section">

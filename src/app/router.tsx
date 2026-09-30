@@ -1,9 +1,9 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Hash routing, hand-rolled. Three screens do not justify a router dependency,
- * and hash URLs work the same whether the app is served from a domain, a
- * preview URL or an installed PWA.
+ * Hash routing, hand-rolled. A flat list of screens does not justify a router
+ * dependency, and hash URLs work the same whether the app is served from a
+ * domain, a preview URL or an installed PWA.
  */
 
 export const ROUTES = [

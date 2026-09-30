@@ -26,23 +26,21 @@ export function usePlayWhenDrawn(
     if (!element) return;
     element.jumpToStart();
 
-    // Deprecated in cubing.js; a version without it plays straight away.
-    if (typeof element.experimentalCurrentThreeJSPuzzleObject !== 'function') {
-      setDrawn(true);
-      return;
-    }
-
     let cancelled = false;
-    void element
-      .experimentalCurrentThreeJSPuzzleObject()
-      // The object exists before it has been rendered; two frames later it has,
-      // and its canvas is fading in.
-      .then(() => nextFrame())
-      .then(() => nextFrame())
-      .then(() => canvasFadeIn())
-      .then(() => {
-        if (!cancelled) setDrawn(true);
-      });
+    const drawn =
+      typeof element.experimentalCurrentThreeJSPuzzleObject === 'function'
+        ? element
+            .experimentalCurrentThreeJSPuzzleObject()
+            // The object exists before it has been rendered; two frames later
+            // it has, and its canvas is fading in.
+            .then(() => nextFrame())
+            .then(() => nextFrame())
+            .then(() => canvasFadeIn())
+        : // Deprecated in cubing.js; a version without it plays straight away.
+          Promise.resolve();
+    void drawn.then(() => {
+      if (!cancelled) setDrawn(true);
+    });
     return () => {
       cancelled = true;
     };
