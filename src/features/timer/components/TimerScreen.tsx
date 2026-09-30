@@ -1,19 +1,18 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { MethodPhase, Penalty } from '../../../db/types';
-import { addSolve } from '../../../db/repositories/solve-repository';
 import { bestPhasesIn } from '../../../domain/stats/phases';
 import { resultNote, type Challenge, type ResultNote } from '../../../domain/stats/records';
 import { finalMs } from '../../../domain/solve/final-time';
-import { now } from '../../../lib/clock';
 import { formatGoal, formatMs } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import { reportError, watchWrite } from '../../../lib/errors';
+import { reportError } from '../../../lib/errors';
 import { InstallNudge } from '../../about';
 import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
 import { PhaseBar, PhaseRun, usePhases, useVoiceShadow, VoiceShadowNote } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
+import { useSaveSolve } from '../hooks/use-save-solve';
 import { useSheetMotion } from '../hooks/use-sheet-motion';
 import { useScramble } from '../../../hooks/use-scramble';
 import {
@@ -161,6 +160,7 @@ export function TimerScreen() {
     if (pinned !== null) setSolvedScramble(null);
   }
 
+  const saveSolve = useSaveSolve();
   const handleComplete = useCallback(
     (attempt: CompletedAttempt) => {
       setShowResult(true);
@@ -184,46 +184,30 @@ export function TimerScreen() {
         return;
       }
 
-      const sessionId = session.id;
-      const startedAt = now() - Math.round(attempt.rawMs);
-      // Watched rather than fired and forgotten: a write the phone refuses is
-      // tried again on a reopened connection, and if that fails too the
-      // banner offers the attempt back instead of the time being gone.
-      watchWrite(
-        () =>
-          addSolve({
-            sessionId,
-            puzzle: PUZZLE,
-            mode: MODE,
-            // A missing scramble must not cost the user the time itself.
-            scramble: current ?? '',
-            scrambleSource,
-            rawMs: attempt.rawMs,
-            penalty: attempt.penalty,
-            // Anything set at this point came from the inspection rules, not the user.
-            penaltySource: 'auto',
-            inspectionMs: attempt.inspectionMs,
-            startedAt,
-            splits: attempt.splitMs.map((atMs, index) => ({
-              phase: phaseKeys[index] ?? '',
-              atMs: Math.round(atMs),
-              source: 'manual' as const,
-            })),
-            phaseKeys,
-          }).then(() => {
-            // A chosen scramble is for one solve, or goes on to the next of a
-            // shared set; the generated one waiting under it is still unseen,
-            // so it comes back as it was.
-            if (wasPinned) {
-              advancePin(finalMs({ rawMs: Math.round(attempt.rawMs), penalty: attempt.penalty }));
-            } else {
-              scramble.next();
-            }
-          }),
-        strings.errors.saveSolve,
+      saveSolve(
+        {
+          sessionId: session.id,
+          puzzle: PUZZLE,
+          mode: MODE,
+          // A missing scramble must not cost the user the time itself.
+          scramble: current ?? '',
+          scrambleSource,
+          attempt,
+          phaseKeys,
+        },
+        () => {
+          // A chosen scramble is for one solve, or goes on to the next of a
+          // shared set; the generated one waiting under it is still unseen,
+          // so it comes back as it was.
+          if (wasPinned) {
+            advancePin(finalMs({ rawMs: Math.round(attempt.rawMs), penalty: attempt.penalty }));
+          } else {
+            scramble.next();
+          }
+        },
       );
     },
-    [session, scramble, current, wasPinned, scrambleSource, challenge, phaseKeys],
+    [session, scramble, current, wasPinned, scrambleSource, challenge, phaseKeys, saveSolve],
   );
 
   const timer = useTimer(handleComplete, { phases: phaseKeys });

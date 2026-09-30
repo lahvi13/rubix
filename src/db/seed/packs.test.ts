@@ -10,7 +10,8 @@ import { invertAlg, parseAlg, type Move } from '../../domain/cube/notation';
 import { canonicalise } from '../../domain/cube/orientation';
 import { FACELETS, applyAlg, isSolved, solvedState, stateKey } from '../../domain/cube/state';
 import { lastLayerView, type Stickering } from '../../domain/cube/views';
-import { BEGINNER_GROUPS, CASE_TWINS, PACKS, type AlgPack, type PackCase } from './packs';
+import { PACKS, type AlgPack, type PackCase } from './packs';
+import { BEGINNER_GROUPS, CASE_TWINS } from '../../domain/alg/sets';
 
 function movesOf(text: string): Move[] {
   const parsed = parseAlg(text);

@@ -6,7 +6,7 @@ import { TimerDisplay } from '../../../components/TimerDisplay';
 import { useHasKeyboard } from '../../../hooks/use-has-keyboard';
 import { formatAlg, parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import { CROSS_HOLDS, crossSolutions, warmCrossSolver } from '../../../domain/cube/cross-solver';
-import { CROSS_CASE_ID } from '../../../db/seed/packs';
+import { CROSS_CASE_ID } from '../../../domain/alg/sets';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { caseTitle } from '../../../domain/alg/case-name';

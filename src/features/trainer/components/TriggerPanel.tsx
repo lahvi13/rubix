@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { TRIGGER_COLOURS } from '../../../db/repositories/trigger-repository';
-import { isPackTrigger } from '../../../db/seed/triggers';
 import { ChevronIcon } from '../../../components/Icons';
+import { TRIGGER_COLOURS } from '../../../domain/alg/triggers';
 import { parseAlg } from '../../../domain/cube/notation';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
@@ -45,7 +44,8 @@ function Palette({ value, onPick }: PaletteProps) {
  * own colour, and the moves it stands for.
  */
 export function TriggerPanel() {
-  const { triggers, create, rename, rewrite, recolour, setEnabled, remove } = useTriggers();
+  const { triggers, create, rename, rewrite, recolour, setEnabled, remove, isBuiltIn } =
+    useTriggers();
   const [name, setName] = useState('');
   const [moves, setMoves] = useState('');
   // Chosen while adding rather than afterwards. Every new trigger used to
@@ -145,7 +145,7 @@ export function TriggerPanel() {
                     update cannot bring back something somebody meant to be
                     rid of, and there would be no way back from that.
                   */}
-                  {isPackTrigger(trigger.id) ? (
+                  {isBuiltIn(trigger.id) ? (
                     <p className="trigger__note">{strings.trainer.triggerBuiltIn}</p>
                   ) : (
                     <button

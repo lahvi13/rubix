@@ -3,6 +3,7 @@ import type { Trigger } from '../../../db/types';
 import {
   createTrigger,
   deleteTrigger,
+  isPackTrigger,
   listTriggers,
   setTriggerEnabled,
   updateTrigger,
@@ -20,6 +21,8 @@ export interface TriggersView {
   recolour: (id: string, colour: string) => Promise<void>;
   setEnabled: (id: string, enabled: boolean) => Promise<void>;
   remove: (id: string) => Promise<void>;
+  /** Shipped with the app, and so switched off rather than deleted. */
+  isBuiltIn: (id: string) => boolean;
 }
 
 export function useTriggers(): TriggersView {
@@ -36,6 +39,7 @@ export function useTriggers(): TriggersView {
     recolour: async (id, colour) => updateTrigger(id, { colour }),
     setEnabled: async (id, enabled) => setTriggerEnabled(id, enabled),
     remove: deleteTrigger,
+    isBuiltIn: isPackTrigger,
   };
 }
 

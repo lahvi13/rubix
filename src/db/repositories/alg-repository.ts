@@ -1,7 +1,7 @@
 import { db } from '../schema';
 import type { AlgCase, AlgSet, Algorithm } from '../types';
 import { formatAlg, parseAlg } from '../../domain/cube/notation';
-import { SET_ORDER, withTwin } from '../seed/packs';
+import { SET_ORDER, withTwin } from '../../domain/alg/sets';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
 

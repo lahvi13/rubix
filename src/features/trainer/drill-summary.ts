@@ -1,4 +1,4 @@
-import { CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../db/seed/packs';
+import { CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../domain/alg/sets';
 import { strings } from '../../lib/strings';
 
 /**

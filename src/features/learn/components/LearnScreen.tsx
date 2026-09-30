@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
-import { CROSS_SET_ID } from '../../../db/seed/packs';
+import { CROSS_SET_ID } from '../../../domain/alg/sets';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { parseAlg } from '../../../domain/cube/notation';

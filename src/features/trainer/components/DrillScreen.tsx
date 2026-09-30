@@ -1,4 +1,4 @@
-import { CROSS_SET_ID } from '../../../db/seed/packs';
+import { CROSS_SET_ID } from '../../../domain/alg/sets';
 import { useSetting } from '../../../hooks/use-setting';
 import { RecognitionDrill } from './RecognitionDrill';
 import { SolveDrill } from './SolveDrill';

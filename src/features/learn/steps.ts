@@ -1,4 +1,4 @@
-import { BEGINNER_GROUPS, BEGINNER_SET_ID, CROSS_SET_ID } from '../../db/seed/packs';
+import { BEGINNER_GROUPS, BEGINNER_SET_ID, CROSS_SET_ID } from '../../domain/alg/sets';
 import { invertAlg, parseAlg } from '../../domain/cube/notation';
 import { applyAlg, solvedState, type CubeState } from '../../domain/cube/state';
 import { strings } from '../../lib/strings';

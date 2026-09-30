@@ -1,8 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import type { MethodPhase } from '../../../db/types';
-import { getSession } from '../../../db/repositories/session-repository';
-import { getSolve, updateSolve, type SolvePatch } from '../../../db/repositories/solve-repository';
 import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useRemoveSolves } from '../../../hooks/use-remove-solves';
@@ -14,9 +11,9 @@ import { finalMs } from '../../../domain/solve/final-time';
 import { shareLinkFor } from '../../../domain/scramble/share-link';
 import { formatMs } from '../../../lib/format';
 import { solveCard, solveCardFilename } from '../solve-card';
-import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 import { SessionPicker } from '../../sessions';
+import { useSolveDetail } from '../hooks/use-solve-detail';
 import { useTags } from '../hooks/use-tags';
 import { SolveDetail } from './SolveDetail';
 
@@ -42,7 +39,7 @@ export function SolveDetailSheet({
   onOpen,
   onClose,
 }: SolveDetailSheetProps) {
-  const solve = useLiveQuery(() => getSolve(solveId), [solveId]);
+  const { solve, session, edit } = useSolveDetail(solveId);
   // Read from the solve's own session, which is not always the one on screen:
   // the stats offer the all-time best, and that may have been set elsewhere.
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
@@ -50,10 +47,6 @@ export function SolveDetailSheet({
     solve?.sessionId ?? null,
     solve?.puzzle ?? '333',
     phaseKeys,
-  );
-  const session = useLiveQuery(
-    async () => (solve ? ((await getSession(solve.sessionId)) ?? null) : null),
-    [solve?.sessionId],
   );
   const tags = useTags();
   const removeSolves = useRemoveSolves();
@@ -113,9 +106,7 @@ export function SolveDetailSheet({
       solve={solve}
       phases={phases}
       tags={tags.tags}
-      onEdit={(id: string, patch: SolvePatch) => {
-        watchWrite(() => updateSolve(id, patch), strings.history.detailTitle);
-      }}
+      onEdit={edit}
       onCreateTag={tags.create}
       onDelete={(id: string) => {
         void removeSolves([id]);

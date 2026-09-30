@@ -2,7 +2,8 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../../db/schema';
-import { TRIGGER_COLOURS, listTriggers } from '../../../db/repositories/trigger-repository';
+import { listTriggers } from '../../../db/repositories/trigger-repository';
+import { TRIGGER_COLOURS } from '../../../domain/alg/triggers';
 import { seedPacks } from '../../../db/seed/seed';
 import { TriggerPanel } from './TriggerPanel';
 

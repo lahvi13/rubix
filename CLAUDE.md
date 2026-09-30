@@ -45,7 +45,7 @@ src/
     solve/        # penalty.ts, final-time.ts, splits.ts
     scramble/     # typy a pravidla, ne generování
     cube/         # vlastní model kostky: notace, stav (54 nálepek), pohledy na případ
-    alg/          # triggery — rozpad algoritmu na pojmenované úseky
+    alg/          # triggery (rozpad algoritmu na pojmenované úseky), katalog vestavěných sad
     transfer/     # formát exportu, validace importu, plán merge/replace
     audio/        # detektor hlasu (běží v AudioWorkletu) a párování hlasu s ťuknutím
   features/

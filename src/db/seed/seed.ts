@@ -3,15 +3,14 @@ import type { AlgCase, AlgSet, Algorithm, CaseProgress, Method, Trigger } from '
 import { formatAlg, invertAlg, parseAlg } from '../../domain/cube/notation';
 import { now } from '../../lib/clock';
 import {
-  CASE_TWINS,
   CROSS_PACK,
   PACKS,
   PACK_METHOD_ID,
   PACK_PUZZLE,
-  packAlgId,
   type AlgPack,
   type PackCase,
 } from './packs';
+import { CASE_TWINS, packAlgId } from '../../domain/alg/sets';
 import { TRIGGER_PACK } from './triggers';
 
 /**

@@ -2,7 +2,12 @@ import { InHeader } from '../../../components/HeaderSlot';
 import { useState, type ReactNode } from 'react';
 import type { AlgSet } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
-import { BEGINNER_SET_ID, FULL_SETS, LEVEL_BASE_SETS, TWO_LOOK_SETS } from '../../../db/seed/packs';
+import {
+  BEGINNER_SET_ID,
+  FULL_SETS,
+  LEVEL_BASE_SETS,
+  TWO_LOOK_SETS,
+} from '../../../domain/alg/sets';
 import { ChevronIcon } from '../../../components/Icons';
 import { useSetting } from '../../../hooks/use-setting';
 import { packLabel, strings } from '../../../lib/strings';

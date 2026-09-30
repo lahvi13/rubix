@@ -6,7 +6,7 @@ import {
   FULL_SETS,
   LEVEL_BASE_SETS,
   TWO_LOOK_SETS,
-} from '../../../db/seed/packs';
+} from '../../../domain/alg/sets';
 import { navigate } from '../../../app/router';
 import { diagramFor } from '../case-view';
 import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../levels';

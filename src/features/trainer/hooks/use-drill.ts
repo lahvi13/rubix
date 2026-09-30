@@ -5,7 +5,7 @@ import { listCasesWithAlgs, type CaseWithAlg } from '../../../db/repositories/al
 import { addDrillSolve, loadDrillPool } from '../../../db/repositories/drill-repository';
 import { deleteSolve, setPenalty } from '../../../db/repositories/solve-repository';
 import { togglePenalty } from '../../../domain/solve/penalty';
-import { CROSS_SET_ID } from '../../../db/seed/packs';
+import { CROSS_SET_ID } from '../../../domain/alg/sets';
 import { crossScramble } from '../../../domain/drill/cross-scramble';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { drillScramble } from '../../../domain/drill/scramble';

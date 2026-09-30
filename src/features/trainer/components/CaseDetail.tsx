@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
-import { packAlgKind, type PackAlgKind } from '../../../db/seed/packs';
+import { packAlgKind, type PackAlgKind } from '../../../domain/alg/sets';
 import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { Sheet, type SheetPaging } from '../../../components/Sheet';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';

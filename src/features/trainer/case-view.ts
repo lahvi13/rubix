@@ -1,5 +1,5 @@
 import type { DiagramView } from '../../components/CubeDiagram';
-import { BEGINNER_GROUPS, BEGINNER_SET_ID, LEVEL_BASE_SETS } from '../../db/seed/packs';
+import { BEGINNER_GROUPS, BEGINNER_SET_ID, LEVEL_BASE_SETS } from '../../domain/alg/sets';
 import type { PlayerStickering } from './components/CasePlayer';
 import type { Stickering } from '../../domain/cube/views';
 

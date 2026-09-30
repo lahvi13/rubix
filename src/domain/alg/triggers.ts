@@ -15,6 +15,39 @@ export interface TriggerDefinition {
   colour?: string;
 }
 
+/**
+ * What a trigger can be highlighted in. Twelve rather than eight, because a
+ * reader with a dozen triggers wants a dozen colours — two of them sharing one
+ * is two things that look like the same thing inside an algorithm, which is
+ * the one job the colour has.
+ *
+ * One per step round the colour circle, and within each step the shade that
+ * sits furthest from its neighbours. Chosen by measuring rather than by eye,
+ * and measured on what the highlight actually paints — the colour at 26% over
+ * the panel, which is where two triggers have to be told apart — rather than
+ * on the swatch, where everything looks distinct. The closest pair came out
+ * twice as far apart as the set this replaced, which had an amber and a
+ * yellow that were the same colour to look at.
+ *
+ * All of them are light enough to read as text on the dark theme, where the
+ * name is drawn in the colour itself, and saturated enough not to read as the
+ * muted grey that means no trigger is here.
+ */
+export const TRIGGER_COLOURS = [
+  '#f87171',
+  '#fb923c',
+  '#fbbf24',
+  '#a3e635',
+  '#4ade80',
+  '#2dd4bf',
+  '#67e8f9',
+  '#38bdf8',
+  '#818cf8',
+  '#c084fc',
+  '#f0abfc',
+  '#f472b6',
+] as const;
+
 export interface AlgSegment {
   moves: Move[];
   /** The trigger these moves are, or null for moves that are just moves. */

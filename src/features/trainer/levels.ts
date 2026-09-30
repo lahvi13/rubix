@@ -1,4 +1,4 @@
-import { LEVEL_BASE_SETS, SET_LEVELS } from '../../db/seed/packs';
+import { LEVEL_BASE_SETS, SET_LEVELS } from '../../domain/alg/sets';
 import { strings } from '../../lib/strings';
 
 /**

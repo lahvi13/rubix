@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../schema';
 import { addUserAlgorithm, setActiveAlgorithm } from '../repositories/alg-repository';
 import { deleteTrigger, updateTrigger } from '../repositories/trigger-repository';
-import { CROSS_CASE_ID, CROSS_SET_ID, PACKS } from './packs';
+import { PACKS } from './packs';
+import { CROSS_CASE_ID, CROSS_SET_ID } from '../../domain/alg/sets';
 import { seedPacks } from './seed';
 
 const totalCases = PACKS.reduce((count, pack) => count + pack.cases.length, 0);
