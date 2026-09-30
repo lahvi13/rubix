@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, Suspense, useState } from 'react';
 import { AboutScreen } from '../features/about';
 import { DataScreen } from '../features/data-transfer';
 import { HistoryScreen } from '../features/history';
@@ -91,6 +91,11 @@ export function App() {
 
       <Fragment key={generation}>
         <HeaderSlotContext.Provider value={headerSlot}>
+        {/* Every screen but the timer is its own chunk, loaded the first time
+            it is opened: the timer is where the app starts, and on a phone
+            the first load pays for everything in it. The service worker has
+            the chunks cached, so the blank moment is a frame, not a wait. */}
+        <Suspense fallback={null}>
         {route === 'timer' ? <TimerScreen /> : null}
         {route === 'learn' ? <LearnScreen /> : null}
         {route === 'history' ? <HistoryScreen /> : null}
@@ -100,6 +105,7 @@ export function App() {
         {route === 'settings' ? <SettingsScreen /> : null}
         {route === 'data' ? <DataScreen /> : null}
         {route === 'about' ? <AboutScreen /> : null}
+        </Suspense>
         </HeaderSlotContext.Provider>
       </Fragment>
 

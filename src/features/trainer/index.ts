@@ -1,5 +1,12 @@
-export { TrainerScreen } from './components/TrainerScreen';
-export { DrillScreen } from './components/DrillScreen';
+import { lazy } from 'react';
+
+// Loaded when first opened; see the Suspense in app/App.tsx.
+export const TrainerScreen = lazy(() =>
+  import('./components/TrainerScreen').then((module) => ({ default: module.TrainerScreen })),
+);
+export const DrillScreen = lazy(() =>
+  import('./components/DrillScreen').then((module) => ({ default: module.DrillScreen })),
+);
 
 /**
  * Lent to whoever else has a case to show. The beginner's guide walks some of
