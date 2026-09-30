@@ -483,10 +483,10 @@ Rozhodnuto při stavbě zkoušky:
   telefonu (v1, rozhodovala po 50 ms znělosti) slyšela „hlas“ každou 1,5 s;
   ve tichu fungovala, ruchy v místnosti (vrznutí, cinknutí, řeč vedle) brala
   jako „hop“. Znělé hopy se teď sbírají do jednoho zvuku, který končí 150 ms
-  bez znělosti, a posoudí se až celý: **60–450 ms** (souvislá řeč a televize se
-  slijí do delšího), **průměrná** periodicita ≥ 0,65 a vrchol **≥ 15 dB nad
-  pozadím** (mluví se kousek od telefonu, ruchy jdou přes místnost). Rozhodnutí
-  přijde až po konci slova, onset se datuje zpátky na jeho začátek
+  bez znělosti, a posoudí se až celý podle délky (souvislá řeč a televize se
+  slijí do delšího), **průměrné** periodicity a vrcholu nad pozadím (mluví se
+  kousek od telefonu, ruchy jdou přes místnost) — prahy viz detektor 4 níž.
+  Rozhodnutí přijde až po konci slova, onset se datuje zpátky na jeho začátek
 - **každý posouzený zvuk se zapisuje i s tím, podle čeho se soudil** (délka,
   periodicita, výška, stabilita výšky, hlasitost) — přijatý i odmítnutý. Další
   ladění se dělá proti skutečné místnosti, ne proti odhadu; nikdy se neukládá
@@ -495,6 +495,14 @@ Rozhodnuto při stavbě zkoušky:
   quiet | unclear | repeat`, při víc důvodech ten první v tomhle pořadí. Test v
   Nastavení vypisuje posledních pár zvuků s verdiktem a čísly a dají se
   zkopírovat — v2 na telefonu „hop“ občas nezaznamenal a nebylo vidět proč
+- **konec zvuku se měří od jeho vlastního vrcholu, ne od pozadí; hlasitost
+  rozhoduje** (detektor 4). Test v3 na telefonu: pět „hop“ bylo +61–70 dB nad
+  pozadím, nic jiného v místnosti víc než +18 — ale čtyři byla odmítnutá jako
+  „moc dlouhé“, protože dozvuk místnosti po tak hlasitém slově zůstal nad
+  prahem a zněl dál periodicky. Hop teď patří ke zvuku jen do 20 dB pod
+  vrcholem zvuku; práh hlasitosti je **30 dB** (uprostřed mezery, s rezervou
+  na telefon dál na stole), a protože hlavní práci dělá hlasitost, zbytek je
+  volnější: 60–600 ms, průměrná periodicita ≥ 0,55
 - **po přijatém „hop“ se 600 ms další nepřijme** (`repeat`). Důrazné „hop“ drží
   „p“ zavřené a po uvolnění ještě krátce zazní hlas; v2 to občas počítala
   dvakrát. Konce fází jsou od sebe sekundy, takže to nic nestojí

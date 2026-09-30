@@ -162,6 +162,27 @@ describe('createOnsetDetector', () => {
     expect(detect(signal)).toHaveLength(2);
   });
 
+  it('hears a word said close to the phone without the room ringing on after it', () => {
+    const signal = room(3000);
+    vowel(signal, 1000, 150, 0.3);
+    // The echo: the same pitch, starting well below the word and dying away
+    // over most of a second — far above the floor for all of that time.
+    const start = at(1150);
+    for (let i = 0; i < at(800); i++) {
+      let value = 0;
+      for (let harmonic = 1; harmonic <= 6; harmonic++) {
+        value += Math.sin((2 * Math.PI * 150 * harmonic * i) / RATE) / harmonic;
+      }
+      signal[start + i] = (signal[start + i] ?? 0) + 0.06 * Math.exp(-i / at(150)) * value;
+    }
+    const heard = sounds(signal);
+    expect(heard[0]?.verdict).toBe('voice');
+    expect(heard[0]?.durationMs).toBeLessThan(400);
+    expectNear(heard[0]?.atMs, 1000);
+    // Whatever of the echo is judged on its own is not a second word.
+    expect(heard.slice(1).every((sound) => sound.verdict !== 'voice')).toBe(true);
+  });
+
   it('hears an emphatic "hop", its p released after a long hold, as one word', () => {
     const signal = room(2000);
     vowel(signal, 1000, 150, 0.1);
@@ -231,13 +252,17 @@ describe('createOnsetDetector', () => {
 
 describe('judgeSound', () => {
   it.each<[string, number, number, number, Verdict]>([
-    ['a clear, close word', 150, 0.9, 30, 'voice'],
-    ['the shortest word taken', 60, 0.9, 30, 'voice'],
-    ['the longest word taken', 450, 0.9, 30, 'voice'],
-    ['a blip', 55, 0.9, 30, 'short'],
-    ['speech that runs on', 455, 0.9, 30, 'long'],
-    ['a word from across the room', 150, 0.9, 14, 'quiet'],
-    ['a squeak that repeats only in patches', 150, 0.6, 30, 'unclear'],
+    ['a clear, close word', 150, 0.9, 40, 'voice'],
+    ['the shortest word taken', 60, 0.9, 40, 'voice'],
+    ['the longest word taken', 600, 0.9, 40, 'voice'],
+    ['the quietest word taken', 150, 0.9, 30, 'voice'],
+    ['the least periodic word taken', 150, 0.55, 40, 'voice'],
+    ['a blip', 55, 0.9, 40, 'short'],
+    ['speech that runs on', 605, 0.9, 40, 'long'],
+    // The loudest of everything but the words in the first test on a phone was 18 dB.
+    ['a clink across the room', 150, 0.9, 18, 'quiet'],
+    ['just under the line', 150, 0.9, 29, 'quiet'],
+    ['a squeak that repeats only in patches', 150, 0.5, 40, 'unclear'],
     ['too long outranks the rest', 900, 0.3, 5, 'long'],
     ['too quiet outranks unclear', 150, 0.3, 5, 'quiet'],
   ])('%s', (_, durationMs, periodicityScore, loudnessDb, verdict) => {

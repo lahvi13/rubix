@@ -41,7 +41,7 @@
  */
 
 /** Bumped whenever a change here makes old trial results incomparable. */
-export const DETECTOR_VERSION = 3;
+export const DETECTOR_VERSION = 4;
 
 const HOP_MS = 5;
 /** The band a voice's fundamental and first formant live in; clicks mostly do not. */
@@ -67,13 +67,25 @@ const VOICED = 0.5;
  */
 const END_GAP_MS = 150;
 
-/** What a sound has to be to be taken for "hop". */
+/**
+ * How far below its own loudest a hop may be and still be part of the sound.
+ * Measured against the room's floor instead, a word said close to the phone
+ * dragged its echo along: the room rang on above the floor, periodic still,
+ * and every "hop" of the first test on a phone was turned away as too long.
+ */
+const SOUND_SPAN_DB = 20;
+
+/*
+ * What a sound has to be to be taken for "hop". Loudness does most of the
+ * work: in that first test on a phone the solver's words stood 61–70 dB
+ * above the room, and nothing else in it more than 18.
+ */
 const VOICE_MIN_MS = 60;
-const VOICE_MAX_MS = 450;
+const VOICE_MAX_MS = 600;
 /** Mean periodicity over the whole sound, not its best moment. */
-const VOICE_MIN_PERIODICITY = 0.65;
+const VOICE_MIN_PERIODICITY = 0.55;
 /** Loudest hop above the floor: close to the phone, not across the room. */
-const VOICE_MIN_LOUDNESS_DB = 15;
+const VOICE_MIN_LOUDNESS_DB = 30;
 /**
  * After a word is taken, how long before another can be. An emphatic "hop"
  * holds the p shut and releases it with a breath of voice of its own, which
@@ -272,6 +284,7 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
   let voicedHops = 0;
   let periodicitySum = 0;
   let loudestDb = -Infinity;
+  let peakLevelDb = -Infinity;
   const repeatSamples = Math.round((sampleRate * REPEAT_MS) / 1000);
   let lastVoiceAt = -Infinity;
   // One pitch per voiced hop of the sound; a sound past VOICE_MAX_MS is not gathered.
@@ -301,8 +314,14 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
     pitches[voicedHops] = voicingRate / found.lag;
     voicedHops++;
     periodicitySum += found.r;
+    peakLevelDb = Math.max(peakLevelDb, levelDb);
     loudestDb = Math.max(loudestDb, levelDb - floorDb);
     lastVoicedHop = hopsSinceStart;
+  }
+
+  /** Voiced, and not yet the room ringing on after the sound itself. */
+  function isPartOfSound(isVoiced: boolean): boolean {
+    return isVoiced && levelDb >= peakLevelDb - SOUND_SPAN_DB;
   }
 
   /** The sound gathered so far, as it would be judged with this verdict and length. */
@@ -359,12 +378,13 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
         gapHops = 0;
         voicedHops = 0;
         periodicitySum = 0;
+        peakLevelDb = -Infinity;
         loudestDb = -Infinity;
         gather();
         return null;
       case 'sound':
         hopsSinceStart++;
-        if (isVoiced) {
+        if (isPartOfSound(isVoiced)) {
           gapHops = 0;
           gather();
         } else if (++gapHops >= endGapHops) {
@@ -380,7 +400,7 @@ export function createOnsetDetector(sampleRate: number): OnsetDetector {
         return null;
       case 'overlong':
         hopsSinceStart++;
-        if (!isVoiced) {
+        if (!isPartOfSound(isVoiced)) {
           gapHops++;
           if (gapHops >= endGapHops) phase = 'quiet';
         } else {
