@@ -77,6 +77,13 @@ export function SolveDetail({
     onEdit(solve.id, { tagIds: next });
   };
 
+  // Every edit marks the solve as edited, and an export as freshly changed:
+  // passing through the field is not one.
+  const commitNote = () => {
+    const next = note.trim() === '' ? null : note;
+    if (next !== solve.note) onEdit(solve.id, { note: next });
+  };
+
   const addTag = async () => {
     const name = newTag.trim();
     if (name === '') return;
@@ -227,7 +234,7 @@ export function SolveDetail({
           value={note}
           rows={3}
           onChange={(event) => setNote(event.target.value)}
-          onBlur={() => onEdit(solve.id, { note: note.trim() === '' ? null : note })}
+          onBlur={commitNote}
         />
       </div>
 
