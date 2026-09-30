@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sheet, type SheetPaging } from '../../../components/Sheet';
 import type { MethodPhase, Solve, Tag } from '../../../db/types';
 import type { SolvePatch } from '../../../db/repositories/solve-repository';
@@ -78,11 +78,22 @@ export function SolveDetail({
   };
 
   // Every edit marks the solve as edited, and an export as freshly changed:
-  // passing through the field is not one.
+  // passing through the field is not one, and neither is saving it twice.
+  const savedNote = useRef(solve.note);
   const commitNote = () => {
     const next = note.trim() === '' ? null : note;
-    if (next !== solve.note) onEdit(solve.id, { note: next });
+    if (next === savedNote.current) return;
+    savedNote.current = next;
+    onEdit(solve.id, { note: next });
   };
+
+  // Closing the sheet takes the field away without a blur — Escape does —
+  // and what was written would go with it.
+  const commitOnClose = useRef(commitNote);
+  useEffect(() => {
+    commitOnClose.current = commitNote;
+  });
+  useEffect(() => () => commitOnClose.current(), []);
 
   const addTag = async () => {
     const name = newTag.trim();

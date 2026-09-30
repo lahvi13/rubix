@@ -48,7 +48,7 @@ function renderDetail(solve: Solve, phases: readonly MethodPhase[] = []) {
     onDelete: vi.fn(),
     onMove: vi.fn(),
   };
-  render(
+  const { unmount } = render(
     <SolveDetail
       solve={solve}
       phases={phases}
@@ -62,7 +62,7 @@ function renderDetail(solve: Solve, phases: readonly MethodPhase[] = []) {
       {...props}
     />,
   );
-  return { ...props, user: userEvent.setup() };
+  return { ...props, user: userEvent.setup(), unmount };
 }
 
 const penaltyButton = (penalty: string) =>
@@ -198,6 +198,33 @@ describe('SolveDetail', () => {
       await user.tab();
 
       expect(onEdit).toHaveBeenCalledExactlyOnceWith('solve-1', { note: null });
+    });
+
+    it('keeps what was written when the sheet closes before the field is left', async () => {
+      const { onEdit, user, unmount } = renderDetail(solveOf());
+
+      await user.type(screen.getByLabelText(strings.history.note), 'lockup');
+      unmount();
+
+      expect(onEdit).toHaveBeenCalledExactlyOnceWith('solve-1', { note: 'lockup' });
+    });
+
+    it('saves a note once, not again when the sheet closes after it', async () => {
+      const { onEdit, user, unmount } = renderDetail(solveOf());
+
+      await user.type(screen.getByLabelText(strings.history.note), 'lockup');
+      await user.tab();
+      unmount();
+
+      expect(onEdit).toHaveBeenCalledExactlyOnceWith('solve-1', { note: 'lockup' });
+    });
+
+    it('closes without a write when the note was not touched', () => {
+      const { onEdit, unmount } = renderDetail(solveOf({ note: 'lockup' }));
+
+      unmount();
+
+      expect(onEdit).not.toHaveBeenCalled();
     });
 
     // Every edit stamps the solve as edited, and an export as freshly changed.
