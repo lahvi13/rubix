@@ -9,6 +9,7 @@ import { createOnsetDetector, type OnsetDetector } from '../domain/audio/onset';
 import {
   ONSET_PROCESSOR,
   readProcessorOptions,
+  readVoiceMessage,
   type OnsetProcessorMessage,
 } from './onset-messages';
 
@@ -37,6 +38,10 @@ class OnsetProcessor extends AudioWorkletProcessor {
   constructor(options?: { processorOptions?: unknown }) {
     super(options);
     this.detector = createOnsetDetector(sampleRate, readProcessorOptions(options?.processorOptions).voice);
+    this.port.onmessage = (event: MessageEvent<unknown>) => {
+      const message = readVoiceMessage(event.data);
+      if (message !== null) this.detector.setVoice(message.voice);
+    };
   }
 
   process(inputs: Float32Array[][]): boolean {

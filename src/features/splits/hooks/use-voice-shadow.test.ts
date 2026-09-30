@@ -10,13 +10,22 @@ import { useVoiceShadow } from './use-voice-shadow';
 // The microphone is the one thing a test cannot have: it is stood in for by
 // a listener the test speaks into itself.
 let handlers: MicHandlers | null = null;
-let openedFor: VoiceProfile | null | undefined;
+/** The voice the detector is judging against, however it was handed over. */
+let judgingFor: VoiceProfile | null | undefined;
+let opened = 0;
 vi.mock('../../../lib/mic-listener', () => ({
   MicError: class extends Error {},
   openMic: (given: MicHandlers, voice: VoiceProfile | null) => {
     handlers = given;
-    openedFor = voice;
-    return Promise.resolve({ resume: () => {}, close: () => {} });
+    judgingFor = voice;
+    opened++;
+    return Promise.resolve({
+      resume: () => {},
+      setVoice: (next: VoiceProfile | null) => {
+        judgingFor = next;
+      },
+      close: () => {},
+    });
   },
 }));
 
@@ -62,7 +71,8 @@ async function listening(initial: TimerState = IDLE) {
 describe('useVoiceShadow', () => {
   beforeEach(async () => {
     handlers = null;
-    openedFor = undefined;
+    judgingFor = undefined;
+    opened = 0;
     await Promise.all(db.tables.map((table) => table.clear()));
   });
 
@@ -124,7 +134,7 @@ describe('useVoiceShadow', () => {
     await setSetting('audio.voiceLoudnessDb', 65);
     const { rerender } = await listening();
     const solver = { loudnessDb: 65 };
-    await waitFor(() => expect(openedFor).toEqual(solver));
+    await waitFor(() => expect(judgingFor).toEqual(solver));
 
     rerender({ state: running(1000) });
     rerender({ state: stopped(4000, []) });
@@ -133,6 +143,13 @@ describe('useVoiceShadow', () => {
         expect(await getSetting('audio.voiceShadowLog')).toMatchObject([{ voice: solver }]),
       SETTLED,
     );
+  });
+
+  it('takes a new calibration without opening the microphone again', async () => {
+    await listening();
+    await setSetting('audio.voiceLoudnessDb', 60);
+    await waitFor(() => expect(judgingFor).toEqual({ loudnessDb: 60 }));
+    expect(opened).toBe(1);
   });
 
   it('keeps the microphone shut while the trial is off', () => {

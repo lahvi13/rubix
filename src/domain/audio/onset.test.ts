@@ -154,6 +154,16 @@ describe('createOnsetDetector', () => {
     expect(heard[0]?.pitchHz).toBeCloseTo(150, -1);
   });
 
+  it('turns away a long tone even after talk has filled the floor\'s window', () => {
+    const signal = room(6000);
+    // A second and a half of talk fills most of the floor's window, and the
+    // tone after it keeps it filled; the floor is a low percentile, so the
+    // tone is still measured whole.
+    for (let ms = 2000; ms < 3500; ms += 230) vowel(signal, ms, 150, 0.08, 120 + (ms % 50));
+    vowel(signal, 3800, 800, 0.05, 440);
+    expect(detect(signal)).toEqual([]);
+  });
+
   it('turns away running speech in the background', () => {
     const signal = room(4000);
     for (let ms = 1000; ms < 2800; ms += 230) vowel(signal, ms, 150, 0.1, 130 + (ms % 40));
@@ -216,6 +226,46 @@ describe('createOnsetDetector', () => {
     const [usual] = sounds(awake);
     expect(late?.verdict).toBe('voice');
     expect(Math.abs((late?.loudnessDb ?? 0) - (usual?.loudnessDb ?? 0))).toBeLessThan(3);
+  });
+
+  it('measures the first word after the microphone opens as loud as any later one', () => {
+    // A word that swells to its loudest at the end, as a spoken "hop" can.
+    function swell(signal: Float32Array, fromMs: number) {
+      const start = at(fromMs);
+      const length = at(250);
+      for (let i = 0; i < length; i++) {
+        let value = 0;
+        for (let harmonic = 1; harmonic <= 6; harmonic++) {
+          value += Math.sin((2 * Math.PI * 150 * harmonic * i) / RATE) / harmonic;
+        }
+        signal[start + i] = (signal[start + i] ?? 0) + 0.1 * (i / length) * value;
+      }
+    }
+    // Said just after the warm-up, while the room has barely been heard. The
+    // floor is a low percentile, so a word this short cannot lift it.
+    const early = room(2000);
+    swell(early, 600);
+    const late = room(6000);
+    swell(late, 4000);
+    const [first] = sounds(early);
+    const [usual] = sounds(late);
+    expect(Math.abs((first?.loudnessDb ?? 0) - (usual?.loudnessDb ?? 0))).toBeLessThan(2);
+  });
+
+  it('judges against a voice given mid-stream from the next sound on, without hearing the room again', () => {
+    const signal = room(4000);
+    vowel(signal, 1000, 150, 0.015);
+    vowel(signal, 2500, 150, 0.015);
+    const detector = createOnsetDetector(RATE);
+    const verdicts: string[] = [];
+    for (let offset = 0; offset < signal.length; offset += 128) {
+      // Calibrated between the two words.
+      if (offset === 1800 * 48) detector.setVoice({ loudnessDb: 57 });
+      for (const sound of detector.push(signal.subarray(offset, offset + 128))) {
+        verdicts.push(sound.verdict);
+      }
+    }
+    expect(verdicts).toEqual(['voice', 'quiet']);
   });
 
   it('calibrated, takes words about as loud as the solver, at any pitch', () => {

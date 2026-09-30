@@ -26,8 +26,9 @@ function isPageVisible(): boolean {
  * hidden page has nothing to listen for, and a microphone left open behind it
  * is one the phone keeps flagging as in use.
  *
- * `voice` goes to the detector when the microphone opens, so a new one opens
- * it again.
+ * A new `voice` is handed to the detector already listening. Opening the
+ * microphone again for it left a second and a half deaf — the moment the
+ * first "hop" after calibrating was said.
  */
 export function useMic(
   isWanted: boolean,
@@ -41,9 +42,11 @@ export function useMic(
   const [outcome, setOutcome] = useState<MicStatus | null>(null);
   const listener = useRef<MicListener | null>(null);
   const handlersRef = useRef(handlers);
+  const voiceRef = useRef(voice);
 
   useEffect(() => {
     handlersRef.current = handlers;
+    voiceRef.current = voice;
   });
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export function useMic(
         onSound: (sound) => handlersRef.current.onSound(sound),
         onLevel: (level) => handlersRef.current.onLevel?.(level),
       },
-      loudnessDb === null ? null : { loudnessDb },
+      voiceRef.current,
     ).then(
       (opened) => {
         // Closed again before it finished opening: the effect is gone.
@@ -63,6 +66,8 @@ export function useMic(
           return;
         }
         listener.current = opened;
+        // The voice may have changed while the microphone was opening.
+        opened.setVoice(voiceRef.current);
         setOutcome({ kind: 'listening' });
       },
       (cause: unknown) => {
@@ -80,7 +85,11 @@ export function useMic(
       listener.current = null;
       setOutcome(null);
     };
-  }, [isOpen, loudnessDb]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    listener.current?.setVoice(loudnessDb === null ? null : { loudnessDb });
+  }, [loudnessDb]);
 
   const resume = useCallback(() => listener.current?.resume(), []);
   return { status: isOpen ? (outcome ?? OPENING) : OFF, resume };

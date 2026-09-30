@@ -11,6 +11,7 @@ import {
   ONSET_PROCESSOR,
   readOnsetMessage,
   type OnsetProcessorOptions,
+  type OnsetVoiceMessage,
   type SoundTraits,
 } from '../workers/onset-messages';
 import { eventTime } from './clock';
@@ -46,6 +47,8 @@ export interface MicHandlers {
 export interface MicListener {
   /** Wakes a context the browser started suspended; call it from a gesture. */
   resume(): void;
+  /** Judges against another voice from the next sound on, with the microphone kept open. */
+  setVoice(voice: VoiceProfile | null): void;
   close(): void;
 }
 
@@ -147,6 +150,10 @@ export async function openMic(
 
   return {
     resume,
+    setVoice: (next) => {
+      const message: OnsetVoiceMessage = { type: 'voice', voice: next };
+      node.port.postMessage(message);
+    },
     close: () => {
       node.port.onmessage = null;
       source.disconnect();

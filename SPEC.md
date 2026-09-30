@@ -522,6 +522,9 @@ Rozhodnuto při stavbě zkoušky:
   `audio.voicePitchHz` zmizel (device-local, žádná záloha ho nenese). Dvě „hop“
   ještě vyšla 600 ms dlouhá, proto zvuk končí 15 dB (ne 20) pod vrcholem a limit
   je 800 ms
+- **nová kalibrace jde do běžícího detektoru, mikrofon se znovu neotevírá.**
+  Otevření s rozběhem trvá kolem 1,5 s a první „hop“ hned po kalibraci do té
+  mezery padl (naměřený jen jeho tišší konec, „moc potichu“)
 - **nic se nesoudí, dokud detektor neslyšel místnost** (500 ms) a nuly od
   probouzejícího se mikrofonu se do pozadí nepočítají — první vteřina testu
   jinak vycházela „+112 dB“

@@ -237,6 +237,13 @@ export interface OnsetDetector {
   readonly levelDb: number;
   /** The level a hop has to reach right now to be part of a sound. */
   readonly gateDb: number;
+  /**
+   * Judges from now on against another voice. Changed in place rather than
+   * with a new detector: a new one has to hear the room again before it
+   * judges anything, and the first "hop" said straight after calibrating
+   * fell into that gap.
+   */
+  setVoice(voice: VoiceProfile | null): void;
 }
 
 const NOTHING: readonly Sound[] = [];
@@ -334,7 +341,11 @@ export function periodicity(
 }
 
 /** `voice` null judges any close, short voice a word — how calibration itself listens. */
-export function createOnsetDetector(sampleRate: number, voice: VoiceProfile | null = null): OnsetDetector {
+export function createOnsetDetector(
+  sampleRate: number,
+  initialVoice: VoiceProfile | null = null,
+): OnsetDetector {
+  let voice = initialVoice;
   const hopSamples = Math.max(1, Math.round((sampleRate * HOP_MS) / 1000));
   const warmUpHops = Math.ceil(WARM_UP_MS / HOP_MS);
   const endGapHops = Math.ceil(END_GAP_MS / HOP_MS);
@@ -539,6 +550,9 @@ export function createOnsetDetector(sampleRate: number, voice: VoiceProfile | nu
     },
     get gateDb() {
       return gateDb;
+    },
+    setVoice(next) {
+      voice = next;
     },
   };
 }

@@ -24,17 +24,31 @@ export interface OnsetProcessorOptions {
   voice: VoiceProfile | null;
 }
 
+/** What the page tells the running processor: the voice to judge against from now on. */
+export interface OnsetVoiceMessage {
+  type: 'voice';
+  voice: VoiceProfile | null;
+}
+
 /** Checked on arrival, like the messages: the options cross a thread boundary too. */
 export function readProcessorOptions(value: unknown): OnsetProcessorOptions {
   if (typeof value !== 'object' || value === null) return { voice: null };
   const options: Partial<Record<keyof OnsetProcessorOptions, unknown>> = value;
-  const voice = options.voice;
-  if (typeof voice !== 'object' || voice === null) return { voice: null };
-  const profile: Partial<Record<keyof VoiceProfile, unknown>> = voice;
+  return { voice: readVoice(options.voice) };
+}
+
+/** A new voice from the page, or null for anything else that arrives. */
+export function readVoiceMessage(data: unknown): OnsetVoiceMessage | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const message: Partial<Record<keyof OnsetVoiceMessage, unknown>> = data;
+  return message.type === 'voice' ? { type: 'voice', voice: readVoice(message.voice) } : null;
+}
+
+function readVoice(value: unknown): VoiceProfile | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const profile: Partial<Record<keyof VoiceProfile, unknown>> = value;
   const { loudnessDb } = profile;
-  return typeof loudnessDb === 'number' && loudnessDb > 0
-    ? { voice: { loudnessDb } }
-    : { voice: null };
+  return typeof loudnessDb === 'number' && loudnessDb > 0 ? { loudnessDb } : null;
 }
 
 type Fields = 'type' | 'frame' | 'levelDb' | 'gateDb' | keyof SoundTraits;

@@ -37,6 +37,13 @@ export function VoiceShadowSection() {
   // asks for the microphone — so listening starts with it, and the question
   // comes here rather than at the first solve.
   const [listening, setListening] = useState<Listening>('off');
+  // Counts calibrations begun, so each starts from nothing heard — while the
+  // test that follows one keeps the microphone it was calibrated with.
+  const [calibrations, setCalibrations] = useState(0);
+  const calibrate = () => {
+    setCalibrations((count) => count + 1);
+    setListening('calibrate');
+  };
   const [isCopied, setCopied] = useState(false);
   const log = useVoiceShadowLog();
   const { summary } = log;
@@ -52,7 +59,9 @@ export function VoiceShadowSection() {
           onChange={(event) => {
             setEnabled(event.target.checked);
             // Uncalibrated, the first thing to do is to calibrate.
-            setListening(event.target.checked ? (voice === null ? 'calibrate' : 'test') : 'off');
+            if (!event.target.checked) setListening('off');
+            else if (voice === null) calibrate();
+            else setListening('test');
           }}
         />
         {strings.voice.toggle}
@@ -72,9 +81,8 @@ export function VoiceShadowSection() {
           </p>
 
           {listening === 'off' ? null : (
-            // Keyed, so calibrating and testing each start from nothing heard.
             <MicTest
-              key={listening}
+              key={calibrations}
               voice={voice}
               isCalibrating={listening === 'calibrate'}
               onCalibrated={(heard) => {
@@ -96,7 +104,7 @@ export function VoiceShadowSection() {
                 >
                   {listening === 'test' ? strings.voice.stopTest : strings.voice.test}
                 </button>
-                <button type="button" onClick={() => setListening('calibrate')}>
+                <button type="button" onClick={calibrate}>
                   {voice === null ? strings.voice.calibrate : strings.voice.recalibrate}
                 </button>
               </>
