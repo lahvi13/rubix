@@ -232,6 +232,36 @@ export function moveSplit(
   return splits.map((split) => (split.phase === phase ? { ...split, atMs } : split));
 }
 
+/** Times are shown truncated to hundredths (`formatMs`), so this is all a typed time can say. */
+const SHOWN_PRECISION_MS = 10;
+
+const readsAs = (a: number, b: number) =>
+  Math.floor(a / SHOWN_PRECISION_MS) === Math.floor(b / SHOWN_PRECISION_MS);
+
+/**
+ * Move one boundary to a time typed by hand, read the way it was shown.
+ *
+ * The stored times have milliseconds the screen never showed, so copying the
+ * next boundary's "48.04" lands a few ms short of it — a phase of 0.00 that is
+ * not a skip, and that then stands as the best that phase has ever been. A
+ * typed time that reads as a neighbour therefore IS that neighbour: a zero
+ * phase. Typed as the stop, it is where the solve ended — a split cannot sit
+ * on rawMs, so the boundary goes, which is exactly how a held tap records a
+ * last-layer skip.
+ */
+export function moveSplitAsTyped(
+  splits: readonly Split[],
+  phaseKeys: readonly string[],
+  phase: string,
+  typedMs: number,
+  rawMs: number,
+): Split[] | null {
+  const { minMs, maxMs } = splitBounds(splits, phaseKeys, phase, rawMs);
+  if (maxMs === rawMs && readsAs(typedMs, rawMs)) return removeSplit(splits, phase);
+  const atMs = readsAs(typedMs, minMs) ? minMs : readsAs(typedMs, maxMs) ? maxMs : typedMs;
+  return moveSplit(splits, phaseKeys, phase, atMs, rawMs);
+}
+
 /**
  * Add the boundary of a phase that was never recorded, placed halfway through
  * the block it splits — the only guess available, and the point from which

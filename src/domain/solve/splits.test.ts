@@ -4,6 +4,7 @@ import {
   endedInPhase,
   insertSplit,
   moveSplit,
+  moveSplitAsTyped,
   normaliseSplits,
   phaseDurations,
   phaseSegments,
@@ -157,6 +158,35 @@ describe('moveSplit', () => {
     ['at or past the stop', 'f2l', 20_000],
   ])('refuses a move %s', (_name, phase, atMs) => {
     expect(moveSplit(splits, PHASES, phase, atMs, 20_000)).toBeNull();
+  });
+});
+
+describe('moveSplitAsTyped', () => {
+  // The stop and the boundaries carry milliseconds the screen never showed.
+  const splits = [at('cross', 2_004), at('f2l', 10_007), at('oll', 14_009)];
+  const RAW = 20_006;
+  const where = (next: Split[] | null) => next?.map(({ phase, atMs }) => [phase, atMs]);
+
+  it.each<[string, string, number, [string, number][]]>([
+    ['moves to the time typed', 'f2l', 9_500, [['cross', 2_004], ['f2l', 9_500], ['oll', 14_009]]],
+    ['takes a time typed as the next boundary as that boundary', 'f2l', 14_000, [['cross', 2_004], ['f2l', 14_009], ['oll', 14_009]]],
+    ['takes a time typed as the previous boundary as that boundary', 'f2l', 2_000, [['cross', 2_004], ['f2l', 2_004], ['oll', 14_009]]],
+    ['ends the solve at a last boundary typed as the stop', 'oll', 20_000, [['cross', 2_004], ['f2l', 10_007]]],
+  ])('%s', (_name, phase, typedMs, expected) => {
+    expect(where(moveSplitAsTyped(splits, PHASES, phase, typedMs, RAW))).toEqual(expected);
+  });
+
+  it('leaves the next phase a length of zero, not a few ms', () => {
+    const next = moveSplitAsTyped(splits, PHASES, 'f2l', 14_000, RAW) ?? [];
+    expect(phaseDurations(next, PHASES, RAW)[2]?.ms).toBe(0);
+  });
+
+  it('does not end the solve at a boundary that has another after it', () => {
+    expect(where(moveSplitAsTyped(splits, PHASES, 'f2l', 20_000, RAW))).toBeUndefined();
+  });
+
+  it('still refuses a time outside the window', () => {
+    expect(moveSplitAsTyped(splits, PHASES, 'f2l', 15_000, RAW)).toBeNull();
   });
 });
 

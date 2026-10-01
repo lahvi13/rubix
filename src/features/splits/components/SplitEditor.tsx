@@ -3,7 +3,7 @@ import type { MethodPhase, Solve, Split } from '../../../db/types';
 import { parseTimeInput } from '../../../domain/solve/parse-time';
 import {
   insertSplit,
-  moveSplit,
+  moveSplitAsTyped,
   phaseDurations,
   removeSplit,
 } from '../../../domain/solve/splits';
@@ -33,7 +33,8 @@ export function SplitEditor({ solve, phases, bestPhases, onChange }: SplitEditor
 
   const commit = (phase: string, input: string) => {
     const parsed = parseTimeInput(input);
-    const next = parsed === null ? null : moveSplit(solve.splits, keys, phase, parsed, solve.rawMs);
+    const next =
+      parsed === null ? null : moveSplitAsTyped(solve.splits, keys, phase, parsed, solve.rawMs);
     if (next === null) {
       setInvalidPhase(phase);
       return;
@@ -97,7 +98,7 @@ export function SplitEditor({ solve, phases, bestPhases, onChange }: SplitEditor
                 />
               ) : (
                 <span className="splits__at splits__at--empty">
-                  {editable ? '' : strings.splits.endsAtStop}
+                  {duration?.isFinal ? strings.splits.endsAtStop : ''}
                 </span>
               )}
 

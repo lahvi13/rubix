@@ -145,6 +145,41 @@ describe('SplitEditor', () => {
     expect(screen.getByText(strings.splits.endsAtStop)).toBeInTheDocument();
   });
 
+  // The screen shows hundredths of a stop that has milliseconds: copying it
+  // used to leave a PLL of 0.00 that then counted as the best PLL.
+  it('ends the solve at the last boundary when it is typed as the stop', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <SplitEditor
+        solve={{ ...solveWith(ALL_SPLITS), rawMs: 20_006 }}
+        phases={PHASES}
+        onChange={onChange}
+      />,
+    );
+
+    await user.clear(endsAt('OLL'));
+    await user.type(endsAt('OLL'), formatMs(20_006));
+    await user.tab();
+
+    expect(onChange).toHaveBeenCalledExactlyOnceWith([split('cross', 2_000), split('f2l', 10_000)]);
+  });
+
+  it('says the stop ends the phase the solve ended in, not always the last one', () => {
+    render(
+      <SplitEditor
+        solve={solveWith([split('cross', 2_000), split('f2l', 10_000)])}
+        phases={PHASES}
+        onChange={vi.fn()}
+      />,
+    );
+
+    const oll = screen.getByText('OLL').closest('li');
+    const pll = screen.getByText('PLL').closest('li');
+    expect(oll).toHaveTextContent(strings.splits.endsAtStop);
+    expect(pll).not.toHaveTextContent(strings.splits.endsAtStop);
+  });
+
   it('clears every boundary, and offers to only when there is one', async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();

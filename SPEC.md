@@ -411,6 +411,11 @@ od kostky.
   „tuhle fázi jsem neměřil **a dál už jsem nedojel**" — informaci o pozdějších
   fázích nese jen ta hranice. Vrátit ji je jedno ťuknutí a pruh i tabulka to hned
   ukážou, takže se to nedá udělat omylem a nevšimnout si.
+- **Ručně napsaný čas hranice se čte tak, jak se zobrazuje** (setiny). Čas, který
+  se zobrazuje stejně jako sousední hranice, **je** ta hranice (fáze nulové délky =
+  skip); čas, který se zobrazuje jako konec solvu, u poslední hranice znamená „tady
+  solve skončil“ a hranice se odebere. Jinak by opsané „1:01.86“ padlo pár ms před
+  uložený konec a z PLL by byla 0.00 s, která není nulová, a tak se počítá jako best.
 - **Ťuknutí nejde vzít zpět.** Ruce jsou na kostce a undo by chtělo další gesto;
   oprava patří do detailu solvu, kde se splity stejně editují. Žádný práh proti
   zákmitu prstu — `refractoryMs` je věc onset detektoru, ne dotyku.
