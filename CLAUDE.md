@@ -173,8 +173,8 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
 
 - `npm run dev` běží bez service workeru; PWA chování se testuje přes `npm run build && npm run preview`
 - Cloudflare Worker se statickými assety (`wrangler.jsonc`): build `npm run build`,
-  output `dist`, SPA fallback na `index.html`, žádný server kód. Push do `main` se sám
-  zbuilduje a nasadí (Workers Builds), `npm run deploy` se ručně nespouští — ale deploy
+  output `dist`, žádný SPA fallback (routuje se hashem, neznámá cesta je 404),
+  žádný server kód. Push do `main` se sám zbuilduje a nasadí (Workers Builds), `npm run deploy` se ručně nespouští — ale deploy
   krok umí spadnout (viděno: 503 z CF API po úspěšném buildu), takže po pushi ověřit,
   co produkce doopravdy servíruje. Jakou verzi zařízení běží, je vidět na obrazovce
   About (`__APP_VERSION__` = verze z `package.json` · commit) — service worker jinak

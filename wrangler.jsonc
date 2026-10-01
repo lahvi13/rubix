@@ -12,7 +12,10 @@
   // Assets-only Worker: no server code, just the built PWA.
   "assets": {
     "directory": "./dist",
-    // Client-side routing — unknown paths serve index.html instead of 404.
-    "not_found_handling": "single-page-application"
+    // A real 404 for paths that do not exist. The app routes by hash, so it
+    // never needs another path to answer with index.html — and doing so told
+    // crawlers that /ai-catalog.json, /.well-known/* and friends exist as HTML.
+    // An installed app is unaffected: its service worker answers navigations.
+    "not_found_handling": "none"
   }
 }
