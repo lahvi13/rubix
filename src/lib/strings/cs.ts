@@ -76,7 +76,7 @@ export const cs: Strings = {
       inspectionHint: 'Mezerník spustí inspekci',
       tapToEndPhase: 'Mezerník ukončí fázi · podržením složení ukončíš',
     },
-    locked: 'Řešení je odhalené — pokračuj tlačítkem Další případ',
+    locked: 'Řešení je odhalené — pokračuj tlačítkem Další',
     /* Zkratka jen sem, kde se dva přepínače perou o šířku s názvem session;
        celé slovo dostane čtečka i nastavení. */
     inspectionToggle: 'Insp',
@@ -491,7 +491,7 @@ export const cs: Strings = {
     crossSetup: 'Cross po scramblu, jak ho budeš držet',
     showCase: 'Ukaž mi řešení',
     gaveUp: 'Odhalené řešení, takže se počítá jako DNF.',
-    next: 'Další případ',
+    next: 'Další',
     empty: 'V této sadě není co drilovat.',
     attempts: 'Pokusy',
     attemptCount: (count: number) => `${count} ${plural(count, 'pokus', 'pokusy', 'pokusů')}`,

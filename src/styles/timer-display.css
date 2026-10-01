@@ -4,12 +4,6 @@
   position: relative;
 }
 
-.result-bar__next {
-  border-color: var(--accent);
-  color: var(--accent);
-  padding-inline: var(--space-7);
-}
-
 /* Invisible full-screen surface: while the clock runs, any tap stops it. */
 .timer-overlay {
   position: fixed;

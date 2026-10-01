@@ -176,7 +176,7 @@ describe('RecognitionDrill', () => {
     await screen.findByRole('status');
 
     // On the cube, in its corner, and nothing to step through until it turns.
-    expect(screen.getByRole('button', { name: 'Play' }).closest('.recognition__stage')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Play' }).closest('.drill__stage')).not.toBeNull();
     expect(screen.queryByRole('button', { name: 'Next move' })).toBeNull();
   });
 

@@ -198,7 +198,7 @@ describe('DrillScreen', () => {
     await screen.findByText('Generating scramble…');
 
     await user.click(screen.getByRole('button', { name: 'Show me' }));
-    await user.click(await screen.findByRole('button', { name: 'Next case' }));
+    await user.click(await screen.findByRole('button', { name: 'Next' }));
     await waitFor(() => expect(pending).toHaveLength(2));
 
     pending[0]?.("R U R' U'");
@@ -248,7 +248,22 @@ describe('DrillScreen', () => {
     // one, and says why.
     expect(await db.solves.count()).toBe(1);
     expect(screen.getByRole('timer')).toHaveTextContent('0.00');
-    expect(screen.getByText('Answer shown — Next case to go again')).toBeInTheDocument();
+    expect(screen.getByText('Answer shown — Next to go again')).toBeInTheDocument();
+  });
+
+  it('plays the answer on the case, with the next case beside it', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText(CASE_SCRAMBLE);
+
+    expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Show me' }));
+    await screen.findByRole('heading', { name: 'T' });
+
+    // Beside the cube, as on the recognition screen, not a scroll below it.
+    const play = screen.getAllByRole('button', { name: 'Play' });
+    expect(play.some((button) => button.closest('.drill__stage') !== null)).toBe(true);
+    expect(screen.getByRole('button', { name: 'Next' }).closest('.drill__top')).not.toBeNull();
   });
 
   it('draws the brackets the algorithm was written with, as the trainer does', async () => {
@@ -312,7 +327,7 @@ describe('DrillScreen', () => {
     expect(screen.getByRole('timer')).toHaveTextContent('3.21');
 
     // Moving on hands the clock back.
-    await user.click(screen.getByRole('button', { name: 'Next case' }));
+    await user.click(screen.getByRole('button', { name: 'Next' }));
     await attempt(user, 4560);
     await waitFor(async () => {
       expect(await db.solves.count()).toBe(2);
@@ -399,7 +414,7 @@ describe('DrillScreen', () => {
     // live query of its own and may arrive a moment after the answer.
     await waitFor(() => expect(screen.getAllByText('3.21').length).toBeGreaterThan(1));
 
-    await user.click(screen.getByRole('button', { name: 'Next case' }));
+    await user.click(screen.getByRole('button', { name: 'Next' }));
 
     // The answer belonged to that attempt, and so did the time on the clock.
     expect(screen.queryByRole('heading', { name: 'T' })).not.toBeInTheDocument();
@@ -628,7 +643,7 @@ describe('DrillScreen', () => {
     await openSetup(user);
 
     await attempt(user, 8000);
-    await user.click(screen.getByRole('button', { name: 'Next case' }));
+    await user.click(screen.getByRole('button', { name: 'Next' }));
 
     // The cross has no case sheet in the trainer, so its attempts have to be
     // reachable from here.

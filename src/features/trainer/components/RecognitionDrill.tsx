@@ -1,14 +1,12 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
-import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { caseTitle } from '../../../domain/alg/case-name';
 import { formatAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
-import { usePlayback, type Playback } from '../../../hooks/use-playback';
+import { usePlayback } from '../../../hooks/use-playback';
 import { usePlaybackKeys } from '../../../hooks/use-playback-keys';
 import { useSetting } from '../../../hooks/use-setting';
-import { useTap } from '../../../hooks/use-tap';
 import { formatTime } from '../../../lib/format';
 import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
@@ -23,6 +21,7 @@ import {
 import { AlgText } from './AlgText';
 import { CasePlayer } from './CasePlayer';
 import { CasePool } from './CasePool';
+import { DrillStage } from './DrillStage';
 import { CaseStatsRow } from './CaseStats';
 import { drillSummary } from '../drill-summary';
 import { DrillLevels, DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
@@ -80,7 +79,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
   const picture =
     question === null || chart === null ? null : (
       <CubeDiagram
-        className="recognition__cube"
+        className="drill__cube"
         state={recognition.isTurned ? question.turnedState : question.state}
         // Never the flat last-layer chart: that one shows all four sides
         // at once, which is the one thing a cube in your hands does not.
@@ -115,15 +114,10 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
         <section className="recognition">
           {/* The two things you do to the cube, either side of it: turn it
               round while the question is open, move on once it is answered.
-              Beside it rather than in a row under it — that row was the bottom
-              row of cards on a phone with large text. Short words, so neither
-              breaks onto a second line in the room the cube leaves.
-
-              Once the question is over a tap on the cube plays and pauses it,
-              as the timer's scramble preview does: it is where the moves are
-              played. */}
-          <div className="recognition__top">
-            <div className="recognition__side recognition__side--start">
+              Short words, so neither breaks onto a second line in the room the
+              cube leaves. */}
+          <DrillStage
+            start={
               <button
                 type="button"
                 className={recognition.isTurned ? 'is-active recognition__turn' : 'recognition__turn'}
@@ -132,8 +126,14 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
               >
                 {strings.recognition.turn}
               </button>
-            </div>
-          <Stage
+            }
+            end={
+              outcome === null ? null : (
+                <button type="button" className="is-primary" onClick={recognition.next}>
+                  {strings.recognition.next}
+                </button>
+              )
+            }
             canPlay={outcome !== null && question.algorithm.length > 0}
             playback={{
               ...playback,
@@ -156,15 +156,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
             ) : (
               picture
             )}
-          </Stage>
-            <div className="recognition__side recognition__side--end">
-              {outcome === null ? null : (
-                <button type="button" className="is-primary" onClick={recognition.next}>
-                  {strings.recognition.next}
-                </button>
-              )}
-            </div>
-          </div>
+          </DrillStage>
 
           {/* One line, never two. The cube and six cards have to be taken in
               together on a phone, and a sentence explaining a picture that
@@ -211,32 +203,6 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
         </section>
       )}
     </main>
-  );
-}
-
-interface StageProps {
-  canPlay: boolean;
-  playback: Playback;
-  children: ReactNode;
-}
-
-/** The cube, and once the question is over, what plays it. */
-function Stage({ canPlay, playback, children }: StageProps) {
-  const tap = useTap(playback.toggle);
-  if (!canPlay) return <div className="recognition__stage">{children}</div>;
-
-  return (
-    <div className="recognition__stage is-playable" {...tap}>
-      {children}
-      <PlaybackButtons
-        status={playback.status}
-        onToggle={playback.toggle}
-        onStep={playback.step}
-        onBack={playback.back}
-        position={playback.position}
-        placement="corners"
-      />
-    </div>
   );
 }
 

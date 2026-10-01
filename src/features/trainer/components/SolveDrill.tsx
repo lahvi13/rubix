@@ -36,10 +36,12 @@ import { useDrill, type DrillItem, type DrillView, type StoredAttempt } from '..
 import { useTriggers } from '../hooks/use-triggers';
 import { AlgText } from './AlgText';
 import { AttemptActions, AttemptList } from './AttemptList';
+import { CasePlayer } from './CasePlayer';
 import { CasePool } from './CasePool';
 import { CaseStatsRow } from './CaseStats';
 import { drillSummary } from '../drill-summary';
 import { DrillLevels, DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
+import { DrillStage } from './DrillStage';
 
 interface SolveDrillProps {
   mode: DrillMode;
@@ -330,22 +332,65 @@ function Answer({
   const { moves, groups } = movesOf(current.algorithm?.moves ?? '');
   const title = packLabel(caseTitle(current.algCase));
 
+  // Played from the case as the picture draws it, not from the scramble: the
+  // algorithm below is written for that picture, with no AUF in front.
+  const alg = formatAlg(moves);
+  const playback = usePlayback(`${current.algCase.id} ${current.scramble ?? ''} ${alg}`);
+  const [playingMove, setPlayingMove] = useState<number | null>(null);
+  const isPlaying = playback.status !== 'idle';
+  // Space is the drill timer's.
+  usePlaybackKeys(playback, { isActive: true, withSpace: false });
+
+  const next = (
+    <button type="button" className="is-primary" onClick={onNext}>
+      {strings.drill.next}
+    </button>
+  );
+  const picture = (
+    <CubeDiagram
+      className="drill__cube"
+      state={stateOf(current.algCase.setupAlg, diagram.orientation)}
+      view={diagram.view}
+      stickering={diagram.stickering}
+      skin={skin}
+      label={title}
+    />
+  );
+
   return (
     <>
       <h2 className="drill__case-name">{title}</h2>
       {gaveUp ? <p className="drill__hint">{strings.drill.gaveUp}</p> : null}
 
       {moves.length === 0 ? null : (
-        <CubeDiagram
-          className="drill__diagram"
-          state={stateOf(current.algCase.setupAlg, diagram.orientation)}
-          view={diagram.view}
-          stickering={diagram.stickering}
-          skin={skin}
-          label={title}
+        <DrillStage end={next} canPlay playback={playback}>
+          {isPlaying ? (
+            <CasePlayer
+              // The rotation is part of the setup, so the cube that replaces
+              // the picture stands the same way round.
+              setupAlg={`${diagram.orientation} ${current.algCase.setupAlg}`}
+              alg={alg}
+              stickering={diagram.playerStickering}
+              request={playback.request}
+              onMove={setPlayingMove}
+              onStopped={playback.stopped}
+              placeholder={picture}
+            />
+          ) : (
+            picture
+          )}
+        </DrillStage>
+      )}
+      {moves.length === 0 ? null : (
+        <AlgText
+          moves={moves}
+          groups={groups}
+          triggers={triggers}
+          onPlay={playback.restart}
+          playLabel={strings.trainer.play}
+          playingMove={isPlaying ? playingMove : null}
         />
       )}
-      {moves.length === 0 ? null : <AlgText moves={moves} groups={groups} triggers={triggers} />}
       {isCross ? <CrossSolution scramble={current.scramble ?? ''} /> : null}
 
       <CaseStatsRow stats={stats} />
@@ -360,9 +405,8 @@ function Answer({
         />
       )}
 
-      <button type="button" className="result-bar__next" onClick={onNext}>
-        {strings.drill.next}
-      </button>
+      {/* Without a case picture — the cross — there is nothing to stand beside. */}
+      {moves.length === 0 ? next : null}
     </>
   );
 }

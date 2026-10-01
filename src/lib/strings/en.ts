@@ -75,7 +75,7 @@ export const en = {
     },
     /* Said where the hint lives, because the clock refusing to start is
        otherwise indistinguishable from the clock being broken. */
-    locked: 'Answer shown — Next case to go again',
+    locked: 'Answer shown — Next to go again',
     /*
      * Two switches share the panel's heading with the session name and the
      * count, and at the largest text size the words push each other onto a
@@ -543,7 +543,7 @@ export const en = {
     /* A looked-up case is stored as a DNF and never timed: the clock locks
        the moment the answer appears. */
     gaveUp: 'Looked up, so it counts as a DNF.',
-    next: 'Next case',
+    next: 'Next',
     empty: 'Nothing to drill in this set.',
     attempts: 'Attempts',
     /** The set's tally, where the number is read as part of the words. */
