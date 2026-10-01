@@ -10,7 +10,8 @@ import {
 } from 'recharts';
 import type { TrendPoint } from '../hooks/use-session-stats';
 import { timeAxis } from '../../../domain/stats/axis';
-import { formatAxisMs, formatMs, formatTime } from '../../../lib/format';
+import { now } from '../../../lib/clock';
+import { formatAxisMs, formatMs, formatShortDate, formatTime } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { AXIS_PROPS, CHART_HEIGHT, TOOLTIP_PROPS } from './chart-theme';
 import { ChartLegend } from './ChartLegend';
@@ -88,7 +89,7 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
                 if (point === undefined || value == null) return null;
                 return (
                   <ChartTooltip
-                    title={`${strings.stats.solveIndex} ${point.index}`}
+                    title={`${strings.stats.solveIndex} ${point.index} · ${formatShortDate(point.at, now())}`}
                     rows={[
                       {
                         label: strings.stats.singleSeries,

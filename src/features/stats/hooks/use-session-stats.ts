@@ -123,6 +123,8 @@ export interface AverageWindowView {
 export interface TrendPoint {
   /** 1-based solve index within the solves being read — the chart's x axis. */
   index: number;
+  /** When the solve was made, so the readout can say which day it was. */
+  at: number;
   aoMs: number | null;
   /** The solve's own result, drawn as a dot behind the line; null is a DNF. */
   singleMs: number | null;
@@ -250,6 +252,7 @@ export function useSessionStats(
       .slice(trendStart)
       .map((aoMs, offset) => ({
         index: trendStart + offset + 1,
+        at: solves[trendStart + offset]?.createdAt ?? 0,
         aoMs,
         singleMs: finals[trendStart + offset] ?? null,
       }));

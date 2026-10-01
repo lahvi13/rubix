@@ -4,7 +4,8 @@ import type { PhaseTrendMode } from '../../../db/repositories/settings-repositor
 import type { MethodPhase } from '../../../db/types';
 import { timeAxis } from '../../../domain/stats/axis';
 import type { PhaseTrendPoint } from '../../../domain/stats/phases';
-import { formatAxisMs, formatMs } from '../../../lib/format';
+import { now } from '../../../lib/clock';
+import { formatAxisMs, formatMs, formatShortDate } from '../../../lib/format';
 import { phaseColour, phaseFillColour } from '../../../lib/phase-colours';
 import { strings } from '../../../lib/strings';
 import { AXIS_PROPS, CHART_HEIGHT, TOOLTIP_PROPS } from './chart-theme';
@@ -118,12 +119,13 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
               content={({ active, label }) => {
                 // Untouched, the readout reads the latest solve drawn.
                 const index = active === true ? Number(label) : drawn[drawn.length - 1]?.index;
+                const point = points.find((candidate) => candidate.index === index);
                 const rows =
                   index === undefined ? [] : tooltipRows(points, phases, index, isSmoothed, mode);
-                if (index === undefined || rows.length === 0) return null;
+                if (point === undefined || rows.length === 0) return null;
                 return (
                   <ChartTooltip
-                    title={`${strings.stats.solveIndex} ${index}`}
+                    title={`${strings.stats.solveIndex} ${point.index} · ${formatShortDate(point.at, now())}`}
                     rows={rows}
                     note={isSmoothed ? strings.splits.smoothingTooltip : undefined}
                   />

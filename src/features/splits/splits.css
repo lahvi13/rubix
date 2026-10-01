@@ -297,6 +297,11 @@
   white-space: nowrap;
 }
 
+/* A best opens its solve, and still wears its phase's colour. */
+.averages-table--phases .averages-table__open {
+  color: inherit;
+}
+
 @media (min-width: 34rem) {
   .averages-table--phases {
     font-size: var(--text-md);

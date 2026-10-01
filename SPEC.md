@@ -470,7 +470,9 @@ od kostky.
   vždycky prázdné
 - řádek **Best** je nejrychlejší, co která fáze kdy byla. Je to jediný řádek, jehož
   sloupce se **nemají** sečíst na celkový čas — nejlepší kříž a nejlepší PLL skoro
-  nikdy nejsou týž solve; vpravo proto stojí nejlepší single, ne jejich součet
+  nikdy nejsou týž solve; vpravo proto stojí nejlepší single, ne jejich součet.
+  Skip (fáze nulové délky) se do něj nepočítá, stejně jako u zvýraznění v historii.
+  Každé číslo v řádku otevře solve, ve kterém padlo; průměry žádný solve nemají
 - **trend fází** je stohovaný plošný graf klouzavého průměru: výška je celý solve,
   takže zrychlený kříž je vidět dvakrát — jako užší pásmo i jako nižší strop.
   Okno je **5**, ne 12 jako u trendu ao — fázově měřených solvů je míň než obyčejných,

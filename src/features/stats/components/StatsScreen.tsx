@@ -435,6 +435,7 @@ export function StatsScreen() {
                   phases={phases}
                   measuredCount={stats.measuredCount}
                   solveCount={stats.solveCount}
+                  onOpenSolve={setOpenSolveId}
                 />
               </div>
             ) : null}

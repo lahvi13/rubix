@@ -232,6 +232,15 @@ export function formatDay(timestamp: number, at: number): string {
   return formatDate(timestamp);
 }
 
+/**
+ * A day as short as it can be said: "14. 9." in Czech, "9/14" in English,
+ * with the year only once it is not this one.
+ */
+export function formatShortDate(timestamp: number, at: number): string {
+  const isThisYear = new Date(timestamp).getFullYear() === new Date(at).getFullYear();
+  return formatter(isThisYear ? 'dayMonth' : 'dayMonthYear').format(timestamp);
+}
+
 export function formatDateTime(timestamp: number): string {
   return `${formatDate(timestamp)} ${formatClock(timestamp)}`;
 }

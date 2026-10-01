@@ -17,6 +17,8 @@ export interface PhaseAverage {
   ms: number | null;
   /** How many solves of the window this came from — fewer than the window is a hint, not a lie. */
   count: number;
+  /** The solve a best was set in, so the number can open it; null for an average. */
+  solveId: string | null;
 }
 
 /**
@@ -29,6 +31,8 @@ export interface PhaseAverageRow {
   n: PhaseWindow;
   phases: PhaseAverage[];
   totalMs: Average;
+  /** The fastest solve, on the 'best' row; null on every other. */
+  totalSolveId: string | null;
 }
 
 export const PHASE_AVERAGE_WINDOWS: readonly PhaseWindow[] = [...AVERAGE_WINDOWS, 'all', 'best'];
@@ -72,8 +76,9 @@ function phaseAverageRow(
 ): PhaseAverageRow {
   const empty: PhaseAverageRow = {
     n,
-    phases: phaseKeys.map((phase) => ({ phase, ms: null, count: 0 })),
+    phases: phaseKeys.map((phase) => ({ phase, ms: null, count: 0, solveId: null })),
     totalMs: null,
+    totalSolveId: null,
   };
   if (measured.length === 0) return empty;
   if (typeof n === 'number' && measured.length < n) return empty;
@@ -86,10 +91,12 @@ function phaseAverageRow(
   if (n === 'best') {
     // The fastest cross and the fastest PLL are almost never the same solve,
     // so this row is the only one whose columns are not meant to add up.
+    const fastest = fastestOf(kept, finalMs);
     return {
       n,
       phases: phaseKeys.map((phase, order) => bestOfPhase(kept, lengths, phase, order)),
-      totalMs: leastOf(kept.map(finalMs)),
+      totalMs: fastest?.ms ?? null,
+      totalSolveId: fastest?.solve.id ?? null,
     };
   }
 
@@ -101,6 +108,7 @@ function phaseAverageRow(
     // any phase.
     phases: phaseKeys.map((phase, order) => averageOfPhase(kept, lengths, phase, order)),
     totalMs: n === 'all' ? meanOf(kept.map(finalMs)) : windowAverage(finals),
+    totalSolveId: null,
   };
 }
 
@@ -120,7 +128,7 @@ function averageOfPhase(
   order: number,
 ): PhaseAverage {
   const known = lengthsOfPhase(solves, lengths, order);
-  return { phase, ms: meanOf(known), count: known.length };
+  return { phase, ms: meanOf(known), count: known.length, solveId: null };
 }
 
 /** Known lengths of one phase across the given solves. Unknown ones are skipped. */
@@ -133,6 +141,10 @@ function lengthsOfPhase(solves: readonly Solve[], lengths: PhaseLengths, order: 
   return known;
 }
 
+/**
+ * A skip takes no part, by the same rule as bestsOf: an OLL of zero length
+ * would otherwise stand as the best OLL of every session it is in.
+ */
 function bestOfPhase(
   solves: readonly Solve[],
   lengths: PhaseLengths,
@@ -140,7 +152,24 @@ function bestOfPhase(
   order: number,
 ): PhaseAverage {
   const known = lengthsOfPhase(solves, lengths, order);
-  return { phase, ms: leastOf(known), count: known.length };
+  const fastest = fastestOf(solves, (solve) => {
+    const ms = lengths.get(solve)?.[order];
+    return ms == null || ms === 0 ? null : ms;
+  });
+  return { phase, ms: fastest?.ms ?? null, count: known.length, solveId: fastest?.solve.id ?? null };
+}
+
+/** The solve with the least value, and the value. Ties go to the earliest — the one that set it. */
+function fastestOf(
+  solves: readonly Solve[],
+  valueOf: (solve: Solve) => number | null,
+): { solve: Solve; ms: number } | null {
+  let best: { solve: Solve; ms: number } | null = null;
+  for (const solve of solves) {
+    const ms = valueOf(solve);
+    if (ms !== null && (best === null || ms < best.ms)) best = { solve, ms };
+  }
+  return best;
 }
 
 function leastOf(values: readonly (number | null)[]): number | null {
@@ -223,6 +252,8 @@ export interface PhaseTrendPoint {
    * solves timed as a whole are not on this chart at all.
    */
   index: number;
+  /** When the solve was made, so the readout can say which day it was. */
+  at: number;
   /** What each phase actually took on this solve, in method order. */
   phases: number[];
   /**
@@ -278,6 +309,7 @@ export function phaseTrend(
     const slice = complete.slice(Math.max(0, end - window), end);
     return {
       index: end,
+      at: entry.solve.createdAt,
       phases: phaseKeys.map((_, phase) => entry.lengths[phase] ?? 0),
       mean:
         slice.length < window

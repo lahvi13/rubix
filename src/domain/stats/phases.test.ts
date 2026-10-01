@@ -124,6 +124,26 @@ describe('phaseAverageTable best row', () => {
     expect(row(solves, 'best').phases?.[0]).toBe(2000);
   });
 
+  it('passes over a skipped phase, as the stars do', () => {
+    const skip = solve(19_000, [2500, 11_000, 11_000]); // oll 0.0
+    expect(row([...solves, skip], 'best').phases?.[2]).toBe(4000);
+  });
+
+  it('names the solve each best was set in, so it can be opened', () => {
+    const named = solves.map((entry, index) => ({ ...entry, id: `s${index}` }));
+    const best = phaseAverageTable(named, PHASES).find((entry) => entry.n === 'best');
+    expect(best?.phases.map((phase) => phase.solveId)).toEqual(['s0', 's1', 's0', 's1']);
+    expect(best?.totalSolveId).toBe('s1');
+  });
+
+  it('names no solve behind an average', () => {
+    const table = phaseAverageTable(solves, PHASES);
+    for (const entry of table.filter((candidate) => candidate.n !== 'best')) {
+      expect(entry.totalSolveId).toBeNull();
+      expect(entry.phases.every((phase) => phase.solveId === null)).toBe(true);
+    }
+  });
+
   it('says nothing without a phase-timed solve', () => {
     expect(row([solve(10_000, [])], 'best')).toEqual({
       phases: [null, null, null, null],
@@ -143,6 +163,11 @@ describe('phaseTrend', () => {
   it('gives every phase-timed solve a point, from the first one', () => {
     expect(phaseTrend(improving(4), PHASES, 100)).toHaveLength(4);
     expect(phaseTrend(improving(4), PHASES, 100).map((p) => p.index)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('carries when the solve was made, for the readout', () => {
+    const dated = improving(2).map((entry, index) => ({ ...entry, createdAt: 1000 + index }));
+    expect(phaseTrend(dated, PHASES, 100).map((p) => p.at)).toEqual([1000, 1001]);
   });
 
   it('carries what each phase took on that solve', () => {

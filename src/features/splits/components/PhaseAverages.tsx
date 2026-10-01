@@ -1,5 +1,6 @@
 import type { MethodPhase } from '../../../db/types';
 import type { PhaseAverageRow } from '../../../domain/stats/phases';
+import type { Average } from '../../../domain/stats/averages';
 import { formatAverage } from '../../../lib/format';
 import { phaseColour } from '../../../lib/phase-colours';
 import { strings } from '../../../lib/strings';
@@ -18,6 +19,8 @@ interface PhaseAveragesProps {
   measuredCount: number;
   /** Solves in the session, so the heading can say why the two differ. */
   solveCount: number;
+  /** Opens the solve a best was set in. */
+  onOpenSolve?: (solveId: string) => void;
 }
 
 /**
@@ -25,7 +28,13 @@ interface PhaseAveragesProps {
  * columns average the same solves the trim keeps, so with every boundary
  * recorded they add up to the total on the right.
  */
-export function PhaseAverages({ rows, phases, measuredCount, solveCount }: PhaseAveragesProps) {
+export function PhaseAverages({
+  rows,
+  phases,
+  measuredCount,
+  solveCount,
+  onOpenSolve,
+}: PhaseAveragesProps) {
   if (measuredCount === 0 || phases.length === 0) return null;
 
   return (
@@ -63,15 +72,33 @@ export function PhaseAverages({ rows, phases, measuredCount, solveCount }: Phase
                     // wrong, but it is not the same sample either.
                     title={strings.stats.solveCount(phase.count)}
                   >
-                    {formatAverage(phase.ms)}
+                    <Value ms={phase.ms} solveId={phase.solveId} onOpen={onOpenSolve} />
                   </td>
                 ))}
-                <td className="averages-table__total">{formatAverage(row.totalMs)}</td>
+                <td className="averages-table__total">
+                  <Value ms={row.totalMs} solveId={row.totalSolveId} onOpen={onOpenSolve} />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
     </section>
+  );
+}
+
+interface ValueProps {
+  ms: Average;
+  solveId: string | null;
+  onOpen: ((solveId: string) => void) | undefined;
+}
+
+/** A best was set in one solve, and opens it; an average belongs to none. */
+function Value({ ms, solveId, onOpen }: ValueProps) {
+  if (solveId === null || onOpen === undefined) return <>{formatAverage(ms)}</>;
+  return (
+    <button type="button" className="averages-table__open" onClick={() => onOpen(solveId)}>
+      {formatAverage(ms)}
+    </button>
   );
 }
