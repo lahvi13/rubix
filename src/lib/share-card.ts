@@ -7,6 +7,7 @@
 import type { Face } from '../domain/cube/notation';
 import type { CubeState } from '../domain/cube/state';
 import { downloadBlob } from './download';
+import { WORDMARK } from './wordmark';
 import { canShareFile, shareFile } from './share';
 
 export interface ShareCard {
@@ -131,15 +132,10 @@ function fittedSize(context: CanvasRenderingContext2D, text: string, font: (size
   return size;
 }
 
-/**
- * The name in the corner, one letter to a sticker in the reader's own cube
- * colours — the one place on a quiet card that says what it is about. Five
- * letters take five of the six faces; white sits out, as on a dark card it
- * outshone the rest. Mixed rather than in rainbow order, like a row of a
- * scrambled cube, with no two near colours side by side.
+/*
+ * The name in the corner, as stickers (lib/wordmark.ts) — the one place on a
+ * quiet card that says what it is about.
  */
-const LOGO = 'RUBIX';
-const LOGO_FACES: readonly Face[] = ['L', 'F', 'U', 'R', 'B'];
 const TILE = 54;
 const TILE_GAP = 8;
 
@@ -150,9 +146,9 @@ function drawLogo(context: CanvasRenderingContext2D, palette: Palette, look: Car
   context.font = `700 34px ${palette.sans}`;
   context.textAlign = 'center';
   const top = middle - TILE / 2;
-  [...LOGO].forEach((letter, index) => {
+  WORDMARK.forEach(({ letter, face }, index) => {
     const x = PAD + index * (TILE + TILE_GAP);
-    context.fillStyle = look.faces[LOGO_FACES[index] ?? 'U'];
+    context.fillStyle = look.faces[face];
     context.beginPath();
     context.roundRect(x, top, TILE, TILE, 10);
     context.fill();

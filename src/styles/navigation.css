@@ -72,30 +72,50 @@
   z-index: 45;
 }
 
+/* The menu's own wash starts under the header, so the header stays lit and
+   its button is the way back out, not a shape behind the wash. */
+.app__scrim:not(.sheet-scrim) {
+  top: var(--header-height);
+}
+
+/*
+ * A panel from under the header to the foot of the screen. Dropped as a card
+ * under the button it ended halfway down, a column of wide rows with nothing
+ * after it; the height of the screen holds the list, its rules and the name
+ * at the foot, and the header above it — with the button that closes it —
+ * stays where it was.
+ */
 .app__menu {
-  position: absolute;
-  top: 100%;
-  /* Off the header's padding box, which reaches into the notch in landscape,
-     and under the button that opened it once the header keeps to the page's
-     width on a wide screen. */
+  position: fixed;
+  top: var(--header-height);
+  bottom: 0;
+  /* Off the edge the notch reaches in landscape, and under the button that
+     opened it once the header keeps to the page's width on a wide screen. */
   inset-inline-start: max(env(safe-area-inset-left, 0px), (100% - var(--page-width)) / 2);
   z-index: 9;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  width: min(15rem, 80vw);
-  padding: var(--space-3);
+  width: min(17.5rem, 80vw);
+  padding: var(--space-5) var(--space-4) max(var(--space-6), env(safe-area-inset-bottom));
+  overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 0 0 var(--radius-lg) 0;
+  border-radius: 0 var(--radius-lg) 0 0;
 }
 
-/* Wider than the page, it hangs under the button rather than off the edge of
-   the window, so both of its lower corners are free. */
+/* Wider than the page, it stands under the button rather than against the
+   edge of the window, so both of its top corners are free. */
 @media (min-width: 52rem) {
   .app__menu {
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
+}
+
+/* The name, as stickers, at the foot of the panel. */
+.app__menu-mark {
+  margin-top: auto;
+  padding: var(--space-5) var(--space-5) 0;
 }
 
 /* The menu's wash comes with it every time; a sheet's only when it is the
@@ -114,7 +134,7 @@
 @keyframes menu-drop {
   from {
     opacity: 0;
-    transform: translateY(calc(-1 * var(--space-4)));
+    transform: translateX(calc(-1 * var(--space-6)));
   }
 }
 
@@ -124,15 +144,18 @@
   }
 }
 
+/* Shorter than a button standing alone: a row is the panel's whole width,
+   which is target enough, and nine of them at full height ran long. */
 .app__menu button {
   border-color: transparent;
   font-size: var(--text-lg);
-  padding: var(--space-4) var(--space-5);
+  min-height: 2.25rem;
+  padding: var(--space-2) var(--space-5);
   text-align: start;
 }
 
 .app__menu-rule {
-  margin: var(--space-4) var(--space-5);
+  margin: var(--space-2) var(--space-5);
   border: none;
   border-top: 1px solid var(--border);
 }
@@ -172,4 +195,21 @@
   flex: none;
   height: calc(100dvh - var(--header-height));
   grid-template-rows: auto minmax(min-content, 0.9fr) minmax(0, 2.2fr);
+}
+
+/* The app's name as five stickers (components/Wordmark.tsx). */
+.wordmark {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.wordmark__tile {
+  display: grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--sticker-ink);
 }

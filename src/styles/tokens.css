@@ -44,6 +44,9 @@
    */
   --ink-strength: 55%;
   --ink-floor: #0b0d12;
+  /* A letter on a sticker: dark on every face in either theme, as the theme's
+     own text colour was lost on yellow in the light one. */
+  --sticker-ink: #15181f;
 
   /*
    * The phase colours — --phase-<slot> as ink, --phase-fill-<slot> as an area

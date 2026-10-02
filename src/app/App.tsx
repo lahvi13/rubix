@@ -8,17 +8,22 @@ import { StatsScreen } from '../features/stats';
 import { TimerScreen } from '../features/timer';
 import { DrillScreen, TrainerScreen } from '../features/trainer';
 import { HeaderSlotContext } from '../components/header-slot-context';
+import { Wordmark } from '../components/Wordmark';
+import { useCubeSkin } from '../hooks/use-cube-skin';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
 import { useKeyCapture } from '../hooks/use-key-capture';
 import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
-import { ROUTES, navigate, useRoute } from './router';
+import { ROUTES, navigate, useRoute, type Route } from './router';
 import { useScrollMemory } from './use-scroll-memory';
 import { useSharedScrambleLink } from './use-shared-scramble-link';
 import { ErrorBanner } from './ErrorBanner';
 import { UndoBar } from './UndoBar';
 import { UpdatePrompt } from './UpdatePrompt';
+
+/** Where the menu's groups begin, after the first. */
+const RULE_BEFORE: ReadonlySet<Route> = new Set<Route>(['history', 'settings', 'about']);
 
 export function App() {
   const route = useRoute();
@@ -35,6 +40,7 @@ export function App() {
   const menu = ROUTES.filter((target) => target !== 'learn' || showLearn);
   // Applied here because this is the one component that is always mounted.
   useAppearance();
+  const skin = useCubeSkin();
 
   useKeyCapture(isMenuOpen, () => setMenuOpen(false));
 
@@ -69,8 +75,11 @@ export function App() {
             <nav id="app-menu" className="app__menu">
               {menu.map((target) => (
                 <Fragment key={target}>
-                  {/* Set apart: it is about the app, not a place to use it. */}
-                  {target === 'about' ? <hr className="app__menu-rule" /> : null}
+                  {/* The order is the screens' own, ruled into what they are
+                      for: solving and learning, reading back what was solved,
+                      the app's own settings and data, and the app itself. A
+                      rule says it without a heading to read. */}
+                  {RULE_BEFORE.has(target) ? <hr className="app__menu-rule" /> : null}
                   <button
                     type="button"
                     className={route === target ? 'is-active' : ''}
@@ -84,6 +93,7 @@ export function App() {
                   </button>
                 </Fragment>
               ))}
+              <Wordmark faces={skin.faces} className="app__menu-mark" />
             </nav>
           </>
         ) : null}
