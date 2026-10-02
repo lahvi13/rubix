@@ -1,6 +1,6 @@
 import type { MethodPhase } from '../../../db/types';
 import { formatRunning, type RunningDisplay } from '../../../lib/format';
-import { phaseColour, phaseFillColour } from '../../../lib/phase-colours';
+import { phaseFillColour } from '../../../lib/phase-colours';
 
 interface PhaseRunProps {
   phases: readonly MethodPhase[];
@@ -49,7 +49,6 @@ export function PhaseRun({ phases, splitMs, elapsedMs, display }: PhaseRunProps)
           <li
             key={phase.key}
             className={index === current ? 'phase-run__label is-running' : 'phase-run__label'}
-            style={index === current ? { color: phaseColour(index, phases.length) } : undefined}
           >
             <span className="phase-run__name">{phase.label}</span>{' '}
             <span className="phase-run__time">{timeOf(index)}</span>

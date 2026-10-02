@@ -29,7 +29,11 @@ interface PhaseBarProps {
   bestPhases?: readonly string[];
 }
 
-/** React's style type does not know about custom properties; this one does. */
+/** React's style type does not know about custom properties; these do. */
+interface NameStyle extends CSSProperties {
+  '--phase-dot': string;
+}
+
 interface SegmentStyle extends CSSProperties {
   '--phase': string;
   '--phase-ring': string;
@@ -113,14 +117,17 @@ export const PhaseBar = memo(function PhaseBar({
       </div>
       {detail === 'labels' ? (
         <ul className="phase-bar__labels">
-          {segments.map((segment) => (
-            <li key={segment.startMs} className="phase-bar__label">
-              <span className="phase-bar__name" style={{ color: colourOf(segment) }}>
-                {namesOf(segment)}
-              </span>{' '}
-              <span className="phase-bar__time">{formatMs(segment.ms)}</span>
-            </li>
-          ))}
+          {segments.map((segment) => {
+            const nameStyle: NameStyle = { '--phase-dot': blockOf(segment) };
+            return (
+              <li key={segment.startMs} className="phase-bar__label">
+                <span className="phase-bar__name" style={nameStyle}>
+                  {namesOf(segment)}
+                </span>{' '}
+                <span className="phase-bar__time">{formatMs(segment.ms)}</span>
+              </li>
+            );
+          })}
         </ul>
       ) : null}
     </div>

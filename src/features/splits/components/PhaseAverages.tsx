@@ -54,10 +54,12 @@ export function PhaseAverages({
               <th />
               {phases.map((phase, index) => (
                 <th key={phase.key}>
-                  {/* The phase by its face, as a dot, and the figures in the
-                      text's own colour: a face light enough to be the cube's
-                      is too light to write a number in, and darkened until it
-                      could be, the yellow was mustard. */}
+                  {/* The phase by its face, as a strip over its name, and the
+                      figures in the text's own colour: a face light enough to
+                      be the cube's is too light to write a number in, and
+                      darkened until it could be, the yellow was mustard. Over
+                      the name, not beside it — beside it, it widened every
+                      column and the total ran off a phone. */}
                   <span
                     className="averages-table__phase"
                     style={{ background: phaseFillColour(index, phases.length) }}
