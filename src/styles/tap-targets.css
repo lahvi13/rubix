@@ -52,6 +52,17 @@ input[type='radio'] {
   min-height: 2.75rem;
 }
 
+/* Below the floor on a phone, on purpose: the history is read by scrolling,
+   and at 2.75rem a screen held eleven solves where it now holds sixteen. The
+   row is still the whole width, and the one beside it does the same thing —
+   opens a solve — so a tap that lands a row off costs one close. */
+@media (max-width: 34rem) {
+  .history__row,
+  .history__open {
+    min-height: 2rem;
+  }
+}
+
 /* A dotted-underline text button is still a button you hit with a thumb. */
 .solves-panel__session,
 .session-switch {

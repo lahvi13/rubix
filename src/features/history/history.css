@@ -371,3 +371,64 @@
   width: 100%;
   border-style: dashed;
 }
+
+/*
+ * A phone: the shares go and the rows close up.
+ *
+ * On a phone the row is too narrow to say every share: the number went into
+ * the blocks wide enough for it and not the others, so one row read "40% · ·
+ * 24%" and the next only "48%", which compares nothing. There it is the shape
+ * alone, as under the timer; a wider screen has room for every number, and
+ * the solve's own sheet says them all.
+ */
+@media (max-width: 34rem) {
+  .history .phase-bar--shares .phase-bar__track {
+    height: 0.5rem;
+  }
+
+  .history .phase-bar__share {
+    display: none;
+  }
+
+  /*
+   * One panel a day, ruled between its rows, rather than a card each: a gap
+   * and two rounded ends per solve is room a phone does not have once the
+   * rows are this short, and a day reads as one list. Only the first and last
+   * row of a day round their corners.
+   */
+  .history {
+    row-gap: 0;
+  }
+
+  .history__open {
+    padding-block: var(--space-2);
+  }
+
+  .history__row {
+    border-radius: 0;
+    box-shadow: inset 0 -1px 0 var(--border);
+  }
+
+  .history__row.is-notable {
+    box-shadow:
+      inset 2px 0 0 var(--accent),
+      inset 0 -1px 0 var(--border);
+  }
+
+  .history__day + .history__row {
+    border-start-start-radius: var(--radius-md);
+    border-start-end-radius: var(--radius-md);
+  }
+
+  .history__row:has(+ .history__day),
+  .history__row:last-child {
+    border-end-start-radius: var(--radius-md);
+    border-end-end-radius: var(--radius-md);
+    box-shadow: none;
+  }
+
+  .history__row.is-notable:has(+ .history__day),
+  .history__row.is-notable:last-child {
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+}
