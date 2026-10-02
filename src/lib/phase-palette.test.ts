@@ -24,6 +24,12 @@ describe.each(CUBE_SKINS.map((skin) => [skin.name, skin] as const))('%s', (_, sk
     expect(sides(palette[`--phase-${slot}`]).dark).toEqual(face);
   });
 
+  it.each(PHASE_SLOTS)('%s as a block is the ink on paper and the area at night', (slot) => {
+    const block = sides(palette[`--phase-block-${slot}`]);
+    expect(block.light).toEqual(sides(palette[`--phase-${slot}`]).light);
+    expect(block.dark).toEqual(sides(palette[`--phase-fill-${slot}`]).dark);
+  });
+
   it('dims the white face as an area on a dark ground', () => {
     const fill = sides(palette['--phase-fill-first']).dark;
     expect(contrast(fill, NIGHT)).toBeLessThanOrEqual(6);

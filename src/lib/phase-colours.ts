@@ -47,6 +47,15 @@ export function phaseColour(index: number, count: number): string {
 }
 
 /**
+ * The phase as a block of a bar: the ink on paper, but on a dark ground the
+ * white face dimmed, as its area is — a strip of pure white in every row of a
+ * list outshone the phases it was the smallest of.
+ */
+export function phaseBlockColour(index: number, count: number): string {
+  return `var(--phase-block-${slot(index, count)})`;
+}
+
+/**
  * What text written on the phase's own block is set in — pale on some faces,
  * dark on others, whichever of the two the face carries better.
  */

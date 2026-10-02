@@ -2,7 +2,7 @@ import { memo, useMemo, type CSSProperties } from 'react';
 import type { MethodPhase, Split } from '../../../db/types';
 import { phaseSegments, phaseShares } from '../../../domain/solve/splits';
 import { formatMs } from '../../../lib/format';
-import { phaseColour, phaseInkColour } from '../../../lib/phase-colours';
+import { phaseBlockColour, phaseColour, phaseInkColour } from '../../../lib/phase-colours';
 
 /**
  * How much of the solve the bar spells out. One component with three
@@ -66,6 +66,10 @@ export const PhaseBar = memo(function PhaseBar({
     segment.phases.length === 1
       ? phaseColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
       : 'var(--muted)';
+  const blockOf = (segment: { phases: string[] }) =>
+    segment.phases.length === 1
+      ? phaseBlockColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
+      : 'var(--muted)';
 
   // A block of several phases is grey, and the stylesheet's own lettering
   // already suits it.
@@ -82,7 +86,7 @@ export const PhaseBar = memo(function PhaseBar({
             // A zero-length phase (a skip) would otherwise vanish; the flex
             // basis keeps a sliver of it visible.
             flexGrow: Math.max(segment.ms, 1),
-            '--phase': colourOf(segment),
+            '--phase': blockOf(segment),
             '--phase-ink': inkOf(segment),
           };
           const share = shares[index] ?? 0;

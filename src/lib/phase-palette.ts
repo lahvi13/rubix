@@ -39,8 +39,9 @@ const FILL_CONTRAST = 1.7;
 /**
  * On a dark ground the white face is the opposite trouble: three times as far
  * out as the coloured bands beside it, so the cross — the smallest phase —
- * was the loudest thing on the screen. It is dimmed to about where a green
- * face stands, and the coloured faces are left as they are painted.
+ * was the loudest thing on the screen, as a chart band and as a strip in every
+ * row of the list alike. It is dimmed to about where a green face stands, and
+ * the coloured faces are left as they are painted. Text keeps the face.
  */
 const NIGHT_FILL_CONTRAST = 6;
 
@@ -75,14 +76,15 @@ export function phasePalette(faces: Readonly<Record<Face, string>>): PhasePalett
     const ink = toHex(onPaper);
     const fill =
       slot === 'first' ? toHex(shiftToContrast(face, PAPER, INK_FLOOR, FILL_CONTRAST)) : onDark;
-    const nightFill =
-      slot === 'first' ? toHex(softenToContrast(face, NIGHT, NIGHT_FILL_CONTRAST)) : onDark;
+    const night = slot === 'first' ? softenToContrast(face, NIGHT, NIGHT_FILL_CONTRAST) : face;
+    const nightFill = toHex(night);
 
     const lettering = (block: Rgb) =>
       toHex(contrast(block, LETTERING_PALE) >= LETTERING_PALE_CONTRAST ? LETTERING_PALE : LETTERING_DARK);
 
     palette[`--phase-${slot}`] = `light-dark(${ink}, ${onDark})`;
-    palette[`--phase-ink-${slot}`] = `light-dark(${lettering(onPaper)}, ${lettering(face)})`;
+    palette[`--phase-block-${slot}`] = `light-dark(${ink}, ${nightFill})`;
+    palette[`--phase-ink-${slot}`] = `light-dark(${lettering(onPaper)}, ${lettering(night)})`;
     palette[`--phase-fill-${slot}`] = `light-dark(${fill}, ${nightFill})`;
   }
 
