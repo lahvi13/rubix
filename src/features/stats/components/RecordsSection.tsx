@@ -37,7 +37,7 @@ export function RecordsSection({
     kind === 'single' && records[0]?.ms === globalPbMs ? 'record is-record' : 'record is-best';
 
   return (
-    <section>
+    <section className="stats-panel">
       <h2 className="stats__section-title">{strings.stats.records}</h2>
       <div className="chart-modes" role="group" aria-label={strings.stats.recordKind}>
         {KINDS.map((candidate) => (

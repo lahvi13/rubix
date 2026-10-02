@@ -319,7 +319,7 @@ export function StatsScreen() {
 
             <GoalSection goal={stats.goal} solveCount={stats.solveCount} onChange={setGoalMs} />
 
-            <section id="stats-averages">
+            <section id="stats-averages" className="stats-panel">
               <h2 className="stats__section-title">{strings.stats.averages}</h2>
               <table className="averages-table">
                 <thead>
@@ -360,7 +360,7 @@ export function StatsScreen() {
             </div>
 
             {hasTrend ? (
-              <section id="stats-trend" className="chart-card">
+              <section id="stats-trend" className="stats-panel">
                 <h2 className="stats__section-title">{strings.stats.trend}</h2>
                 <div className="chart-modes" role="group" aria-label={strings.stats.trend}>
                   <button
@@ -399,9 +399,9 @@ export function StatsScreen() {
               </section>
             ) : null}
 
-            <section id="stats-practice" className="chart-card">
+            <section id="stats-practice" className="stats-panel">
               <h2 className="stats__section-title">{strings.stats.practice}</h2>
-              <dl className="practice__figures">
+              <dl className="stats-figures">
                 <div>
                   <dt>{strings.stats.streak}</dt>
                   <dd>{strings.stats.dayCount(stats.practice.streak)}</dd>
@@ -421,7 +421,7 @@ export function StatsScreen() {
               <p className="chart-note">{strings.stats.practiceNote(PRACTICE_DAYS)}</p>
             </section>
 
-            <section id="stats-distribution" className="chart-card">
+            <section id="stats-distribution" className="stats-panel">
               <h2 className="stats__section-title">{strings.stats.distribution}</h2>
               <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
                 <HistogramChart bins={stats.histogramBins} currentAoMs={stats.currentAo12Ms} />
@@ -441,7 +441,7 @@ export function StatsScreen() {
             ) : null}
 
             {stats.phaseTrend.length > 0 ? (
-              <section className="chart-card">
+              <section className="stats-panel">
                 <h2 className="stats__section-title">{strings.splits.phaseTrend}</h2>
                 <div className="chart-modes">
                   {PHASE_TREND_MODES.map((mode) => (

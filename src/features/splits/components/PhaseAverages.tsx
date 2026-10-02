@@ -38,7 +38,7 @@ export function PhaseAverages({
   if (measuredCount === 0 || phases.length === 0) return null;
 
   return (
-    <section>
+    <section className="stats-panel">
       <h2 className="stats__section-title">
         {strings.splits.phaseAverages} · {measuredCount}
       </h2>

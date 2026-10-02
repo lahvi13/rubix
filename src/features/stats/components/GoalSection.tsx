@@ -35,7 +35,7 @@ export function GoalSection({ goal, solveCount, onChange }: GoalSectionProps) {
   };
 
   return (
-    <section>
+    <section className="stats-panel">
       <h2 className="stats__section-title">{strings.stats.goal}</h2>
 
       {draft !== null ? (
@@ -91,14 +91,14 @@ export function GoalSection({ goal, solveCount, onChange }: GoalSectionProps) {
               {strings.stats.goalRemove}
             </button>
           </div>
-          <dl className="goal__rates">
-            <div className="stat-card">
-              <dt className="stat-card__label">{strings.stats.goalRecent(goal.recentCount)}</dt>
-              <dd className="stat-card__value">{formatRate(goal.recentRate)}</dd>
+          <dl className="stats-figures">
+            <div>
+              <dt>{strings.stats.goalRecent(goal.recentCount)}</dt>
+              <dd>{formatRate(goal.recentRate)}</dd>
             </div>
-            <div className="stat-card">
-              <dt className="stat-card__label">{strings.stats.goalAll(solveCount)}</dt>
-              <dd className="stat-card__value">{formatRate(goal.allRate)}</dd>
+            <div>
+              <dt>{strings.stats.goalAll(solveCount)}</dt>
+              <dd>{formatRate(goal.allRate)}</dd>
             </div>
           </dl>
         </div>

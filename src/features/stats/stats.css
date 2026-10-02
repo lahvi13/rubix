@@ -138,6 +138,11 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* The panel's edge closes the table, so a last rule would draw it twice. */
+.averages-table tbody tr:last-child > * {
+  border-bottom: none;
+}
+
 /* Flush with the section title above, so both tables start where it does. */
 .averages-table tr > :first-child {
   padding-inline-start: 0;
@@ -175,16 +180,23 @@
   text-underline-offset: 0.25em;
 }
 
-/* Three figures over the practice chart, read before the bars are. */
-.practice__figures {
+/* Figures read before what is under them: three over the practice chart, two
+   under the goal. Plain on the panel — cards inside a card of the same colour
+   would vanish. */
+.stats-figures {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   align-items: end;
   gap: var(--space-4);
   margin: 0 0 var(--space-5);
 }
 
-.practice__figures dt {
+.stats-figures:last-child {
+  margin-bottom: 0;
+}
+
+.stats-figures dt {
   font-size: var(--text-2xs);
   font-weight: 600;
   text-transform: uppercase;
@@ -192,7 +204,7 @@
   color: var(--muted);
 }
 
-.practice__figures dd {
+.stats-figures dd {
   margin: var(--space-2) 0 0;
   font-size: var(--text-2xl);
 }
@@ -247,25 +259,16 @@
   font-size: var(--text-2xl);
 }
 
-.goal__rates {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-  margin: 0;
-}
-
-.goal__rates dd {
-  margin: 0;
-}
-
 /* One row per time a record fell: the time, what it took off, and when. */
 .records {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Ruled like the averages table, and flush with the title the same way. */
+.records li:not(:last-child) {
+  border-bottom: 1px solid var(--border);
 }
 
 .record {
@@ -277,7 +280,8 @@
   width: 100%;
   min-height: 2.75rem;
   border: none;
-  background: var(--surface);
+  border-radius: 0;
+  padding-inline: 0;
   color: var(--text);
   text-align: start;
 }
@@ -348,7 +352,7 @@
   align-self: flex-start;
 }
 
-.chart-card {
+.stats-panel {
   background: var(--surface);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
@@ -359,7 +363,7 @@
    tap focuses it too — which left the browser's ring drawn round the plot as
    if it were a frame. The ring stays for the keyboard, where it means
    something. */
-.chart-card :focus:not(:focus-visible) {
+.stats-panel :focus:not(:focus-visible) {
   outline: none;
 }
 
