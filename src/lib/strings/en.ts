@@ -383,7 +383,7 @@ export const en = {
     sourceLink: 'badmephisto.com',
     loading: 'Loading the cases…',
     crossCaption: 'A finished cross: an edge under every centre whose colour it shares.',
-    showCases: 'Every case, one algorithm each',
+    showCases: 'All cases',
     hideCases: 'Back to the one algorithm',
     steps: {
       cross: {

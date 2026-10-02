@@ -37,4 +37,17 @@ describe('AlgText', () => {
     expect(screen.getByText('Sexy move')).toBeInTheDocument();
     expect(screen.getByText('F')).toHaveAttribute('aria-current', 'step');
   });
+
+  it('does not name a trigger again under a case of the same name', () => {
+    render(<AlgText moves={movesOf("R U R' U'")} triggers={[SEXY]} caseName="sexy move" />);
+
+    expect(screen.queryByText('Sexy move')).not.toBeInTheDocument();
+    expect(screen.getByText("R'")).toBeInTheDocument();
+  });
+
+  it('still names a trigger under a case called something else', () => {
+    render(<AlgText moves={movesOf("R U R' U' F")} triggers={[SEXY]} caseName="Dot" />);
+
+    expect(screen.getByText('Sexy move')).toBeInTheDocument();
+  });
 });

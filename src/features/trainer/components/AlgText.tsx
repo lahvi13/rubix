@@ -27,6 +27,12 @@ interface AlgTextProps {
    * trigger — and the colour is what the name was learned as.
    */
   compact?: boolean;
+  /**
+   * The name of the case the algorithm solves, when it is written right above.
+   * A trigger called the same — a Sune that is the whole of the Sune case —
+   * keeps its colour and loses the name, which would only say it twice.
+   */
+  caseName?: string;
 }
 
 /**
@@ -38,6 +44,10 @@ interface AlgTextProps {
 function partClass(segment: AlgSegment): string {
   if (segment.trigger) return 'alg__part alg__part--trigger';
   return segment.isGroup ? 'alg__part alg__part--group' : 'alg__part alg__part--loose';
+}
+
+function isSameName(trigger: string, caseName: string | undefined): boolean {
+  return caseName !== undefined && trigger.trim().toLocaleLowerCase() === caseName.trim().toLocaleLowerCase();
 }
 
 /**
@@ -53,6 +63,7 @@ export function AlgText({
   playLabel,
   playingMove,
   compact = false,
+  caseName,
 }: AlgTextProps) {
   const segments = segmentAlg(moves, triggers, groups);
 
@@ -70,7 +81,7 @@ export function AlgText({
         className={partClass(segment)}
         style={triggerStyle(segment.trigger?.colour)}
       >
-        {segment.trigger && !compact ? (
+        {segment.trigger && !compact && !isSameName(segment.trigger.name, caseName) ? (
           <span className="alg__label">{segment.trigger.name}</span>
         ) : null}
         <span className="alg__moves">

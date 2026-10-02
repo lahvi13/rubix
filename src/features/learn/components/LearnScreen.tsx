@@ -11,7 +11,6 @@ import type { CubeSkin } from '../../../lib/cube-skins';
 import { packLabel, strings } from '../../../lib/strings';
 import {
   AlgText,
-  CaseCard,
   CaseDetail,
   NotationReference,
   diagramFor,
@@ -175,7 +174,6 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
   const setId = (isAdvanced ? step.advanced?.setId : step.setId) ?? step.setId;
   const group = (isAdvanced ? step.advanced?.group : step.group) ?? '';
   const diagram = diagramFor(setId, group);
-  const only = shown.length === 1 ? shown[0] : undefined;
 
   // The cross has no case to look at and no algorithm to read; what it needs
   // is a picture of the thing being made.
@@ -218,31 +216,23 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
         <p className="learn__caption">{strings.learn.loading}</p>
       ) : (
         <>
-          {/* One algorithm gets the width to be read at; a handful of them are
-              a grid, the way the trainer lays cases out. */}
-          {only === undefined ? (
-            <div className="case-grid">
-              {shown.map((entry) => (
-                <CaseCard
-                  key={entry.algCase.id}
-                  entry={entry}
-                  diagram={diagram}
-                  skin={skin}
-                  showAlg
-                  triggers={triggers}
-                  onOpen={() => onOpen(entry.algCase.id, setId, group)}
-                />
-              ))}
-            </div>
-          ) : (
-            <KeyCase
-              entry={only}
-              diagram={diagram}
-              skin={skin}
-              triggers={triggers}
-              onOpen={() => onOpen(only.algCase.id, setId, group)}
-            />
-          )}
+          {/* One shape for every case on the page, one or seven: the cube
+              beside the moves, at a size read with a cube in both hands. A
+              grid of thumbnails beside a step of wide cards made the guide
+              change scale halfway through, and a thumbnail broke an algorithm
+              of eight moves over three lines. */}
+          <div className="learn__cases">
+            {shown.map((entry) => (
+              <LearnCase
+                key={entry.algCase.id}
+                entry={entry}
+                diagram={diagram}
+                skin={skin}
+                triggers={triggers}
+                onOpen={() => onOpen(entry.algCase.id, setId, group)}
+              />
+            ))}
+          </div>
 
           {isAdvanced ? null : (
             <>
@@ -303,7 +293,7 @@ function casesOf(
   return wanted.flatMap((id) => cases.filter((entry) => entry.algCase.id === id));
 }
 
-interface KeyCaseProps {
+interface LearnCaseProps {
   entry: TrainerCase;
   diagram: Diagram;
   skin: CubeSkin;
@@ -312,26 +302,29 @@ interface KeyCaseProps {
 }
 
 /**
- * The one algorithm a step opens with, given the room that says so: its name
- * across the top, then the cube and the moves side by side, readable at arm's
- * length rather than at the size of a thumbnail in a grid of seven.
+ * A case as the guide shows it: its name across the top, then the cube and
+ * the moves side by side, readable at arm's length rather than at the size of
+ * a thumbnail.
  */
-function KeyCase({ entry, diagram, skin, triggers, onOpen }: KeyCaseProps) {
+function LearnCase({ entry, diagram, skin, triggers, onOpen }: LearnCaseProps) {
   const parsed = entry.algorithm ? parseAlg(entry.algorithm.moves) : null;
+  const name = packLabel(caseTitle(entry.algCase));
 
   return (
-    <button type="button" className="case-card learn__key" onClick={onOpen}>
-      <span className="case-card__name">{packLabel(caseTitle(entry.algCase))}</span>
-      <span className="learn__key-row">
+    <button type="button" className="case-card learn__case" onClick={onOpen}>
+      <span className="case-card__name">{name}</span>
+      <span className="learn__case-row">
         <CubeDiagram
-          className="learn__key-diagram"
+          className="learn__case-diagram"
           state={entry.state}
           view={diagram.view}
           stickering={diagram.stickering}
           skin={skin}
           label={null}
         />
-        {parsed?.ok ? <AlgText moves={parsed.moves} groups={parsed.groups} triggers={triggers} /> : null}
+        {parsed?.ok ? (
+          <AlgText moves={parsed.moves} groups={parsed.groups} triggers={triggers} caseName={name} />
+        ) : null}
       </span>
     </button>
   );

@@ -352,7 +352,7 @@ export const cs: Strings = {
     sourceLink: 'badmephisto.com',
     loading: 'Načítám případy…',
     crossCaption: 'Hotový cross: pod každým středem hrana, která s ním sdílí barvu.',
-    showCases: 'Každý případ, ke každému jeden algoritmus',
+    showCases: 'Všechny případy',
     hideCases: 'Zpět na jeden algoritmus',
     steps: {
       cross: {
