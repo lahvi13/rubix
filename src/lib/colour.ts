@@ -105,6 +105,26 @@ export function shiftToContrast(
   return rounded(mix(colour, towards, low));
 }
 
+/**
+ * The other direction: `colour` pulled towards `ground` until it stands no
+ * further out than `target` — and left alone when it already does. Pulling
+ * towards the ground can only ever lose contrast, so the same search holds.
+ */
+export function softenToContrast(colour: Rgb, ground: Rgb, target: number): Rgb {
+  if (contrast(colour, ground) <= target) return colour;
+
+  // Here `amount` is how much of the colour survives: everything in [0, low]
+  // is quiet enough, everything in (high, 1] is not.
+  let low = 0;
+  let high = 1;
+  for (let step = 0; step < STEPS; step++) {
+    const middle = (low + high) / 2;
+    if (contrast(rounded(mix(colour, ground, middle)), ground) <= target) low = middle;
+    else high = middle;
+  }
+  return rounded(mix(colour, ground, low));
+}
+
 function rounded({ r, g, b }: Rgb): Rgb {
   return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
 }

@@ -5,6 +5,7 @@ import { PHASE_SLOTS, SLOT_FACE } from './phase-colours';
 import { phasePalette } from './phase-palette';
 
 const PAPER: Rgb = { r: 0xfa, g: 0xfb, b: 0xfc };
+const NIGHT: Rgb = { r: 0x17, g: 0x1a, b: 0x21 };
 
 /** The two sides of a `light-dark(a, b)` value. */
 function sides(value: string | undefined): { light: Rgb; dark: Rgb } {
@@ -21,7 +22,12 @@ describe.each(CUBE_SKINS.map((skin) => [skin.name, skin] as const))('%s', (_, sk
   it.each(PHASE_SLOTS)('%s is its face as it is on a dark ground', (slot) => {
     const face = parseHex(skin.faces[SLOT_FACE[slot]]);
     expect(sides(palette[`--phase-${slot}`]).dark).toEqual(face);
-    expect(sides(palette[`--phase-fill-${slot}`]).dark).toEqual(face);
+  });
+
+  it('dims the white face as an area on a dark ground', () => {
+    const fill = sides(palette['--phase-fill-first']).dark;
+    expect(contrast(fill, NIGHT)).toBeLessThanOrEqual(6);
+    expect(contrast(fill, NIGHT)).toBeGreaterThan(5.5);
   });
 
   it.each(PHASE_SLOTS)('%s can be read as text on paper', (slot) => {
@@ -36,8 +42,10 @@ describe.each(CUBE_SKINS.map((skin) => [skin.name, skin] as const))('%s', (_, sk
 
   it('leaves every coloured face its own colour as an area', () => {
     for (const slot of PHASE_SLOTS.filter((each) => each !== 'first')) {
+      const face = parseHex(skin.faces[SLOT_FACE[slot]]);
       const { light, dark } = sides(palette[`--phase-fill-${slot}`]);
-      expect(light).toEqual(dark);
+      expect(light).toEqual(face);
+      expect(dark).toEqual(face);
     }
   });
 });

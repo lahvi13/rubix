@@ -5,6 +5,7 @@ import {
   mix,
   parseHex,
   shiftToContrast,
+  softenToContrast,
   toHex,
   type Rgb,
 } from './colour';
@@ -105,5 +106,22 @@ describe('shiftToContrast', () => {
 
   it('settles for the far end when even that falls short', () => {
     expect(shiftToContrast(WHITE, WHITE, hex('#eeeeee'), 4)).toEqual(hex('#eeeeee'));
+  });
+});
+
+describe('softenToContrast', () => {
+  const ground = hex('#171a21');
+
+  it('leaves a colour that is already quiet enough alone', () => {
+    const blue = hex('#2f6fd0');
+    expect(softenToContrast(blue, ground, 6)).toEqual(blue);
+  });
+
+  it.each(['#f4f4f4', '#ffffff', '#eef0f4'])('dims %s just far enough', (value) => {
+    const softened = softenToContrast(hex(value), ground, 6);
+    expect(contrast(softened, ground)).toBeLessThanOrEqual(6);
+    // Not a step further than it had to: a little more of the colour back and
+    // it would stand out past the target.
+    expect(contrast(mix(softened, hex(value), 0.98), ground)).toBeGreaterThan(5.9);
   });
 });

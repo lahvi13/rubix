@@ -9,11 +9,14 @@
  */
 
 import type { Face } from '../domain/cube/notation';
-import { contrast, parseHex, shiftToContrast, toHex, type Rgb } from './colour';
+import { contrast, parseHex, shiftToContrast, softenToContrast, toHex, type Rgb } from './colour';
 import { PHASE_SLOTS, SLOT_FACE } from './phase-colours';
 
 /** Must match the light side of --surface in styles/tokens.css: the card a phase is read on. */
 const PAPER: Rgb = { r: 0xfa, g: 0xfb, b: 0xfc };
+
+/** Must match the dark side of --surface in styles/tokens.css. */
+const NIGHT: Rgb = { r: 0x17, g: 0x1a, b: 0x21 };
 
 /** Must match --ink-floor in styles/tokens.css. */
 const INK_FLOOR: Rgb = { r: 0x0b, g: 0x0d, b: 0x12 };
@@ -32,6 +35,14 @@ const INK_CONTRAST = 4;
  * shaded as far as a band needs and no further.
  */
 const FILL_CONTRAST = 1.7;
+
+/**
+ * On a dark ground the white face is the opposite trouble: three times as far
+ * out as the coloured bands beside it, so the cross — the smallest phase —
+ * was the loudest thing on the screen. It is dimmed to about where a green
+ * face stands, and the coloured faces are left as they are painted.
+ */
+const NIGHT_FILL_CONTRAST = 6;
 
 /**
  * What a share written across a block is set in: white wherever the block can
@@ -64,13 +75,15 @@ export function phasePalette(faces: Readonly<Record<Face, string>>): PhasePalett
     const ink = toHex(onPaper);
     const fill =
       slot === 'first' ? toHex(shiftToContrast(face, PAPER, INK_FLOOR, FILL_CONTRAST)) : onDark;
+    const nightFill =
+      slot === 'first' ? toHex(softenToContrast(face, NIGHT, NIGHT_FILL_CONTRAST)) : onDark;
 
     const lettering = (block: Rgb) =>
       toHex(contrast(block, LETTERING_PALE) >= LETTERING_PALE_CONTRAST ? LETTERING_PALE : LETTERING_DARK);
 
     palette[`--phase-${slot}`] = `light-dark(${ink}, ${onDark})`;
     palette[`--phase-ink-${slot}`] = `light-dark(${lettering(onPaper)}, ${lettering(face)})`;
-    palette[`--phase-fill-${slot}`] = `light-dark(${fill}, ${onDark})`;
+    palette[`--phase-fill-${slot}`] = `light-dark(${fill}, ${nightFill})`;
   }
 
   return palette;
