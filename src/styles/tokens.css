@@ -24,6 +24,9 @@
      to darken for a light ground and brighten for a dark one, or it reads as
      grey on one of them. */
   --record: light-dark(#946300, #ffd24a);
+  /* What the reader made themselves, told apart from every colour that
+     grades: the accent, the gold and the amber all say how something went. */
+  --own: light-dark(#2563eb, #60a5fa);
   --danger: light-dark(#c62d2d, #f87171);
 
   /* A wash over whatever an open menu or sheet is covering. */

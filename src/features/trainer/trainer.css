@@ -141,18 +141,20 @@
   border-radius: var(--radius-pill);
 }
 
-/* Green for a choice made, the colour a chosen thing wears everywhere here. */
+/*
+ * Neither dot borrows the edge's colours. Amber and green down the side of a
+ * card say how far the reader is with it; a green dot for an algorithm of
+ * their own and an amber one for a slot taken apart, on the same card, read
+ * as a second word about progress.
+ */
 .case-card__mark.is-own {
-  background: var(--accent);
+  background: var(--own);
 }
 
-/*
- * Amber, not red. Red in this app is the colour of something with no way back;
- * an algorithm that takes a slot apart is a price, and one worth paying while
- * the slot is not built yet.
- */
+/* Grey: a price worth knowing about, said quietly. The case sheet is where it
+   is a warning, in words, beside the algorithm about to be chosen. */
 .case-card__mark.is-slot {
-  background: var(--warn);
+  background: var(--muted);
 }
 
 .case-card__diagram {
