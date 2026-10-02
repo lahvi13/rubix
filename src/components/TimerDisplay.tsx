@@ -53,6 +53,8 @@ interface TimerDisplayProps {
    * another one, and the hint says where the way on is instead.
    */
   locked?: boolean;
+  /** What the hint says while locked, when the reason is not the default one. */
+  lockedHint?: string;
   /** When inspection beeps, in elapsed milliseconds; the ring changes with them. */
   inspectionCues?: readonly number[];
   inspectionEnabled: boolean;
@@ -73,6 +75,7 @@ export function TimerDisplay({
   resultShown = false,
   note = null,
   locked = false,
+  lockedHint = strings.timer.locked,
   inspectionCues = [],
   inspectionEnabled,
   touchHandlers,
@@ -129,7 +132,7 @@ export function TimerDisplay({
             </span>
           )
         ) : locked ? (
-          strings.timer.locked
+          lockedHint
         ) : (
           hintFor(state, armed, finishArmed, byPhase, inspectionEnabled, hasKeyboard)
         )}

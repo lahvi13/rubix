@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { ChevronIcon } from '../../../components/Icons';
 import type { CaseWithAlg } from '../../../db/repositories/alg-repository';
 import { slowestCases, type CaseStats } from '../../../domain/drill/case-stats';
 import { caseTitle } from '../../../domain/alg/case-name';
@@ -14,6 +12,8 @@ interface CasePoolProps {
   stats: Map<string, CaseStats> | undefined;
   /** The new flat selection, other sets' ticks left as they were. */
   onSelect: (ids: readonly string[]) => void;
+  /** Folds the panel it stands in, from the foot of the list. */
+  onDone: () => void;
 }
 
 /**
@@ -22,9 +22,7 @@ interface CasePoolProps {
  * serves both ways of drilling — the pool is a statement about what you are
  * working on, not about how you are working on it.
  */
-export function CasePool({ cases, selectedIds, stats, onSelect }: CasePoolProps) {
-  const [isOpen, setOpen] = useState(false);
-
+export function CasePool({ cases, selectedIds, stats, onSelect, onDone }: CasePoolProps) {
   const caseIds = (cases ?? []).map((entry) => entry.algCase.id);
   const learningIds = (cases ?? [])
     .filter((entry) => entry.algCase.progress === 'learning')
@@ -35,70 +33,55 @@ export function CasePool({ cases, selectedIds, stats, onSelect }: CasePoolProps)
     onSelect([...selectedIds.filter((id) => !caseIds.includes(id)), ...ids]);
   };
 
+  // Open with the panel rather than behind a fold of its own: the cases are
+  // what the panel is opened for, and a second line to open inside the first
+  // was a second tap nobody guessed they needed.
   return (
     <div className="drill__pool">
-      <button
-        type="button"
-        className="drill__pool-toggle"
-        aria-expanded={isOpen}
-        onClick={() => setOpen((open) => !open)}
-      >
-        <span>
-          {strings.drill.pool} {tickedHere.length === 0 ? caseIds.length : tickedHere.length}
-          {' / '}
-          {caseIds.length}
-        </span>
-        <ChevronIcon up={isOpen} />
-      </button>
-
-      {isOpen ? (
-        <div className="drill__picker">
-          <div className="drill__picker-actions">
-            <button type="button" onClick={() => chooseHere(caseIds)}>
-              {strings.drill.poolAll}
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                chooseHere(slowestCases([...(stats?.values() ?? [])]).map((entry) => entry.caseId))
+      <div className="drill__picker-actions">
+        <button type="button" onClick={() => chooseHere(caseIds)}>
+          {strings.drill.poolAll}
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            chooseHere(slowestCases([...(stats?.values() ?? [])]).map((entry) => entry.caseId))
+          }
+        >
+          {strings.drill.poolSlowest}
+        </button>
+        {/* The cases in hand, which is what most of a drill is for while a
+            set is being learned. Nothing to offer before any are. */}
+        <button
+          type="button"
+          disabled={learningIds.length === 0}
+          onClick={() => chooseHere(learningIds)}
+        >
+          {strings.drill.poolLearning}
+        </button>
+      </div>
+      <p className="drill__hint">{strings.drill.poolHint}</p>
+      <div className="drill__chips">
+        {(cases ?? []).map((entry) => (
+          <label key={entry.algCase.id} className="drill__chip">
+            <input
+              type="checkbox"
+              checked={selectedIds.includes(entry.algCase.id)}
+              onChange={(event) =>
+                chooseHere(
+                  event.target.checked
+                    ? [...tickedHere, entry.algCase.id]
+                    : tickedHere.filter((id) => id !== entry.algCase.id),
+                )
               }
-            >
-              {strings.drill.poolSlowest}
-            </button>
-            {/* The cases in hand, which is what most of a drill is for while a
-                set is being learned. Nothing to offer before any are. */}
-            <button
-              type="button"
-              disabled={learningIds.length === 0}
-              onClick={() => chooseHere(learningIds)}
-            >
-              {strings.drill.poolLearning}
-            </button>
-          </div>
-          <p className="drill__hint">{strings.drill.poolHint}</p>
-          <div className="drill__chips">
-            {(cases ?? []).map((entry) => (
-              <label key={entry.algCase.id} className="drill__chip">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.includes(entry.algCase.id)}
-                  onChange={(event) =>
-                    chooseHere(
-                      event.target.checked
-                        ? [...tickedHere, entry.algCase.id]
-                        : tickedHere.filter((id) => id !== entry.algCase.id),
-                    )
-                  }
-                />
-                {packLabel(caseTitle(entry.algCase))}
-              </label>
-            ))}
-          </div>
-          <button type="button" className="drill__picker-done" onClick={() => setOpen(false)}>
-            {strings.drill.poolDone}
-          </button>
-        </div>
-      ) : null}
+            />
+            {packLabel(caseTitle(entry.algCase))}
+          </label>
+        ))}
+      </div>
+      <button type="button" className="drill__picker-done" onClick={onDone}>
+        {strings.drill.poolDone}
+      </button>
     </div>
   );
 }

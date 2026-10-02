@@ -2,8 +2,12 @@ import { CROSS_SET_ID, FULL_SETS, TWO_LOOK_SETS } from '../../domain/alg/sets';
 import { strings } from '../../lib/strings';
 
 /**
- * What the folded drill controls are set to: the route through the last layer
- * where there is a choice, and how much of the set.
+ * What the folded drill controls are set to: how much of the set, then the
+ * route through the last layer where there is a choice.
+ *
+ * The cases lead, named. "2-Look · 7 / 10" read as one more setting of the set
+ * rather than as the place the cases are picked, and that is what the line is
+ * opened for.
  *
  * The set and the half being drilled are left out — their rows stay on screen
  * above the line, with the chosen ones already marked.
@@ -27,12 +31,13 @@ export function drillSummary(
   const twoLookId = TWO_LOOK_SETS[baseId];
   const parts: string[] = [];
 
-  if (twoLookId !== undefined) {
-    parts.push(setId === twoLookId ? strings.trainer.twoLook : strings.trainer.fullSet);
-  }
   if (caseIds.length > 0) {
     const ticked = caseIds.filter((id) => selectedIds.includes(id));
-    parts.push(`${ticked.length === 0 ? caseIds.length : ticked.length} / ${caseIds.length}`);
+    const count = ticked.length === 0 ? caseIds.length : ticked.length;
+    parts.push(`${strings.drill.pool} ${count} / ${caseIds.length}`);
+  }
+  if (twoLookId !== undefined) {
+    parts.push(setId === twoLookId ? strings.trainer.twoLook : strings.trainer.fullSet);
   }
 
   return parts.join(' · ');

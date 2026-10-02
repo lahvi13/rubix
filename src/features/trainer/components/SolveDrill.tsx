@@ -103,49 +103,54 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
               drill.timer.inspectionEnabled,
             )}
           >
-            <DrillLevels
-              setId={setId}
-              onSet={(next) => {
-                setSetId(next);
-                drill.reset();
-              }}
-            />
-            <DrillLooks
-              setId={setId}
-              onSet={(next) => {
-                setSetId(next);
-                drill.reset();
-              }}
-            />
-
-            {drill.isCross ? (
+            {(close) => (
               <>
-                {/* The cross is the one drill that inspects, so it is the one
-                    that needs the switch. Same switch as the timer screen's —
-                    written out here, where the row is not fighting for width. */}
-                <label className="toggle">
-                  <input
-                    type="checkbox"
-                    checked={drill.timer.inspectionEnabled}
-                    onChange={(event) => drill.timer.setInspectionEnabled(event.target.checked)}
-                  />
-                  {strings.timer.inspectionToggleLabel}
-                </label>
-                <CrossHistory stats={stats?.get(CROSS_CASE_ID)} />
-              </>
-            ) : (
-              /* Changing what is drilled starts a fresh attempt: the answer and
-                 the time on the clock belong to the case that was on screen a
-                 moment ago. */
-              <CasePool
-                cases={drill.cases}
-                selectedIds={selectedIds}
-                stats={stats}
-                onSelect={(ids) => {
-                  setSelectedIds(ids);
+              <DrillLevels
+                setId={setId}
+                onSet={(next) => {
+                  setSetId(next);
                   drill.reset();
                 }}
               />
+              <DrillLooks
+                setId={setId}
+                onSet={(next) => {
+                  setSetId(next);
+                  drill.reset();
+                }}
+              />
+
+              {drill.isCross ? (
+                <>
+                  {/* The cross is the one drill that inspects, so it is the one
+                      that needs the switch. Same switch as the timer screen's —
+                      written out here, where the row is not fighting for width. */}
+                  <label className="toggle">
+                    <input
+                      type="checkbox"
+                      checked={drill.timer.inspectionEnabled}
+                      onChange={(event) => drill.timer.setInspectionEnabled(event.target.checked)}
+                    />
+                    {strings.timer.inspectionToggleLabel}
+                  </label>
+                  <CrossHistory stats={stats?.get(CROSS_CASE_ID)} />
+                </>
+              ) : (
+                /* Changing what is drilled starts a fresh attempt: the answer and
+                   the time on the clock belong to the case that was on screen a
+                   moment ago. */
+                <CasePool
+                  cases={drill.cases}
+                  selectedIds={selectedIds}
+                  stats={stats}
+                  onSelect={(ids) => {
+                    setSelectedIds(ids);
+                    drill.reset();
+                  }}
+                  onDone={close}
+                />
+              )}
+              </>
             )}
           </DrillSetup>
         </div>
@@ -177,6 +182,9 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
         armed={drill.timer.armed}
         inspectionEnabled={drill.timer.inspectionEnabled}
         locked={drill.timer.isLocked}
+        // A timed solve locks the clock too, until Next: it is not "the answer
+        // was shown" there, which reads as having given up.
+        lockedHint={drill.gaveUp ? strings.timer.locked : strings.timer.lockedDone}
         touchHandlers={drill.timer.touchHandlers}
       />
 
@@ -236,6 +244,10 @@ function ScrambleLine({ drill, current }: ScrambleLineProps) {
   if (current.scramble === '') {
     return <p className="drill__hint">{strings.drill.empty}</p>;
   }
+
+  // Done with, the scramble stays to be read back, but not the instruction to
+  // perform it: the clock says where the way on is.
+  if (drill.timer.isLocked) return <p className="drill__moves">{current.scramble}</p>;
 
   return (
     <>
@@ -348,7 +360,7 @@ function Answer({
   );
   const picture = (
     <CubeDiagram
-      className="drill__cube"
+      className={diagram.view === 'lastLayer' ? 'drill__cube is-flat' : 'drill__cube'}
       state={stateOf(current.algCase.setupAlg, diagram.orientation)}
       view={diagram.view}
       stickering={diagram.stickering}

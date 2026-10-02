@@ -263,7 +263,7 @@ describe('RecognitionDrill', () => {
     // says only what they cannot.
     expect(screen.getByRole('button', { name: 'PLL' })).toHaveClass('is-active');
     expect(screen.getByRole('button', { name: /^Change what is drilled/ })).toHaveTextContent(
-      'Full · 2 / 21',
+      'Cases 2 / 21 · Full',
     );
 
     await user.click(screen.getByRole('button', { name: 'Solve it' }));

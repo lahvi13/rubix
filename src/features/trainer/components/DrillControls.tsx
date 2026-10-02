@@ -179,7 +179,8 @@ export function DrillModes({ mode, onMode, canRecognise }: DrillModesProps) {
 interface DrillSetupProps {
   /** What the folded controls are set to, so the line can be read instead. */
   summary: string;
-  children: ReactNode;
+  /** Handed the way to fold it again, for a button at the foot of a long list. */
+  children: (close: () => void) => ReactNode;
 }
 
 /**
@@ -207,7 +208,7 @@ export function DrillSetup({ summary, children }: DrillSetupProps) {
         <span>{summary}</span>
         <ChevronIcon up={isOpen} />
       </button>
-      {isOpen ? <div className="drill__setup-panel">{children}</div> : null}
+      {isOpen ? <div className="drill__setup-panel">{children(() => setOpen(false))}</div> : null}
     </div>
   );
 }

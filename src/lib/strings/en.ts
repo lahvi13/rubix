@@ -76,6 +76,7 @@ export const en = {
     /* Said where the hint lives, because the clock refusing to start is
        otherwise indistinguishable from the clock being broken. */
     locked: 'Answer shown — Next to go again',
+    lockedDone: 'Done — Next to go again',
     /*
      * Two switches share the panel's heading with the session name and the
      * count, and at the largest text size the words push each other onto a

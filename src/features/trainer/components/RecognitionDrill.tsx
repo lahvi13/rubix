@@ -97,14 +97,19 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
         <DrillSets sets={sets ?? []} setId={setId} onSet={setSetId} />
 
         <DrillSetup summary={drillSummary(setId, caseIds, selectedIds)}>
-          <DrillLevels setId={setId} onSet={setSetId} />
-          <DrillLooks setId={setId} onSet={setSetId} />
-          <CasePool
-            cases={recognition.cases}
-            selectedIds={selectedIds}
-            stats={stats}
-            onSelect={setSelectedIds}
-          />
+          {(close) => (
+            <>
+              <DrillLevels setId={setId} onSet={setSetId} />
+              <DrillLooks setId={setId} onSet={setSetId} />
+              <CasePool
+                cases={recognition.cases}
+                selectedIds={selectedIds}
+                stats={stats}
+                onSelect={setSelectedIds}
+                onDone={close}
+              />
+            </>
+          )}
         </DrillSetup>
       </div>
 

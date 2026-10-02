@@ -323,8 +323,12 @@ describe('DrillScreen', () => {
     await attempt(user, 1000);
 
     expect(await db.solves.count()).toBe(1);
-    // The time that was earned is still the one on the clock.
+    // The time that was earned is still the one on the clock, and the clock
+    // says the attempt is done rather than that the answer was looked up; the
+    // instruction to perform the scramble has gone with it.
     expect(screen.getByRole('timer')).toHaveTextContent('3.21');
+    expect(screen.getByText('Done — Next to go again')).toBeInTheDocument();
+    expect(screen.queryByText(/^Perform it, then hold/)).toBeNull();
 
     // Moving on hands the clock back.
     await user.click(screen.getByRole('button', { name: 'Next' }));
@@ -363,7 +367,7 @@ describe('DrillScreen', () => {
     expect(scramble.split(' ')).toHaveLength(CROSS_SCRAMBLE_LENGTH);
     // Nothing to pick from and nothing to look up.
     await openSetup(user);
-    expect(screen.queryByRole('button', { name: /^Cases/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'All' })).not.toBeInTheDocument();
 
     await attempt(user, 4000);
 
@@ -444,7 +448,6 @@ describe('DrillScreen', () => {
     render(<DrillScreen />);
 
     await openSetup(user);
-    await user.click(await screen.findByRole('button', { name: /^Cases/ }));
     expect(await screen.findByRole('button', { name: "What I'm learning" })).toBeDisabled();
 
     await setCaseProgress('pll-y', 'learning');
@@ -463,8 +466,8 @@ describe('DrillScreen', () => {
     const user = userEvent.setup();
     render(<DrillScreen />);
 
+    // The line opens on the cases themselves, not on a second line to open.
     await openSetup(user);
-    await user.click(await screen.findByRole('button', { name: /^Cases/ }));
     expect(await screen.findByLabelText('T')).toBeInTheDocument();
 
     // Closing it from the bottom of the list, where the reader already is.
@@ -683,10 +686,10 @@ describe('DrillScreen', () => {
     // The folded line has to answer it on its own, or folding it away would
     // hide what is being practised.
     expect(
-      await screen.findByRole('button', { name: 'Change what is drilled: Full · 1 / 21' }),
+      await screen.findByRole('button', { name: 'Change what is drilled: Cases 1 / 21 · Full' }),
     ).toBeInTheDocument();
 
     await openSetup(user);
-    expect(screen.getByRole('button', { name: 'Cases 1 / 21' })).toBeInTheDocument();
+    expect(screen.getByLabelText('T')).toBeChecked();
   });
 });

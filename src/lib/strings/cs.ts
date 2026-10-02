@@ -77,6 +77,7 @@ export const cs: Strings = {
       tapToEndPhase: 'Mezerník ukončí fázi · podržením složení ukončíš',
     },
     locked: 'Řešení je odhalené — pokračuj tlačítkem Další',
+    lockedDone: 'Hotovo — pokračuj tlačítkem Další',
     /* Zkratka jen sem, kde se dva přepínače perou o šířku s názvem session;
        celé slovo dostane čtečka i nastavení. */
     inspectionToggle: 'Insp',
