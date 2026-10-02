@@ -29,16 +29,25 @@
 
 .trainer__looks {
   display: flex;
-  gap: var(--space-2);
   max-width: var(--page-width);
   margin: 0 auto var(--space-3);
   width: 100%;
 }
 
-/* Two halves of one switch, so they are joined rather than spaced. */
+/* Halves of one switch, so they are joined rather than spaced: no gap, and
+   each lays its edge over its neighbour's so the seam is one line, not two. */
 .trainer__looks button {
   background: var(--surface);
   border-radius: 0;
+}
+
+.trainer__looks button + button {
+  margin-inline-start: -1px;
+}
+
+/* The chosen one on top, or the neighbour's grey edge covers its own. */
+.trainer__looks button.is-active {
+  position: relative;
 }
 
 .trainer__looks button:first-child {
@@ -47,10 +56,6 @@
 
 .trainer__looks button:last-child {
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
-
-.trainer__looks button.is-active {
-  color: var(--text);
 }
 
 /* The case count sits quietly beside the name of the route. */

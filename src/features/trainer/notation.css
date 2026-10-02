@@ -10,8 +10,19 @@
   padding: var(--space-6);
 }
 
+/*
+ * Six to a row at any width, so on a desktop each cube came out the size of a
+ * case sheet's. The reference keeps a phone's width there instead, in the
+ * middle of its panel, and the hint keeps the same edge as the cubes.
+ */
+.notation__hint,
+.notation__row {
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
 .notation__hint {
-  margin: 0 0 var(--space-5);
+  margin-block: 0 var(--space-5);
   font-size: var(--text-sm);
   color: var(--muted);
 }

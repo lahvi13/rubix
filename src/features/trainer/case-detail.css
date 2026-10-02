@@ -90,8 +90,8 @@
   gap: var(--space-3);
 }
 
-/* Three steps of one switch, joined as the 2-Look / Full one is. The step that
-   is on takes the colour its edge has on the card. */
+/* Three steps of one switch, joined as the 2-Look / Full one is, one edge to
+   each seam. The step that is on takes the colour its edge has on the card. */
 .case-progress {
   display: flex;
   justify-content: center;
@@ -103,6 +103,10 @@
   padding-inline: var(--space-5);
 }
 
+.case-progress button + button {
+  margin-inline-start: -1px;
+}
+
 .case-progress button:first-child {
   border-radius: var(--radius-md) 0 0 var(--radius-md);
 }
@@ -111,7 +115,9 @@
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
+/* On top of its neighbours, whose edges it overlaps. */
 .case-progress button.is-active {
+  position: relative;
   color: var(--text);
   border-color: var(--muted);
 }
