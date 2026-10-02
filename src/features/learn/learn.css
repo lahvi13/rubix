@@ -136,8 +136,13 @@
   color: var(--muted);
 }
 
+/* As wide as a phone and no wider: on a desktop a card the width of the page
+   left the cube at one edge and the moves adrift in the middle. Two to a row
+   there — a step of one case too, so it lines up with its cards in the other
+   steps and with the two columns of holds under it. */
 .learn__cases {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
   gap: var(--space-4);
 }
 
