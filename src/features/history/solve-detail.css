@@ -1,13 +1,28 @@
+/* A solve is read top down and the sheet is taller than a phone: the gap every
+   sheet keeps between its parts would leave the note and the tags a scroll
+   away, so this one keeps a smaller one. */
+.solve-detail {
+  gap: var(--space-5);
+}
+
 /* The time on the left, what can be done with it on the right. */
 .detail__head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
 }
 
+.detail__headline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
 .detail__result {
   font-size: var(--text-4xl);
+  line-height: 1.1;
 }
 
 .detail__scramble {
@@ -38,9 +53,21 @@
   color: var(--muted);
 }
 
-.detail__row--buttons {
+/* The field is sized to a time, not to the sheet, so the three buttons fit
+   beside it; a narrow phone at the large text size wraps them under it. */
+.detail__row--time {
   flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-3);
+}
+
+.detail__row--time input {
+  width: 6.5em;
+}
+
+.detail__row--time .detail__error {
+  flex-basis: 100%;
 }
 
 .detail input,
@@ -65,9 +92,17 @@
   font-size: var(--text-xs);
 }
 
-.detail__row--buttons button.is-active {
+.detail__penalty.is-active {
   border-color: var(--warn);
   color: var(--warn);
+}
+
+/* The reader's own mark, not a penalty: on or off, in the weight the filter
+   for it changes to, and without the amber that says +2 beside it. */
+.detail__mark.is-active {
+  border-color: var(--text);
+  color: var(--text);
+  background: var(--surface-raised);
 }
 
 .detail__tags {
@@ -103,16 +138,9 @@
 .detail__footer {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-5);
+  gap: var(--space-3);
   border-top: 1px solid var(--border);
   padding-top: var(--space-5);
-}
-
-.detail__footer-actions {
-  display: flex;
-  gap: var(--space-3);
 }
 
 .detail__meta {
