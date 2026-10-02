@@ -67,7 +67,7 @@
   flex-direction: column;
   gap: var(--space-2);
   background: var(--surface);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--space-4) var(--space-5);
 }
 
@@ -138,6 +138,12 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* A table cell's height is a floor, and it counts the padding and the rule
+   under the row as well. */
+.averages-table tbody > tr > * {
+  height: calc(2rem + 1px);
+}
+
 /* The panel's edge closes the table, so a last rule would draw it twice. */
 .averages-table tbody tr:last-child > * {
   border-bottom: none;
@@ -173,6 +179,10 @@
   border: none;
   padding: 0;
   min-height: 2rem;
+  /* The thumb's height reaches into the cell's padding, and every row gets
+     that height as its floor (below), so a row with a number to press is no
+     taller than one with a dash. */
+  margin-block: calc(var(--space-3) * -1);
   color: var(--text);
   font-size: inherit;
   text-decoration: underline dotted;
@@ -296,6 +306,12 @@
 
 .record.is-record .record__time {
   color: var(--record);
+}
+
+/* Read in order — the time, then by how much, then when — so only the time
+   is at full strength. */
+.record__gain {
+  color: var(--muted);
 }
 
 .record__date {
