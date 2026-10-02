@@ -96,8 +96,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  width: min(17.5rem, 80vw);
-  padding: var(--space-5) var(--space-4) max(var(--space-6), env(safe-area-inset-bottom));
+  /* As wide as its longest name and a margin, not a fixed share of the
+     screen: at a fixed 17.5rem it took three quarters of a phone for words
+     that fill half of it. */
+  width: fit-content;
+  min-width: 12rem;
+  max-width: 80vw;
+  padding: var(--space-5) var(--space-6) max(var(--space-6), env(safe-area-inset-bottom)) var(--space-4);
   overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border);
