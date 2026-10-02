@@ -12,6 +12,9 @@
      towards the light in either theme. */
   --surface-raised: light-dark(#ffffff, #232936);
   --border: light-dark(#d9dde5, #262b36);
+  /* The same rule drawn on a raised surface: on a dark ground --border is a
+     shade off --surface-raised, and a button outlined in it lost its edge. */
+  --border-raised: light-dark(#d9dde5, #343a47);
   --text: light-dark(#15181f, #e8eaf0);
   --muted: light-dark(#5d6575, #868ea3);
   --accent: light-dark(#15803d, #4ade80);
@@ -40,7 +43,8 @@
   --ink-floor: #0b0d12;
 
   /*
-   * The phase colours — --phase-<slot> as ink, --phase-fill-<slot> as an area —
+   * The phase colours — --phase-<slot> as ink, --phase-block-<slot> as a block
+   * of a bar, --phase-fill-<slot> as an area —
    * are not written here. They are the faces of the cube skin the reader picked,
    * put on the root by lib/phase-palette.ts as light-dark() pairs, because
    * darkening a face for paper takes a measurement CSS cannot make: the yellow

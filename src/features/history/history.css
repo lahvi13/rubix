@@ -307,6 +307,11 @@
   --bar-ground: var(--surface-raised);
 }
 
+.history__row.is-notable button:not(.is-active, .is-primary, .is-danger),
+.solves__row.is-notable button:not(.is-active, .is-primary, .is-danger) {
+  border-color: var(--border-raised);
+}
+
 /*
  * Attached to the time, which is what it is about. Small and superscript so
  * a record is announced without shouting over the number that earned it.
