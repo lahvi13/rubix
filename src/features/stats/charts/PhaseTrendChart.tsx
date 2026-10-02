@@ -71,7 +71,7 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
   // light theme's gold would otherwise be invisible on the card it sits on.
   const legend = phases.map((phase, order) =>
     mode === 'separate'
-      ? { label: phase.label, colour: phaseColour(order, phases.length) }
+      ? { label: phase.label, colour: phaseFillColour(order, phases.length) }
       : {
           label: phase.label,
           colour: phaseFillColour(order, phases.length),
@@ -139,7 +139,7 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
                 <Line
                   key={rawKey(phase.key)}
                   dataKey={rawKey(phase.key)}
-                  stroke={phaseColour(order, phases.length)}
+                  stroke={phaseFillColour(order, phases.length)}
                   strokeWidth={1}
                   strokeOpacity={0.28}
                   dot={false}
@@ -153,7 +153,10 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
               <Line
                 key={phase.key}
                 dataKey={seriesKey(phase.key)}
-                stroke={phaseColour(order, phases.length)}
+                // The face, as the bands and the bars wear it: a line is a
+                // mark, not text, and the face reads as a line where it could
+                // not as a figure.
+                stroke={phaseFillColour(order, phases.length)}
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -241,7 +244,7 @@ function tooltipRows(
 
   const rows = phases.map((phase, order) => ({
     label: phase.label,
-    colour: phaseColour(order, phases.length),
+    colour: phaseFillColour(order, phases.length),
     value:
       mode === 'share'
         ? `${Math.round(share(values, order, 'share'))}%`

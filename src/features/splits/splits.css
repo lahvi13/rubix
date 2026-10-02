@@ -297,9 +297,14 @@
   white-space: nowrap;
 }
 
-/* A best opens its solve, and still wears its phase's colour. */
-.averages-table--phases .averages-table__open {
-  color: inherit;
+/* The phase a column is, in front of its name. */
+.averages-table__phase {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-inline-end: 0.35em;
+  border-radius: var(--radius-pill);
+  vertical-align: 0.08em;
 }
 
 @media (min-width: 34rem) {

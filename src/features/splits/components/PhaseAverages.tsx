@@ -2,7 +2,7 @@ import type { MethodPhase } from '../../../db/types';
 import type { PhaseAverageRow } from '../../../domain/stats/phases';
 import type { Average } from '../../../domain/stats/averages';
 import { formatAverage } from '../../../lib/format';
-import { phaseColour } from '../../../lib/phase-colours';
+import { phaseFillColour } from '../../../lib/phase-colours';
 import { strings } from '../../../lib/strings';
 
 /** The window column: an average, every solve, or the fastest each phase has been. */
@@ -53,7 +53,16 @@ export function PhaseAverages({
             <tr>
               <th />
               {phases.map((phase, index) => (
-                <th key={phase.key} style={{ color: phaseColour(index, phases.length) }}>
+                <th key={phase.key}>
+                  {/* The phase by its face, as a dot, and the figures in the
+                      text's own colour: a face light enough to be the cube's
+                      is too light to write a number in, and darkened until it
+                      could be, the yellow was mustard. */}
+                  <span
+                    className="averages-table__phase"
+                    style={{ background: phaseFillColour(index, phases.length) }}
+                    aria-hidden="true"
+                  />
                   {phase.label}
                 </th>
               ))}
@@ -64,10 +73,9 @@ export function PhaseAverages({
             {rows.map((row) => (
               <tr key={String(row.n)}>
                 <th scope="row">{rowLabel(row.n)}</th>
-                {row.phases.map((phase, index) => (
+                {row.phases.map((phase) => (
                   <td
                     key={phase.phase}
-                    style={{ color: phaseColour(index, phases.length) }}
                     // A column built from fewer solves than the row is not
                     // wrong, but it is not the same sample either.
                     title={strings.stats.solveCount(phase.count)}
