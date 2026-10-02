@@ -477,7 +477,7 @@ export const cs: Strings = {
   drill: {
     pool: 'Případy',
     poolAll: 'Vše',
-    poolSlowest: '10 nejpomalejších',
+    poolSlowest: 'Nejpomalejší',
     poolLearning: 'Co se učím',
     poolHint: 'Zaškrtni případy ke drilování. Nic zaškrtnutého znamená celou sadu.',
     poolDone: 'Hotovo',

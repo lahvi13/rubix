@@ -518,7 +518,7 @@ export const en = {
   drill: {
     pool: 'Cases',
     poolAll: 'All',
-    poolSlowest: 'Slowest 10',
+    poolSlowest: 'Slowest',
     poolLearning: "What I'm learning",
     poolHint: 'Tick the cases to drill. Nothing ticked means the whole set.',
     poolDone: 'Done',

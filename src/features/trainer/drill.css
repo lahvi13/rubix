@@ -115,12 +115,13 @@
   margin-bottom: var(--space-4);
 }
 
+/* The page scrolls the list, not a box of its own: a scroll inside a scroll
+   on a phone moved the one under the finger, never the one meant. Done stays
+   in reach by holding to the screen's edge instead (below). */
 .drill__chips {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
   gap: var(--space-2);
-  max-height: 45dvh;
-  overflow-y: auto;
 }
 
 .drill__chip {
@@ -301,6 +302,18 @@
   border-color: var(--accent);
   color: var(--accent);
   min-height: 2.75rem;
+}
+
+/*
+ * A list of 57 is taller than a phone, and Done sat under it, cut off by the
+ * screen's edge. It holds to the bottom of the screen while the list is open,
+ * on a ground of its own so the cases scroll under it rather than through it.
+ */
+.drill__pool .drill__picker-done {
+  position: sticky;
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  background: var(--surface);
+  box-shadow: 0 0 0 var(--space-4) var(--surface);
 }
 
 .drill__give-up {
