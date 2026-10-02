@@ -47,27 +47,18 @@ export function phaseColour(index: number, count: number): string {
 }
 
 /**
- * The phase as a block of a bar: the ink on paper, but on a dark ground the
- * white face dimmed, as its area is — a strip of pure white in every row of a
- * list outshone the phases it was the smallest of.
- */
-export function phaseBlockColour(index: number, count: number): string {
-  return `var(--phase-block-${slot(index, count)})`;
-}
-
-/**
- * What text written on the phase's own block is set in — pale on some faces,
- * dark on others, whichever of the two the face carries better.
+ * What text written on the phase's own block — its fill — is set in: pale on
+ * some faces, dark on others, whichever of the two the face carries better.
  */
 export function phaseInkColour(index: number, count: number): string {
   return `var(--phase-ink-${slot(index, count)})`;
 }
 
 /**
- * The phase as a filled area. A separate slot rather than the same colour at
- * a lower opacity: the ink is dark so that it can carry text on a white page,
- * and a chart band the size of a thumb painted in it reads as mud rather than
- * as the face of a cube.
+ * The phase as a filled area: a chart band, a block of a bar, the swatch that
+ * keys a bar. A separate slot rather than the ink: the ink is dark so that it
+ * can carry text on a white page, and a band painted in it reads as mud
+ * rather than as the face of a cube.
  */
 export function phaseFillColour(index: number, count: number): string {
   return `var(--phase-fill-${slot(index, count)})`;

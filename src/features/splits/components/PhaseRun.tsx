@@ -1,6 +1,6 @@
 import type { MethodPhase } from '../../../db/types';
 import { formatRunning, type RunningDisplay } from '../../../lib/format';
-import { phaseBlockColour, phaseColour } from '../../../lib/phase-colours';
+import { phaseColour, phaseFillColour } from '../../../lib/phase-colours';
 
 interface PhaseRunProps {
   phases: readonly MethodPhase[];
@@ -40,7 +40,7 @@ export function PhaseRun({ phases, splitMs, elapsedMs, display }: PhaseRunProps)
           <span
             key={phase.key}
             className={index === current ? 'phase-run__block is-running' : 'phase-run__block'}
-            style={index <= current ? { background: phaseBlockColour(index, phases.length) } : undefined}
+            style={index <= current ? { background: phaseFillColour(index, phases.length) } : undefined}
           />
         ))}
       </div>

@@ -46,8 +46,8 @@
   --ink-floor: #0b0d12;
 
   /*
-   * The phase colours — --phase-<slot> as ink, --phase-block-<slot> as a block
-   * of a bar, --phase-fill-<slot> as an area —
+   * The phase colours — --phase-<slot> as ink, --phase-fill-<slot> as an area
+   * or a block of a bar —
    * are not written here. They are the faces of the cube skin the reader picked,
    * put on the root by lib/phase-palette.ts as light-dark() pairs, because
    * darkening a face for paper takes a measurement CSS cannot make: the yellow

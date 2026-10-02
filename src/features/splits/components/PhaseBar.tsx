@@ -2,7 +2,7 @@ import { memo, useMemo, type CSSProperties } from 'react';
 import type { MethodPhase, Split } from '../../../db/types';
 import { phaseSegments, phaseShares } from '../../../domain/solve/splits';
 import { formatMs } from '../../../lib/format';
-import { phaseBlockColour, phaseColour, phaseInkColour } from '../../../lib/phase-colours';
+import { phaseColour, phaseFillColour, phaseInkColour } from '../../../lib/phase-colours';
 
 /**
  * How much of the solve the bar spells out. One component with three
@@ -32,6 +32,7 @@ interface PhaseBarProps {
 /** React's style type does not know about custom properties; this one does. */
 interface SegmentStyle extends CSSProperties {
   '--phase': string;
+  '--phase-ring': string;
   '--phase-ink'?: string;
 }
 
@@ -68,7 +69,7 @@ export const PhaseBar = memo(function PhaseBar({
       : 'var(--muted)';
   const blockOf = (segment: { phases: string[] }) =>
     segment.phases.length === 1
-      ? phaseBlockColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
+      ? phaseFillColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
       : 'var(--muted)';
 
   // A block of several phases is grey, and the stylesheet's own lettering
@@ -87,6 +88,9 @@ export const PhaseBar = memo(function PhaseBar({
             // basis keeps a sliver of it visible.
             flexGrow: Math.max(segment.ms, 1),
             '--phase': blockOf(segment),
+            // The ring round a best in the ink: drawn in a pale face, on a
+            // white card, it was there and could not be seen.
+            '--phase-ring': colourOf(segment),
             '--phase-ink': inkOf(segment),
           };
           const share = shares[index] ?? 0;

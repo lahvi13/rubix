@@ -157,7 +157,7 @@
 .phase-bar__segment.is-best {
   box-shadow:
     0 0 0 1.5px var(--bar-ground, var(--surface)),
-    0 0 0 3px var(--phase);
+    0 0 0 3px var(--phase-ring, var(--phase));
 }
 
 .phase-bar__labels {

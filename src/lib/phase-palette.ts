@@ -30,9 +30,11 @@ const INK_FLOOR: Rgb = { r: 0x0b, g: 0x0d, b: 0x12 };
 const INK_CONTRAST = 4;
 
 /**
- * A phase as an area on paper only has to be told apart from the card. Every
- * coloured face manages that as it is; the white one is the card, so it is
- * shaded as far as a band needs and no further.
+ * A phase as an area — a chart band, a block of a bar — on paper only has to
+ * be told apart from the card. Every coloured face manages that as it is; the
+ * white one is the card, so it is shaded as far as a band needs and no
+ * further. The blocks wore the ink once, darkened for text, and a yellow face
+ * darkened that far is mustard, not the cube's.
  */
 const FILL_CONTRAST = 1.7;
 
@@ -48,13 +50,12 @@ const NIGHT_FILL_CONTRAST = 6;
 /**
  * What a share written across a block is set in: white wherever the block can
  * carry it, and the far end of the dark ground only where it cannot — the
- * yellow, the green, the orange of a dark theme. One colour for every block
+ * yellow, the green, the orange, the shaded white. One colour for every block
  * put dark figures on the red.
  *
  * Not simply whichever measures higher. On a saturated mid-tone the formula
  * scores dark lettering a shade above white while the eye reads it the other
- * way round, and taken literally it would have turned nearly every block on
- * paper to dark-on-dark.
+ * way round, and taken literally it would have put dark figures on the red.
  */
 const LETTERING_PALE: Rgb = { r: 0xff, g: 0xff, b: 0xff };
 const LETTERING_DARK: Rgb = { r: 0x0f, g: 0x11, b: 0x15 };
@@ -74,18 +75,15 @@ export function phasePalette(faces: Readonly<Record<Face, string>>): PhasePalett
 
     const onPaper = shiftToContrast(face, PAPER, INK_FLOOR, INK_CONTRAST);
     const ink = toHex(onPaper);
-    const fill =
-      slot === 'first' ? toHex(shiftToContrast(face, PAPER, INK_FLOOR, FILL_CONTRAST)) : onDark;
+    const day = slot === 'first' ? shiftToContrast(face, PAPER, INK_FLOOR, FILL_CONTRAST) : face;
     const night = slot === 'first' ? softenToContrast(face, NIGHT, NIGHT_FILL_CONTRAST) : face;
-    const nightFill = toHex(night);
 
     const lettering = (block: Rgb) =>
       toHex(contrast(block, LETTERING_PALE) >= LETTERING_PALE_CONTRAST ? LETTERING_PALE : LETTERING_DARK);
 
     palette[`--phase-${slot}`] = `light-dark(${ink}, ${onDark})`;
-    palette[`--phase-block-${slot}`] = `light-dark(${ink}, ${nightFill})`;
-    palette[`--phase-ink-${slot}`] = `light-dark(${lettering(onPaper)}, ${lettering(night)})`;
-    palette[`--phase-fill-${slot}`] = `light-dark(${fill}, ${nightFill})`;
+    palette[`--phase-ink-${slot}`] = `light-dark(${lettering(day)}, ${lettering(night)})`;
+    palette[`--phase-fill-${slot}`] = `light-dark(${toHex(day)}, ${toHex(night)})`;
   }
 
   return palette;

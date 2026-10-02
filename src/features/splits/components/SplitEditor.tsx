@@ -8,7 +8,7 @@ import {
   removeSplit,
 } from '../../../domain/solve/splits';
 import { formatMs } from '../../../lib/format';
-import { phaseBlockColour } from '../../../lib/phase-colours';
+import { phaseFillColour } from '../../../lib/phase-colours';
 import { strings } from '../../../lib/strings';
 import { PhaseBar } from './PhaseBar';
 
@@ -69,7 +69,7 @@ export function SplitEditor({ solve, phases, bestPhases, onChange }: SplitEditor
             <li key={phase.key} className="splits__row">
               <span
                 className="splits__swatch"
-                style={{ background: phaseBlockColour(index, phases.length) }}
+                style={{ background: phaseFillColour(index, phases.length) }}
                 aria-hidden="true"
               />
               <span className="splits__name">

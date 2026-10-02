@@ -24,12 +24,6 @@ describe.each(CUBE_SKINS.map((skin) => [skin.name, skin] as const))('%s', (_, sk
     expect(sides(palette[`--phase-${slot}`]).dark).toEqual(face);
   });
 
-  it.each(PHASE_SLOTS)('%s as a block is the ink on paper and the area at night', (slot) => {
-    const block = sides(palette[`--phase-block-${slot}`]);
-    expect(block.light).toEqual(sides(palette[`--phase-${slot}`]).light);
-    expect(block.dark).toEqual(sides(palette[`--phase-fill-${slot}`]).dark);
-  });
-
   it('dims the white face as an area on a dark ground', () => {
     const fill = sides(palette['--phase-fill-first']).dark;
     expect(contrast(fill, NIGHT)).toBeLessThanOrEqual(6);
@@ -69,20 +63,10 @@ describe('lettering across a block', () => {
     '%s %s is readable on both themes',
     (_, slot, skin) => {
       const palette = phasePalette(skin.faces);
-      const block = sides(palette[`--phase-${slot}`]);
+      const block = sides(palette[`--phase-fill-${slot}`]);
       const lettering = sides(palette[`--phase-ink-${slot}`]);
       for (const theme of ['light', 'dark'] as const) {
         expect(contrast(block[theme], lettering[theme])).toBeGreaterThanOrEqual(3.5);
-      }
-    },
-  );
-
-  it.each(CUBE_SKINS.map((skin) => [skin.name, skin] as const))(
-    '%s keeps white on every block on paper',
-    (_, skin) => {
-      const palette = phasePalette(skin.faces);
-      for (const slot of PHASE_SLOTS) {
-        expect(sides(palette[`--phase-ink-${slot}`]).light).toEqual(WHITE);
       }
     },
   );
@@ -97,6 +81,12 @@ describe('lettering across a block', () => {
     ['contrast', 'mid-2', 'dark', WHITE],
     ['accessible', 'mid-2', 'dark', WHITE],
     ['pastel', 'mid-2', 'dark', DARK],
+    // On paper the block is the face itself now, so the light faces take dark
+    // figures there too, and the red keeps white.
+    ['classic', 'first', 'light', DARK],
+    ['classic', 'mid-1', 'light', DARK],
+    ['classic', 'mid-2', 'light', WHITE],
+    ['classic', 'last', 'light', DARK],
   ] as const)('%s %s on %s', (id, slot, theme, expected) => {
     const skin = CUBE_SKINS.find((each) => each.id === id);
     if (!skin) throw new Error(id);
