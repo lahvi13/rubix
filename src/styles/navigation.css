@@ -127,6 +127,10 @@
    edge of the window, so both of its top corners are free. */
 @media (min-width: 52rem) {
   .app__menu {
+    /* A desktop has the room a phone does not: sized to its longest name
+       alone, the panel was a strip at the edge of a wide window. */
+    min-width: 15rem;
+    padding-inline: var(--space-5);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 }
