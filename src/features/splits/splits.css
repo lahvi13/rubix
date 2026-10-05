@@ -317,18 +317,18 @@
   white-space: nowrap;
 }
 
-/* The names stand on one line however tall the strips over them make the
+/* The names stand on one line however tall the strips under them make the
    row, the total's included. */
 .averages-table--phases thead th {
-  vertical-align: bottom;
+  vertical-align: top;
 }
 
-/* The phase a column is: a strip of its face over its name, as wide as the
+/* The phase a column is: a strip of its face under its name, as wide as the
    name, so it takes height the header row has and no width it does not. */
 .averages-table__phase {
   display: block;
   height: 0.3em;
-  margin-block-end: 0.35em;
+  margin-block-start: 0.35em;
   border-radius: var(--radius-pill);
 }
 
