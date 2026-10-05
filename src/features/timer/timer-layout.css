@@ -21,6 +21,21 @@
 }
 
 /*
+ * At rest the list is a peek of the last solve — the one a +2 or a DNF is for
+ * — under the session's averages, and the clock takes everything else. Three
+ * rows of older times took the larger share of a phone for numbers that are
+ * not read while solving; the averages say where they stand, and the list
+ * pulled up has them all.
+ */
+.screen:not(.screen--solving):has(> .solves-slot) {
+  grid-template-rows: auto minmax(min-content, 1fr) auto;
+}
+
+.solves-panel:not(.is-sheet) .solves > li:nth-child(n + 2) {
+  display: none;
+}
+
+/*
  * The other way round: the list pulled up over the cube, to be read. Not by
  * giving it the rows — a layout can only swap, and the screen used to change
  * from one to the other in a single frame. The rows stay as they are, and the

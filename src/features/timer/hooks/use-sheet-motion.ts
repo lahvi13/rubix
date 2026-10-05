@@ -44,6 +44,8 @@ export function useSheetMotion(isOpen: boolean, canAnimate: boolean): SheetMotio
   const slot = useRef<HTMLDivElement>(null);
   const running = useRef<Animation | null>(null);
   const isFirstRender = useRef(true);
+  /** The slot's height while the panel rests in it — the peek. */
+  const peekHeight = useRef<number | null>(null);
 
   /*
    * Decided while rendering, not in an effect: the render that closes the
@@ -56,6 +58,34 @@ export function useSheetMotion(isOpen: boolean, canAnimate: boolean): SheetMotio
     setWasOpen(isOpen);
     setClosing(!isOpen && canAnimate && isMotionWanted());
   }
+
+  const isSheet = isOpen || isClosing;
+
+  /*
+   * The slot is as tall as what rests in it, so lifting the panel out would
+   * leave it nothing: the clock above would drop into the room, and the slide
+   * back down would aim at a slot with no height. It keeps the peek's height
+   * for as long as the panel is away. Watched rather than measured: the timer
+   * renders every frame while it runs, and an observer reads layout only when
+   * the slot actually changes size.
+   */
+  useLayoutEffect(() => {
+    const rest = slot.current;
+    if (rest === null || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry !== undefined && rest.style.minHeight === '') {
+        peekHeight.current = entry.borderBoxSize[0]?.blockSize ?? entry.contentRect.height;
+      }
+    });
+    observer.observe(rest);
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    const rest = slot.current;
+    if (rest === null) return;
+    rest.style.minHeight = isSheet && peekHeight.current !== null ? `${peekHeight.current}px` : '';
+  }, [isSheet]);
 
   useLayoutEffect(() => {
     if (isFirstRender.current) {
@@ -99,7 +129,7 @@ export function useSheetMotion(isOpen: boolean, canAnimate: boolean): SheetMotio
     // slot, exactly where the slide left it; letting go was all there was to do.
   }, [isOpen, isClosing, canAnimate]);
 
-  return { panel, slot, isSheet: isOpen || isClosing };
+  return { panel, slot, isSheet };
 }
 
 function slide(

@@ -233,6 +233,9 @@
   --clock-size: clamp(2.6rem, 13vw, 6.5rem);
 }
 
+/* The default. 26vw is as far as it goes on a phone: running, the clock is
+   1.22 times this, and a solve over a minute at 26vw is 356px of a 376px row
+   at the largest text size — at 29vw it ran off the screen. */
 :root[data-clock-size='large'] {
-  --clock-size: clamp(4.4rem, 23vw, 11.5rem);
+  --clock-size: clamp(4.4rem, 26vw, 11.5rem);
 }
