@@ -11,6 +11,7 @@ import { HeaderSlotContext } from '../components/header-slot-context';
 import { Wordmark } from '../components/Wordmark';
 import { useCubeSkin } from '../hooks/use-cube-skin';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
+import { useBackToClose } from '../hooks/use-back-to-close';
 import { useKeyCapture } from '../hooks/use-key-capture';
 import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
@@ -43,6 +44,10 @@ export function App() {
   const skin = useCubeSkin();
 
   useKeyCapture(isMenuOpen, () => setMenuOpen(false));
+  // Back closes the menu, as it closes a sheet: open, it covers the screen, so
+  // the press means "out of this". Without it the page under the menu went
+  // back a screen and the menu stayed open over it.
+  useBackToClose(() => setMenuOpen(false), isMenuOpen);
 
   return (
     <div className="app">
