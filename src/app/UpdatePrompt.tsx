@@ -32,8 +32,8 @@ export function UpdatePrompt() {
 
   return (
     <div className="update-prompt" role="status">
-      <span>{strings.update.available}</span>
-      <button type="button" onClick={() => void updateServiceWorker(true)}>
+      <span className="update-prompt__text">{strings.update.available}</span>
+      <button type="button" className="is-primary" onClick={() => void updateServiceWorker(true)}>
         {strings.update.reload}
       </button>
       <button type="button" onClick={() => setNeedRefresh(false)}>
