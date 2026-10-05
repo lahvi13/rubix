@@ -66,7 +66,7 @@ describe('DataScreen', () => {
     const user = userEvent.setup();
 
     render(<DataScreen />);
-    await user.upload(screen.getByLabelText('Choose a file'), backup);
+    await user.upload(screen.getByLabelText('Rubix backup'), backup);
 
     const row = await screen.findByRole('row', { name: /^Solves/ });
     expect(row).toHaveTextContent('1');
@@ -86,7 +86,7 @@ describe('DataScreen', () => {
 
     render(<DataScreen />);
     await user.upload(
-      screen.getByLabelText('Choose a file'),
+      screen.getByLabelText('Rubix backup'),
       new File(['{"format":"csTimer"}'], 'other.json', { type: 'application/json' }),
     );
 
@@ -150,7 +150,7 @@ describe('DataScreen', () => {
 
     render(<DataScreen />);
     await user.upload(
-      screen.getByLabelText('Choose a file'),
+      screen.getByLabelText('Rubix backup'),
       new File([await backup.text()], 'rubix-2026-09-14.txt', { type: 'text/plain' }),
     );
 
@@ -216,7 +216,7 @@ describe('DataScreen, importing from csTimer', () => {
     });
 
     render(<DataScreen />);
-    await user.upload(screen.getByLabelText('Choose a csTimer file'), file);
+    await user.upload(screen.getByLabelText('csTimer file'), file);
 
     expect(await screen.findByText(/1 solve in 1 session/)).toBeInTheDocument();
     expect(await db.solves.count()).toBe(0);
@@ -237,7 +237,7 @@ describe('DataScreen, importing from csTimer', () => {
       new File([CSTIMER_EXPORT], 'cstimer.txt', { type: 'text/plain' });
 
     render(<DataScreen />);
-    const input = screen.getByLabelText('Choose a csTimer file');
+    const input = screen.getByLabelText('csTimer file');
 
     await user.upload(input, file());
     await user.click(await screen.findByRole('button', { name: 'Import from csTimer' }));
@@ -256,7 +256,7 @@ describe('DataScreen, importing from csTimer', () => {
 
     render(<DataScreen />);
     await user.upload(
-      screen.getByLabelText('Choose a csTimer file'),
+      screen.getByLabelText('csTimer file'),
       new File(['{"format":"rubix-export"}'], 'backup.json', { type: 'application/json' }),
     );
 
@@ -280,7 +280,7 @@ describe('DataScreen, a csTimer file that cannot be read', () => {
     );
 
     render(<DataScreen />);
-    await user.upload(screen.getByLabelText('Choose a csTimer file'), file);
+    await user.upload(screen.getByLabelText('csTimer file'), file);
 
     expect(
       await screen.findByText('That file could not be read. Pick it again.'),
@@ -300,7 +300,7 @@ describe('DataScreen, a csTimer session timed by phase', () => {
     const file = new File([CSTIMER_PHASES], 'cstimer.txt', { type: 'text/plain' });
 
     render(<DataScreen />);
-    await user.upload(screen.getByLabelText('Choose a csTimer file'), file);
+    await user.upload(screen.getByLabelText('csTimer file'), file);
 
     // Two of the five were timed in the method's four phases; the one timed
     // in five keeps its time and loses them.

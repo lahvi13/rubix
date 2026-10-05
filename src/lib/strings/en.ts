@@ -721,12 +721,12 @@ export const en = {
   data: {
     exportTitle: 'Backup',
     exportHint:
-      'Writes every session, solve, tag and setting into one file. Settings that belong to this device, like the theme and the text size, stay here.',
+      'Every session, solve, tag and setting in one file. Theme and text size stay on this device.',
     exportAction: 'Export data',
     exportFailed: 'Could not export the data',
     exportCsvAction: 'Solves as CSV',
     exportCsvHint:
-      'One row per solve — time, penalty, scramble, phases — for a spreadsheet. Nothing reads it back, so it is a copy to look at, not a backup.',
+      'CSV: one row per solve — time, penalty, scramble, phases — for a spreadsheet. The app cannot read it back; it is not a backup.',
     lastBackup: (day: string, size: string | null) =>
       `Last backup: ${day}${size === null ? '' : ` · ${size}`}.`,
     noBackup: 'No backup from this device yet.',
@@ -745,9 +745,9 @@ export const en = {
     shareFailed: 'This device would not share the file. The downloaded copy is still there.',
     exported: 'Backup saved as',
     exportedCsv: 'Solves saved as',
-    importTitle: 'Restore',
-    importHint: 'Pick an exported file. Nothing is written before you confirm the preview.',
-    chooseFile: 'Choose a file',
+    importTitle: 'Restore and import',
+    importHint: 'Choose a file. Nothing is written until you confirm the preview.',
+    chooseFile: 'Rubix backup',
     fileFrom: 'File from',
     mode: 'Import mode',
     modeMerge: 'Merge',
@@ -800,9 +800,9 @@ export const en = {
     later: 'Not now',
   },
   cstimer: {
-    title: 'From csTimer',
-    hint: 'Takes a csTimer export: the JSON from Export/Import (csTimer names it .txt) or one session exported as CSV. Every csTimer session arrives as a session of its own — nothing is mixed into the one you are timing into.',
-    chooseFile: 'Choose a csTimer file',
+    hint:
+      'From csTimer: the Export/Import file (.txt) or one session as CSV. Every session arrives as a new one.',
+    chooseFile: 'csTimer file',
     reading: 'Reading the file…',
     /** A CSV holds neither of these, so the import has to decide them. */
     csvNote: (name: string) =>

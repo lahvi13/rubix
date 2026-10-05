@@ -657,12 +657,12 @@ export const cs: Strings = {
   data: {
     exportTitle: 'Záloha',
     exportHint:
-      'Zapíše všechny session, složení, tagy a nastavení do jednoho souboru. Nastavení, která patří tomuto zařízení, jako motiv a velikost textu, zůstanou zde.',
+      'Všechny session, složení, tagy a nastavení v jednom souboru. Motiv a velikost textu zůstanou jen tady.',
     exportAction: 'Exportovat data',
     exportFailed: 'Data se nepodařilo exportovat',
     exportCsvAction: 'Složení jako CSV',
     exportCsvHint:
-      'Jeden řádek na složení — čas, penalizace, scramble, fáze — pro tabulkový editor. Zpátky soubor nic nepřečte, je to pouze kopie na prohlížení, ne záloha.',
+      'CSV: jeden řádek na složení — čas, penalizace, scramble, fáze — pro tabulkový editor. Zpátky ho aplikace nenačte, není to záloha.',
     lastBackup: (day: string, size: string | null) =>
       `Poslední záloha: ${day}${size === null ? '' : ` · ${size}`}.`,
     noBackup: 'Z tohoto zařízení zatím žádná záloha.',
@@ -681,9 +681,9 @@ export const cs: Strings = {
     shareFailed: 'Toto zařízení soubor nesdílelo. Stažená kopie zde pořád je.',
     exported: 'Záloha uložena jako',
     exportedCsv: 'Složení uložena jako',
-    importTitle: 'Obnovení',
-    importHint: 'Vyber exportovaný soubor. Než potvrdíš náhled, nic se nezapíše.',
-    chooseFile: 'Vybrat soubor',
+    importTitle: 'Obnovení a import',
+    importHint: 'Vyber soubor. Než potvrdíš náhled, nic se nezapíše.',
+    chooseFile: 'Záloha z Rubixu',
     fileFrom: 'Soubor z',
     mode: 'Režim importu',
     modeMerge: 'Sloučit',
@@ -737,9 +737,9 @@ export const cs: Strings = {
     later: 'Teď ne',
   },
   cstimer: {
-    title: 'Z csTimeru',
-    hint: 'Přijme export z csTimeru: JSON z Export/Import (csTimer ho pojmenuje .txt) nebo jednu session exportovanou jako CSV. Každá session z csTimeru dorazí jako samostatná session — do té, do které měříš, se nic nepřimíchá.',
-    chooseFile: 'Vybrat soubor z csTimeru',
+    hint:
+      'Z csTimeru: export z Export/Import (.txt) nebo jedna session jako CSV. Každá session přijde jako nová.',
+    chooseFile: 'Soubor z csTimeru',
     reading: 'Čtu soubor…',
     csvNote: (name: string) =>
       `CSV neříká ani o jaký hlavolam, ani o jakou session šlo, takže dorazí jako session 3×3 s názvem „${name}“. Jeho časy jsou přesné jen tak, jak je csTimer zobrazoval, a +2 je do nich už započítaná; přesný je JSON export.`,

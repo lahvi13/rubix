@@ -15,9 +15,13 @@ import { useDatabaseHealth } from '../../../hooks/use-database-health';
 import { now } from '../../../lib/clock';
 import { formatBytes, formatDateTime, formatDay } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import { useBackupStatus } from '../hooks/use-backup-status';
+import { useBackupStatus, type BackupStatus } from '../hooks/use-backup-status';
 import { useConfirmDelay } from '../hooks/use-confirm-delay';
-import { useCsTimerImport, type CsTimerState } from '../hooks/use-cstimer-import';
+import {
+  useCsTimerImport,
+  type CsTimerImportView,
+  type CsTimerState,
+} from '../hooks/use-cstimer-import';
 import { useDataTransfer, type TransferNotice } from '../hooks/use-data-transfer';
 
 const IMPORT_MODES: readonly ImportMode[] = ['merge', 'replace'];
@@ -43,6 +47,8 @@ export function DataScreen() {
     deleteEverything,
   } = useDataTransfer(__APP_VERSION__);
   const deleteConfirm = useConfirmDelay(DELETE_CONFIRM_SECONDS);
+  const backup = useBackupStatus();
+  const cstimer = useCsTimerImport();
 
   return (
     <main className="screen screen--scroll">
@@ -55,45 +61,53 @@ export function DataScreen() {
       <section className="data-section">
         <h2 className="data-section__title">{strings.data.exportTitle}</h2>
         <p className="data-section__hint">{strings.data.exportHint}</p>
-        <BackupStatusLines />
+        <BackupLine status={backup} />
+        {/* What the section is for, right under what there is to lose. The
+            CSV shares the row; its note under both names it, or it read as a
+            caveat about the backup as a whole. */}
         <div className="data-section__row">
           <button type="button" className="is-primary" onClick={() => void exportToFile()}>
             {strings.data.exportAction}
           </button>
-        </div>
-        {canShareBackup ? (
-          <div className="backup-share">
-            <button type="button" onClick={() => void shareBackup()}>
-              {strings.data.shareBackup}
-            </button>
-            <p className="data-section__hint data-section__hint--after">
-              {shareOutcome === 'failed' ? strings.data.shareFailed : strings.data.shareHint}
-            </p>
-          </div>
-        ) : null}
-
-        {/* Its own block, like the share above it. Sharing the row with the
-            backup button put this one's note under both, where it read as a
-            caveat about the export as a whole rather than about the CSV. */}
-        <div className="backup-csv">
           <button type="button" onClick={() => void exportSolvesToCsv()}>
             {strings.data.exportCsvAction}
           </button>
-          <p className="data-section__hint data-section__hint--after">
-            {strings.data.exportCsvHint}
-          </p>
+          {canShareBackup ? (
+            <button type="button" onClick={() => void shareBackup()}>
+              {strings.data.shareBackup}
+            </button>
+          ) : null}
         </div>
+        {canShareBackup ? (
+          <p className="data-section__hint data-section__hint--after">
+            {shareOutcome === 'failed' ? strings.data.shareFailed : strings.data.shareHint}
+          </p>
+        ) : null}
+        <p className="data-section__hint data-section__hint--after">{strings.data.exportCsvHint}</p>
+        <StorageLines status={backup} />
       </section>
 
       <section className="data-section">
         <h2 className="data-section__title">{strings.data.importTitle}</h2>
         <p className="data-section__hint">{strings.data.importHint}</p>
 
-        <FileButton
-          label={strings.data.chooseFile}
-          accept="application/json,.json,text/plain,.txt"
-          onFile={(file) => void loadFile(file)}
-        />
+        {/* Both ways in are a file to pick, so they are one row: the app's
+            own backup, and another timer's history. Each keeps its own
+            preview, below, because they read different files and say
+            different things about them. */}
+        <div className="data-section__row">
+          <FileButton
+            label={strings.data.chooseFile}
+            accept="application/json,.json,text/plain,.txt"
+            onFile={(file) => void loadFile(file)}
+          />
+          <FileButton
+            label={strings.cstimer.chooseFile}
+            accept=".txt,.json,.csv,text/plain,text/csv,application/json"
+            onFile={(file) => void cstimer.loadFile(file)}
+          />
+        </div>
+        <p className="data-section__hint data-section__hint--after">{strings.cstimer.hint}</p>
 
         {state.status === 'failed' ? (
           <p className="data-section__error">{problemMessage(state.problem)}</p>
@@ -152,10 +166,13 @@ export function DataScreen() {
             </div>
           </div>
         ) : null}
+
+        <CsTimerFlow view={cstimer} />
       </section>
 
-      <CsTimerSection />
+      <Troubleshooting />
 
+      {/* Last: the one thing on the screen with no way back. */}
       <section className="data-section data-section--danger">
         <h2 className="data-section__title">{strings.data.dangerTitle}</h2>
         <p className="data-section__hint">{strings.data.dangerHint}</p>
@@ -187,8 +204,6 @@ export function DataScreen() {
           </button>
         )}
       </section>
-
-      <Troubleshooting />
     </main>
   );
 }
@@ -197,28 +212,39 @@ export function DataScreen() {
  * How much there is to lose, said next to the button that saves it. With no
  * sync, a backup nobody remembers taking is the likeliest way to lose months.
  */
-function BackupStatusLines() {
-  const { lastExportAt, lastExportBytes, changedSince, isPersisted, keepStorage } =
-    useBackupStatus();
-  const [isRefused, setRefused] = useState(false);
+function BackupLine({ status }: { status: BackupStatus }) {
+  const { lastExportAt, lastExportBytes, changedSince } = status;
+  if (changedSince === undefined) return null;
 
   return (
-    <ul className="backup-status">
-      {changedSince === undefined ? null : (
-        <li>
-          {lastExportAt === null
-            ? `${strings.data.noBackup}${totalRecords(changedSince) > 0 ? ` ${strings.data.onlyHere(changedSince)}` : ''}`
-            : `${strings.data.lastBackup(
-                formatDay(lastExportAt, now()),
-                lastExportBytes === null ? null : formatBytes(lastExportBytes),
-              )} ${strings.data.changedSince(changedSince)}`}
-        </li>
-      )}
-      {isPersisted === undefined || isPersisted === null ? null : (
-        <li>{isPersisted ? strings.data.storageKept : strings.data.storageMayClear}</li>
-      )}
-      {isPersisted === false ? (
-        <li>
+    <p className="backup-status">
+      {lastExportAt === null
+        ? `${strings.data.noBackup}${totalRecords(changedSince) > 0 ? ` ${strings.data.onlyHere(changedSince)}` : ''}`
+        : `${strings.data.lastBackup(
+            formatDay(lastExportAt, now()),
+            lastExportBytes === null ? null : formatBytes(lastExportBytes),
+          )} ${strings.data.changedSince(changedSince)}`}
+    </p>
+  );
+}
+
+/**
+ * Whether this device is a copy worth trusting at all, after the files: the
+ * request for lasting storage is a thing done once, and above the export it
+ * stood between the reader and the button the section is for.
+ */
+function StorageLines({ status }: { status: BackupStatus }) {
+  const { isPersisted, keepStorage } = status;
+  const [isRefused, setRefused] = useState(false);
+  if (isPersisted === undefined || isPersisted === null) return null;
+
+  return (
+    <div className="backup-storage">
+      <p className="backup-status">
+        {isPersisted ? strings.data.storageKept : strings.data.storageMayClear}
+      </p>
+      {isPersisted ? null : (
+        <>
           <button
             type="button"
             onClick={() => void keepStorage().then((isGranted) => setRefused(!isGranted))}
@@ -226,9 +252,9 @@ function BackupStatusLines() {
             {strings.data.keepStorage}
           </button>
           {isRefused ? <p className="backup-status__refused">{strings.data.keepStorageRefused}</p> : null}
-        </li>
-      ) : null}
-    </ul>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -271,24 +297,16 @@ function FileButton({
 }
 
 /**
- * Bringing a history over from csTimer. Kept apart from the app's own restore:
- * it reads a foreign file, it can only ever add, and what it cannot take —
+ * Bringing a history over from csTimer: its own flow beside the app's restore.
+ * It reads a foreign file, it can only ever add, and what it cannot take —
  * a 6×6 session, a row csTimer wrote in a way this app cannot read — has to be
  * said out loud rather than silently dropped.
  */
-function CsTimerSection() {
-  const { state, outcome, loadFile, confirmImport, cancel } = useCsTimerImport();
+function CsTimerFlow({ view }: { view: CsTimerImportView }) {
+  const { state, outcome, confirmImport, cancel } = view;
 
   return (
-    <section className="data-section">
-      <h2 className="data-section__title">{strings.cstimer.title}</h2>
-      <p className="data-section__hint">{strings.cstimer.hint}</p>
-
-      <FileButton
-        label={strings.cstimer.chooseFile}
-        accept=".txt,.json,.csv,text/plain,text/csv,application/json"
-        onFile={(file) => void loadFile(file)}
-      />
+    <>
 
       {state.status === 'reading' ? (
         <p className="data-section__hint">{strings.cstimer.reading}</p>
@@ -331,7 +349,7 @@ function CsTimerSection() {
           <SkippedRows rows={outcome.skipped} />
         </>
       ) : null}
-    </section>
+    </>
   );
 }
 
