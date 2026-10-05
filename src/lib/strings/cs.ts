@@ -343,7 +343,7 @@ export const cs: Strings = {
   },
   learn: {
     intro:
-      'Sedm kroků od zamíchané kostky ke složené. Rychlejší metoda si cross nechá a zbytek spojí po dvou: z kroků 2 a 3 je F2L, ze 4 a 5 OLL, z 6 a 7 PLL. Obrázky drží kostku tak jako trenažér: cross dole, poslední vrstva nahoře.',
+      'Sedm kroků od zamíchané kostky ke složené. Obrázky drží kostku tak jako trenažér: cross dole, poslední vrstva nahoře. Rychlejší metoda později spojí kroky po dvou: z 2 a 3 je F2L, ze 4 a 5 OLL, z 6 a 7 PLL.',
     explanations: 'Vysvětlivky',
     stepsNav: 'Kroky',
     hide: 'Odebrat tohoto průvodce z menu',
@@ -355,55 +355,65 @@ export const cs: Strings = {
     crossCaption: 'Hotový cross: pod každým středem hrana, která s ním sdílí barvu.',
     showCases: 'Všechny případy',
     hideCases: 'Zpět na jeden algoritmus',
+    warning: 'Pozor:',
+    tip: 'Tip:',
     steps: {
       cross: {
         title: 'Cross',
-        text:
-          'Cross (kříž) jsou čtyři hrany spodní barvy, v našem případě bílé. Začni s bílým středem otočeným dolů (D).\n\n'
-          + 'Bílé hrany je potřeba dostat dolů tak, aby jejich druhá barva souhlasila se středem vedlejší stěny. Žádný algoritmus tu není: vytáhni bílou hranu do horní vrstvy (U), otoč vrškem tak, aby se barevně spárovala se svým středem, a dvěma otočkami boční stěny ji dostaň dolů.\n\n'
-          + 'Správně složený cross předpokládají všechny další kroky, takže ho neodbývej — dál se pusť, až ti půjde složit intuitivně.',
+        points: [
+          'Bílý střed dolů.',
+          'Vytáhni bílou hranu nahoru, otoč vrškem (U) nad střed její druhé barvy a dvěma otočkami té stěny ji pošli dolů.',
+        ],
+        warning: 'druhá barva každé bílé hrany musí sedět se středem vedle.',
+        tip: 'algoritmus tu není, zkoušej, dokud to nepůjde samo.',
       },
       corners: {
         title: 'Rohy spodní vrstvy',
-        text:
-          'Teď přijdou na řadu čtyři bílé rohy. Každý roh nese tři barvy a patří do mezery mezi ty tři středy, které mají stejné barvy jako on.\n\n'
-          + 'Najdi bílý roh v horní vrstvě a otáčej vrškem (U), dokud nestojí přímo nad svou mezerou (slotem). Pak se podívej, kam míří jeho bílá nálepka — doprava, dopředu, nebo nahoru — a použij algoritmus, který k tomu patří. Všechny tři jsou hned pod textem.\n\n'
-          + 'Roh, který už dole je, ale je otočený špatně nebo sedí ve špatném slotu, nejdříve vytáhni nahoru: stačí na něj spustit kterýkoli z těch tří algoritmů.',
+        points: [
+          'Najdi nahoře roh s bílou a otáčej vrškem (U), dokud nestojí nad svým místem — mezi středy svých barev.',
+          'Podívej se, kam míří bílá nálepka (doprava, dopředu, nebo nahoru), a použij algoritmus pro ten případ.',
+        ],
+        tip: 'roh, který je dole, ale špatně, vyhoď nahoru kterýmkoli z těchto tří algoritmů.',
       },
       middle: {
         title: 'Hrany prostřední vrstvy',
-        text:
-          'Zbývají čtyři hrany prostřední vrstvy. V horní vrstvě hledej hranu, která nemá na sobě žlutou — každá taková patří doprostřed.\n\n'
-          + 'Otoč vrškem (U) tak, aby hrana stála na pravé straně a její boční barva souhlasila s pravým středem. Pak se podívej na barvu, která u ní míří nahoru: ta rozhodne, jestli hrana patří do předního, nebo do zadního slotu. Oba algoritmy jsou pod textem.\n\n'
-          + 'Hranu, která už v prostřední vrstvě je, ale je otočená obráceně nebo sedí ve špatném slotu, nejdříve dostaň nahoru: drž kostku tak, aby byl tento slot vpravo, a spusť kterýkoli z obou algoritmů.\n\n'
-          + 'Tím jsou hotové první dvě vrstvy — kroky 2 a 3 dohromady jsou to, čemu se říká F2L. Rychlejší metoda je spojí do jednoho a v Trenažéru ji najdeš pod stejnou zkratkou.',
+        points: [
+          'Najdi nahoře hranu bez žluté.',
+          'Otoč vrškem (U), aby stála vpravo a její boční barva seděla s pravým středem.',
+          'Barva nahoře řekne, jestli jde dopředu, nebo dozadu — podle toho vyber algoritmus.',
+        ],
+        tip: 'hranu, která je uprostřed, ale špatně, vyhoď nahoru: natoč celou kostku, aby byla vpravo vpředu, a spusť algoritmus Hrana dopředu.',
       },
       edgeOrientation: {
         title: 'Cross poslední vrstvy',
-        text:
-          'Spodní dvě vrstvy jsou hotové a od teď se sahá jen na tu horní. Nejdřív přijde žlutý cross — a záleží jen na tom, kde je žlutá, ne na tom, jestli jsou díly na svých místech.\n\n'
-          + 'Podívej se na žluté nálepky nahoře a najdi mezi obrázky pod textem ten svůj: čáru (I), L, nebo samotnou tečku (Dot). Drž kostku tak, jak ukazuje obrázek, a spusť algoritmus pod ním. U tečky se spustí oba po sobě, přesně jak je to tam napsané.\n\n'
-          + 'Malé f v druhém algoritmu není překlep. Velké F otočí jen přední stěnu, malé f otočí přední stěnu i prostřední vrstvu za ní — dvě vrstvy najednou. Celou notaci najdeš pod tlačítkem Notace nahoře.',
+        points: [
+          'Teď záleží jen na žluté nahoře, ne na tom, kde díly jsou.',
+          'Najdi svůj tvar (čáru, L, nebo tečku), drž kostku jako na obrázku a spusť algoritmus pod ním.',
+          'U tečky spusť oba po sobě.',
+        ],
+        tip: 'malé f otočí přední stěnu i prostřední vrstvu za ní najednou.',
       },
       cornerOrientation: {
         title: 'Orientace poslední vrstvy',
-        text:
-          'Zbývá celá horní stěna a stačí na ni jediný algoritmus. Spusť ho, podívej se znovu a spusť ho případně zase — více než třikrát ho nepotřebuješ nikdy.\n\n'
-          + 'Jak kostku držet, poznáš podle toho, kolik rohů už ukazuje žlutou; všechny tři možnosti jsou na obrázcích pod textem. Pod tlačítkem je pak sedm případů, každý na jedno spuštění.\n\n'
-          + 'Kroky 4 a 5 dohromady jsou OLL — orientace poslední vrstvy. Dělají se na dvakrát, a tak je v Trenažéru najdeš pod 2-Look OLL.',
+        points: [
+          'Na celou žlutou stěnu stačí jeden algoritmus: opakuj ho, dokud není hotová. Víc než tři spuštění to nikdy nepotřebuje.',
+          'Před každým spuštěním natoč kostku podle obrázků — podle toho, kolik rohů už ukazuje žlutou.',
+        ],
       },
       cornerPermutation: {
         title: 'Prohození rohů',
-        text:
-          'Žlutá stěna je hotová, ale díly ještě nejsou na svých místech. Teď je tam dostaneš, nejdříve rohy.\n\n'
-          + 'Prohlédni si kostku ze všech stran a hledej headlights (světla) — dva rohy, které ukazují stejnou barvu. Natoč celou kostku tak, aby světla byla vzadu, jak ukazují obrázky pod textem. Hrany zůstanou přesně tam, kde jsou.',
+        points: [
+          'Hledej headlights („světla“): dva rohy na jedné straně se stejnou barvou.',
+          'Natoč celou kostku, aby byly vzadu, a spusť algoritmus. Hrany se nehnou.',
+        ],
       },
       edgePermutation: {
         title: 'Prohození hran',
-        text:
-          'Zbývají hrany. Otáčej vrškem (U), dokud není jedna strana celá v jedné barvě — ta je hotová. Natoč pak celou kostku tak, aby tato strana byla vzadu, a zbylé tři hrany se protočí kolem ní.\n\n'
-          + 'Žádný roh se přitom nehne. Až se protočí poslední hrana, kostka je složená.\n\n'
-          + 'Kroky 6 a 7 dohromady jsou PLL — permutace poslední vrstvy, tedy rozmístění dílů na správná místa. V Trenažéru jsou pod 2-Look PLL.',
+        points: [
+          'Otáčej vrškem (U), dokud není jedna strana celá jednobarevná.',
+          'Natoč celou kostku, aby tato strana byla vzadu, a spusť algoritmus. Rohy se nehnou.',
+          'Až sedne poslední hrana, máš složeno.',
+        ],
       },
     },
     holds: {

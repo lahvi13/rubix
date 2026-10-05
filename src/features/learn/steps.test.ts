@@ -75,7 +75,7 @@ describe('the guide', () => {
     expect(LEARN_STEPS).toHaveLength(7);
     for (const step of LEARN_STEPS) {
       expect(step.title).not.toBe('');
-      expect(step.text.length).toBeGreaterThan(80);
+      expect(step.points.length).toBeGreaterThan(0);
     }
   });
 

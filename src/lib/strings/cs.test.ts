@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { cs } from './cs';
 import { en } from './en';
 
-type Node = string | ((...args: never[]) => string) | { [key: string]: Node };
+type Node = string | ((...args: never[]) => string) | readonly Node[] | { [key: string]: Node };
 
 function leaves(node: Node, path: string[] = []): [string, Node][] {
   if (typeof node === 'string' || typeof node === 'function') return [[path.join('.'), node]];

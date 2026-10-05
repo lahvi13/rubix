@@ -188,15 +188,25 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
         </span>
         {step.title}
       </h2>
-      {/* A blank line in the copy starts a new paragraph: the Czech text runs
-          longer than the English and a step of it in one block is a wall. */}
-      {isExplained
-        ? step.text.split('\n\n').map((paragraph) => (
-            <p key={paragraph} className="learn__text">
-              {paragraph}
-            </p>
-          ))
-        : null}
+      {/* Short lines to act on, not prose: the reader has a cube in both hands
+          and looks up for the next move, not the next paragraph. */}
+      {isExplained ? (
+        <ul className="learn__points">
+          {step.points.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+          {step.warning === undefined ? null : (
+            <li className="learn__aside">
+              <strong>{strings.learn.warning}</strong> {step.warning}
+            </li>
+          )}
+          {step.tip === undefined ? null : (
+            <li className="learn__aside">
+              <strong>{strings.learn.tip}</strong> {step.tip}
+            </li>
+          )}
+        </ul>
+      ) : null}
 
       {isCross ? (
         <figure className="learn__figure">

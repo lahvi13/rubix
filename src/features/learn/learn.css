@@ -83,12 +83,34 @@
   color: var(--muted);
 }
 
-.learn__text {
+.learn__points {
+  display: grid;
+  gap: var(--space-3);
   margin: 0 0 var(--space-5);
+  padding-left: 1.1em;
   font-size: var(--text-sm);
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--text);
-  opacity: 0.86;
+}
+
+.learn__points li::marker {
+  color: var(--muted);
+}
+
+/* Warning and tip sit apart from the actions: no bullet, and quieter, so the
+   eye running down the list finds what to do first. */
+.learn__aside {
+  list-style: none;
+  margin-left: -1.1em;
+  color: var(--muted);
+}
+
+li:not(.learn__aside) + .learn__aside {
+  margin-top: var(--space-3);
+}
+
+.learn__aside strong {
+  color: var(--text);
 }
 
 .learn__figure {

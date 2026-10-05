@@ -17,7 +17,12 @@ export interface LearnHold {
 export interface LearnStep {
   id: string;
   title: string;
-  text: string;
+  /** What to do, one action to a line. */
+  points: readonly string[];
+  /** The mistake that undoes the rest of the solve, said apart from the steps. */
+  warning?: string;
+  /** What to do when the cube is not in the picture the points assume. */
+  tip?: string;
   /** Where the step's algorithms live. */
   setId: string;
   /** The group inside that set; null means the whole set. */

@@ -62,7 +62,7 @@ describe('LearnScreen', () => {
     render(<LearnScreen />);
     await settled();
 
-    const face = sectionFor('5Last layer face');
+    const face = sectionFor(`5${strings.learn.steps.cornerOrientation.title}`);
 
     expect(within(face).getAllByRole('figure')).toHaveLength(2);
     expect(within(face).getByText(strings.learn.holds.noneOriented)).toBeInTheDocument();
@@ -125,8 +125,8 @@ describe('LearnScreen', () => {
     render(<LearnScreen />);
     await settled();
 
-    // A step is written in paragraphs; the first one stands for the rest.
-    const text = LEARN_STEPS[0]?.text.split('\n\n')[0] ?? '';
+    // A step is written in points; the first one stands for the rest.
+    const text = LEARN_STEPS[0]?.points[0] ?? '';
     expect(screen.getByText(text)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: strings.learn.explanations }));
