@@ -51,9 +51,18 @@ export interface SettingValues {
    * waved away here. Another device is another Safari, with its own week.
    */
   'ui.installNudgeDismissed': boolean;
-  /** Which route through the last layer the trainer opens on. */
+  /**
+   * Which route through the last layer the trainer and the drill open OLL and
+   * PLL on: the one last chosen in either. Set in Settings once; the choice
+   * made on the screen is what the reader means, so that is what it keeps.
+   */
   'trainer.twoLookDefault': boolean;
-  /** Print the algorithm on every card, not just in the case sheet. */
+  /**
+   * Nothing reads this any more. It hid the algorithm on the trainer's cards;
+   * they always print it now, and practising without it is what the drill's
+   * Name it half is for. The key stays, because a backup written before that
+   * still carries a row for it.
+   */
   'trainer.showAlgs': boolean;
   /**
    * Nothing reads this any more. It hid one of the four kinds of extra pack

@@ -157,6 +157,10 @@
   background: var(--muted);
 }
 
+.case-card__alg {
+  display: contents;
+}
+
 .case-card__diagram {
   width: 100%;
   height: auto;

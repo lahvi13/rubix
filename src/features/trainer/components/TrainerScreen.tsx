@@ -42,10 +42,10 @@ export function TrainerScreen() {
   const [rememberedSetId, setRememberedSetId] = useSetting('trainer.setId');
   const [lastLevels, setLastLevels] = useSetting('trainer.lastLevels');
   const [, setDrillSetId] = useSetting('trainer.drillSetId');
-  const [twoLookDefault] = useSetting('trainer.twoLookDefault');
-  const [showAlgs] = useSetting('trainer.showAlgs');
-  const [chosenLook, setChosenLook] = useState<boolean | null>(null);
-  const isTwoLook = chosenLook ?? twoLookDefault;
+  // The look last chosen, here or in the drill, and the one the trainer comes
+  // back to. It was a setting once, beside a choice made on this screen that
+  // was forgotten on leaving it; remembering the choice made the setting moot.
+  const [isTwoLook, setTwoLook] = useSetting('trainer.twoLookDefault');
 
   // A remembered set that is no longer there — a pack gone from a restored
   // backup — leaves the trainer on the first one rather than on nothing. What
@@ -96,9 +96,6 @@ export function TrainerScreen() {
               // Back to the level last looked at in this set, not to its first:
               // a detour through OLL is not a decision to start F2L again.
               setRememberedSetId(entryOf(set.id, lastLevels));
-              // Back to whatever the settings say; the set button is not a
-              // vote on how to solve the last layer.
-              setChosenLook(null);
               setOpenCase(null);
             }}
           >
@@ -135,7 +132,7 @@ export function TrainerScreen() {
             type="button"
             className={isTwoLook ? 'is-active' : ''}
             onClick={() => {
-              setChosenLook(true);
+              setTwoLook(true);
               setOpenCase(null);
             }}
           >
@@ -145,7 +142,7 @@ export function TrainerScreen() {
             type="button"
             className={isTwoLook ? '' : 'is-active'}
             onClick={() => {
-              setChosenLook(false);
+              setTwoLook(false);
               setOpenCase(null);
             }}
           >
@@ -208,7 +205,7 @@ export function TrainerScreen() {
                 entry={entry}
                 diagram={diagramFor(setId ?? '', group.name)}
                 skin={skin}
-                showAlg={showAlgs}
+                showAlg
                 showMarks
                 triggers={definitions}
                 onOpen={() => setOpenCase({ id: entry.algCase.id, group: group.name })}

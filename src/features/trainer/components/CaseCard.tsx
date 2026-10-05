@@ -88,7 +88,14 @@ export function CaseCard({
         skin={skin}
         label={null}
       />
-      {parsed?.ok ? <AlgText moves={parsed.moves} groups={parsed.groups} triggers={triggers} compact /> : null}
+      {/* Seen, not read out: a card is named by its case, and a reader going
+          through fifty-seven of them would hear every algorithm spelled move
+          by move. The case sheet it opens reads the algorithm. */}
+      {parsed?.ok ? (
+        <span className="case-card__alg" aria-hidden="true">
+          <AlgText moves={parsed.moves} groups={parsed.groups} triggers={triggers} compact />
+        </span>
+      ) : null}
     </button>
   );
 }

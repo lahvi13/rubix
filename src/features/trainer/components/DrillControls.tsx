@@ -47,7 +47,7 @@ export function DrillSets({ sets, setId, onSet }: DrillSetsProps) {
           className={set.id === baseId ? 'is-active' : ''}
           onClick={() => {
             // Same rule as the trainer: choosing a set is not a vote on how to
-            // solve the last layer, so it falls back to the setting.
+            // solve the last layer, so it opens on the look last chosen.
             // A set with levels goes back to the one last looked at, in the
             // trainer or here — the same row, the same person.
             const twoLook = TWO_LOOK_SETS[set.id];
@@ -72,6 +72,9 @@ export function DrillSets({ sets, setId, onSet }: DrillSetsProps) {
  * hides that picking either is the same decision the trainer already asked.
  */
 export function DrillLooks({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
+  // Chosen here, it is the look the trainer opens on too: one person, one
+  // way through the last layer.
+  const [, setTwoLook] = useSetting('trainer.twoLookDefault');
   const baseId = FULL_SETS[setId] ?? setId;
   const twoLookId = TWO_LOOK_SETS[baseId];
   if (twoLookId === undefined) return null;
@@ -83,7 +86,10 @@ export function DrillLooks({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
         type="button"
         className={isTwoLook ? 'is-active' : ''}
         aria-pressed={isTwoLook}
-        onClick={() => onSet(twoLookId)}
+        onClick={() => {
+          setTwoLook(true);
+          onSet(twoLookId);
+        }}
       >
         {strings.trainer.twoLook}
       </button>
@@ -91,7 +97,10 @@ export function DrillLooks({ setId, onSet }: Omit<DrillSetsProps, 'sets'>) {
         type="button"
         className={isTwoLook ? '' : 'is-active'}
         aria-pressed={!isTwoLook}
-        onClick={() => onSet(baseId)}
+        onClick={() => {
+          setTwoLook(false);
+          onSet(baseId);
+        }}
       >
         {strings.trainer.fullSet}
       </button>

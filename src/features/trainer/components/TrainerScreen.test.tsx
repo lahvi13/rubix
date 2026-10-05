@@ -8,15 +8,15 @@ import { addDrillSolve } from '../../../db/repositories/drill-repository';
 import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import { TrainerScreen } from './TrainerScreen';
 
+/** A live query redrawing a whole set of cards, under a full run of the suite. */
+const SLOW_RENDER = { timeout: 5000 };
+
 describe('TrainerScreen', () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
     await seedPacks();
-    // Almost every case here is reached by the card's name, and the algorithm
-    // printed on the card is part of that name. Pinned, so changing what a
-    // fresh install shows does not silently rename all 41 of them. The look is
-    // pinned for the same reason: two-look PLL has its own case ids.
-    await setSetting('trainer.showAlgs', false);
+    // The look is pinned: two-look PLL has its own case ids, and almost every
+    // case here is reached by the card's name.
     await setSetting('trainer.twoLookDefault', false);
   });
 
@@ -38,9 +38,11 @@ describe('TrainerScreen', () => {
 
     render(<TrainerScreen />);
 
-    // Drilling the case put it in hand by itself.
+    // Drilling the case put it in hand by itself. A set of 41 cards, each with
+    // its algorithm, is slow enough to draw under fake-indexeddb and a full
+    // run of the suite that the default second is not always enough.
     expect(
-      await screen.findByText('Known 0 of 41 · learning 1 · 3 attempts'),
+      await screen.findByText('Known 0 of 41 · learning 1 · 3 attempts', undefined, SLOW_RENDER),
     ).toBeInTheDocument();
     // The suggestion is a way into the case, not just a label: its ao5 is the
     // 9.50 in the middle of those three attempts.
@@ -53,7 +55,7 @@ describe('TrainerScreen', () => {
     render(<TrainerScreen />);
 
     // A set nobody has touched says so and nothing more.
-    expect(await screen.findByText('Nothing drilled here yet.')).toBeInTheDocument();
+    expect(await screen.findByText('Nothing drilled here yet.', undefined, SLOW_RENDER)).toBeInTheDocument();
 
     await user.click(await screen.findByRole('button', { name: 'F2L 1' }));
     const detail = await screen.findByRole('dialog', { name: 'F2L 1' });
@@ -65,7 +67,7 @@ describe('TrainerScreen', () => {
     await waitFor(async () => expect((await db.algCases.get('f2l-1'))?.progress).toBe('known'));
     // The sheet hears of it a live query later.
     await waitFor(() => expect(known).toHaveAttribute('aria-pressed', 'true'));
-    expect(await screen.findByText('Known 1 of 41')).toBeInTheDocument();
+    expect(await screen.findByText('Known 1 of 41', undefined, SLOW_RENDER)).toBeInTheDocument();
     // The card says it too — to the eye as its edge, and in its name.
     expect(screen.getByRole('button', { name: 'F2L 1, Known' })).toHaveClass('is-known');
   });
@@ -168,7 +170,7 @@ describe('TrainerScreen', () => {
     expect(screen.getByRole('heading', { name: '1 / Edges' })).toBeInTheDocument();
   });
 
-  it('opens on the look the settings ask for', async () => {
+  it('opens on the look last chosen', async () => {
     const user = userEvent.setup();
     await setSetting('trainer.twoLookDefault', true);
     render(<TrainerScreen />);
@@ -178,6 +180,19 @@ describe('TrainerScreen', () => {
     // Six cases under two-look PLL, twenty-one under the full set.
     expect(await screen.findByRole('button', { name: 'Y' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ja' })).not.toBeInTheDocument();
+  });
+
+  it('remembers the look chosen on the screen, for the next visit', async () => {
+    const user = userEvent.setup();
+    render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'PLL' }));
+    await user.click(await screen.findByRole('button', { name: /2-Look/ }));
+
+    // The setting, not the screen: what has to survive is the leaving.
+    await waitFor(async () => {
+      expect(await getSetting('trainer.twoLookDefault')).toBe(true);
+    });
   });
 
   it('comes back to the set that was last looked at', async () => {
