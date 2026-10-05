@@ -175,8 +175,8 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
   const group = (isAdvanced ? step.advanced?.group : step.group) ?? '';
   const diagram = diagramFor(setId, group);
 
-  // The cross has no case to look at and no algorithm to read; what it needs
-  // is a picture of the thing being made.
+  // The cross has no case of its own in any set; what it needs is a picture
+  // of the thing being made, and of where its pieces start.
   const isCross = step.setId === CROSS_SET_ID;
   const isLoading = groups === undefined || (step.advanced !== null && advancedGroups === undefined);
 
@@ -208,6 +208,30 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
         </ul>
       ) : null}
 
+      {/* Not cases to open: two turns or four need no player, and a first
+          cube is better off watching its own pieces move. */}
+      {step.situations.length === 0 ? null : (
+        <div className="learn__situations">
+          {step.situations.map((situation) => (
+            <figure key={situation.alg} className="learn__situation">
+              <figcaption className="learn__caption learn__caption--left">{situation.text}</figcaption>
+              <div className="learn__case-row">
+                <CubeDiagram
+                  className="learn__case-diagram"
+                  state={holdState(situation)}
+                  view="isometric"
+                  stickering="cross"
+                  skin={skin}
+                  label={null}
+                />
+                <AlgText moves={movesOf(situation.alg)} triggers={triggers} />
+              </div>
+            </figure>
+          ))}
+        </div>
+      )}
+
+      {/* The goal last: what the moves above add up to. */}
       {isCross ? (
         <figure className="learn__figure">
           <CubeDiagram
@@ -222,7 +246,9 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
             <figcaption className="learn__caption">{strings.learn.crossCaption}</figcaption>
           ) : null}
         </figure>
-      ) : isLoading ? (
+      ) : null}
+
+      {isCross ? null : isLoading ? (
         <p className="learn__caption">{strings.learn.loading}</p>
       ) : (
         <>
@@ -288,6 +314,11 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
       )}
     </section>
   );
+}
+
+function movesOf(alg: string) {
+  const parsed = parseAlg(alg);
+  return parsed.ok ? parsed.moves : [];
 }
 
 /** The cases of one group, in the order the step asks for them. */

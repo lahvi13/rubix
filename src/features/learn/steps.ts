@@ -14,6 +14,16 @@ export interface LearnHold {
   text: string;
 }
 
+/**
+ * A place a piece can be found in, drawn, with the moves that take it home.
+ * For a step with no case of its own to show: the moves are short enough to
+ * read off the picture, not an algorithm to learn.
+ */
+export interface LearnSituation {
+  alg: string;
+  text: string;
+}
+
 export interface LearnStep {
   id: string;
   title: string;
@@ -33,6 +43,8 @@ export interface LearnStep {
   keyText: string | null;
   /** The other situations that same algorithm has to be run from. */
   holds: readonly LearnHold[];
+  /** Where the piece can be, for a step taught by pictures instead of cases. */
+  situations: readonly LearnSituation[];
   /**
    * The same step for somebody who wants it fast: every case with an algorithm
    * of its own, usually out of a different set. Null where the step is already
@@ -62,6 +74,10 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: null,
     holds: [],
+    situations: [
+      { alg: 'F2', text: strings.learn.crossCases.whiteUp },
+      { alg: "U' R' F R", text: strings.learn.crossCases.whiteFront },
+    ],
     advanced: null,
     ...strings.learn.steps.cross,
   },
@@ -72,6 +88,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: null,
     holds: [],
+    situations: [],
     advanced: null,
     ...strings.learn.steps.corners,
   },
@@ -82,6 +99,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: null,
     holds: [],
+    situations: [],
     advanced: null,
     ...strings.learn.steps.middle,
   },
@@ -92,6 +110,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: null,
     holds: [],
+    situations: [],
     advanced: null,
     ...strings.learn.steps.edgeOrientation,
   },
@@ -105,6 +124,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
       { alg: `${SUNE} ${SUNE} U2 ${SUNE}`, text: strings.learn.holds.twoOriented },
       { alg: `${SUNE} ${SUNE}`, text: strings.learn.holds.noneOriented },
     ],
+    situations: [],
     advanced: { setId: '2look-oll', group: '2 / Corners' },
     ...strings.learn.steps.cornerOrientation,
   },
@@ -115,6 +135,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: strings.learn.holds.headlights,
     holds: [{ alg: `${A_PERM} U ${A_PERM} U'`, text: strings.learn.holds.noHeadlights }],
+    situations: [],
     advanced: { setId: '2look-pll', group: '1 / Corners' },
     ...strings.learn.steps.cornerPermutation,
   },
@@ -125,6 +146,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: strings.learn.holds.oneSide,
     holds: [{ alg: `${U_PERM} U ${U_PERM} U'`, text: strings.learn.holds.noSide }],
+    situations: [],
     advanced: { setId: '2look-pll', group: '2 / Edges' },
     ...strings.learn.steps.edgePermutation,
   },

@@ -88,8 +88,15 @@ describe('LearnScreen', () => {
   it('shows the cross rather than describing it', async () => {
     render(<LearnScreen />);
 
-    const figure = within(sectionFor('1Cross')).getByRole('figure');
-    expect(figure.querySelector('img')?.getAttribute('src')).toContain('data:image/svg+xml,');
+    // The two ways an edge goes down, then the finished cross — pictures,
+    // not cases to open.
+    const cross = sectionFor('1Cross');
+    const figures = within(cross).getAllByRole('figure');
+    expect(figures).toHaveLength(3);
+    for (const figure of figures) {
+      expect(figure.querySelector('img')?.getAttribute('src')).toContain('data:image/svg+xml,');
+    }
+    expect(within(cross).queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('opens the case sheet on a case, the same one the trainer opens', async () => {

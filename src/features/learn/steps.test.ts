@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { PACKS } from '../../db/seed/packs';
 import { formatAlg, parseAlg } from '../../domain/cube/notation';
 import { FACELETS, isSolved, applyAlg, type CubeState } from '../../domain/cube/state';
+import { isSolvedAsShown } from '../../domain/cube/views';
 import { LEARN_STEPS, holdState, type LearnStep } from './steps';
 
 function movesOf(text: string) {
@@ -145,5 +146,29 @@ describe('the guide', () => {
 
     expect(homeOnTop(state, 2)).toBe(0);
     expect(homeOnTop(state, 3)).toBe(4);
+  });
+
+  /**
+   * The cross is taught by pictures, so the pictures carry the claim: the
+   * white edge is up in the top layer, white where the caption says, and the
+   * moves under it are what finishes the cross.
+   */
+  it.each([
+    [0, 'U'],
+    [1, 'F'],
+  ])('draws cross situation %i with the white sticker on %s', (index, face) => {
+    const step = LEARN_STEPS.find((candidate) => candidate.id === 'cross');
+    const situation = step?.situations[index];
+    if (!situation) throw new Error('the cross lost a picture');
+    const state = holdState(situation);
+
+    const white = FACELETS.flatMap((sticker, at) =>
+      state[at] === 'D' && sticker.face === face && sticker.row === (face === 'U' ? 2 : 0) && sticker.column === 1
+        ? [at]
+        : [],
+    );
+    expect(white).toHaveLength(1);
+    expect(isSolvedAsShown(state, 'cross')).toBe(false);
+    expect(isSolvedAsShown(applyAlg(state, movesOf(situation.alg)), 'cross')).toBe(true);
   });
 });

@@ -384,6 +384,10 @@ export const en = {
     sourceLink: 'badmephisto.com',
     loading: 'Loading the cases…',
     crossCaption: 'A finished cross: an edge under every centre whose colour it shares.',
+    crossCases: {
+      whiteUp: 'White on top: turn the front face twice.',
+      whiteFront: 'White facing you: the edge goes down the long way, round the right face.',
+    },
     showCases: 'All cases',
     hideCases: 'Back to the one algorithm',
     warning: 'Watch out:',
@@ -392,11 +396,12 @@ export const en = {
       cross: {
         title: 'Cross',
         points: [
-          'White centre facing down.',
-          'Bring a white edge up, turn the top (U) until it is over the centre of its other colour, and take it down with two turns of that side.',
+          'White centre facing down. Around it go the four edges with a white sticker, in a cross.',
+          'Find a white edge in the top layer and turn the top (U) until its other colour is at the centre of the same colour.',
+          'Turn the whole cube so the edge is at the front, and take it down by where the white points — both ways are in the pictures.',
         ],
         warning: 'the other colour of every white edge has to match the centre beside it.',
-        tip: 'there is no algorithm here — keep at it until it comes without thinking.',
+        tip: 'a white edge in the middle, or at the bottom in the wrong place, comes up first: turn its side, turn the top out of the way and turn the side back.',
       },
       corners: {
         title: 'Bottom layer corners',

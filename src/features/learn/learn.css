@@ -208,6 +208,34 @@ li:not(.learn__aside) + .learn__aside {
   margin-top: var(--space-4);
 }
 
+/* Where a cross edge can be: drawn like a case card, but nothing to tap, so
+   a plain panel rather than the button outline. */
+.learn__situations {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: var(--space-4);
+  margin: 0 0 var(--space-5);
+}
+
+.learn__situation {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+}
+
+.learn__situation .learn__caption {
+  margin: 0;
+}
+
+.learn__situation .alg {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-3xl);
+}
+
 /* The situations the same algorithm has to be run from again. */
 .learn__holds {
   display: grid;

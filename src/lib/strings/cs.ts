@@ -353,6 +353,10 @@ export const cs: Strings = {
     sourceLink: 'badmephisto.com',
     loading: 'Načítám případy…',
     crossCaption: 'Hotový cross: pod každým středem hrana, která s ním sdílí barvu.',
+    crossCases: {
+      whiteUp: 'Bílá nahoře: otoč přední stěnou dvakrát.',
+      whiteFront: 'Bílá míří na tebe: hrana jde dolů oklikou přes pravou stěnu.',
+    },
     showCases: 'Všechny případy',
     hideCases: 'Zpět na jeden algoritmus',
     warning: 'Pozor:',
@@ -361,11 +365,12 @@ export const cs: Strings = {
       cross: {
         title: 'Cross',
         points: [
-          'Bílý střed dolů.',
-          'Vytáhni bílou hranu nahoru, otoč vrškem (U) nad střed její druhé barvy a dvěma otočkami té stěny ji pošli dolů.',
+          'Bílý střed dolů. Kolem něj postavíš kříž ze čtyř hran, které mají bílou nálepku.',
+          'Najdi bílou hranu v horní vrstvě a otáčej vrškem (U), dokud její druhá barva nestojí u středu stejné barvy.',
+          'Natoč celou kostku, ať je hrana vpředu, a pošli ji dolů podle toho, kam míří bílá — obě možnosti jsou na obrázcích.',
         ],
         warning: 'druhá barva každé bílé hrany musí sedět se středem vedle.',
-        tip: 'algoritmus tu není, zkoušej, dokud to nepůjde samo.',
+        tip: 'bílou hranu uprostřed, nebo dole na špatném místě, nejdřív vytáhni nahoru: otoč její stěnou, vrškem stranou a stěnu vrať.',
       },
       corners: {
         title: 'Rohy spodní vrstvy',
