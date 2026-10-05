@@ -21,6 +21,10 @@
   background: var(--surface-raised);
   box-shadow: 0 0.5rem 1.5rem var(--scrim);
   font-size: var(--text-lg);
+  /* A phone's width and no wider, centred: across a desktop window the
+     message sat at one end and its buttons at the other. */
+  max-width: 28rem;
+  margin-inline: auto;
 }
 
 /* A line of its own, over the buttons: beside them on a phone at the large
