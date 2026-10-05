@@ -9,9 +9,12 @@ import { getSetting, setSetting } from '../../../db/repositories/settings-reposi
 import { TrainerScreen } from './TrainerScreen';
 
 /** A live query redrawing a whole set of cards, under a full run of the suite. */
-const SLOW_RENDER = { timeout: 5000 };
+const SLOW_RENDER = { timeout: 15_000 };
 
-describe('TrainerScreen', () => {
+// Every test here draws a set of 41 or 57 cards, each with its algorithm, and
+// under jsdom in a full run of the suite one that also opens a sheet and waits
+// on two live queries ran past the default five seconds.
+describe('TrainerScreen', { timeout: 20_000 }, () => {
   beforeEach(async () => {
     await Promise.all(db.tables.map((table) => table.clear()));
     await seedPacks();
@@ -57,16 +60,16 @@ describe('TrainerScreen', () => {
     // A set nobody has touched says so and nothing more.
     expect(await screen.findByText('Nothing drilled here yet.', undefined, SLOW_RENDER)).toBeInTheDocument();
 
-    await user.click(await screen.findByRole('button', { name: 'F2L 1' }));
-    const detail = await screen.findByRole('dialog', { name: 'F2L 1' });
+    await user.click(await screen.findByRole('button', { name: 'F2L 1' }, SLOW_RENDER));
+    const detail = await screen.findByRole('dialog', { name: 'F2L 1' }, SLOW_RENDER);
     const known = within(detail).getByRole('button', { name: 'Known' });
     expect(within(detail).getByRole('button', { name: 'New' })).toHaveAttribute('aria-pressed', 'true');
 
     await user.click(known);
 
-    await waitFor(async () => expect((await db.algCases.get('f2l-1'))?.progress).toBe('known'));
+    await waitFor(async () => expect((await db.algCases.get('f2l-1'))?.progress).toBe('known'), SLOW_RENDER);
     // The sheet hears of it a live query later.
-    await waitFor(() => expect(known).toHaveAttribute('aria-pressed', 'true'));
+    await waitFor(() => expect(known).toHaveAttribute('aria-pressed', 'true'), SLOW_RENDER);
     expect(await screen.findByText('Known 1 of 41', undefined, SLOW_RENDER)).toBeInTheDocument();
     // The card says it too — to the eye as its edge, and in its name.
     expect(screen.getByRole('button', { name: 'F2L 1, Known' })).toHaveClass('is-known');
