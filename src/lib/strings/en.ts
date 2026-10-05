@@ -617,8 +617,7 @@ export const en = {
     fontSans: 'Sans',
     fontMono: 'Mono',
     fontSystem: 'System',
-    fontHint:
-      'Inter and JetBrains Mono ship with the app, so they look the same on every device. System uses the one the device came with. Scrambles and algorithms stay monospaced either way.',
+    fontHint: "System uses the device's own font. Scrambles and algorithms are always monospaced.",
     textSize: 'Text size',
     clockSize: 'Clock size',
     clockSizeHint: 'The running time on the timer and the drill, which is read from further away.',
@@ -643,8 +642,7 @@ export const en = {
     twistyMode: 'Cube preview',
     previewFlat: 'Flat',
     preview3d: '3D',
-    twistyModeHint:
-      'Both are drawn here in your colours: flat as an unfolded net, 3D as a cube seen from a corner. Watching the scramble hands over to an animated cube, in the same colours.',
+    twistyModeHint: 'Flat as an unfolded net, 3D as a cube seen from a corner.',
     timer: 'Timer',
     holdThreshold: 'Hold to start',
     holdOff: 'Off',
@@ -655,22 +653,19 @@ export const en = {
     runningSeconds: '0',
     runningHidden: 'Hidden',
     runningDisplayHint:
-      'Only what the clock shows while it runs. Every solve is still timed to the hundredth and shown in full when it stops.',
+      'Only what the clock shows while it runs. Every solve is timed to the millisecond and shown to the hundredth when it stops.',
     splitMode: 'Time solves by phase (4 phases)',
     splitModeHint:
-      'A tap ends the phase in progress and starts the next one; the last phase stops the clock. Hold a tap to finish a solve early when a phase was skipped.',
-    trainer: 'Trainer',
-    twoLookDefault: 'Open OLL and PLL on',
-    showAlgs: 'Show algorithms on the case list',
+      'A tap ends a phase; the last one stops the clock. Hold to finish early if you skip a phase.',
     showLearn: "Show the beginner's guide",
-    showLearnHint:
-      'A walk through one whole solve, in the menu as Learn. Hiding it changes nothing else — the sets it points at stay where they are.',
+    showLearnHint: 'In the menu as Learn. Hiding it changes nothing else.',
   },
   /* The voice trial: the microphone listens alongside the phase taps. */
   voice: {
     title: 'Phases by voice (trial)',
     toggle: 'Listen alongside the taps',
-    hint: 'While you time by phase, the microphone listens too. Say a short word — “hop” — each time you tap the end of a phase. The taps still decide the times; after every solve you see what your voice would have measured. The sound is only measured, on this device: nothing is recorded or sent.',
+    hint:
+      'When you time by phase, say a short word like “hop” as each phase ends. Taps still set the times; after the solve you see what the voice would have timed. Sound is only measured, on this device: nothing is recorded or sent.',
     needsPhases: 'It listens only while solves are timed by phase — switch that on above.',
     test: 'Test the microphone',
     stopTest: 'Stop',

@@ -58,6 +58,27 @@
   gap: var(--space-2);
 }
 
+/*
+ * On a phone the label stands over its choices, and the choices share the
+ * width. Beside them the row was squeezed: "Running time" broke over three
+ * lines and "300 ms" over two, at the large text size.
+ */
+@media (max-width: 34rem) {
+  .settings-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  /* Grown from their words, not split evenly: "Match the app" beside "Mono"
+     broke onto two lines in an even third of the row. */
+  .settings-row__choices > button {
+    flex: 1 1 auto;
+    padding-inline: var(--space-3);
+  }
+}
+
 /* A setting whose choices are too big to sit on the label's line — the skins.
    The label still has to read like the ones that do fit. */
 .settings-label {

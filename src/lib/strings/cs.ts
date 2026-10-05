@@ -555,8 +555,7 @@ export const cs: Strings = {
     fontSans: 'Sans',
     fontMono: 'Mono',
     fontSystem: 'Systémové',
-    fontHint:
-      'Písma Inter a JetBrains Mono jsou součástí aplikace, takže vypadají na každém zařízení stejně. Systémové použije to, se kterým přišlo zařízení. Scramble a algoritmy zůstanou neproporcionální tak jako tak.',
+    fontHint: 'Systémové použije písmo zařízení. Scramble a algoritmy jsou vždy neproporcionální.',
     textSize: 'Velikost textu',
     clockSize: 'Velikost hodin',
     clockSizeHint: 'Běžící čas na timeru a v drilu, který se čte z větší dálky.',
@@ -579,8 +578,7 @@ export const cs: Strings = {
     twistyMode: 'Náhled kostky',
     previewFlat: 'Plochý',
     preview3d: '3D',
-    twistyModeHint:
-      'Oba náhledy se kreslí ve tvých zvolených barvách: plochý jako rozložená síť, 3D jako kostka viděná od rohu. Přehrání scramblu předá řízení animované kostce ve stejných barvách.',
+    twistyModeHint: 'Plochý jako rozložená síť, 3D jako kostka viděná od rohu.',
     timer: 'Timer',
     holdThreshold: 'Podržení pro start',
     holdOff: 'Vypnuto',
@@ -591,21 +589,18 @@ export const cs: Strings = {
     runningSeconds: '0',
     runningHidden: 'Skrytý',
     runningDisplayHint:
-      'Týká se jen toho, co hodiny ukazují, když běží. Každé složení se pořád měří na setiny a po zastavení se zobrazí celé.',
+      'Jen to, co hodiny ukazují, když běží. Složení se vždy měří na tisíciny a po zastavení se zobrazí na setiny.',
     splitMode: 'Měřit složení po fázích (4 fáze)',
     splitModeHint:
-      'Ťuknutí ukončí rozběhnutou fázi a spustí další; poslední fáze zastaví hodiny. Podržením ťuknutí ukončíš složení dříve, když se nějaká fáze přeskočila.',
-    trainer: 'Trenažér',
-    twoLookDefault: 'Otevírat OLL a PLL na',
-    showAlgs: 'Zobrazit algoritmy v seznamu případů',
+      'Ťuknutí ukončí fázi, poslední fáze zastaví hodiny. Podržením složení ukončíš dřív, když fázi přeskočíš.',
     showLearn: 'Zobrazit průvodce pro začátečníky',
-    showLearnHint:
-      'Průchod jedním celým složením, v menu jako Pro začátečníky. Skrytí nic jiného nezmění — sady, na které odkazuje, zůstanou tam, kde jsou.',
+    showLearnHint: 'V menu jako Pro začátečníky. Skrytí nic jiného nezmění.',
   },
   voice: {
     title: 'Fáze hlasem (zkouška)',
     toggle: 'Poslouchat vedle ťukání',
-    hint: 'Když měříš po fázích, poslouchá zároveň mikrofon. Pokaždé, když ťukneš na konec fáze, řekni krátké slovo — třeba „hop“. Časy dál určuje ťukání; po každém složení uvidíš, co by naměřil hlas. Zvuk se jen měří, a to v tomhle zařízení: nic se nenahrává ani neposílá.',
+    hint:
+      'Když měříš po fázích, řekni na konci každé fáze krátké slovo, třeba „hop“. Časy dál určuje ťukání, po složení uvidíš, co by naměřil hlas. Zvuk se jen měří, a to v tomhle zařízení: nic se nenahrává ani neposílá.',
     needsPhases: 'Poslouchá jen tehdy, když měříš po fázích — to zapneš výš.',
     test: 'Vyzkoušet mikrofon',
     stopTest: 'Zastavit',
