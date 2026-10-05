@@ -126,6 +126,8 @@ export const en = {
     title: 'Phases',
     phaseAverages: 'Phase averages',
     phaseTrend: 'Phase trend',
+    /** Counted among phase-timed solves only, so not the solve number elsewhere. */
+    phaseTrendSolve: (index: number) => `Phase-timed solve ${index}`,
     best: 'Best',
     total: 'Total',
     all: 'All',

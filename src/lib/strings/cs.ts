@@ -106,6 +106,7 @@ export const cs: Strings = {
     title: 'Fáze',
     phaseAverages: 'Průměry fází',
     phaseTrend: 'Vývoj fází',
+    phaseTrendSolve: (index: number) => `${index}. složení s fázemi`,
     best: 'Nejlepší',
     total: 'Celkem',
     all: 'Vše',

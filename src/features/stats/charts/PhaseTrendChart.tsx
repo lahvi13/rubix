@@ -125,7 +125,7 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
                 if (point === undefined || rows.length === 0) return null;
                 return (
                   <ChartTooltip
-                    title={`${strings.stats.solveIndex} ${point.index} · ${formatShortDate(point.at, now())}`}
+                    title={`${strings.splits.phaseTrendSolve(point.index)} · ${formatShortDate(point.at, now())}`}
                     rows={rows}
                     isKeyed
                     note={isSmoothed ? strings.splits.smoothingTooltip : undefined}
