@@ -214,7 +214,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
         <div className="learn__situations">
           {step.situations.map((situation) => (
             <figure key={situation.alg} className="learn__situation">
-              <figcaption className="learn__caption learn__caption--left">{situation.text}</figcaption>
+              <figcaption className="case-card__name">{situation.text}</figcaption>
               <div className="learn__case-row">
                 <CubeDiagram
                   className="learn__case-diagram"

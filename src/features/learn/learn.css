@@ -226,10 +226,6 @@ li:not(.learn__aside) + .learn__aside {
   background: var(--surface-raised);
 }
 
-.learn__situation .learn__caption {
-  margin: 0;
-}
-
 .learn__situation .alg {
   flex: 1;
   min-width: 0;
