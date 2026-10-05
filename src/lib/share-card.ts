@@ -51,6 +51,8 @@ interface Palette {
   muted: string;
   accent: string;
   warn: string;
+  /** --sticker-ink: the letters of the name, on its coloured stickers. */
+  stickerInk: string;
   sans: string;
   mono: string;
   clock: string;
@@ -75,6 +77,7 @@ function readPalette(): Palette {
     muted: read('color', '--muted'),
     accent: read('color', '--accent'),
     warn: read('color', '--warn'),
+    stickerInk: read('color', '--sticker-ink'),
     sans: read('fontFamily', '--font-sans'),
     mono: read('fontFamily', '--font-mono'),
     clock: read('fontFamily', '--font-clock'),
@@ -152,9 +155,9 @@ function drawLogo(context: CanvasRenderingContext2D, palette: Palette, look: Car
     context.beginPath();
     context.roundRect(x, top, TILE, TILE, 10);
     context.fill();
-    // Dark on every sticker, in either theme: a letter in the theme's own
-    // text colour was lost on yellow in the light one.
-    context.fillStyle = '#15181f';
+    // The page's sticker ink, as the menu's stickers wear it (see
+    // --sticker-ink in tokens.css for why it is dark in either theme).
+    context.fillStyle = palette.stickerInk;
     const ink = context.measureText(letter);
     context.fillText(letter, x + TILE / 2, middle + (ink.actualBoundingBoxAscent - ink.actualBoundingBoxDescent) / 2);
   });
