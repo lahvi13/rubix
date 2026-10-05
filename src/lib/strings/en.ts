@@ -905,7 +905,6 @@ export const en = {
     title: 'Rubix',
     what: 'A timer and trainer for the 3×3 cube. It walks you through a first solve step by step, drills the F2L, OLL and PLL cases, and times solves phase by phase to show where the seconds go.',
     who: 'For anybody between their first solved cube and a fast average. No account, no ads, and once opened it works with no connection.',
-    scope: 'Only the 3×3 for now — no other puzzles.',
     share: 'Share the app',
     shared: 'Shared.',
     copied: 'Link copied.',

@@ -1,5 +1,13 @@
 /* About */
 
+/* The card's way to pass the app on, and the name it is signed with. */
+.about__sign {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
 .about__version {
   margin: 0 0 var(--space-5);
   font-family: var(--font-mono);

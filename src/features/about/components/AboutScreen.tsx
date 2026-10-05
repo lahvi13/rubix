@@ -1,4 +1,6 @@
 import { navigate } from '../../../app/router';
+import { Wordmark } from '../../../components/Wordmark';
+import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import type { UpdateCheck } from '../../../lib/app-update';
 import type { LinkShareOutcome } from '../../../lib/share';
 import { strings } from '../../../lib/strings';
@@ -35,6 +37,7 @@ const CREDITS = [
  * needs — the rest of the app explains itself where it is used.
  */
 export function AboutScreen() {
+  const skin = useCubeSkin();
   const { update, checkUpdates, shareOutcome, share } = useAboutActions();
   const shareMessage = shareOutcome === null ? null : SHARE_MESSAGE[shareOutcome];
   // The version rides along in the subject, so a report says which build it
@@ -46,13 +49,18 @@ export function AboutScreen() {
   return (
     <main className="screen screen--scroll">
       <section className="data-section">
-        <h2 className="data-section__title">{strings.about.title}</h2>
+        {/* The header above already says Rubix; a heading saying it again,
+            over a card signed with the name, was the third time. Kept for a
+            screen reader, which reads the page by its headings. */}
+        <h2 className="visually-hidden">{strings.about.title}</h2>
         <p className="data-section__hint">{strings.about.what}</p>
         <p className="data-section__hint">{strings.about.who}</p>
-        <p className="data-section__hint">{strings.about.scope}</p>
-        <button type="button" onClick={share}>
-          {strings.about.share}
-        </button>
+        <div className="about__sign">
+          <button type="button" onClick={share}>
+            {strings.about.share}
+          </button>
+          <Wordmark faces={skin.faces} />
+        </div>
         {shareMessage === null ? null : (
           <p className="data-section__hint data-section__hint--after" role="status">
             {shareMessage}

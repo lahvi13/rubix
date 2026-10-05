@@ -27,7 +27,7 @@ export default defineConfig({
   // Shown in the header so anyone can tell at a glance which build they run —
   // service worker updates are otherwise invisible.
   define: {
-    __APP_VERSION__: JSON.stringify(`${version}·${commit}`),
+    __APP_VERSION__: JSON.stringify(`${version} · ${commit}`),
   },
   plugins: [
     react(),

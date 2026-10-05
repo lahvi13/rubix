@@ -840,7 +840,6 @@ export const cs: Strings = {
     title: 'Rubix',
     what: 'Timer a trenažér na kostku 3×3, zaměřený na metodu CFOP. Provede tě krok za krokem prvním složením, nabídne dril případů F2L, OLL a PLL a měří složení po fázích, aby bylo vidět, kde je potřeba zrychlit.',
     who: 'Je pro každého, kdo je někde mezi první složenou kostkou a rychlým průměrem. Žádný účet, žádné reklamy, a jakmile ji jednou otevřeš, funguje i bez připojení.',
-    scope: 'Zatím jen 3×3 — žádné jiné hlavolamy.',
     share: 'Sdílet aplikaci',
     shared: 'Sdíleno.',
     copied: 'Odkaz zkopírován.',
