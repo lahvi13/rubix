@@ -21,6 +21,9 @@ Nová UI věta se **vždycky** píše do obou souborů. Pravidla:
   vyjmenované v `strings/pack-names.ts` a test nad sadami hlídá, že žádný název
   nezůstal nerozhodnutý
 - datum a čas se řídí jazykem aplikace, region si bere z prohlížeče (`lib/format.ts`)
+- `en.ts` je `as const`, takže **pole jsou tuple**: překlad musí mít stejný počet
+  položek (body kroku v průvodci). Test v `cs.test.ts` porovnává i **pořadí**
+  klíčů — nový klíč patří na stejné místo v obou souborech
 
 ## Stack — nerozporovat
 

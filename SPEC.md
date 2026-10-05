@@ -478,7 +478,9 @@ od kostky.
   Okno je **5**, ne 12 jako u trendu ao — fázově měřených solvů je míň než obyčejných,
   takže vyhrává nejmenší standardní okno. Do grafu jdou **jen solvy, kde je známá
   délka každé fáze**: graf, jehož díly nedávají dohromady solve, je horší než
-  kratší graf
+  kratší graf. Body se proto číslují **mezi fázově měřenými solvy**, ne pořadím
+  v session, a tooltip to říká („116. složení s fázemi“) — vedle trendu ao,
+  kde týž solve nese číslo 320, by holé „Složení 116“ četlo jako chyba
 - zdroj každého splitu je uložen (`mic` / `smartcube` / `manual`) — ruční je zatím
   jediný, který se zapisuje
 
@@ -635,7 +637,9 @@ prefixu (`333*`, `222*`, `444*`, `555*`, `pyr*`, `skb*`, `sq1/sqr*`, `clk*`,
   solvů takhle o fáze přijde, říká náhled** — tichý úbytek by vypadal jako chyba
 - **nikdy se nemíchá do stávající session.** Každá csTimer session je nová
   session pod svým jménem a **žádná se nestane aktivní** (import nesmí odsunout
-  session, do které člověk zrovna měří)
+  session, do které člověk zrovna měří). Hned po importu ale timer i historie
+  ukazují starou, často prázdnou session, takže výsledek nabídne u každé
+  importované 3×3 session tlačítko **„Přepnout na …“** — přepne se až na ťuknutí
 - **opakovaný import nic nepřidá.** Duplicita = stejný `startedAt` a stejný
   `rawMs`; klíč se staví i ze souboru samotného, takže dvakrát zapsaný solve
   přijde jednou. Session, ze které by nezbylo nic nového, se **vůbec nezaloží**
@@ -667,8 +671,16 @@ stěna, rohy na místo, hrany na místo.
   `beginner` nenabízí ani v seznamu sad na drillu — je to cesta jedním složením,
   ne sada k procvičování
 - **nahoře je notace** (rozbalovací, tentýž `NotationReference` jako v trenažéru)
-  a **vypínač stránky**: kdo už kostku složí, tady řekne, že to má z menu zmizet.
-  Vrátit jde v nastavení, což je u vypínače napsané
+  a úvod na ni odkazuje — tahy jsou hned v kroku 1. **Vypínač stránky je až na
+  konci**: kdo už kostku složí, tam řekne, že to má z menu zmizet; vrátit jde
+  v nastavení, což je u vypínače napsané. Vedle něj stojí i to, kam dál
+  (kroky 2+3 = F2L, 4+5 = OLL, 6+7 = PLL) — to patří člověku, který už skládá,
+  ne tomu, kdo kostku drží poprvé
+- **text kroku jsou krátké body, ne odstavce**: čtenář má kostku v obou rukou a
+  hledá další pohyb, ne další odstavec. Pod body zvlášť a ztlumeně **Pozor**
+  (chyba, která rozbije zbytek složení) a **Tip** (co dělat, když kostka
+  nevypadá jako na obrázku). Vysvětlivky jdou vypnout a stránka pak zůstane
+  jako tahák — body zmizí, obrázky a popisky u nich zůstanou
 - **stránka uvádí zdroj**, ze kterého metoda i pořadí kroků vycházejí
   (badmephisto.com) — odkaz, na který se klikne, ne požadavek, který by appka
   sama poslala
@@ -692,9 +704,15 @@ stěna, rohy na místo, hrany na místo.
   `U`), že obrázek nesahá pod poslední vrstvu a že sedí pravidlo, které je u něj
   napsané — u dvou žlutých rohů kouká žlutá nálepka předního levého rohu dopředu,
   u žádného doleva
-- **krok 1 nemá případ**, protože kříž se neskládá z algoritmů. Místo něj je
-  obrázek hotového kříže (`stickering: 'cross'`: kříž a všechny středy barevně,
-  zbytek šedě — bez středů není proti čemu shodu barev číst)
+- **krok 1 nemá případ ze sady**, protože kříž se neskládá z algoritmů. Místo
+  toho ukáže **dvě situace**, do kterých hranu dovede společné pravidlo
+  (natoč vrškem hranu ke středu její druhé barvy, celou kostkou ji dej dopředu):
+  bílá nahoře → `F2`, bílá míří na čtenáře → `U' R' F R`. Jsou to obrázky
+  s tahy, ne karty k otevření — dva až čtyři tahy přehrávač nepotřebují a sada
+  `beginner` kvůli nim neroste. Test je spouští: bílá nálepka leží tam, kde
+  říká popisek, a tahy kříž opravdu dokončí. **Hotový kříž je až pod nimi,
+  jako cíl** (`stickering: 'cross'`: kříž a všechny středy barevně, zbytek
+  šedě — bez středů není proti čemu shodu barev číst)
 - **každý krok se kreslí z místa, kde se odehrává**: rohy spodní vrstvy přes
   `stickering: 'bottomLayer'` (spodní vrstva a ten jeden roh, kdekoli je;
   prostřední vrstva ještě není a její hrana plovoucí nahoře jen mate), hrany
