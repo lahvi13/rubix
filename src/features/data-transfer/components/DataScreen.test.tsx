@@ -231,6 +231,30 @@ describe('DataScreen, importing from csTimer', () => {
     expect(screen.getByText(/Imported 1 solve from csTimer./)).toBeInTheDocument();
   });
 
+  it('names the puzzle, and switches to the imported session only when asked', async () => {
+    const user = userEvent.setup();
+    const current = await createSession('Evening', '333', 'freestyle');
+    render(<DataScreen />);
+    await user.upload(
+      screen.getByLabelText('csTimer file'),
+      new File([CSTIMER_EXPORT], 'cstimer.txt', { type: 'text/plain' }),
+    );
+
+    expect(await screen.findByRole('cell', { name: '3×3' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Import from csTimer' }));
+
+    const switchButton = await screen.findByRole('button', { name: 'Switch to “1”' });
+    // Imported, and still timing into the session that was active before.
+    expect((await db.sessions.get(current.id))?.isActive).toBe(1);
+
+    await user.click(switchButton);
+
+    expect(await screen.findByText('The timer, history and stats now show “1”.')).toBeInTheDocument();
+    const imported = (await db.sessions.toArray()).find((session) => session.name === '1');
+    expect(imported?.isActive).toBe(1);
+    expect((await db.sessions.get(current.id))?.isActive).toBe(0);
+  });
+
   it('says a second import of the same file has nothing to add', async () => {
     const user = userEvent.setup();
     const file = () =>

@@ -846,6 +846,20 @@ export const en = {
       `Imported ${count} ${count === 1 ? 'solve' : 'solves'} from csTimer.`,
     whereToFind:
       'Imported sessions are behind the session name at the top of the timer, the history and the stats — pick one there to see its solves.',
+    /** The puzzle a csTimer session was timed on, by its WCA name. */
+    puzzles: {
+      '333': '3×3',
+      '222': '2×2',
+      '444': '4×4',
+      '555': '5×5',
+      pyram: 'Pyraminx',
+      skewb: 'Skewb',
+      sq1: 'Square-1',
+      clock: 'Clock',
+      minx: 'Megaminx',
+    },
+    switchTo: (name: string) => `Switch to “${name}”`,
+    switchedTo: (name: string) => `The timer, history and stats now show “${name}”.`,
     skippedTitle: 'Rows that were skipped',
     reasons: {
       malformed: 'not a solve csTimer would write',

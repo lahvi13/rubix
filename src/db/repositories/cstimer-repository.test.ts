@@ -30,7 +30,7 @@ async function importFile(text: string): Promise<number> {
   const parsed = parseCsTimerJson(text);
   if (!parsed.ok) throw new Error(`unreadable file: ${parsed.problem}`);
   const plan = planCsTimerImport(parsed.file, await readSolveKeys(), PHASES.length);
-  return applyCsTimerPlan(plan, PHASES);
+  return (await applyCsTimerPlan(plan, PHASES)).written;
 }
 
 describe('csTimer import', () => {
@@ -66,6 +66,17 @@ describe('csTimer import', () => {
     const imported = (await db.sessions.toArray()).find((session) => session.name === '1');
     expect(imported?.isActive).toBe(0);
     expect((await db.sessions.get(active.id))?.isActive).toBe(1);
+  });
+
+  it('says which sessions it made, so switching to one can be offered', async () => {
+    const parsed = parseCsTimerJson(exportFile({ session1: [record([0, 12_340], 1_788_509_385)] }));
+    if (!parsed.ok) throw new Error('unreadable');
+    const plan = planCsTimerImport(parsed.file, await readSolveKeys(), PHASES.length);
+
+    const { sessions } = await applyCsTimerPlan(plan, PHASES);
+
+    const stored = await db.sessions.toArray();
+    expect(sessions).toEqual(stored.map(({ id, name, puzzle }) => ({ id, name, puzzle })));
   });
 
   it('stores the solve as csTimer had it, at the time it happened', async () => {
@@ -157,7 +168,7 @@ describe('csTimer import', () => {
     const parsed = parseCsTimerJson(exportFile({ session1: solves }));
     if (!parsed.ok) throw new Error('unreadable');
     const plan = planCsTimerImport(parsed.file, await readSolveKeys(), PHASES.length);
-    const written = await applyCsTimerPlan(plan, PHASES, (p) => progress.push(p.written));
+    const { written } = await applyCsTimerPlan(plan, PHASES, (p) => progress.push(p.written));
 
     expect(written).toBe(600);
     expect(await db.solves.count()).toBe(600);
@@ -194,7 +205,7 @@ describe('csTimer import, the same session exported both ways', () => {
     const parsed = parseCsTimerCsv(text, 'Evening', '333');
     if (!parsed.ok) throw new Error(`unreadable file: ${parsed.problem}`);
     const plan = planCsTimerImport(parsed.file, await readSolveKeys(), PHASES.length);
-    return applyCsTimerPlan(plan, PHASES);
+    return (await applyCsTimerPlan(plan, PHASES)).written;
   }
 
   it('imports a session from the JSON and then finds the CSV has nothing to add', async () => {

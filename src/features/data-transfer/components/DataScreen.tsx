@@ -303,7 +303,7 @@ function FileButton({
  * said out loud rather than silently dropped.
  */
 function CsTimerFlow({ view }: { view: CsTimerImportView }) {
-  const { state, outcome, confirmImport, cancel } = view;
+  const { state, outcome, confirmImport, switchTo, cancel } = view;
 
   return (
     <>
@@ -346,6 +346,24 @@ function CsTimerFlow({ view }: { view: CsTimerImportView }) {
             {strings.cstimer.imported(outcome.imported)}{' '}
             {outcome.imported > 0 ? strings.cstimer.whereToFind : ''}
           </p>
+          {/* The new sessions are not the active one, so the timer and the
+              history still show the old: an empty one, right after somebody
+              brought a whole history over. One tap fixes that. */}
+          {outcome.sessions.length === 0 ? null : outcome.switchedTo === null ? (
+            <div className="data-section__row">
+              {outcome.sessions.map((session) => (
+                <button key={session.id} type="button" onClick={() => void switchTo(session.id)}>
+                  {strings.cstimer.switchTo(session.name)}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="data-section__hint">
+              {strings.cstimer.switchedTo(
+                outcome.sessions.find((session) => session.id === outcome.switchedTo)?.name ?? '',
+              )}
+            </p>
+          )}
           <SkippedRows rows={outcome.skipped} />
         </>
       ) : null}
@@ -389,7 +407,7 @@ function CsTimerPreview({ state }: { state: Extract<CsTimerState, { status: 'pre
             {plan.sessions.map((session) => (
               <tr key={`${session.name}-${session.puzzle}`}>
                 <th scope="row">{session.name}</th>
-                <td>{session.puzzle}</td>
+                <td>{strings.cstimer.puzzles[session.puzzle]}</td>
                 <td>{session.solves.length}</td>
               </tr>
             ))}

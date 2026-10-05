@@ -44,6 +44,12 @@ export interface ImportProgress {
   total: number;
 }
 
+/** What an import wrote: the count, and the sessions it made to hold them. */
+export interface CsTimerImported {
+  written: number;
+  sessions: Pick<Session, 'id' | 'name' | 'puzzle'>[];
+}
+
 /**
  * Writes the plan. Sessions first, then their solves in batches, so a phone
  * importing thousands of rows keeps painting — a single transaction over all
@@ -54,9 +60,10 @@ export async function applyCsTimerPlan(
   plan: CsTimerPlan,
   phaseKeys: readonly string[],
   onProgress?: (progress: ImportProgress) => void,
-): Promise<number> {
+): Promise<CsTimerImported> {
   const total = plan.newSolves;
   let written = 0;
+  const sessions: CsTimerImported['sessions'] = [];
   onProgress?.({ written, total });
 
   for (const planned of plan.sessions) {
@@ -64,6 +71,7 @@ export async function applyCsTimerPlan(
 
     const session = buildSession(planned);
     await db.sessions.add(session);
+    sessions.push({ id: session.id, name: session.name, puzzle: session.puzzle });
 
     for (let start = 0; start < planned.solves.length; start += BATCH_SIZE) {
       const batch = planned.solves
@@ -75,7 +83,7 @@ export async function applyCsTimerPlan(
     }
   }
 
-  return written;
+  return { written, sessions };
 }
 
 function buildSession(planned: PlannedSession): Session {

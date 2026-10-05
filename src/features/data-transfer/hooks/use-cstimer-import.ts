@@ -2,10 +2,11 @@ import { useState } from 'react';
 import {
   applyCsTimerPlan,
   readSolveKeys,
+  type CsTimerImported,
   type ImportProgress,
 } from '../../../db/repositories/cstimer-repository';
 import { getMethodPhases } from '../../../db/repositories/method-repository';
-import { DEFAULT_METHOD_ID } from '../../../db/repositories/session-repository';
+import { DEFAULT_METHOD_ID, activateSession } from '../../../db/repositories/session-repository';
 import {
   parseCsTimerCsv,
   parseCsTimerJson,
@@ -42,6 +43,14 @@ export type CsTimerState =
 export interface CsTimerOutcome {
   imported: number;
   skipped: SkippedRow[];
+  /**
+   * The imported sessions the timer can be switched to. Only 3×3: the timer
+   * times nothing else, and an import never switches by itself — somebody
+   * part-way through a session must not find their next solve elsewhere.
+   */
+  sessions: CsTimerImported['sessions'];
+  /** The one switched to from here, once it has been. */
+  switchedTo: string | null;
 }
 
 export interface CsTimerImportView {
@@ -49,6 +58,7 @@ export interface CsTimerImportView {
   outcome: CsTimerOutcome | null;
   loadFile: (file: File) => Promise<void>;
   confirmImport: () => Promise<void>;
+  switchTo: (sessionId: string) => Promise<void>;
   cancel: () => void;
 }
 
@@ -110,10 +120,24 @@ export function useCsTimerImport(): CsTimerImportView {
         (progress) => setState({ status: 'importing', progress }),
       );
       setState({ status: 'idle' });
-      setOutcome({ imported, skipped: plan.skipped });
+      setOutcome({
+        imported: imported.written,
+        skipped: plan.skipped,
+        sessions: imported.sessions.filter((session) => session.puzzle === '333'),
+        switchedTo: null,
+      });
     } catch (cause) {
       reportError(strings.cstimer.failed, cause);
       setState({ status: 'idle' });
+    }
+  };
+
+  const switchTo = async (sessionId: string): Promise<void> => {
+    try {
+      await activateSession(sessionId);
+      setOutcome((current) => (current === null ? null : { ...current, switchedTo: sessionId }));
+    } catch (cause) {
+      reportError(strings.cstimer.failed, cause);
     }
   };
 
@@ -122,6 +146,7 @@ export function useCsTimerImport(): CsTimerImportView {
     outcome,
     loadFile,
     confirmImport,
+    switchTo,
     cancel: () => setState({ status: 'idle' }),
   };
 }
