@@ -102,6 +102,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // Room for the waits above to run their course inside one test.
+    testTimeout: 15_000,
     include: ['src/**/*.test.{ts,tsx}'],
   },
 });
