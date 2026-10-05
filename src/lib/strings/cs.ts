@@ -343,12 +343,12 @@ export const cs: Strings = {
   },
   learn: {
     intro:
-      'Sedm kroků od zamíchané kostky ke složené. Obrázky drží kostku tak jako trenažér: cross dole, poslední vrstva nahoře. Rychlejší metoda později spojí kroky po dvou: z 2 a 3 je F2L, ze 4 a 5 OLL, z 6 a 7 PLL.',
+      "Sedm kroků od zamíchané kostky ke složené. Na obrázcích je bílá dole a žlutá nahoře. Co znamenají písmena jako R nebo U', ukáže tlačítko Notace.",
     explanations: 'Vysvětlivky',
     stepsNav: 'Kroky',
     hide: 'Odebrat tohoto průvodce z menu',
     hideHint:
-      'Až budeš kostku skládat bez čtení, vyhoď průvodce z menu. V nastavení to můžeš vrátit zpět.',
+      'Až budeš skládat bez čtení, můžeš zrychlit: rychlejší metoda spojí kroky po dvou — z 2 a 3 je F2L, ze 4 a 5 OLL, z 6 a 7 PLL — a všechny najdeš v Trenažéru. Průvodce pak vyhoď z menu; v nastavení ho vrátíš zpět.',
     source: 'Metoda i pořadí kroků vychází z průvodce pro začátečníky na',
     sourceLink: 'badmephisto.com',
     loading: 'Načítám případy…',
@@ -423,17 +423,17 @@ export const cs: Strings = {
     },
     holds: {
       oneOriented:
-        'Jeden roh už ukazuje žlutou: dej ho dopředu doleva. Tímto případem algoritmus sám končí.',
+        'Jeden roh ukazuje žlutou nahoru: dej ho dopředu doleva.',
       twoOriented:
-        'Dva rohy už ukazují žlutou: otoč vrškem tak, aby žlutá nálepka předního levého rohu mířila na tebe.',
+        'Dva rohy ukazují žlutou nahoru: otoč vrškem, ať žlutá na rohu vpředu vlevo míří na tebe.',
       noneOriented:
-        'Žlutou zatím neukazuje žádný roh: otoč vrškem tak, aby žlutá nálepka předního levého rohu mířila doleva.',
+        'Žádný roh neukazuje žlutou nahoru: otoč vrškem, ať žlutá na rohu vpředu vlevo míří doleva.',
       headlights: 'Headlights vzadu: zbylé tři rohy se protočí na svá místa.',
       noHeadlights:
-        'Žádné headlights na žádné straně: spusť algoritmus z libovolného úhlu a nějaké se objeví.',
+        'Žádné headlights: spusť algoritmus odkudkoli a objeví se.',
       oneSide: 'Hotová strana vzadu: zbylé tři hrany se protočí.',
       noSide:
-        'Žádná strana není jednobarevná: spusť algoritmus z libovolného úhlu a jedna se objeví.',
+        'Žádná strana není hotová: spusť algoritmus odkudkoli a jedna bude.',
     },
   },
   trainer: {

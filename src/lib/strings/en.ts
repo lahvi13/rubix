@@ -375,11 +375,12 @@ export const en = {
   },
   learn: {
     intro:
-      'Seven steps from a scrambled cube to a solved one. The pictures hold the cube the way the trainer does: the cross on the bottom, the last layer on top. A faster method later joins the steps in pairs: 2 and 3 become F2L, 4 and 5 OLL, 6 and 7 PLL.',
+      "Seven steps from a scrambled cube to a solved one. The pictures have white on the bottom and yellow on top. The Notation button explains letters like R or U'.",
     explanations: 'Explanations',
     stepsNav: 'Steps',
     hide: 'Hide this guide from the menu',
-    hideHint: 'Once you can solve a cube without reading, take this out of the menu. Settings puts it back.',
+    hideHint:
+      'Once you can solve without reading, you can get faster: a quicker method joins the steps in pairs — 2 and 3 become F2L, 4 and 5 OLL, 6 and 7 PLL — all of them in the trainer. Then take this guide out of the menu; Settings puts it back.',
     source: 'The method and the order of its steps follow the beginner guide at',
     sourceLink: 'badmephisto.com',
     loading: 'Loading the cases…',
@@ -454,16 +455,16 @@ export const en = {
     },
     holds: {
       oneOriented:
-        'One corner already showing the top colour: put it at the front left. This is the case the algorithm ends on its own.',
+        'One corner shows yellow on top: put it at the front left.',
       twoOriented:
-        'Two already showing: turn the top until the top-colour sticker of the front-left corner faces you.',
+        'Two show yellow on top: turn the top until the yellow on the front-left corner faces you.',
       noneOriented:
-        'None showing yet: turn the top until the top-colour sticker of the front-left corner faces left.',
+        'None shows yellow on top: turn the top until the yellow on the front-left corner faces left.',
       headlights: 'Headlights at the back: the other three corners go round into place.',
       noHeadlights:
-        'No headlights on any side: run it once from any angle and you will have some.',
+        'No headlights anywhere: run it from any side and some appear.',
       oneSide: 'The finished side at the back: the other three edges go round.',
-      noSide: 'No side a solid colour: run it once from any angle and one will be.',
+      noSide: 'No side finished: run it from any side and one will be.',
     },
   },
   trainer: {

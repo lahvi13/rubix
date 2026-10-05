@@ -62,9 +62,9 @@ const CS: Record<string, string> = {
   'Other easy cases': 'Další snadné případy',
 
   // Cases of the beginner set, which are named for what they do.
-  'Cross colour front': 'Barva crossu dopředu',
-  'Cross colour right': 'Barva crossu doprava',
-  'Cross colour up': 'Barva crossu nahoru',
+  'Cross colour front': 'Bílá dopředu',
+  'Cross colour right': 'Bílá doprava',
+  'Cross colour up': 'Bílá nahoru',
   'Edge to the front': 'Hrana dopředu',
   'Edge to the back': 'Hrana dozadu',
   'One side done': 'Jedna strana hotová',
