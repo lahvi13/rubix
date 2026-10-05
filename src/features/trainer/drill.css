@@ -560,9 +560,12 @@
   gap: var(--space-3);
 }
 
+/* Centred, not on a baseline: in a chip as tall as a button the baseline put
+   both words at its top edge. The name and the time are one size, so their
+   baselines still meet. */
 .set-summary__chip {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-3);
   background: var(--surface-raised);
   color: var(--text);
