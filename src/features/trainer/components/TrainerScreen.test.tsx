@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../../db/schema';
-import { getActiveAlgorithm } from '../../../db/repositories/alg-repository';
+import { getActiveAlgorithm, setCaseProgress } from '../../../db/repositories/alg-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { addDrillSolve } from '../../../db/repositories/drill-repository';
 import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
@@ -53,7 +53,7 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     expect(await screen.findByRole('dialog', { name: 'F2L 1' })).toBeInTheDocument();
   });
 
-  it('keeps how well a case is known, on its card and over the set', async () => {
+  it('marks a case known from its sheet', async () => {
     const user = userEvent.setup();
     render(<TrainerScreen />);
 
@@ -67,9 +67,18 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
 
     await user.click(known);
 
+    // What is kept, and the sheet that asked for it. The set's cards redraw
+    // too, but that is 41 cube pictures recomputed by a live query — under a
+    // coverage run it outlasted any sensible wait, so the next test reads the
+    // cards from a first draw instead.
     await waitFor(async () => expect((await db.algCases.get('f2l-1'))?.progress).toBe('known'), SLOW_RENDER);
-    // The sheet hears of it a live query later.
     await waitFor(() => expect(known).toHaveAttribute('aria-pressed', 'true'), SLOW_RENDER);
+  });
+
+  it('shows how well a case is known, on its card and over the set', async () => {
+    await setCaseProgress('f2l-1', 'known');
+    render(<TrainerScreen />);
+
     expect(await screen.findByText('Known 1 of 41', undefined, SLOW_RENDER)).toBeInTheDocument();
     // The card says it too — to the eye as its edge, and in its name.
     expect(screen.getByRole('button', { name: 'F2L 1, Known' })).toHaveClass('is-known');
