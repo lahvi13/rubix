@@ -6,6 +6,13 @@ It runs in the browser and installs as an app on a phone or a computer:
 
 Free, no account, no ads. Once opened, it works without a connection. English and Czech.
 
+<p align="center">
+  <img src="docs/screenshots/timer.webp" width="200" alt="The timer: a scramble, its 3D preview and the clock">
+  <img src="docs/screenshots/learn.webp" width="200" alt="The beginner's guide, step 1: the cross">
+  <img src="docs/screenshots/trainer.webp" width="200" alt="The F2L trainer: every case with its algorithm">
+  <img src="docs/screenshots/stats.webp" width="200" alt="Statistics: phase averages and the phase trend">
+</p>
+
 ## What it does
 
 ### Timer
