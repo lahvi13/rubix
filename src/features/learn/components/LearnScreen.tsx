@@ -348,46 +348,45 @@ function Situation({ situation, skin, triggers }: SituationProps) {
       label={null}
     />
   );
-  const alg = (
-    <AlgText
-      moves={moves}
-      triggers={triggers}
-      onPlay={restart}
-      playLabel={strings.trainer.play}
-      playingMove={isPlaying ? playingMove : null}
-    />
-  );
+  // Closed, it is a card like every case on the page: the whole of it is the
+  // way in, and no button of its own makes the page longer.
+  if (!isOpen) {
+    return (
+      <button type="button" className="case-card learn__case" title={strings.trainer.play} onClick={toggle}>
+        <span className="case-card__name">{situation.text}</span>
+        <span className="learn__case-row">
+          {picture('learn__case-diagram')}
+          <AlgText moves={moves} triggers={triggers} />
+        </span>
+      </button>
+    );
+  }
 
   return (
-    <figure className={isOpen ? 'learn__situation is-open' : 'learn__situation'}>
+    <figure className="learn__situation">
       <figcaption className="case-card__name">{situation.text}</figcaption>
-      {isOpen ? (
-        <>
-          <div className="learn__stage" {...tap}>
-            {isPlaying ? (
-              <CasePlayer
-                setupAlg={formatAlg(invertAlg(moves))}
-                alg={formatAlg(moves)}
-                stickering="cross"
-                request={playback.request}
-                onMove={setPlayingMove}
-                onStopped={playback.stopped}
-                placeholder={picture('learn__stage-diagram')}
-              />
-            ) : (
-              picture('learn__stage-diagram')
-            )}
-          </div>
-          {alg}
-        </>
-      ) : (
-        <div className="learn__case-row">
-          <div className="learn__thumb" {...tap}>
-            {picture('learn__case-diagram')}
-          </div>
-          {alg}
-        </div>
-      )}
+      <div className="learn__stage" {...tap}>
+        {isPlaying ? (
+          <CasePlayer
+            setupAlg={formatAlg(invertAlg(moves))}
+            alg={formatAlg(moves)}
+            stickering="cross"
+            request={playback.request}
+            onMove={setPlayingMove}
+            onStopped={playback.stopped}
+            placeholder={picture('learn__stage-diagram')}
+          />
+        ) : (
+          picture('learn__stage-diagram')
+        )}
+      </div>
+      <AlgText
+        moves={moves}
+        triggers={triggers}
+        onPlay={restart}
+        playLabel={strings.trainer.play}
+        playingMove={isPlaying ? playingMove : null}
+      />
       <PlaybackButtons
         status={playback.status}
         onToggle={toggle}

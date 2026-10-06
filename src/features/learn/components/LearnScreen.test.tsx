@@ -52,10 +52,10 @@ describe('LearnScreen', () => {
     render(<LearnScreen />);
     await settled();
 
-    // The first two layers have no shortcut — every algorithm there has to be
-    // learned — and the three steps that can be got through by repeating one
-    // algorithm show exactly that one.
-    expect(sections().map((section) => caseButtons(section).length)).toEqual([0, 3, 2, 3, 1, 1, 1]);
+    // The cross shows its two situations; the first two layers have no
+    // shortcut — every algorithm there has to be learned — and the three steps
+    // that can be got through by repeating one algorithm show exactly that one.
+    expect(sections().map((section) => caseButtons(section).length)).toEqual([2, 3, 2, 3, 1, 1, 1]);
   });
 
   it('shows how to hold the cube for the repeats, without an algorithm each', async () => {
@@ -82,33 +82,33 @@ describe('LearnScreen', () => {
       await user.click(button);
     }
 
-    expect(sections().map((section) => caseButtons(section).length)).toEqual([0, 3, 2, 3, 7, 2, 4]);
+    expect(sections().map((section) => caseButtons(section).length)).toEqual([2, 3, 2, 3, 7, 2, 4]);
   });
 
   it('shows the cross rather than describing it', async () => {
     render(<LearnScreen />);
 
-    // The two ways an edge goes down, then the finished cross — pictures,
-    // not cases to open.
+    // The two ways an edge goes down, as cards, then the finished cross.
     const cross = sectionFor('1Cross');
-    const figures = within(cross).getAllByRole('figure');
-    expect(figures).toHaveLength(3);
-    for (const figure of figures) {
-      expect(figure.querySelector('img')?.getAttribute('src')).toContain('data:image/svg+xml,');
+    const pictures = [...caseButtons(cross), ...within(cross).getAllByRole('figure')];
+    expect(pictures).toHaveLength(3);
+    for (const picture of pictures) {
+      expect(picture.querySelector('img')?.getAttribute('src')).toContain('data:image/svg+xml,');
     }
-    expect(caseButtons(cross)).toHaveLength(0);
   });
 
   it('plays a cross situation where it is, without a case sheet', async () => {
     const user = userEvent.setup();
     render(<LearnScreen />);
 
-    const situation = within(sectionFor('1Cross')).getAllByRole('figure')[0];
-    if (!situation) throw new Error('the cross lost its situations');
-    await user.click(within(situation).getByRole('button', { name: strings.playback.play }));
+    const cross = sectionFor('1Cross');
+    await user.click(within(cross).getByRole('button', { name: /^White on top/ }));
 
-    // The card opens to the player's size and stays open once played.
-    expect(situation).toHaveClass('is-open');
+    // The card opens round a cube with its own controls, and no sheet opens.
+    const opened = within(cross).getAllByRole('figure')[0];
+    if (!opened) throw new Error('the situation did not open');
+    expect(opened).toHaveTextContent(strings.learn.crossCases.whiteUp);
+    expect(within(opened).getByRole('button', { name: strings.playback.pause })).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 

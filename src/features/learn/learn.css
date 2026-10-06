@@ -208,8 +208,9 @@ li:not(.learn__aside) + .learn__aside {
   margin-top: var(--space-4);
 }
 
-/* Where a cross edge can be: drawn like a case card, but nothing to tap, so
-   a plain panel rather than the button outline. */
+/* A cross situation once it has been played: the card opened up round the
+   moving cube, a panel rather than a button since the cube is the way to
+   play it now. Closed, it is a case card like the rest of the page. */
 .learn__situations {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
@@ -227,14 +228,8 @@ li:not(.learn__aside) + .learn__aside {
 }
 
 .learn__situation .alg {
-  flex: 1;
-  min-width: 0;
+  justify-self: center;
   font-size: var(--text-3xl);
-}
-
-.learn__thumb {
-  flex: none;
-  cursor: pointer;
 }
 
 /* Opened, the card is the case sheet's stage: the same box, the same player
@@ -263,10 +258,6 @@ li:not(.learn__aside) + .learn__aside {
   height: 12rem;
 }
 
-.learn__situation.is-open .alg {
-  flex: none;
-  justify-self: center;
-}
 
 /* The situations the same algorithm has to be run from again. */
 .learn__holds {
