@@ -15,6 +15,7 @@ export const DrillScreen = lazy(() =>
  */
 export { CaseCard } from './components/CaseCard';
 export { CaseDetail } from './components/CaseDetail';
+export { CasePlayer } from './components/CasePlayer';
 export { AlgText } from './components/AlgText';
 export { NotationReference } from './components/NotationReference';
 export { diagramFor, type Diagram } from './case-view';

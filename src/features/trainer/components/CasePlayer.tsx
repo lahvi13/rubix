@@ -18,13 +18,14 @@ import {
  * What the moving cube shows: everything; only the two layers a case is built
  * in, with the last layer greyed out the way the still picture greys it; only
  * the last layer's yellow, the way an OLL picture reads; or, for the beginner's
- * steps, just the pieces the step is about — the bottom layer being built, or
- * the last layer's corners without its edges.
+ * steps, just the pieces the step is about — the cross, the bottom layer
+ * being built, or the last layer's corners without its edges.
  */
 export type PlayerStickering =
   | 'full'
   | 'firstTwoLayers'
   | 'orientation'
+  | 'cross'
   | 'bottomLayer'
   | 'lastLayerCorners';
 
@@ -142,6 +143,8 @@ function maskFor(stickering: PlayerStickering): Promise<StickeringMask | null> {
       return maskHidingLayer('D');
     case 'orientation':
       return maskOrientingLayer('D');
+    case 'cross':
+      return maskKeepingLayer('U', 'EDGES');
     case 'bottomLayer':
       return maskKeepingLayer('U');
     case 'lastLayerCorners':

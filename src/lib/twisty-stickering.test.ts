@@ -58,6 +58,15 @@ describe('player masks', () => {
     });
   });
 
+  // The cross: the four edges of that layer and the centres they are matched against.
+  it('keeps only the edges of a layer when asked', async () => {
+    expect(census(await maskKeepingLayer('U', 'EDGES'))).toEqual({
+      EDGES: { colour: 4, grey: 8, partly: 0 },
+      CORNERS: { colour: 0, grey: 8, partly: 0 },
+      CENTERS: { colour: 6, grey: 0, partly: 0 },
+    });
+  });
+
   it.each([
     ['EDGES', { EDGES: { colour: 8, grey: 4, partly: 0 }, CORNERS: { colour: 8, grey: 0, partly: 0 } }],
     ['CORNERS', { EDGES: { colour: 12, grey: 0, partly: 0 }, CORNERS: { colour: 4, grey: 4, partly: 0 } }],

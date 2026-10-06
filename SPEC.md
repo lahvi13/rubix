@@ -707,8 +707,10 @@ stěna, rohy na místo, hrany na místo.
 - **krok 1 nemá případ ze sady**, protože kříž se neskládá z algoritmů. Místo
   toho ukáže **dvě situace**, do kterých hranu dovede společné pravidlo
   (natoč vrškem hranu ke středu její druhé barvy, celou kostkou ji dej dopředu):
-  bílá nahoře → `F2`, bílá míří na čtenáře → `U' R' F R`. Jsou to obrázky
-  s tahy, ne karty k otevření — dva až čtyři tahy přehrávač nepotřebují a sada
+  bílá nahoře → `F2`, bílá míří na čtenáře → `U' R' F R`. **Přehrávají se
+  přímo v kartě**, ne v listu případu: ťuknutí kartu otevře na velikost kostky
+  z listu (jen bílé hrany a středy barevně) a otevřená zůstane, ať stránka
+  neposkočí. List by k `F2` přinesl i stav učení, varianty a drill, a sada
   `beginner` kvůli nim neroste. Test je spouští: bílá nálepka leží tam, kde
   říká popisek, a tahy kříž opravdu dokončí. **Hotový kříž je až pod nimi,
   jako cíl** (`stickering: 'cross'`: kříž a všechny středy barevně, zbytek

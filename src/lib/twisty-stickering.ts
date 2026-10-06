@@ -53,10 +53,13 @@ export function maskOrientingLayer(layer: Layer): Promise<StickeringMask> {
  * built and the one piece going into it, wherever that piece has got to —
  * the mask follows a piece, not a place. Nothing above the layer is built yet,
  * and a middle-layer edge drawn in colour asks to be looked at for no reason.
+ * Given a kind, only that kind of the layer's pieces: the cross is its edges.
  */
-export function maskKeepingLayer(layer: Layer): Promise<StickeringMask> {
+export function maskKeepingLayer(layer: Layer, only?: 'EDGES'): Promise<StickeringMask> {
   return maskByLayer(layer, ({ orbit, isInLayer }) =>
-    isInLayer || orbit === 'CENTERS' ? 'regular' : 'ignored',
+    (isInLayer && (only === undefined || orbit === only)) || orbit === 'CENTERS'
+      ? 'regular'
+      : 'ignored',
   );
 }
 

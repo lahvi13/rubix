@@ -232,6 +232,42 @@ li:not(.learn__aside) + .learn__aside {
   font-size: var(--text-3xl);
 }
 
+.learn__thumb {
+  flex: none;
+  cursor: pointer;
+}
+
+/* Opened, the card is the case sheet's stage: the same box, the same player
+   drawn bigger than the box and clipped back to it, and the moves under it. */
+.learn__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 12rem;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.learn__stage .case-player {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: calc(12rem * var(--player-scale));
+  height: calc(12rem * var(--player-scale));
+  transform: translate(-50%, -50%);
+}
+
+.learn__stage-diagram {
+  width: 12rem;
+  height: 12rem;
+}
+
+.learn__situation.is-open .alg {
+  flex: none;
+  justify-self: center;
+}
+
 /* The situations the same algorithm has to be run from again. */
 .learn__holds {
   display: grid;

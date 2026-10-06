@@ -96,7 +96,20 @@ describe('LearnScreen', () => {
     for (const figure of figures) {
       expect(figure.querySelector('img')?.getAttribute('src')).toContain('data:image/svg+xml,');
     }
-    expect(within(cross).queryByRole('button')).not.toBeInTheDocument();
+    expect(caseButtons(cross)).toHaveLength(0);
+  });
+
+  it('plays a cross situation where it is, without a case sheet', async () => {
+    const user = userEvent.setup();
+    render(<LearnScreen />);
+
+    const situation = within(sectionFor('1Cross')).getAllByRole('figure')[0];
+    if (!situation) throw new Error('the cross lost its situations');
+    await user.click(within(situation).getByRole('button', { name: strings.playback.play }));
+
+    // The card opens to the player's size and stays open once played.
+    expect(situation).toHaveClass('is-open');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('opens the case sheet on a case, the same one the trainer opens', async () => {
