@@ -97,19 +97,17 @@ describe('LearnScreen', () => {
     }
   });
 
-  it('plays a cross situation where it is, without a case sheet', async () => {
+  it('opens a cross situation in a sheet of its own, with only the cube and the moves', async () => {
     const user = userEvent.setup();
     render(<LearnScreen />);
 
-    const cross = sectionFor('1Cross');
-    await user.click(within(cross).getByRole('button', { name: /^White on top/ }));
+    await user.click(within(sectionFor('1Cross')).getByRole('button', { name: /^White on top/ }));
 
-    // The card opens round a cube with its own controls, and no sheet opens.
-    const opened = within(cross).getAllByRole('figure')[0];
-    if (!opened) throw new Error('the situation did not open');
-    expect(opened).toHaveTextContent(strings.learn.crossCases.whiteUp);
-    expect(within(opened).getByRole('button', { name: strings.playback.pause })).toBeInTheDocument();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    const sheet = await screen.findByRole('dialog', { name: strings.learn.crossCases.whiteUp });
+    expect(within(sheet).getByRole('button', { name: strings.playback.play })).toBeInTheDocument();
+    // Not a case to learn: no progress to mark, no variants to pick.
+    expect(within(sheet).queryByRole('group', { name: strings.trainer.progressLabel })).not.toBeInTheDocument();
+    expect(within(sheet).queryByRole('radio')).not.toBeInTheDocument();
   });
 
   it('opens the case sheet on a case, the same one the trainer opens', async () => {

@@ -208,9 +208,7 @@ li:not(.learn__aside) + .learn__aside {
   margin-top: var(--space-4);
 }
 
-/* A cross situation once it has been played: the card opened up round the
-   moving cube, a panel rather than a button since the cube is the way to
-   play it now. Closed, it is a case card like the rest of the page. */
+/* The cross situations: case cards, laid out as the cases of the other steps. */
 .learn__situations {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
@@ -218,46 +216,11 @@ li:not(.learn__aside) + .learn__aside {
   margin: 0 0 var(--space-5);
 }
 
-.learn__situation {
-  display: grid;
-  gap: var(--space-3);
-  margin: 0;
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  background: var(--surface-raised);
+/* A cross situation in its sheet: the name is a sentence, not a case name,
+   so it is set a size down from the case sheet's. */
+.learn__situation-name {
+  font-size: var(--text-lg);
 }
-
-.learn__situation .alg {
-  justify-self: center;
-  font-size: var(--text-3xl);
-}
-
-/* Opened, the card is the case sheet's stage: the same box, the same player
-   drawn bigger than the box and clipped back to it, and the moves under it. */
-.learn__stage {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 12rem;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.learn__stage .case-player {
-  position: absolute;
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  width: calc(12rem * var(--player-scale));
-  height: calc(12rem * var(--player-scale));
-  transform: translate(-50%, -50%);
-}
-
-.learn__stage-diagram {
-  width: 12rem;
-  height: 12rem;
-}
-
 
 /* The situations the same algorithm has to be run from again. */
 .learn__holds {

@@ -3,19 +3,15 @@ import { CubeDiagram } from '../../../components/CubeDiagram';
 import { CROSS_SET_ID } from '../../../domain/alg/sets';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
-import { formatAlg, invertAlg, parseAlg } from '../../../domain/cube/notation';
+import { parseAlg } from '../../../domain/cube/notation';
 import { solvedState } from '../../../domain/cube/state';
-import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
-import { usePlayback } from '../../../hooks/use-playback';
 import { useSetting } from '../../../hooks/use-setting';
-import { useTap } from '../../../hooks/use-tap';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { packLabel, strings } from '../../../lib/strings';
 import {
   AlgText,
   CaseDetail,
-  CasePlayer,
   NotationReference,
   diagramFor,
   useSetCases,
@@ -26,6 +22,7 @@ import {
 } from '../../trainer';
 import { useCurrentStep } from '../../../hooks/use-current-step';
 import { LEARN_STEPS, holdState, type LearnSituation, type LearnStep } from '../steps';
+import { SituationSheet } from './SituationSheet';
 
 const anchorOf = (step: LearnStep) => `learn-${step.id}`;
 const STEP_IDS = LEARN_STEPS.map(anchorOf);
@@ -312,90 +309,37 @@ interface SituationProps {
 }
 
 /**
- * Where a cross edge can be, and the moves that take it down — played right
- * here rather than in a case sheet. Two turns or four are not a case to learn,
- * and a sheet would bring along everything a case has (progress, variants,
- * the drill) to a reader who has just picked up their first cube.
- *
- * The card opens to the size of the sheet's cube the first time it plays and
- * stays open: a card that shrank back when the moves ended would jump the
- * page under a reader who is about to play it again.
+ * Where a cross edge can be, and the moves that take it down: a card like
+ * every case on the page, which opens its own sheet to play them.
  */
 function Situation({ situation, skin, triggers }: SituationProps) {
-  const moves = movesOf(situation.alg);
-  const playback = usePlayback(situation.alg);
   const [isOpen, setOpen] = useState(false);
-  const [playingMove, setPlayingMove] = useState<number | null>(null);
-  const isPlaying = playback.status !== 'idle';
-
-  const toggle = () => {
-    setOpen(true);
-    playback.toggle();
-  };
-  const restart = () => {
-    setOpen(true);
-    playback.restart();
-  };
-  const tap = useTap(toggle);
-
-  const picture = (className: string) => (
-    <CubeDiagram
-      className={className}
-      state={holdState(situation)}
-      view="isometric"
-      stickering="cross"
-      skin={skin}
-      label={null}
-    />
-  );
-  // Closed, it is a card like every case on the page: the whole of it is the
-  // way in, and no button of its own makes the page longer.
-  if (!isOpen) {
-    return (
-      <button type="button" className="case-card learn__case" title={strings.trainer.play} onClick={toggle}>
-        <span className="case-card__name">{situation.text}</span>
-        <span className="learn__case-row">
-          {picture('learn__case-diagram')}
-          <AlgText moves={moves} triggers={triggers} />
-        </span>
-      </button>
-    );
-  }
 
   return (
-    <figure className="learn__situation">
-      <figcaption className="case-card__name">{situation.text}</figcaption>
-      <div className="learn__stage" {...tap}>
-        {isPlaying ? (
-          <CasePlayer
-            setupAlg={formatAlg(invertAlg(moves))}
-            alg={formatAlg(moves)}
+    <>
+      <button type="button" className="case-card learn__case" onClick={() => setOpen(true)}>
+        <span className="case-card__name">{situation.text}</span>
+        <span className="learn__case-row">
+          <CubeDiagram
+            className="learn__case-diagram"
+            state={holdState(situation)}
+            view="isometric"
             stickering="cross"
-            request={playback.request}
-            onMove={setPlayingMove}
-            onStopped={playback.stopped}
-            placeholder={picture('learn__stage-diagram')}
+            skin={skin}
+            label={null}
           />
-        ) : (
-          picture('learn__stage-diagram')
-        )}
-      </div>
-      <AlgText
-        moves={moves}
-        triggers={triggers}
-        onPlay={restart}
-        playLabel={strings.trainer.play}
-        playingMove={isPlaying ? playingMove : null}
-      />
-      <PlaybackButtons
-        status={playback.status}
-        onToggle={toggle}
-        onStep={playback.step}
-        onBack={playback.back}
-        position={playback.position}
-        placement="row"
-      />
-    </figure>
+          <AlgText moves={movesOf(situation.alg)} triggers={triggers} />
+        </span>
+      </button>
+      {isOpen ? (
+        <SituationSheet
+          situation={situation}
+          skin={skin}
+          triggers={triggers}
+          onClose={() => setOpen(false)}
+        />
+      ) : null}
+    </>
   );
 }
 
