@@ -77,7 +77,7 @@ export function diagramFor(setId: string, group: string): Diagram {
       return {
         view: 'isometric',
         stickering: 'bottomLayer',
-        playerStickering: 'firstTwoLayers',
+        playerStickering: 'bottomLayer',
         orientation: F2L_ORIENTATION,
       };
     }
@@ -89,10 +89,14 @@ export function diagramFor(setId: string, group: string): Diagram {
         orientation: F2L_ORIENTATION,
       };
     }
+    // The corners step greys the edges it leaves alone. The edges step keeps
+    // its corners in colour: they are home by then, and their side colours are
+    // what the finished side is read by.
+    const isCorners = group === BEGINNER_GROUPS.cornersHome;
     return {
       view: 'lastLayer',
-      stickering: group === BEGINNER_GROUPS.cornersHome ? 'corners' : 'edges',
-      playerStickering: 'full',
+      stickering: isCorners ? 'corners' : 'edges',
+      playerStickering: isCorners ? 'lastLayerCorners' : 'full',
       orientation: '',
     };
   }

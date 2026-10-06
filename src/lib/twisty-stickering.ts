@@ -19,9 +19,20 @@ export interface StickeringMask {
 /** Which layer the mask is about, named by the face that turns it. */
 export type Layer = 'U' | 'D';
 
+/** How one sticker is drawn: in its colour, or in the muted grey. */
+type Paint = 'regular' | 'ignored';
+
+/** Where a sticker is, as much as a mask needs to decide how to draw it. */
+interface StickerAt {
+  orbit: string;
+  isInLayer: boolean;
+  /** Which of the piece's stickers, counted from the one facing U or D. */
+  facelet: number;
+}
+
 /** The layer grey, the rest of the cube in its colours. */
 export function maskHidingLayer(layer: Layer): Promise<StickeringMask> {
-  return maskByLayer(layer, () => 'ignored');
+  return maskByLayer(layer, ({ isInLayer }) => (isInLayer ? 'ignored' : 'regular'));
 }
 
 /**
@@ -32,12 +43,40 @@ export function maskHidingLayer(layer: Layer): Promise<StickeringMask> {
 export function maskOrientingLayer(layer: Layer): Promise<StickeringMask> {
   // cubing.js counts a piece's stickers from the one that faces U or D when
   // the piece is oriented, so a layer piece's own colour is its first sticker.
-  return maskByLayer(layer, (facelet) => (facelet === 0 ? 'regular' : 'ignored'));
+  return maskByLayer(layer, ({ isInLayer, facelet }) =>
+    isInLayer && facelet !== 0 ? 'ignored' : 'regular',
+  );
+}
+
+/**
+ * The layer and the centres in colour, everything else grey: the layer being
+ * built and the one piece going into it, wherever that piece has got to —
+ * the mask follows a piece, not a place. Nothing above the layer is built yet,
+ * and a middle-layer edge drawn in colour asks to be looked at for no reason.
+ */
+export function maskKeepingLayer(layer: Layer): Promise<StickeringMask> {
+  return maskByLayer(layer, ({ orbit, isInLayer }) =>
+    isInLayer || orbit === 'CENTERS' ? 'regular' : 'ignored',
+  );
+}
+
+/**
+ * One kind of the layer's pieces grey and the rest of the cube as it is: a
+ * step that moves only the corners of the last layer has its edges go quiet,
+ * and the other way round.
+ */
+export function maskHidingLayerPieces(
+  layer: Layer,
+  kind: 'CORNERS' | 'EDGES',
+): Promise<StickeringMask> {
+  return maskByLayer(layer, ({ orbit, isInLayer }) =>
+    isInLayer && orbit === kind ? 'ignored' : 'regular',
+  );
 }
 
 async function maskByLayer(
   layer: Layer,
-  inLayer: (facelet: number) => 'regular' | 'ignored',
+  paint: (sticker: StickerAt) => Paint,
 ): Promise<StickeringMask> {
   const { cube3x3x3 } = await import('cubing/puzzles');
   const kpuzzle = await cube3x3x3.kpuzzle();
@@ -56,7 +95,7 @@ async function maskByLayer(
           (moved.permutation[piece] !== piece || moved.orientationDelta[piece] !== 0);
         return {
           facelets: Array.from({ length: orbit.numOrientations }, (_, facelet) =>
-            isInLayer ? inLayer(facelet) : 'regular',
+            paint({ orbit: orbit.orbitName, isInLayer, facelet }),
           ),
         };
       }),

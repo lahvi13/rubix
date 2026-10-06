@@ -8,16 +8,25 @@ import { strings } from '../../../lib/strings';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
 import {
   maskHidingLayer,
+  maskHidingLayerPieces,
+  maskKeepingLayer,
   maskOrientingLayer,
   type StickeringMask,
 } from '../../../lib/twisty-stickering';
 
 /**
  * What the moving cube shows: everything; only the two layers a case is built
- * in, with the last layer greyed out the way the still picture greys it; or
- * only the last layer's yellow, the way an OLL picture reads.
+ * in, with the last layer greyed out the way the still picture greys it; only
+ * the last layer's yellow, the way an OLL picture reads; or, for the beginner's
+ * steps, just the pieces the step is about — the bottom layer being built, or
+ * the last layer's corners without its edges.
  */
-export type PlayerStickering = 'full' | 'firstTwoLayers' | 'orientation';
+export type PlayerStickering =
+  | 'full'
+  | 'firstTwoLayers'
+  | 'orientation'
+  | 'bottomLayer'
+  | 'lastLayerCorners';
 
 interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
@@ -121,7 +130,21 @@ export function CasePlayer({
  * names its stickerings for a cube standing the other way. Its last layer is
  * cubing.js's D.
  */
+/**
+ * In cubing.js's frame, where the cube stands on its head (`CUBE_ORIENTATION`):
+ * our last layer is its D, and the bottom layer built first is its U.
+ */
 function maskFor(stickering: PlayerStickering): Promise<StickeringMask | null> {
-  if (stickering === 'full') return Promise.resolve(null);
-  return stickering === 'orientation' ? maskOrientingLayer('D') : maskHidingLayer('D');
+  switch (stickering) {
+    case 'full':
+      return Promise.resolve(null);
+    case 'firstTwoLayers':
+      return maskHidingLayer('D');
+    case 'orientation':
+      return maskOrientingLayer('D');
+    case 'bottomLayer':
+      return maskKeepingLayer('U');
+    case 'lastLayerCorners':
+      return maskHidingLayerPieces('D', 'EDGES');
+  }
 }
