@@ -323,12 +323,17 @@
   vertical-align: top;
 }
 
-/* The phase a column is: a strip of its face under its name, as wide as the
-   name, so it takes height the header row has and no width it does not. */
+/* The phase a column is: a strip of its face under its name, so it takes
+   height the header row has and no width it does not. One length for every
+   phase, set against the numbers' edge: as wide as its column, each strip
+   took the width of whatever was longest there, and four phases read as
+   four different lengths of the same thing. */
 .averages-table__phase {
   display: block;
+  width: 2.5em;
   height: 0.3em;
   margin-block-start: 0.35em;
+  margin-inline-start: auto;
   border-radius: var(--radius-pill);
 }
 
