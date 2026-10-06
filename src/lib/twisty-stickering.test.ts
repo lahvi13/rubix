@@ -48,6 +48,15 @@ describe('player masks', () => {
     });
   });
 
+  // The first look at OLL: the edges' yellow, the corners of that layer grey.
+  it('keeps only the top colour of the edges when asked', async () => {
+    expect(census(await maskOrientingLayer('D', 'EDGES'))).toEqual({
+      EDGES: { colour: 8, grey: 0, partly: 4 },
+      CORNERS: { colour: 4, grey: 4, partly: 0 },
+      CENTERS: { colour: 5, grey: 0, partly: 1 },
+    });
+  });
+
   // The beginner's bottom layer: its eight pieces and every centre, nothing of
   // the middle layer or the last.
   it('keeps one layer and the centres, and greys everything else', async () => {

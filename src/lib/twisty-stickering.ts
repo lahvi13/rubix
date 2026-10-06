@@ -38,14 +38,18 @@ export function maskHidingLayer(layer: Layer): Promise<StickeringMask> {
 /**
  * The layer's own face colour and nothing else of it: the stickers of the
  * layer that are not that colour go grey, and the rest of the cube stays as
- * it is. An OLL case is only about which stickers face up.
+ * it is. An OLL case is only about which stickers face up. Given a kind, only
+ * that kind keeps its colour — the first look at OLL is about the edges, and
+ * the corners' yellow there is noise.
  */
-export function maskOrientingLayer(layer: Layer): Promise<StickeringMask> {
+export function maskOrientingLayer(layer: Layer, only?: 'EDGES'): Promise<StickeringMask> {
   // cubing.js counts a piece's stickers from the one that faces U or D when
   // the piece is oriented, so a layer piece's own colour is its first sticker.
-  return maskByLayer(layer, ({ isInLayer, facelet }) =>
-    isInLayer && facelet !== 0 ? 'ignored' : 'regular',
-  );
+  return maskByLayer(layer, ({ orbit, isInLayer, facelet }) => {
+    if (!isInLayer) return 'regular';
+    if (only !== undefined && orbit !== only && orbit !== 'CENTERS') return 'ignored';
+    return facelet === 0 ? 'regular' : 'ignored';
+  });
 }
 
 /**

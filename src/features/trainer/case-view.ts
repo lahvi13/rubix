@@ -45,19 +45,24 @@ export const F2L_ORIENTATION = "y'";
  * looks like two different cases depending on where you meet it.
  */
 export function diagramFor(setId: string, group: string): Diagram {
+  // The moving cube shows what the picture does. Except the second look at
+  // PLL: its corners are home by then, and their side colours are what the
+  // finished side is read by.
   if (setId === '2look-oll') {
+    const isEdges = group.includes('Edges');
     return {
       view: 'lastLayer',
-      stickering: group.includes('Edges') ? 'edgeOrientation' : 'orientation',
-      playerStickering: 'orientation',
+      stickering: isEdges ? 'edgeOrientation' : 'orientation',
+      playerStickering: isEdges ? 'edgeOrientation' : 'orientation',
       orientation: '',
     };
   }
   if (setId === '2look-pll') {
+    const isCorners = group.includes('Corners');
     return {
       view: 'lastLayer',
-      stickering: group.includes('Corners') ? 'corners' : 'edges',
-      playerStickering: 'full',
+      stickering: isCorners ? 'corners' : 'edges',
+      playerStickering: isCorners ? 'lastLayerCorners' : 'full',
       orientation: '',
     };
   }
