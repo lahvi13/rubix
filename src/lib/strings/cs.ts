@@ -371,7 +371,7 @@ export const cs: Strings = {
           'Natoč celou kostku, ať je hrana vpředu, a pošli ji dolů podle toho, kam míří bílá — obě možnosti jsou na obrázcích.',
         ],
         warning: 'druhá barva každé bílé hrany musí sedět se středem vedle.',
-        tip: 'bílou hranu uprostřed, nebo dole na špatném místě, nejdřív vytáhni nahoru: otoč její stěnou, vrškem stranou a stěnu vrať.',
+        tip: 'bílá hrana uprostřed nebo dole na špatném místě? Nejdřív ji dostaň nahoru: otoč stěnou, ve které je, vrškem ji odsuň stranou a stěnu vrať zpátky.',
       },
       corners: {
         title: 'Rohy spodní vrstvy',

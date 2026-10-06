@@ -404,7 +404,7 @@ export const en = {
           'Turn the whole cube so the edge is at the front, and take it down by where the white points — both ways are in the pictures.',
         ],
         warning: 'the other colour of every white edge has to match the centre beside it.',
-        tip: 'a white edge in the middle, or at the bottom in the wrong place, comes up first: turn its side, turn the top out of the way and turn the side back.',
+        tip: 'a white edge in the middle, or in the wrong place at the bottom? Bring it up first: turn the side it is in, move it aside with the top, and turn the side back.',
       },
       corners: {
         title: 'Bottom layer corners',
