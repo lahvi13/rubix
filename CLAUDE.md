@@ -188,7 +188,13 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   `chore(release)` podle nejvyšší změny v bloku (autor nechce, aby verze naskakovaly
   po několika za den). Release commit dostane anotovaný tag `vX.Y.Z` se zprávou
   `Rubix X.Y.Z` a pushuje se s ním (`git push --follow-tags`) — tag stojí na
-  release commitu samotném, ne na tom, co přišlo po něm.
+  release commitu samotném, ne na tom, co přišlo po něm. Pod první řádek zprávy
+  tagu (prázdný řádek mezi) patří **krátké anglické poznámky k vydání**: jedna
+  věta, o čem blok byl, a 3–5 odrážek s tím, co uvidí uživatel — žádné interní
+  změny, žádné věci, které v bloku přibyly a zase zmizely. Má to jít přečíst na
+  jeden pohled. Stejný text (bez řádku `Rubix X.Y.Z`, ten je název) jde do
+  GitHub Release k tagu: `gh release create vX.Y.Z --title "Rubix X.Y.Z"
+  --notes-file …`. Poznámky ukázat autorovi před vytvořením, Release je veřejný.
 - **repo je veřejné** (github.com/lahvi13/rubix, GPL-3.0-or-later, README pro
   návštěvníky). Commity jdou pod GitHub noreply adresou, soukromý e-mail autora
   v historii není a nesmí se tam dostat — ani v textu souboru nebo commit message.
