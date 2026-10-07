@@ -68,8 +68,8 @@ describe('isPullUp', () => {
 describe('opensMenu', () => {
   it.each<[string, { x: number; y: number }, { x: number; y: number }, boolean]>([
     ['a firm drag right from near the edge', { x: 60, y: 400 }, { x: 200, y: 410 }, true],
-    ['the edge of the zone still counts', { x: 80, y: 400 }, { x: 220, y: 400 }, true],
-    ['just past it does not', { x: 81, y: 400 }, { x: 221, y: 400 }, false],
+    ['the edge of the zone still counts', { x: 100, y: 400 }, { x: 240, y: 400 }, true],
+    ['just past it does not', { x: 101, y: 400 }, { x: 241, y: 400 }, false],
     ['the same drag begun mid-screen', { x: 160, y: 400 }, { x: 300, y: 400 }, false],
     ['leftwards never opens it', { x: 180, y: 400 }, { x: 40, y: 400 }, false],
     // The edge is the system's back gesture; the app never hears it anyway.

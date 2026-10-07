@@ -84,7 +84,7 @@ function isPull(start: SwipePoint, end: SwipePoint, sign: 1 | -1): boolean {
  * the edge it comes from, beyond the strip the system keeps: begun anywhere in
  * the left half, it opened on drags that were meant for something else.
  */
-const MENU_ZONE_PX = 80;
+const MENU_ZONE_PX = 100;
 
 /** Whether a drag across the screen asks for the menu: rightwards, from its edge. */
 export function opensMenu(start: SwipePoint, end: SwipePoint, bounds: SwipeBounds): boolean {
