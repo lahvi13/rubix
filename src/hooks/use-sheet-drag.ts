@@ -94,7 +94,7 @@ export function useSheetDrag(
           end();
           if (intent !== 'pull') return;
           if (isSheetDismissed(draggedPx, sheet.offsetHeight, velocity)) {
-            slideAway(sheet, scrim.current, () => close.current());
+            slideAway(sheet, draggedPx, scrim.current, () => close.current());
           } else {
             springBack(sheet);
           }
@@ -150,12 +150,25 @@ function springBack(sheet: HTMLElement): void {
  * the slide is over closes it there and then, so a tap aimed at the card under
  * it reaches the card. Left mounted and catching, the first tap after a quick
  * drag only finished closing the sheet.
+ *
+ * Off the bottom of the screen, not down by its own height: the More card
+ * stands above the tab bar, and moved by its height it stopped short with
+ * its top still showing, lingering there through the slow end of the easing
+ * until it was taken away. Sent past the edge, that slow end happens out of
+ * sight.
  */
-function slideAway(sheet: HTMLElement, scrim: HTMLElement | null, onGone: () => void): void {
+function slideAway(
+  sheet: HTMLElement,
+  draggedPx: number,
+  scrim: HTMLElement | null,
+  onGone: () => void,
+): void {
   if (prefersLessMotion()) {
     onGone();
     return;
   }
+  const restingTop = sheet.getBoundingClientRect().top - draggedPx;
+  const offScreenPx = Math.ceil(window.innerHeight - restingTop);
   let isGone = false;
   const finish = () => {
     if (isGone) return;
@@ -165,8 +178,11 @@ function slideAway(sheet: HTMLElement, scrim: HTMLElement | null, onGone: () => 
     onGone();
   };
   sheet.style.pointerEvents = 'none';
-  sheet.style.transition = 'transform var(--motion-slide) var(--motion-ease)';
-  sheet.style.transform = 'translateY(100%)';
+  // At an even pace, not the settling curve sheets arrive on: easing out, the
+  // last of the journey crept across the bottom edge — the stall the eye
+  // caught — when the finger had already thrown it.
+  sheet.style.transition = 'transform var(--motion-slide) linear';
+  sheet.style.transform = `translateY(${offScreenPx}px)`;
   if (scrim !== null) {
     scrim.style.pointerEvents = 'none';
     scrim.style.transition = 'opacity var(--motion-slide) var(--motion-ease)';
