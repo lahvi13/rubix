@@ -99,6 +99,10 @@
   width: 2.5rem;
   height: 2.5rem;
   min-height: 0;
+  /* At the end of the bar on every sheet. Alone in it, with no pager before
+     it, it used to sit at the start — the left on one sheet, the right on
+     the next. */
+  margin-inline-start: auto;
   margin-inline-end: calc(var(--space-2) * -1);
   color: var(--muted);
 }
