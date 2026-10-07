@@ -2,6 +2,10 @@
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+  /* Up and down is the browser's, across is the menu's (see use-menu-swipe):
+     a sideways drag the browser was allowed would be cancelled under it. A
+     strip that scrolls sideways is its own scroller and keeps its drag. */
+  touch-action: pan-y pinch-zoom;
 }
 
 /*

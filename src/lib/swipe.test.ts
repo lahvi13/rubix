@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { isPullDown, isPullUp, readSwipe, type SwipeDirection } from './swipe';
+import {
+  closesMenu,
+  isPullDown,
+  isPullUp,
+  isSheetDismissed,
+  opensMenu,
+  readSheetDrag,
+  readSwipe,
+  type SwipeDirection,
+} from './swipe';
 
 const BOUNDS = { width: 412 };
 const from = { x: 200, y: 400 };
@@ -52,5 +61,54 @@ describe('isPullUp', () => {
     ['no movement at all is a tap', from, false],
   ])('%s', (_name, end, expected) => {
     expect(isPullUp(from, end)).toBe(expected);
+  });
+});
+
+describe('opensMenu', () => {
+  it.each<[string, { x: number; y: number }, { x: number; y: number }, boolean]>([
+    ['a firm drag right from the left half', { x: 60, y: 400 }, { x: 200, y: 410 }, true],
+    ['the same drag begun in the right half', { x: 220, y: 400 }, { x: 360, y: 400 }, false],
+    ['leftwards never opens it', { x: 180, y: 400 }, { x: 40, y: 400 }, false],
+    // The edge is the system's back gesture; the app never hears it anyway.
+    ['from the very edge belongs to the system', { x: 10, y: 400 }, { x: 200, y: 400 }, false],
+    ['a scroll with a sideways drift', { x: 60, y: 600 }, { x: 140, y: 200 }, false],
+    ['too short to be meant', { x: 60, y: 400 }, { x: 110, y: 400 }, false],
+  ])('%s', (_name, start, end, expected) => {
+    expect(opensMenu(start, end, BOUNDS)).toBe(expected);
+  });
+});
+
+describe('closesMenu', () => {
+  it.each<[string, { x: number; y: number }, { x: number; y: number }, boolean]>([
+    ['a firm drag left anywhere', { x: 300, y: 400 }, { x: 150, y: 400 }, true],
+    ['rightwards leaves it open', { x: 100, y: 400 }, { x: 300, y: 400 }, false],
+    ['a scroll through a long menu', { x: 100, y: 600 }, { x: 60, y: 300 }, false],
+  ])('%s', (_name, start, end, expected) => {
+    expect(closesMenu(start, end, BOUNDS)).toBe(expected);
+  });
+});
+
+describe('readSheetDrag', () => {
+  it.each<[string, { x: number; y: number }, 'pull' | 'other' | null]>([
+    ['still inside the slop is a tap so far', { x: 203, y: 404 }, null],
+    ['downwards is a pull', { x: 202, y: 420 }, 'pull'],
+    ['down and a little across is still a pull', { x: 210, y: 415 }, 'pull'],
+    ['across is somebody else’s gesture', { x: 230, y: 405 }, 'other'],
+    ['upwards is not a pull', { x: 200, y: 380 }, 'other'],
+  ])('%s', (_name, now, expected) => {
+    expect(readSheetDrag(from, now)).toBe(expected);
+  });
+});
+
+describe('isSheetDismissed', () => {
+  it.each<[string, number, number, number, boolean]>([
+    ['a quarter of the sheet down goes', 150, 600, 0, true],
+    ['less than that springs back', 140, 600, 0.1, false],
+    ['a short sheet still asks for a real drag', 40, 120, 0, false],
+    ['a short sheet dragged firmly goes', 60, 120, 0, true],
+    ['a flick goes however short', 40, 600, 0.8, true],
+    ['a flick that barely moved is a tap that slipped', 20, 600, 2, false],
+  ])('%s', (_name, draggedPx, heightPx, velocity, expected) => {
+    expect(isSheetDismissed(draggedPx, heightPx, velocity)).toBe(expected);
   });
 });

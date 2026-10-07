@@ -1,8 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useBackToClose } from '../hooks/use-back-to-close';
 import { useKeyCapture } from '../hooks/use-key-capture';
-import { useSwipe } from '../hooks/use-swipe';
+import { useSheetDrag } from '../hooks/use-sheet-drag';
+import { slideIn, useSwipe } from '../hooks/use-swipe';
 import { strings } from '../lib/strings';
+import type { SwipeDirection } from '../lib/swipe';
 import { CloseIcon, NextIcon, PreviousIcon } from './Icons';
 
 /** One of a sequence, and the way through it. */
@@ -35,6 +37,21 @@ interface SheetProps {
  */
 let openSheets = 0;
 
+/**
+ * The step just taken, for whichever sheet draws the page it led to. Stepping
+ * through solves remounts the sheet, stepping through cases does not; held out
+ * here, both find it. Dated, so a step that changed nothing cannot animate a
+ * page opened long after.
+ */
+let pendingStep: { direction: SwipeDirection; at: number } | null = null;
+const STEP_FRESH_MS = 1000;
+
+function takeStep(): SwipeDirection | null {
+  const step = pendingStep;
+  pendingStep = null;
+  return step !== null && performance.now() - step.at < STEP_FRESH_MS ? step.direction : null;
+}
+
 function useArrival(): boolean {
   const [isArriving] = useState(() => openSheets === 0);
   useEffect(() => {
@@ -62,10 +79,26 @@ export function Sheet({ label, className, onClose, paging, children }: SheetProp
   const isArriving = useArrival();
   const entering = isArriving ? ' is-entering' : '';
 
-  const swipe = useSwipe((direction) => {
-    const step = direction === 'next' ? paging?.onNext : paging?.onPrevious;
-    step?.();
-  });
+  const panel = useRef<HTMLElement>(null);
+  const drag = useSheetDrag(panel, onClose);
+
+  const stepper = (direction: SwipeDirection) =>
+    (direction === 'next' ? paging?.onNext : paging?.onPrevious) ?? null;
+  const step = (direction: SwipeDirection) => {
+    const go = stepper(direction);
+    if (go === null) return;
+    pendingStep = { direction, at: performance.now() };
+    go();
+  };
+  const swipe = useSwipe(panel, (direction) => stepper(direction) !== null, step);
+
+  const position = paging?.position;
+  // Before paint, or the new page shows for a frame where it ends up before
+  // sliding in from the side.
+  useLayoutEffect(() => {
+    const direction = takeStep();
+    if (direction !== null && panel.current !== null) slideIn(panel.current, direction);
+  }, [position]);
 
   return (
     <>
@@ -76,13 +109,25 @@ export function Sheet({ label, className, onClose, paging, children }: SheetProp
         onClick={onClose}
       />
       <aside
+        ref={panel}
         className={className === undefined ? `detail${entering}` : `detail${entering} ${className}`}
         role="dialog"
         aria-modal="true"
         aria-label={label}
         {...(paging === undefined ? {} : swipe)}
       >
-        <div className="sheet__bar">
+        {/* The bar is what a sheet is dragged down by, so it cannot scroll:
+            on the scrolling panel the browser claims the drag long before it
+            is a pull. The grip says so, and takes a tap as well — the same
+            grip the timer's list of solves is put away with. */}
+        <div className="sheet__bar" {...drag}>
+          <button
+            type="button"
+            className="sheet__grip"
+            tabIndex={-1}
+            aria-label={strings.history.close}
+            onClick={onClose}
+          />
           {paging === undefined ? null : (
             <div className="sheet__pager">
               <button
@@ -90,7 +135,7 @@ export function Sheet({ label, className, onClose, paging, children }: SheetProp
                 className="sheet__step"
                 aria-label={strings.sheet.previous}
                 disabled={paging.onPrevious === null}
-                onClick={() => paging.onPrevious?.()}
+                onClick={() => step('previous')}
               >
                 <PreviousIcon />
               </button>
@@ -102,7 +147,7 @@ export function Sheet({ label, className, onClose, paging, children }: SheetProp
                 className="sheet__step"
                 aria-label={strings.sheet.next}
                 disabled={paging.onNext === null}
-                onClick={() => paging.onNext?.()}
+                onClick={() => step('next')}
               >
                 <NextIcon />
               </button>

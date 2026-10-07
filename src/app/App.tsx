@@ -17,6 +17,7 @@ import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute, type Route } from './router';
+import { useMenuSwipe } from './use-menu-swipe';
 import { useScrollMemory } from './use-scroll-memory';
 import { useSharedScrambleLink } from './use-shared-scramble-link';
 import { ErrorBanner } from './ErrorBanner';
@@ -48,9 +49,10 @@ export function App() {
   // the press means "out of this". Without it the page under the menu went
   // back a screen and the menu stayed open over it.
   useBackToClose(() => setMenuOpen(false), isMenuOpen);
+  const menuSwipe = useMenuSwipe(isMenuOpen, setMenuOpen);
 
   return (
-    <div className="app">
+    <div className="app" {...menuSwipe}>
       <header className="app__header">
         <button
           type="button"

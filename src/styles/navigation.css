@@ -122,6 +122,10 @@
   max-width: 80vw;
   padding: var(--space-5) var(--space-4) max(var(--space-6), env(safe-area-inset-bottom));
   overflow-y: auto;
+  /* A scroller sets its own touch-action rather than taking the app's, and
+     left to itself it hands a sideways drag to the browser — the one that
+     puts the menu away. */
+  touch-action: pan-y pinch-zoom;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0 var(--radius-lg) 0 0;

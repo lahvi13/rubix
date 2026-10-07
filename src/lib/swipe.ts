@@ -78,3 +78,57 @@ function isPull(start: SwipePoint, end: SwipePoint, sign: 1 | -1): boolean {
   if (dy < MIN_DISTANCE_PX) return false;
   return dy >= Math.abs(dx) * HORIZONTAL_RATIO;
 }
+
+/**
+ * Whether a drag across the screen asks for the menu: rightwards, the way the
+ * panel comes in, and begun in the half of the screen the menu lives on. The
+ * other half keeps its hands free for whatever it holds.
+ */
+export function opensMenu(start: SwipePoint, end: SwipePoint, bounds: SwipeBounds): boolean {
+  return start.x < bounds.width / 2 && readSwipe(start, end, bounds) === 'previous';
+}
+
+/** The same drag the other way puts the menu back, wherever it began. */
+export function closesMenu(start: SwipePoint, end: SwipePoint, bounds: SwipeBounds): boolean {
+  return readSwipe(start, end, bounds) === 'next';
+}
+
+/** How far a finger may wander before the drag has said which way it is going. */
+const SLOP_PX = 8;
+
+/**
+ * What a drag on a sheet's grip has turned out to be, once it has moved far
+ * enough to tell: a pull downwards the sheet should follow, or something else
+ * it should leave alone. Null while it is still a tap.
+ */
+export function readSheetDrag(start: SwipePoint, now: SwipePoint): 'pull' | 'other' | null {
+  const dx = now.x - start.x;
+  const dy = now.y - start.y;
+  if (Math.hypot(dx, dy) < SLOP_PX) return null;
+  return dy > 0 && dy >= Math.abs(dx) ? 'pull' : 'other';
+}
+
+/**
+ * A flick this fast puts the sheet away however short it was. Measured over
+ * the last move, in pixels per millisecond — a thrown sheet is thrown at the
+ * end of the gesture, not over its average.
+ */
+const FLICK_PX_PER_MS = 0.5;
+
+/** Short of a flick, the sheet has to be dragged this much of its own height. */
+const DISMISS_SHARE = 0.25;
+
+/**
+ * Whether a sheet let go of at `draggedPx` below where it rests goes away or
+ * springs back. A quarter of the sheet is a decision; less is somebody
+ * checking what is underneath, unless they threw it.
+ */
+export function isSheetDismissed(
+  draggedPx: number,
+  sheetHeightPx: number,
+  velocityPxPerMs: number,
+): boolean {
+  if (draggedPx < MIN_DISTANCE_PX / 2) return false;
+  if (velocityPxPerMs >= FLICK_PX_PER_MS) return true;
+  return draggedPx >= Math.max(MIN_DISTANCE_PX, sheetHeightPx * DISMISS_SHARE);
+}
