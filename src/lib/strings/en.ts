@@ -665,6 +665,7 @@ export const en = {
     holdThreshold: 'Hold to start',
     holdOff: 'Off',
     showScramblePreview: 'Show the cube below the scramble',
+    haptics: 'Vibrate when ready and when stopped',
     runningDisplay: 'Time while solving',
     runningHundredths: '0.00',
     runningTenths: '0.0',

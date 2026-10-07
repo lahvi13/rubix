@@ -16,6 +16,7 @@ import { penaltyForInspection } from '../domain/solve/penalty';
 import type { Penalty } from '../db/types';
 import { eventTime, monotonicNow } from '../lib/clock';
 import { beep, primeBeep } from '../lib/beep';
+import { buzz } from '../lib/haptics';
 import { isTypingTarget } from '../lib/typing-target';
 import { useStayAwake } from './use-stay-awake';
 import { SETTING_DEFAULTS, getSetting, setSetting } from '../db/repositories/settings-repository';
@@ -113,6 +114,7 @@ export function useTimer(
       holdThresholdMs: await getSetting('timer.holdThresholdMs'),
       inspectionEnabled: await getSetting('timer.inspectionEnabled'),
       inspectionCues: await getSetting('timer.inspectionCues'),
+      haptics: await getSetting('timer.haptics'),
     }),
     [],
   );
@@ -141,6 +143,7 @@ export function useTimer(
    */
   const pointers = useRef<Set<number>>(new Set());
   const cues = useRef<readonly number[]>(SETTING_DEFAULTS['timer.inspectionCues']);
+  const hapticsRef = useRef(SETTING_DEFAULTS['timer.haptics']);
 
   // Kept in refs so the event listeners never need re-binding, and assigned in
   // an effect because refs must not be written during render.
@@ -149,7 +152,10 @@ export function useTimer(
     lockedRef.current = isLocked;
     stateRef.current = state;
     onCompleteRef.current = onComplete;
-    if (settings) cues.current = settings.inspectionCues;
+    if (settings) {
+      cues.current = settings.inspectionCues;
+      hapticsRef.current = settings.haptics;
+    }
   });
 
   const dispatch = useCallback((event: TimerEvent) => {
@@ -166,6 +172,7 @@ export function useTimer(
   // A finished attempt leaves the machine through 'stopped' exactly once.
   useEffect(() => {
     if (state.status !== 'stopped') return;
+    if (hapticsRef.current) buzz();
     onCompleteRef.current({
       rawMs: state.rawMs,
       inspectionMs: state.inspectionMs,
@@ -274,12 +281,23 @@ export function useTimer(
     };
   }, [dispatch]);
 
+  const armed = isArmed(state, frameAt, config);
+  const finishArmed = isFinishArmed(state, frameAt, config);
+  // Both are read off the clock every frame; only the moment one turns on is
+  // felt, so the hands know they can let go.
+  useEffect(() => {
+    if (armed && hapticsRef.current) buzz();
+  }, [armed]);
+  useEffect(() => {
+    if (finishArmed && hapticsRef.current) buzz();
+  }, [finishArmed]);
+
   return {
     state,
     displayMs: displayedMs(state, frameAt),
     inspectionMs: inspectionElapsedMs(state, frameAt),
-    armed: isArmed(state, frameAt, config),
-    finishArmed: isFinishArmed(state, frameAt, config),
+    armed,
+    finishArmed,
     phaseIndex: currentPhaseIndex(state, config),
     inspectionEnabled: config.inspectionEnabled,
     inspectionCues: settings?.inspectionCues ?? SETTING_DEFAULTS['timer.inspectionCues'],

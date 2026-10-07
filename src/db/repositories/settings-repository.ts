@@ -22,6 +22,12 @@ export interface SettingValues {
   'timer.splitMode': 'total' | 'phases';
   /** How much of the time the clock shows while a solve runs (see RunningDisplay). */
   'timer.runningDisplay': RunningDisplay;
+  /**
+   * Device-local: a buzz when a held press turns green and when the clock
+   * stops. Whether that is welcome depends on the phone and on the table it
+   * lies on, not on the person.
+   */
+  'timer.haptics': boolean;
   /** Device-local: the same account can prefer a different theme on each screen. */
   'ui.theme': Theme;
   /** Which typeface the app is set in; 'system' hands it back to the device. */
@@ -189,6 +195,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'timer.showScramblePreview': true,
   'timer.splitMode': 'total',
   'timer.runningDisplay': 'hundredths',
+  'timer.haptics': true,
   'ui.theme': 'dark',
   'ui.font': 'sans',
   'ui.textSize': 'medium',
@@ -227,6 +234,7 @@ export type SettingKey = keyof SettingValues;
 
 const DEVICE_LOCAL_PREFIXES = [
   'audio.',
+  'timer.haptics',
   'ui.theme',
   'ui.textSize',
   'ui.clockSize',

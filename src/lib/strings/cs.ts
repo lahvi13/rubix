@@ -599,6 +599,7 @@ export const cs: Strings = {
     holdThreshold: 'Podržení pro start',
     holdOff: 'Vypnuto',
     showScramblePreview: 'Zobrazit náhled kostky pod scramblem',
+    haptics: 'Zavibrovat při připravení a zastavení',
     runningDisplay: 'Čas během skládání',
     runningHundredths: '0.00',
     runningTenths: '0.0',

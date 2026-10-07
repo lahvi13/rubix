@@ -11,6 +11,7 @@ import {
   type Size,
   type Theme,
 } from '../../../lib/appearance';
+import { canVibrate } from '../../../lib/haptics';
 import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
 import { LANGUAGES, currentLanguage, storeLanguage, type Language } from '../../../lib/language';
 import { RUNNING_DISPLAYS, type RunningDisplay } from '../../../lib/format';
@@ -84,6 +85,7 @@ export function SettingsScreen() {
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
   const [isPreviewShown, setPreviewShown] = useSetting('timer.showScramblePreview');
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
+  const [haptics, setHaptics] = useSetting('timer.haptics');
 
   // Not a setting of the database's: the copy is read while the modules that
   // name it are loading, so the language is a property of the load, and
@@ -255,6 +257,19 @@ export function SettingsScreen() {
           />
           {strings.settings.showScramblePreview}
         </label>
+
+        {/* Offered only where it can do something: an iPhone has no way to be
+            asked to vibrate, and a switch that changes nothing is a lie. */}
+        {canVibrate() ? (
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={haptics}
+              onChange={(event) => setHaptics(event.target.checked)}
+            />
+            {strings.settings.haptics}
+          </label>
+        ) : null}
 
         <label className="toggle">
           <input
