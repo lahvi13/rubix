@@ -6,6 +6,7 @@ import {
   parseHex,
   shiftToContrast,
   softenToContrast,
+  takesLightInk,
   toHex,
   type Rgb,
 } from './colour';
@@ -75,6 +76,20 @@ describe('contrast', () => {
     ['#595959', 7.0],
   ])('%s on white is %s', (value, expected) => {
     expect(contrast(hex(value), WHITE)).toBeCloseTo(expected, 1);
+  });
+});
+
+describe('takesLightInk', () => {
+  // The B face of every skin, which is the sticker the X sits on.
+  it.each<[string, string, boolean]>([
+    ['classic blue', '#2f6fd0', true],
+    ['high-contrast blue', '#0084ff', true],
+    ['colour-blind-safe blue', '#0072b2', true],
+    ['pastel blue is too light for it', '#93b6e8', false],
+    ['white itself', '#ffffff', false],
+    ['not a colour at all', 'blue', false],
+  ])('%s', (_name, sticker, expected) => {
+    expect(takesLightInk(sticker)).toBe(expected);
   });
 });
 

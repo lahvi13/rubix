@@ -68,6 +68,21 @@ export function contrast(a: Rgb, b: Rgb): number {
 }
 
 /**
+ * The least contrast a white letter needs on a sticker to stay readable: the
+ * WCAG floor for bold text at this size. The pastel blue face falls short of
+ * it, at about two to one, and keeps the dark ink there.
+ */
+const LIGHT_INK_CONTRAST = 3;
+
+const WHITE: Rgb = { r: 255, g: 255, b: 255 };
+
+/** Whether a white letter reads on a sticker of this colour. */
+export function takesLightInk(sticker: string): boolean {
+  const ground = parseHex(sticker);
+  return ground !== null && contrast(WHITE, ground) >= LIGHT_INK_CONTRAST;
+}
+
+/**
  * How many halvings the search below does. Ten brings the interval under a
  * thousandth, which is finer than the byte the answer is rounded to.
  */

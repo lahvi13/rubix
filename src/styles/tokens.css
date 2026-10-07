@@ -47,6 +47,10 @@
   /* A letter on a sticker: dark on every face in either theme, as the theme's
      own text colour was lost on yellow in the light one. */
   --sticker-ink: #15181f;
+  /* The one letter that is a button — the X closing the More card — in the
+     other ink, so it reads as doing something the other four do not. Only on
+     a sticker dark enough for it (takesLightInk in lib/colour.ts). */
+  --sticker-ink-action: #ffffff;
 
   /*
    * The phase colours — --phase-<slot> as ink, --phase-fill-<slot> as an area

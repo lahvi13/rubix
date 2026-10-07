@@ -254,6 +254,10 @@ button.wordmark__close {
   font-weight: 700;
 }
 
+button.wordmark__close.is-light-ink {
+  color: var(--sticker-ink-action);
+}
+
 button.wordmark__close::before {
   content: '';
   position: absolute;

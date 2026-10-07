@@ -1,4 +1,5 @@
 import type { Face } from '../domain/cube/notation';
+import { takesLightInk } from '../lib/colour';
 import { WORDMARK } from '../lib/wordmark';
 
 interface WordmarkProps {
@@ -29,7 +30,13 @@ export function Wordmark({ faces, className, close }: WordmarkProps) {
           <button
             key={letter}
             type="button"
-            className="wordmark__tile wordmark__close"
+            // In the other ink where the sticker allows it, so the one letter
+            // that does something looks it.
+            className={
+              takesLightInk(faces[face])
+                ? 'wordmark__tile wordmark__close is-light-ink'
+                : 'wordmark__tile wordmark__close'
+            }
             style={{ background: faces[face] }}
             aria-label={close.label}
             onClick={close.onClose}
