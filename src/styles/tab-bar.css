@@ -21,10 +21,11 @@
     --tabbar-height: calc(3rem + env(safe-area-inset-bottom));
   }
 
-  /* The bar holds the way to every screen, More included. Through the header,
-     to outrank the tap-target rules that come later and set its display. */
+  /* The bar holds the way to every screen, More included. The button keeps
+     its place, unseen, so the screen's name stays where it always stood
+     rather than sliding to the edge of the glass. */
   .app__header .app__menu-toggle {
-    display: none;
+    visibility: hidden;
   }
 }
 
@@ -112,6 +113,43 @@
 .tab-bar__tab.is-active .icon {
   background: var(--bg);
   box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/*
+ * More, as a card over the tab that raised it: as wide as its names, off both
+ * edges, and close to the thumb — a sheet across the whole width read as a
+ * stretched strip with five words at one end of it.
+ */
+@media (max-width: 719.98px) {
+  .detail.more-sheet {
+    inset-inline: auto var(--space-4);
+    bottom: calc(var(--tabbar-height) + var(--space-4));
+    width: fit-content;
+    min-width: 13rem;
+    max-width: 80vw;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 0.75rem 1.5rem var(--scrim);
+    padding-bottom: var(--space-6);
+    gap: var(--space-4);
+  }
+
+  /* Room under the grip, so it does not sit on the name. */
+  .more-sheet .sheet__bar {
+    padding-block: var(--space-7) var(--space-2);
+  }
+}
+
+/* The name at the head of the card, small, its X where the cross would be. */
+.more-sheet__mark {
+  margin-inline-start: auto;
+  gap: var(--space-1);
+}
+
+.more-sheet__mark .wordmark__tile {
+  width: 1.3rem;
+  height: 1.3rem;
+  font-size: var(--text-xs);
 }
 
 /* More: the screens the bar has no room for, as the menu lists them. */

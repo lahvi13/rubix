@@ -92,6 +92,26 @@ export function TimerIcon() {
   );
 }
 
+/** An open book: the beginner's guide. */
+export function LearnIcon() {
+  return (
+    <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5zM12 6.5v13" />
+    </svg>
+  );
+}
+
+/** A target: the drill is practice at hitting one case after another. */
+export function DrillIcon() {
+  return (
+    <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 12h.01" />
+    </svg>
+  );
+}
+
 /** One face of the cube, which is what the trainer is a catalogue of. */
 export function TrainerIcon() {
   return (

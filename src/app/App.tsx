@@ -19,7 +19,7 @@ import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute, type Route } from './router';
 import { MoreSheet } from './MoreSheet';
 import { TabBar } from './TabBar';
-import { isTab } from './tab-routes';
+import { isTab, tabRoutes } from './tab-routes';
 import { useBarScroll } from './use-bar-scroll';
 import { useScrollMemory } from './use-scroll-memory';
 import { useSharedScrambleLink } from './use-shared-scramble-link';
@@ -43,7 +43,8 @@ export function App() {
   // Hidden from the menu, not switched off: a bookmark on #/learn is somebody
   // who wants the guide, and hiding it is about a shorter menu, not a lock.
   const menu = ROUTES.filter((target) => target !== 'learn' || showLearn);
-  const beyondBar = menu.filter((target) => !isTab(target));
+  const tabs = tabRoutes(showLearn);
+  const beyondBar = menu.filter((target) => !isTab(target, tabs));
   const [isMoreOpen, setMoreOpen] = useState(false);
   const isBarShown = useBarScroll(route);
   // Applied here because this is the one component that is always mounted.
@@ -133,12 +134,18 @@ export function App() {
 
       <TabBar
         route={route}
+        tabs={tabs}
         isShown={isBarShown}
         isMoreOpen={isMoreOpen}
         onMore={() => setMoreOpen(true)}
       />
       {isMoreOpen ? (
-        <MoreSheet routes={beyondBar} route={route} onClose={() => setMoreOpen(false)} />
+        <MoreSheet
+          routes={beyondBar}
+          route={route}
+          faces={skin.faces}
+          onClose={() => setMoreOpen(false)}
+        />
       ) : null}
 
       <ErrorBanner />

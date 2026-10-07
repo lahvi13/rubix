@@ -56,9 +56,11 @@ export function useSheetDrag(
         stop.current?.();
         const sheet = panel.current;
         if (sheet === null || !event.isPrimary || event.button !== 0) return;
-        // On a wide screen the sheet is a column down the right-hand side, and
-        // down is not the way out of that.
-        if (sheet.getBoundingClientRect().left > 0) return;
+        // On a wide screen the sheet is a column down the right-hand side,
+        // floor to ceiling, and down is not the way out of that. Told by its
+        // top rather than its left: the More card stands clear of both edges
+        // and is still dragged down like any sheet.
+        if (sheet.getBoundingClientRect().top <= 0) return;
 
         const pointerId = event.pointerId;
         const from = { x: event.clientX, y: event.clientY };

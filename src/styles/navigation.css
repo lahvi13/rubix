@@ -241,3 +241,21 @@
   font-weight: 700;
   color: var(--sticker-ink);
 }
+
+/* The X when it closes the panel it heads: a sticker still, not a button
+   drawn over one, with the reach of a cross around it. */
+button.wordmark__close {
+  position: relative;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--sticker-ink);
+  font-weight: 700;
+}
+
+button.wordmark__close::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--space-5) * -1);
+}

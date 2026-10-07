@@ -25,6 +25,11 @@ interface SheetProps {
   onClose: () => void;
   /** Given, the panel is one of a sequence and can be stepped through. */
   paging?: SheetPaging;
+  /**
+   * Drawn at the end of the bar instead of the cross. Whatever it is, it has
+   * to close the panel — the bar's end is where the way out is looked for.
+   */
+  closeControl?: ReactNode;
   children: ReactNode;
 }
 
@@ -73,7 +78,7 @@ function useArrival(): boolean {
  * them had already drifted — the solve detail shipped without a wash, which is
  * why the list above it read as still being the page.
  */
-export function Sheet({ label, className, onClose, paging, children }: SheetProps) {
+export function Sheet({ label, className, onClose, paging, closeControl, children }: SheetProps) {
   useKeyCapture(true, onClose);
   useBackToClose(onClose);
   const isArriving = useArrival();
@@ -156,14 +161,16 @@ export function Sheet({ label, className, onClose, paging, children }: SheetProp
               </button>
             </div>
           )}
-          <button
-            type="button"
-            className="detail__close"
-            onClick={onClose}
-            aria-label={strings.history.close}
-          >
-            <CloseIcon />
-          </button>
+          {closeControl ?? (
+            <button
+              type="button"
+              className="detail__close"
+              onClick={onClose}
+              aria-label={strings.history.close}
+            >
+              <CloseIcon />
+            </button>
+          )}
         </div>
         {children}
       </aside>
