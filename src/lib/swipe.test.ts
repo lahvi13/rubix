@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   closesMenu,
+  isMenuDrag,
   isPullDown,
   isPullUp,
   isSheetDismissed,
@@ -66,8 +67,10 @@ describe('isPullUp', () => {
 
 describe('opensMenu', () => {
   it.each<[string, { x: number; y: number }, { x: number; y: number }, boolean]>([
-    ['a firm drag right from the left half', { x: 60, y: 400 }, { x: 200, y: 410 }, true],
-    ['the same drag begun in the right half', { x: 220, y: 400 }, { x: 360, y: 400 }, false],
+    ['a firm drag right from near the edge', { x: 60, y: 400 }, { x: 200, y: 410 }, true],
+    ['the edge of the zone still counts', { x: 80, y: 400 }, { x: 220, y: 400 }, true],
+    ['just past it does not', { x: 81, y: 400 }, { x: 221, y: 400 }, false],
+    ['the same drag begun mid-screen', { x: 160, y: 400 }, { x: 300, y: 400 }, false],
     ['leftwards never opens it', { x: 180, y: 400 }, { x: 40, y: 400 }, false],
     // The edge is the system's back gesture; the app never hears it anyway.
     ['from the very edge belongs to the system', { x: 10, y: 400 }, { x: 200, y: 400 }, false],
@@ -85,6 +88,21 @@ describe('closesMenu', () => {
     ['a scroll through a long menu', { x: 100, y: 600 }, { x: 60, y: 300 }, false],
   ])('%s', (_name, start, end, expected) => {
     expect(closesMenu(start, end, BOUNDS)).toBe(expected);
+  });
+});
+
+describe('isMenuDrag', () => {
+  it.each<[string, { x: number; y: number }, { x: number; y: number }, boolean, boolean]>([
+    ['rightwards from the zone, menu shut', { x: 50, y: 400 }, { x: 70, y: 402 }, false, true],
+    ['still inside the slop', { x: 50, y: 400 }, { x: 55, y: 400 }, false, false],
+    ['rightwards from mid-screen', { x: 150, y: 400 }, { x: 200, y: 400 }, false, false],
+    ['mostly down is a scroll', { x: 50, y: 400 }, { x: 70, y: 440 }, false, false],
+    ['leftwards with the menu shut', { x: 70, y: 400 }, { x: 40, y: 400 }, false, false],
+    ['from the system strip', { x: 10, y: 400 }, { x: 60, y: 400 }, false, false],
+    ['leftwards anywhere, menu open', { x: 300, y: 400 }, { x: 260, y: 405 }, true, true],
+    ['rightwards with the menu open', { x: 50, y: 400 }, { x: 90, y: 400 }, true, false],
+  ])('%s', (_name, start, now, isOpen, expected) => {
+    expect(isMenuDrag(start, now, BOUNDS, isOpen)).toBe(expected);
   });
 });
 

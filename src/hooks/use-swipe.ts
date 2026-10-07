@@ -1,4 +1,4 @@
-import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { readSwipe, type SwipeDirection } from '../lib/swipe';
 
 export interface SwipeHandlers {
@@ -33,6 +33,18 @@ export function useSwipe(
 ): SwipeHandlers {
   const start = useRef<{ x: number; y: number } | null>(null);
   const isFollowing = useRef(false);
+
+  // A page following the finger keeps the drag from the browser, so it is not
+  // finished as a fling that eats the next tap (see useSheetDrag).
+  useEffect(() => {
+    const sheet = panel.current;
+    if (sheet === null) return;
+    const hold = (event: TouchEvent) => {
+      if (isFollowing.current && event.cancelable) event.preventDefault();
+    };
+    sheet.addEventListener('touchmove', hold, { passive: false });
+    return () => sheet.removeEventListener('touchmove', hold);
+  }, [panel]);
 
   const settle = () => {
     if (isFollowing.current && panel.current !== null) springBack(panel.current);

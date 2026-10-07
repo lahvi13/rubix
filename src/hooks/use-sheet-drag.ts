@@ -17,6 +17,8 @@ export interface SheetDragHandlers {
  */
 export function useSheetDrag(
   panel: RefObject<HTMLElement | null>,
+  bar: RefObject<HTMLElement | null>,
+  scrim: RefObject<HTMLElement | null>,
   onClose: () => void,
 ): SheetDragHandlers {
   const close = useRef(onClose);
@@ -26,6 +28,27 @@ export function useSheetDrag(
 
   const stop = useRef<(() => void) | null>(null);
   useEffect(() => () => stop.current?.(), []);
+
+  /*
+   * A drag the sheet follows is the sheet's alone, and the browser is told so
+   * by cancelling its touchmoves. Left to itself, Chrome on Android reads a
+   * quick release as a fling — touch-action none or not — and the next tap,
+   * on the card the reader is reaching for, only stops that fling: measured,
+   * a tap 300 ms after a fast drag was lost and one after a still release was
+   * not. Its touchend cannot be cancelled instead; over touch-action none it
+   * arrives uncancelable. A listener of our own on the bar, not passive,
+   * because one passed through React would be.
+   */
+  const isPulling = useRef(false);
+  useEffect(() => {
+    const surface = bar.current;
+    if (surface === null) return;
+    const hold = (event: TouchEvent) => {
+      if (isPulling.current && event.cancelable) event.preventDefault();
+    };
+    surface.addEventListener('touchmove', hold, { passive: false });
+    return () => surface.removeEventListener('touchmove', hold);
+  }, [bar]);
 
   return useMemo(
     () => ({
@@ -54,6 +77,7 @@ export function useSheetDrag(
               return;
             }
             if (intent === null) return;
+            isPulling.current = true;
             sheet.style.transition = 'none';
           }
           draggedPx = Math.max(0, at.y - from.y);
@@ -68,7 +92,7 @@ export function useSheetDrag(
           end();
           if (intent !== 'pull') return;
           if (isSheetDismissed(draggedPx, sheet.offsetHeight, velocity)) {
-            slideAway(sheet, () => close.current());
+            slideAway(sheet, scrim.current, () => close.current());
           } else {
             springBack(sheet);
           }
@@ -88,6 +112,7 @@ export function useSheetDrag(
          */
         const end = () => {
           stop.current = null;
+          isPulling.current = false;
           window.removeEventListener('pointermove', move);
           window.removeEventListener('pointerup', release);
           window.removeEventListener('pointercancel', cancel);
@@ -98,7 +123,7 @@ export function useSheetDrag(
         window.addEventListener('pointercancel', cancel);
       },
     }),
-    [panel],
+    [panel, scrim],
   );
 }
 
@@ -117,13 +142,34 @@ function springBack(sheet: HTMLElement): void {
  * Off the bottom from where the finger left it, then closed. A timer stands in
  * for `transitionend`, which never comes if the transition is cut short — and
  * a sheet that never closes is worse than one that closes a frame early.
+ *
+ * Gone as far as the reader is concerned from the moment it is let go: the
+ * wash stops catching touches and fades with it, and a touch that lands before
+ * the slide is over closes it there and then, so a tap aimed at the card under
+ * it reaches the card. Left mounted and catching, the first tap after a quick
+ * drag only finished closing the sheet.
  */
-function slideAway(sheet: HTMLElement, onGone: () => void): void {
+function slideAway(sheet: HTMLElement, scrim: HTMLElement | null, onGone: () => void): void {
   if (prefersLessMotion()) {
     onGone();
     return;
   }
+  let isGone = false;
+  const finish = () => {
+    if (isGone) return;
+    isGone = true;
+    window.clearTimeout(timer);
+    window.removeEventListener('pointerdown', finish, true);
+    onGone();
+  };
+  sheet.style.pointerEvents = 'none';
   sheet.style.transition = 'transform var(--motion-slide) var(--motion-ease)';
   sheet.style.transform = 'translateY(100%)';
-  window.setTimeout(onGone, 240);
+  if (scrim !== null) {
+    scrim.style.pointerEvents = 'none';
+    scrim.style.transition = 'opacity var(--motion-slide) var(--motion-ease)';
+    scrim.style.opacity = '0';
+  }
+  window.addEventListener('pointerdown', finish, true);
+  const timer = window.setTimeout(finish, 240);
 }

@@ -80,12 +80,15 @@ function isPull(start: SwipePoint, end: SwipePoint, sign: 1 | -1): boolean {
 }
 
 /**
- * Whether a drag across the screen asks for the menu: rightwards, the way the
- * panel comes in, and begun in the half of the screen the menu lives on. The
- * other half keeps its hands free for whatever it holds.
+ * How far in from the left a drag may begin and still bring the menu. Close to
+ * the edge it comes from, beyond the strip the system keeps: begun anywhere in
+ * the left half, it opened on drags that were meant for something else.
  */
+const MENU_ZONE_PX = 80;
+
+/** Whether a drag across the screen asks for the menu: rightwards, from its edge. */
 export function opensMenu(start: SwipePoint, end: SwipePoint, bounds: SwipeBounds): boolean {
-  return start.x < bounds.width / 2 && readSwipe(start, end, bounds) === 'previous';
+  return start.x <= MENU_ZONE_PX && readSwipe(start, end, bounds) === 'previous';
 }
 
 /** The same drag the other way puts the menu back, wherever it began. */
@@ -95,6 +98,24 @@ export function closesMenu(start: SwipePoint, end: SwipePoint, bounds: SwipeBoun
 
 /** How far a finger may wander before the drag has said which way it is going. */
 const SLOP_PX = 8;
+
+/**
+ * Whether a drag still under way is heading for the menu — far enough to say
+ * so, decisively across, and the way that would open or close it. Read on
+ * every move, so the drag can be kept from the browser before it is over.
+ */
+export function isMenuDrag(
+  start: SwipePoint,
+  now: SwipePoint,
+  bounds: SwipeBounds,
+  isOpen: boolean,
+): boolean {
+  if (start.x <= EDGE_MARGIN_PX || start.x >= bounds.width - EDGE_MARGIN_PX) return false;
+  const dx = now.x - start.x;
+  const dy = now.y - start.y;
+  if (Math.abs(dx) < SLOP_PX || Math.abs(dx) < Math.abs(dy) * HORIZONTAL_RATIO) return false;
+  return isOpen ? dx < 0 : dx > 0 && start.x <= MENU_ZONE_PX;
+}
 
 /**
  * What a drag on a sheet's grip has turned out to be, once it has moved far

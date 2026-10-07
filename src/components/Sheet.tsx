@@ -80,7 +80,9 @@ export function Sheet({ label, className, onClose, paging, children }: SheetProp
   const entering = isArriving ? ' is-entering' : '';
 
   const panel = useRef<HTMLElement>(null);
-  const drag = useSheetDrag(panel, onClose);
+  const bar = useRef<HTMLDivElement>(null);
+  const scrim = useRef<HTMLButtonElement>(null);
+  const drag = useSheetDrag(panel, bar, scrim, onClose);
 
   const stepper = (direction: SwipeDirection) =>
     (direction === 'next' ? paging?.onNext : paging?.onPrevious) ?? null;
@@ -103,6 +105,7 @@ export function Sheet({ label, className, onClose, paging, children }: SheetProp
   return (
     <>
       <button
+        ref={scrim}
         type="button"
         className={`app__scrim sheet-scrim${entering}`}
         aria-label={strings.history.close}
@@ -120,7 +123,7 @@ export function Sheet({ label, className, onClose, paging, children }: SheetProp
             on the scrolling panel the browser claims the drag long before it
             is a pull. The grip says so, and takes a tap as well — the same
             grip the timer's list of solves is put away with. */}
-        <div className="sheet__bar" {...drag}>
+        <div ref={bar} className="sheet__bar" {...drag}>
           <button
             type="button"
             className="sheet__grip"

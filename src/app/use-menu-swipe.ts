@@ -1,8 +1,10 @@
-import { useRef, type PointerEvent as ReactPointerEvent } from 'react';
-import { closesMenu, opensMenu } from '../lib/swipe';
+import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import { closesMenu, isMenuDrag, opensMenu } from '../lib/swipe';
 
 export interface MenuSwipeHandlers {
+  ref: (element: HTMLElement | null) => (() => void) | undefined;
   onPointerDown: (event: ReactPointerEvent) => void;
+  onPointerMove: (event: ReactPointerEvent) => void;
   onPointerUp: (event: ReactPointerEvent) => void;
   onPointerCancel: () => void;
 }
@@ -39,20 +41,51 @@ export function useMenuSwipe(
   setOpen: (isOpen: boolean) => void,
 ): MenuSwipeHandlers {
   const start = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const open = useRef(isOpen);
+  useEffect(() => {
+    open.current = isOpen;
+  });
+
+  /*
+   * Once a drag is heading for the menu, its touchmoves are cancelled. Left to
+   * the browser, Chrome on Android finishes a quick swipe as a fling even with
+   * nothing to scroll, and the first tap after it — on the menu item the
+   * swipe was for — only stops the fling: measured, three swipes in four lost
+   * that tap. Cancelling the touchend instead did not help. Only the drags
+   * that are the menu's are held; a scroll goes on being the browser's.
+   */
+  const isSwiping = useRef(false);
+  const ref = useCallback((element: HTMLElement | null) => {
+    if (element === null) return undefined;
+    const hold = (event: TouchEvent) => {
+      if (isSwiping.current && event.cancelable) event.preventDefault();
+    };
+    element.addEventListener('touchmove', hold, { passive: false });
+    return () => element.removeEventListener('touchmove', hold);
+  }, []);
 
   return {
+    ref,
     onPointerDown: (event) => {
       const target = event.target;
       const isElsewhere =
         !event.isPrimary ||
         (!isOpen && target instanceof Element && target.closest(OWN_DRAGS) !== null);
+      isSwiping.current = false;
       start.current = isElsewhere
         ? null
         : { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
     },
+    onPointerMove: (event) => {
+      const from = start.current;
+      if (from === null || isSwiping.current || from.pointerId !== event.pointerId) return;
+      const to = { x: event.clientX, y: event.clientY };
+      isSwiping.current = isMenuDrag(from, to, { width: window.innerWidth }, open.current);
+    },
     onPointerUp: (event) => {
       const from = start.current;
       start.current = null;
+      isSwiping.current = false;
       if (from === null || from.pointerId !== event.pointerId) return;
 
       const to = { x: event.clientX, y: event.clientY };
@@ -63,6 +96,7 @@ export function useMenuSwipe(
     },
     onPointerCancel: () => {
       start.current = null;
+      isSwiping.current = false;
     },
   };
 }
