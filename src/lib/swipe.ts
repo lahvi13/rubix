@@ -18,6 +18,13 @@ export interface SwipeBounds {
 const MIN_DISTANCE_PX = 60;
 
 /**
+ * A page turns sooner than that. It follows the finger now, so a short drag
+ * no longer leaves the reader guessing whether it took — and at 60 the turn
+ * asked for most of a thumb's sweep across a phone.
+ */
+const PAGE_DISTANCE_PX = 40;
+
+/**
  * And it has to be this much more across than down. A sheet scrolls under the
  * thumb, so a drag that is merely more horizontal than vertical would turn
  * ordinary scrolling into skipped pages — which is worse than no swipe at all.
@@ -44,7 +51,7 @@ export function readSwipe(
 
   const dx = end.x - start.x;
   const dy = end.y - start.y;
-  if (Math.abs(dx) < MIN_DISTANCE_PX) return null;
+  if (Math.abs(dx) < PAGE_DISTANCE_PX) return null;
   if (Math.abs(dx) < Math.abs(dy) * HORIZONTAL_RATIO) return null;
 
   // Dragging leftward pulls the next one in, the way pages move.

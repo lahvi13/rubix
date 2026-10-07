@@ -15,8 +15,9 @@ describe('readSwipe', () => {
   it.each<[string, { x: number; y: number }, { x: number; y: number }, SwipeDirection | null]>([
     ['a firm drag left is the next one', from, { x: 120, y: 405 }, 'next'],
     ['a firm drag right is the one before', from, { x: 280, y: 395 }, 'previous'],
-    ['a short drag is aiming, not swiping', from, { x: 160, y: 400 }, null],
-    ['exactly at the threshold is still short', from, { x: 141, y: 400 }, null],
+    ['a short drag is aiming, not swiping', from, { x: 170, y: 400 }, null],
+    ['just short of the threshold', from, { x: 161, y: 400 }, null],
+    ['the threshold itself turns the page', from, { x: 160, y: 400 }, 'next'],
     ['a drag more down than across is a scroll', from, { x: 120, y: 300 }, null],
     // The case that matters: scrolling the sheet must never skip a page.
     ['a long scroll with a little sideways drift', from, { x: 250, y: 40 }, null],
