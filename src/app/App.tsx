@@ -17,7 +17,10 @@ import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute, type Route } from './router';
-import { useMenuSwipe } from './use-menu-swipe';
+import { MoreSheet } from './MoreSheet';
+import { TabBar } from './TabBar';
+import { isTab } from './tab-routes';
+import { useBarScroll } from './use-bar-scroll';
 import { useScrollMemory } from './use-scroll-memory';
 import { useSharedScrambleLink } from './use-shared-scramble-link';
 import { ErrorBanner } from './ErrorBanner';
@@ -40,6 +43,9 @@ export function App() {
   // Hidden from the menu, not switched off: a bookmark on #/learn is somebody
   // who wants the guide, and hiding it is about a shorter menu, not a lock.
   const menu = ROUTES.filter((target) => target !== 'learn' || showLearn);
+  const beyondBar = menu.filter((target) => !isTab(target));
+  const [isMoreOpen, setMoreOpen] = useState(false);
+  const isBarShown = useBarScroll(route);
   // Applied here because this is the one component that is always mounted.
   useAppearance();
   const skin = useCubeSkin();
@@ -49,10 +55,9 @@ export function App() {
   // the press means "out of this". Without it the page under the menu went
   // back a screen and the menu stayed open over it.
   useBackToClose(() => setMenuOpen(false), isMenuOpen);
-  const menuSwipe = useMenuSwipe(isMenuOpen, setMenuOpen);
 
   return (
-    <div className="app" {...menuSwipe}>
+    <div className="app">
       <header className="app__header">
         <button
           type="button"
@@ -125,6 +130,16 @@ export function App() {
         </Suspense>
         </HeaderSlotContext.Provider>
       </Fragment>
+
+      <TabBar
+        route={route}
+        isShown={isBarShown}
+        isMoreOpen={isMoreOpen}
+        onMore={() => setMoreOpen(true)}
+      />
+      {isMoreOpen ? (
+        <MoreSheet routes={beyondBar} route={route} onClose={() => setMoreOpen(false)} />
+      ) : null}
 
       <ErrorBanner />
       <UndoBar />

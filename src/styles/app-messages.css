@@ -61,7 +61,7 @@
   position: fixed;
   inset-inline: 1rem;
   bottom: 1rem;
-  bottom: calc(1rem + env(safe-area-inset-bottom));
+  bottom: calc(1rem + max(var(--tabbar-height), env(safe-area-inset-bottom)));
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -201,6 +201,8 @@ export const en = {
     about: 'About',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
+    more: 'More',
+    screens: 'Screens',
   },
   stats: {
     empty: 'No solves in this session yet.',

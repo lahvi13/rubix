@@ -182,6 +182,8 @@ export const cs: Strings = {
     about: 'O aplikaci',
     openMenu: 'Otevřít menu',
     closeMenu: 'Zavřít menu',
+    more: 'Více',
+    screens: 'Obrazovky',
   },
   stats: {
     empty: 'V této session zatím nejsou žádná složení.',

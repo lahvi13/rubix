@@ -17,6 +17,7 @@
 @import './styles/timer-display.css';
 @import './features/timer/solves.css';
 @import './styles/navigation.css';
+@import './styles/tab-bar.css';
 @import './features/history/history.css';
 @import './styles/sheet.css';
 @import './features/history/solve-detail.css';

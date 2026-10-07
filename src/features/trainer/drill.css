@@ -311,7 +311,11 @@
  */
 .drill__pool .drill__picker-done {
   position: sticky;
-  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  bottom: max(
+    var(--space-4),
+    env(safe-area-inset-bottom),
+    calc(var(--tabbar-height) + var(--space-4))
+  );
   background: var(--surface);
   box-shadow: 0 0 0 var(--space-4) var(--surface);
 }

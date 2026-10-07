@@ -5,8 +5,9 @@
   inset-inline: 1rem;
   bottom: 1rem;
   /* Clear of the home indicator: this one is tapped, and a tap that lands on
-     the indicator swipes the app away instead. */
-  bottom: calc(1rem + env(safe-area-inset-bottom));
+     the indicator swipes the app away instead. And clear of the tab bar,
+     which already keeps clear of it. */
+  bottom: calc(1rem + max(var(--tabbar-height), env(safe-area-inset-bottom)));
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -122,10 +123,6 @@
   max-width: 80vw;
   padding: var(--space-5) var(--space-4) max(var(--space-6), env(safe-area-inset-bottom));
   overflow-y: auto;
-  /* A scroller sets its own touch-action rather than taking the app's, and
-     left to itself it hands a sideways drag to the browser — the one that
-     puts the menu away. */
-  touch-action: pan-y pinch-zoom;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0 var(--radius-lg) 0 0;
@@ -177,7 +174,7 @@
 
 /* Shorter than a button standing alone: a row is the panel's whole width,
    which is target enough, and nine of them at full height ran long. */
-.app__menu button {
+:is(.app__menu, .more-sheet__list) button {
   border-color: transparent;
   font-size: var(--text-lg);
   min-height: 2.25rem;
@@ -191,7 +188,7 @@
   border-top: 1px solid var(--border);
 }
 
-.app__menu button.is-active {
+:is(.app__menu, .more-sheet__list) button.is-active {
   border-color: var(--border);
   color: var(--text);
   background: var(--bg);

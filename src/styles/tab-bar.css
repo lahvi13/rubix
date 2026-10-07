@@ -1,0 +1,114 @@
+/* Tab bar — the way between screens on a phone (app/TabBar.tsx) */
+
+/*
+ * How much of the bottom edge the bar takes, and so how much every screen
+ * leaves free for it. Nothing on a wide screen, where the menu in the header
+ * stays the way about; the bar takes over where a sheet stops being a column
+ * down the side (styles/sheet.css) and comes up from the bottom instead.
+ */
+:root {
+  --tabbar-height: 0px;
+}
+
+@media (max-width: 719.98px) {
+  :root {
+    --tabbar-height: calc(3rem + env(safe-area-inset-bottom));
+  }
+
+  /* The bar holds the way to every screen, More included. Through the header,
+     to outrank the tap-target rules that come later and set its display. */
+  .app__header .app__menu-toggle {
+    display: none;
+  }
+}
+
+/*
+ * A solve takes the whole screen back: the bar goes, and with it the room
+ * left for it. A thumb that lands down there mid-solve is stopping the
+ * clock, not asking for the stats.
+ */
+.app:has(.screen--solving) {
+  --tabbar-height: 0px;
+}
+
+/* The page ends where the bar begins, so its last row is never under it. */
+.app {
+  padding-bottom: var(--tabbar-height);
+}
+
+.tab-bar {
+  display: none;
+}
+
+@media (max-width: 719.98px) {
+  .tab-bar {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    /* Over the page, under the wash a sheet or the menu lays over it. */
+    z-index: 20;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    height: var(--tabbar-height);
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    transition: translate var(--motion-slide) var(--motion-ease);
+  }
+
+  /* Out of the way while the reader scrolls down a long page. */
+  .tab-bar.is-hidden {
+    translate: 0 100%;
+  }
+
+  .app:has(.screen--solving) .tab-bar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-bar {
+    transition: none;
+  }
+}
+
+/* A fifth of the bar each, the whole height of it: the target is the column,
+   not the icon drawn in it. */
+.tab-bar__tab {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+}
+
+.tab-bar__tab .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: var(--space-2) var(--space-6);
+  box-sizing: content-box;
+  border-radius: var(--radius-pill);
+  stroke-width: 1.8;
+}
+
+/* The screen you are on: the icon in full colour on a pill of the page's own
+   ground, the same pair the menu marks its current row with. */
+.tab-bar__tab.is-active {
+  border: none;
+  background: none;
+  color: var(--text);
+}
+
+.tab-bar__tab.is-active .icon {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* More: the screens the bar has no room for, as the menu lists them. */
+.more-sheet__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
