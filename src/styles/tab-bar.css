@@ -21,11 +21,19 @@
     --tabbar-height: calc(3rem + env(safe-area-inset-bottom));
   }
 
-  /* The bar holds the way to every screen, More included. The button keeps
-     its place, unseen, so the screen's name stays where it always stood
-     rather than sliding to the edge of the glass. */
+  /* The bar holds the way to every screen, More included. Through the header,
+     to outrank the tap-target rules that come later and set its display. */
   .app__header .app__menu-toggle {
-    visibility: hidden;
+    display: none;
+  }
+
+  /*
+   * Without the button the name slid to the edge of the glass, and kept in
+   * the button's empty place it read as pushed in further than before — the
+   * gap looks wider with nothing in it. Between the two, chosen by eye.
+   */
+  .app__title {
+    margin-inline-start: calc(var(--space-8) + var(--space-3));
   }
 }
 
@@ -125,7 +133,7 @@
     inset-inline: auto var(--space-4);
     bottom: calc(var(--tabbar-height) + var(--space-4));
     width: fit-content;
-    min-width: 13rem;
+    min-width: 11rem;
     max-width: 80vw;
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
