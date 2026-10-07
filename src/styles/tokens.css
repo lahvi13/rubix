@@ -12,6 +12,16 @@
      towards the light in either theme. */
   --surface-raised: light-dark(#ffffff, #232936);
   --border: light-dark(#d9dde5, #262b36);
+  /*
+   * The two lines that frame a phone's screen: under the header and over the
+   * tab bar. In the border's colour they all but vanished on the dark ground
+   * once the menu button no longer edged the header; a step towards the muted
+   * text keeps them read as the screen's own edges. The colour does it, not
+   * the width: 1.5px is drawn exactly as 1px on a phone (Chrome rounds border
+   * widths down), and 2px read as a frame rather than a line.
+   */
+  --divider: color-mix(in srgb, var(--border), var(--muted) 40%);
+  --divider-width: 1px;
   /* The same rule drawn on a raised surface: on a dark ground --border is a
      shade off --surface-raised, and a button outlined in it lost its edge. */
   --border-raised: light-dark(#d9dde5, #343a47);

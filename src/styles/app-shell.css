@@ -35,7 +35,7 @@
      sitting out at the edges of the monitor. */
   padding-inline-start: max(var(--space-5), env(safe-area-inset-left), (100% - var(--page-width)) / 2);
   padding-inline-end: max(var(--space-5), env(safe-area-inset-right), (100% - var(--page-width)) / 2);
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--divider-width) solid var(--divider);
 }
 
 /*

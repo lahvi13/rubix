@@ -68,7 +68,7 @@
     height: var(--tabbar-height);
     padding-bottom: env(safe-area-inset-bottom);
     background: var(--surface);
-    border-top: 1px solid var(--border);
+    border-top: var(--divider-width) solid var(--divider);
     transition: translate var(--motion-slide) var(--motion-ease);
   }
 
