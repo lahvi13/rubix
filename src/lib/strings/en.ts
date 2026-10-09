@@ -285,7 +285,6 @@ export const en = {
     goalAll: (count: number) => `All ${count} solves`,
     goalSeries: 'Goal',
     records: 'Records',
-    recordsChart: 'Each record over time, as a step down',
     recordKind: 'Which record',
     noRecords: (n: number) => (n === 1 ? 'No records yet.' : `No ao${n} yet — it takes ${n} solves.`),
     /** In place of the gain on the first record, which beat nothing. */

@@ -264,7 +264,6 @@ export const cs: Strings = {
     goalAll: (count: number) => `${plural(count, 'Všechna', 'Všechna', 'Všech')} ${count} složení`,
     goalSeries: 'Cíl',
     records: 'Rekordy',
-    recordsChart: 'Rekordy v čase, každý jako schod dolů',
     recordKind: 'Který rekord',
     noRecords: (n: number) =>
       n === 1 ? 'Zatím žádné rekordy.' : `Zatím žádný ao${n} — je na něj potřeba ${n} složení.`,
