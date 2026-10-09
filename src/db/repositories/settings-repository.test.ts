@@ -80,6 +80,14 @@ describe('readSetting', () => {
     expect(readSetting(stored, 'ui.theme')).toBe(expected);
   });
 
+  it('keeps the layout of the trainer to the device it was chosen on', async () => {
+    await setSetting('ui.caseLayout', 'list');
+
+    // The phone and the monitor want different layouts, so it stays out of an
+    // export the way text size does.
+    expect((await db.settings.get('ui.caseLayout'))?.deviceLocal).toBe(1);
+  });
+
   it('falls back to the default itself, not a copy of it', () => {
     expect(readSetting(new Map(), 'trainer.drillCaseIds')).toBe(
       SETTING_DEFAULTS['trainer.drillCaseIds'],

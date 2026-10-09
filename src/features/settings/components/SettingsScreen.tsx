@@ -2,10 +2,12 @@ import { CubeDiagram } from '../../../components/CubeDiagram';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import {
+  CASE_LAYOUTS,
   CLOCK_FACES,
   FONTS,
   SIZES,
   THEMES,
+  type CaseLayout,
   type ClockFace,
   type Font,
   type Size,
@@ -44,6 +46,12 @@ const FONT_LABELS: Record<Font, string> = {
   system: strings.settings.fontSystem,
 };
 
+const CASE_LAYOUT_LABELS: Record<CaseLayout, string> = {
+  small: strings.settings.caseLayoutSmall,
+  large: strings.settings.caseLayoutLarge,
+  list: strings.settings.caseLayoutList,
+};
+
 const SIZE_LABELS: Record<Size, string> = {
   small: strings.settings.sizeSmall,
   medium: strings.settings.sizeMedium,
@@ -80,6 +88,7 @@ export function SettingsScreen() {
   const resolved = useResolvedTheme();
   const [skinId, setSkinId] = useSetting('ui.cubeSkin');
   const [twistyMode, setTwistyMode] = useSetting('ui.twistyMode');
+  const [caseLayout, setCaseLayout] = useSetting('ui.caseLayout');
   const [showLearn, setShowLearn] = useSetting('ui.showLearn');
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
@@ -198,6 +207,15 @@ export function SettingsScreen() {
           onChange={setTwistyMode}
         />
         <p className="data-section__hint">{strings.settings.twistyModeHint}</p>
+
+        <ChoiceRow
+          label={strings.settings.caseLayout}
+          options={CASE_LAYOUTS}
+          labels={CASE_LAYOUT_LABELS}
+          value={caseLayout}
+          onChange={setCaseLayout}
+        />
+        <p className="data-section__hint">{strings.settings.caseLayoutHint}</p>
 
         {/* Not about the trainer, whatever the guide points at: this is what
             the menu has in it, which is the first thing anybody sees. */}

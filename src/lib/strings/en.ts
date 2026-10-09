@@ -662,6 +662,12 @@ export const en = {
     previewFlat: 'Flat',
     preview3d: '3D',
     twistyModeHint: 'Flat as an unfolded net, 3D as a cube seen from a corner.',
+    caseLayout: 'Trainer cases',
+    caseLayoutSmall: 'Small',
+    caseLayoutLarge: 'Large',
+    caseLayoutList: 'List',
+    caseLayoutHint:
+      'Small fits the most cases on screen, the list writes the algorithms largest. Kept for this device only.',
     timer: 'Timer',
     holdThreshold: 'Hold to start',
     holdOff: 'Off',

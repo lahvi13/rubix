@@ -2,7 +2,7 @@ import { liveQuery } from 'dexie';
 import { db } from '../schema';
 import type { Flag } from '../types';
 import { now } from '../../lib/clock';
-import type { ClockFace, Font, Size, Theme } from '../../lib/appearance';
+import type { CaseLayout, ClockFace, Font, Size, Theme } from '../../lib/appearance';
 import type { RunningDisplay } from '../../lib/format';
 
 /**
@@ -40,6 +40,12 @@ export interface SettingValues {
   'ui.clockFace': ClockFace;
   'ui.twistyMode': '2D' | '3D';
   'ui.cubeSkin': string;
+  /**
+   * Device-local: how the trainer lays out a set's cases. The phone held in
+   * one hand and the monitor across the desk want different answers, and the
+   * same person wants both.
+   */
+  'ui.caseLayout': CaseLayout;
   /**
    * Whether the beginner's guide is offered in the menu. Somebody who solves
    * the cube already has no use for it, and a screen they will never open is
@@ -203,6 +209,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.clockFace': 'digital',
   'ui.twistyMode': '3D',
   'ui.cubeSkin': 'classic',
+  'ui.caseLayout': 'small',
   'ui.showLearn': true,
   'ui.learnExplanations': true,
   'ui.installNudgeDismissed': false,
@@ -238,6 +245,7 @@ const DEVICE_LOCAL_PREFIXES = [
   'ui.theme',
   'ui.textSize',
   'ui.clockSize',
+  'ui.caseLayout',
   'ui.installNudge',
   'data.',
 ];

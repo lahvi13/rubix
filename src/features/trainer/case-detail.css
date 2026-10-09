@@ -233,10 +233,14 @@
  */
 .alg--compact {
   width: 100%;
-  font-size: var(--text-xs);
-  font-weight: 700;
-  line-height: 1.35;
-  letter-spacing: 0.01em;
+  /* Read at arm's length on a phone. At the size of the case's name, bold, the
+     primes were specks and the letters ran together; a size up and a weight
+     down reads better than either change alone. The line height is room for
+     the blocks: tighter, the outline of one touched the one below. */
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.7;
+  letter-spacing: 0;
 }
 
 .alg--compact .alg__part {
@@ -250,7 +254,7 @@
 
 .alg--compact .alg__part--trigger .alg__moves,
 .alg--compact .alg__part--group .alg__moves {
-  padding: 0 var(--space-1);
+  padding: 0.05em var(--space-2);
 }
 
 .alg__label {

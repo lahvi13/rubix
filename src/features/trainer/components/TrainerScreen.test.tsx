@@ -97,6 +97,18 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     expect(screen.getAllByRole('button', { name: /^F2L \d+$/ })).toHaveLength(41);
   });
 
+  it.each([
+    ['small', 'case-grid'],
+    ['large', 'case-grid case-grid--large'],
+    ['list', 'case-grid case-grid--list'],
+  ] as const)('lays the cases out %s, as chosen in Settings', async (layout, className) => {
+    await setSetting('ui.caseLayout', layout);
+    render(<TrainerScreen />);
+
+    const card = await screen.findByRole('button', { name: 'F2L 1' }, SLOW_RENDER);
+    expect(card.parentElement?.className).toBe(className);
+  });
+
   it('names the triggers inside the algorithm of a case', async () => {
     const user = userEvent.setup();
     render(<TrainerScreen />);

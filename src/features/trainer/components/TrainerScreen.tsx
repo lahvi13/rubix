@@ -13,6 +13,7 @@ import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../level
 import { useAlgSets, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
+import type { CaseLayout } from '../../../lib/appearance';
 import { useTriggers } from '../hooks/use-triggers';
 import { CaseCard } from './CaseCard';
 import { CaseDetail } from './CaseDetail';
@@ -21,6 +22,16 @@ import { SetSummary } from './SetSummary';
 import { TriggerPanel } from './TriggerPanel';
 
 type Panel = 'none' | 'notation' | 'triggers';
+
+/**
+ * The default grid is the small one; the others only change how wide a card
+ * may get, and the list lays each card out on its side.
+ */
+const CASE_GRID_CLASS: Record<CaseLayout, string> = {
+  small: 'case-grid',
+  large: 'case-grid case-grid--large',
+  list: 'case-grid case-grid--list',
+};
 
 export function TrainerScreen() {
   const sets = useAlgSets();
@@ -46,6 +57,7 @@ export function TrainerScreen() {
   // back to. It was a setting once, beside a choice made on this screen that
   // was forgotten on leaving it; remembering the choice made the setting moot.
   const [isTwoLook, setTwoLook] = useSetting('trainer.twoLookDefault');
+  const [caseLayout] = useSetting('ui.caseLayout');
 
   // A remembered set that is no longer there — a pack gone from a restored
   // backup — leaves the trainer on the first one rather than on nothing. What
@@ -198,7 +210,7 @@ export function TrainerScreen() {
       {(groups ?? []).map((group) => (
         <section key={group.name} className="trainer__group">
           <h2 className="trainer__group-title">{packLabel(group.name)}</h2>
-          <div className="case-grid">
+          <div className={CASE_GRID_CLASS[caseLayout] ?? CASE_GRID_CLASS.small}>
             {group.cases.map((entry) => (
               <CaseCard
                 key={entry.algCase.id}

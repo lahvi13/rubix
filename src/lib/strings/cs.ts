@@ -596,6 +596,12 @@ export const cs: Strings = {
     previewFlat: 'Plochý',
     preview3d: '3D',
     twistyModeHint: 'Plochý jako rozložená síť, 3D jako kostka viděná od rohu.',
+    caseLayout: 'Případy v trenažéru',
+    caseLayoutSmall: 'Malé',
+    caseLayoutLarge: 'Velké',
+    caseLayoutList: 'Seznam',
+    caseLayoutHint:
+      'Malé ukážou nejvíc případů najednou, seznam píše algoritmy největší. Platí jen pro toto zařízení.',
     timer: 'Timer',
     holdThreshold: 'Podržení pro start',
     holdOff: 'Vypnuto',

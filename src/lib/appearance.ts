@@ -13,11 +13,18 @@ export const THEMES = ['system', 'light', 'dark'] as const;
 export const FONTS = ['sans', 'mono', 'system'] as const;
 export const SIZES = ['small', 'medium', 'large'] as const;
 export const CLOCK_FACES = ['match', 'mono', 'digital'] as const;
+/**
+ * Not on the document like the rest: only the trainer's grid of cases reads
+ * it. Named by size rather than by columns, because how many columns a size
+ * comes to is the screen's business — three on a phone is ten on a monitor.
+ */
+export const CASE_LAYOUTS = ['small', 'large', 'list'] as const;
 
 export type Theme = (typeof THEMES)[number];
 export type Font = (typeof FONTS)[number];
 export type Size = (typeof SIZES)[number];
 export type ClockFace = (typeof CLOCK_FACES)[number];
+export type CaseLayout = (typeof CASE_LAYOUTS)[number];
 
 export type ResolvedTheme = 'light' | 'dark';
 
