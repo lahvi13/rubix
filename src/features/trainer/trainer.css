@@ -80,12 +80,16 @@
   opacity: 0.72;
 }
 
-/* As narrow as a card goes before a trigger of four moves no longer fits on
-   one line of it and splits in two: three across a phone, at either text
-   size. */
+/*
+ * As narrow as a card goes before a trigger of four moves no longer fits on
+ * one line of it and splits in two — but never so wide that fewer than three
+ * fit across. In rem alone the count was the phone's to decide: Android's own
+ * text scaling on top of the app's large size took the third column away, and
+ * small cards came out bigger than large ones.
+ */
 .case-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(6.5rem, (100% - 2 * var(--space-4)) / 3), 1fr));
   gap: var(--space-4);
 }
 
@@ -178,11 +182,12 @@
 
 /*
  * The other two layouts, chosen in Settings. Each is a width a card may not
- * go under, so the number of columns is left to the screen: two large cards
- * across a phone, five or six across a monitor.
+ * go under, so the number of columns is left to the screen — four large cards
+ * across a monitor — down to a floor: large is two across however big the
+ * text, or it would be the same single column as the list.
  */
 .case-grid--large {
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(9.5rem, (100% - var(--space-4)) / 2), 1fr));
 }
 
 /* Less than the whole card: at full width the cube crowds out the moves. */
@@ -201,8 +206,10 @@
  * for two or three rows side by side, and a row stretched across all of it
  * would leave the moves far from their cube.
  */
+/* Capped at the width there is: with the text scaled up, 20rem is wider than
+   a phone, and a row that wide runs off the edge of the screen. */
 .case-grid--list {
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(20rem, 100%), 1fr));
 }
 
 .case-grid--list .case-card {
