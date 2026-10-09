@@ -36,6 +36,7 @@ export type PlayerStickering =
   | 'lastLayerCorners'
   | 'leftBlock'
   | 'blocks'
+  | 'blocksAndCorners'
   | 'cornerOrientation'
   | 'lseOrientation';
 
@@ -184,6 +185,10 @@ function maskFor(stickering: PlayerStickering, standing: string): Promise<Sticke
       return maskByHome(shown, ({ home }) => (isLeftBlock(home) ? 'regular' : 'ignored'));
     case 'blocks':
       return maskByHome(shown, ({ home }) => (isBlock(home) ? 'regular' : 'ignored'));
+    case 'blocksAndCorners':
+      return maskByHome(shown, ({ orbit, home }) =>
+        isBlock(home) || (orbit === 'CORNERS' && home.has('U')) ? 'regular' : 'ignored',
+      );
     case 'cornerOrientation':
       // A piece's first sticker is the one that faces up or down when it is
       // home: for a top corner, its yellow.

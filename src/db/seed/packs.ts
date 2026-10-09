@@ -5,6 +5,7 @@
  */
 
 import beginner from './beginner.json';
+import cmll from './cmll.json';
 import f2l from './f2l.json';
 import f2lAdvanced from './f2l-advanced.json';
 import f2lExpert from './f2l-expert.json';
@@ -78,6 +79,7 @@ export const PACKS: readonly AlgPack[] = [
   twoLookPll,
   beginner,
   twoLookCmll,
+  cmll,
 ];
 
 /**

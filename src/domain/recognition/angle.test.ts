@@ -88,9 +88,9 @@ describe('aufForAngle', () => {
       }
     }
 
-    // 204 cases, four rotations, four AUFs — a guard against the loop quietly
+    // 246 cases, four rotations, four AUFs — a guard against the loop quietly
     // running over nothing.
-    expect(checked).toBe(204 * 16);
+    expect(checked).toBe(246 * 16);
   });
 
   it('finds the turn for an OLL of your own that orients and permutes its own way', () => {
@@ -178,6 +178,8 @@ describe('aufForAngle', () => {
 
 /** Solved as the set looks at the case, whichever way up, give or take a last U turn. */
 function solvesAsShown(state: CubeState, stickering: Stickering): boolean {
-  const upright = canonicalise(state);
+  // Stood up as the drill stands it: a Roux case not at all, since CMLL may
+  // leave the middle slice turned.
+  const upright = stickering === 'blocksAndCorners' ? state : canonicalise(state);
   return DRILL_AUFS.some((end) => isSolvedAsShown(end === '' ? upright : applyAlg(upright, moves(end)), stickering));
 }

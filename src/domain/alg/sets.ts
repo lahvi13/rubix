@@ -49,6 +49,7 @@ export function packAlgKind(algorithmId: string): PackAlgKind {
 export const TWO_LOOK_SETS: Readonly<Record<string, string>> = {
   oll: '2look-oll',
   pll: '2look-pll',
+  cmll: '2look-cmll',
 };
 
 /**
@@ -73,6 +74,7 @@ export const LEVEL_BASE_SETS: Readonly<Record<string, string>> = {
 export const FULL_SETS: Readonly<Record<string, string>> = {
   '2look-oll': 'oll',
   '2look-pll': 'pll',
+  '2look-cmll': 'cmll',
 };
 
 /**
@@ -123,6 +125,7 @@ export const SET_ORDER: readonly string[] = [
   '2look-pll',
   'pll',
   '2look-cmll',
+  'cmll',
 ];
 
 /**
@@ -149,6 +152,9 @@ export const BEGINNER_GROUPS = {
  * guide teaches one case of each look; the set holds the rest.
  */
 export const TWO_LOOK_CMLL_SET_ID = '2look-cmll';
+
+/** All of Roux's corners in one look: forty-two cases, read by the blocks around them. */
+export const CMLL_SET_ID = 'cmll';
 export const TWO_LOOK_CMLL_GROUPS = {
   orientation: '1 / Orientation',
   permutation: '2 / Permutation',

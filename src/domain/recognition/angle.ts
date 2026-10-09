@@ -79,8 +79,12 @@ export function aufForAngle(
   const outright = results.findIndex((result) => isSolvedIgnoringOrientation(result));
   if (outright !== -1) return [...(candidates[outright] ?? [])];
 
+  // A Roux case is not stood up at all: the algorithm may leave the middle
+  // slice turned, which moves the centres the usual way goes by, and its
+  // blocks are wherever its left and right are (isSolvedAsShown).
+  const standUp = stickering === 'blocksAndCorners' ? (turned: CubeState) => turned : canonicalise;
   const asShown = results.findIndex((result) => {
-    const upright = canonicalise(result);
+    const upright = standUp(result);
     return CANDIDATES.some((end) => isSolvedAsShown(applyAlg(upright, end), stickering));
   });
   return asShown === -1 ? null : [...(candidates[asShown] ?? [])];

@@ -489,7 +489,7 @@ export const en = {
     rouxSource: 'The steps follow the Roux guides by Kian Mansour and the Roux community, at',
     rouxSourceLink: "Kian's Roux site",
     rouxHideHint:
-      'Once you can solve without reading, get faster: learn all of 2-Look CMLL for steps 3 and 4 — it is in the trainer. Then take this guide out of the menu; Settings puts it back.',
+      'Once you can solve without reading, get faster: learn all of 2-Look CMLL for steps 3 and 4, and later full CMLL, which does both in one — they are in the trainer. Then take this guide out of the menu; Settings puts it back.',
     rouxSituations: {
       frontPair: 'Pair at the front: the front face drops it onto the block.',
       backPair: 'Pair at the back: the back face drops it onto the block.',

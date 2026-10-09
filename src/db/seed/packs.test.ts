@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { invertAlg, parseAlg, type Move } from '../../domain/cube/notation';
 import { canonicalise } from '../../domain/cube/orientation';
 import { FACELETS, applyAlg, isSolved, solvedState, stateKey } from '../../domain/cube/state';
-import { lastLayerView, type Stickering } from '../../domain/cube/views';
+import { isSolvedAsShown, lastLayerView, type Stickering } from '../../domain/cube/views';
 import { PACKS, type AlgPack, type PackCase } from './packs';
 import { BEGINNER_GROUPS, CASE_TWINS } from '../../domain/alg/sets';
 
@@ -93,9 +93,20 @@ const edgesOriented = (state: CubeStateOf): boolean =>
  * the pair and the layers under it, and what the top is left looking like is
  * the next step's problem. Either way the cube is stood up first, because an
  * algorithm is allowed to turn it.
+ *
+ * CMLL is a third: its job is the four corners against the two blocks, and
+ * Kian's sheet says outright that half its algorithms flip the edges on the
+ * way. Those six edges and the middle slice are the next step's, so the cube
+ * is judged as it lies, with any final turn of the top.
  */
-function answers(entry: PackCase, moves: Move[]): boolean {
+function answers(entry: PackCase, moves: Move[], setId = ''): boolean {
   const before = caseState(entry);
+  if (setId === 'cmll') {
+    const after = applyAlg(before, moves);
+    return ['', 'U', 'U2', "U'"].some((end) =>
+      isSolvedAsShown(applyAlg(after, movesOf(end)), 'blocksAndCorners'),
+    );
+  }
   const after = canonicalise(applyAlg(before, moves));
   const isLastLayerCase = wrongOutside(before, isTopLayer) === 0;
   return isLastLayerCase ? isSolved(after) : wrongOutside(after, isTopLayer) === 0;
@@ -136,7 +147,7 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
   it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
     '%s is answered by its own algorithm',
     (_name, entry) => {
-      expect(answers(entry, movesOf(entry.alg))).toBe(true);
+      expect(answers(entry, movesOf(entry.alg), pack.set.id)).toBe(true);
     },
   );
 
@@ -163,7 +174,7 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
   )('%s is another way through the same case', (_name, entry, moves) => {
     // The point of an extra is that it is a different solution, not a differently
     // written one — and that it really does solve the case it is offered on.
-    expect(answers(entry, movesOf(moves))).toBe(true);
+    expect(answers(entry, movesOf(moves), pack.set.id)).toBe(true);
     expect(moves).not.toBe(entry.alg);
   });
 
@@ -393,6 +404,80 @@ describe('two-look CMLL', () => {
   it('holds seven different corner shapes', () => {
     const keys = orientation.map((entry) => aufKey(caseState(entry), cornerOrientationKey));
     expect(new Set(keys).size).toBe(7);
+  });
+});
+
+describe('CMLL', () => {
+  const pack = packById('cmll');
+  const twoLook = packById('2look-cmll');
+
+  /** Roux's two blocks: everything but the top layer and the middle slice. */
+  const isLastSixOrCorner = (index: number): boolean => {
+    const position = FACELETS[index]?.position;
+    return position !== undefined && (position[1] === 1 || position[0] === 0);
+  };
+
+  /** Only which way the top corners face. */
+  const cornerShape = (state: CubeStateOf): string =>
+    FACELETS.map((sticker, index) =>
+      sticker.position[1] === 1 && isCornerSticker(index) ? (state[index] === 'U' ? 'y' : '.') : '',
+    ).join('');
+
+  /** The corners as the trainer draws them: shape and side colours, edges grey. */
+  const cornerCase = (state: CubeStateOf): string =>
+    JSON.stringify(lastLayerView(state, 'blocksAndCorners'));
+
+  /** Each CMLL group is the corner shape a 2-Look case of the same name orients. */
+  const SHAPE_OF: Record<string, string> = {
+    H: '2cmll-h',
+    Pi: '2cmll-pi',
+    U: '2cmll-u',
+    T: '2cmll-t',
+    S: '2cmll-sune',
+    As: '2cmll-antisune',
+    L: '2cmll-l',
+  };
+
+  it('is the forty-two cases of the sheet, in its eight shapes', () => {
+    expect(pack.set.method).toBe('roux');
+    const counts = Object.fromEntries(
+      ['O', 'H', 'Pi', 'U', 'T', 'S', 'As', 'L'].map((group) => [
+        group,
+        pack.cases.filter((entry) => entry.group === group).length,
+      ]),
+    );
+    expect(counts).toEqual({ O: 2, H: 4, Pi: 6, U: 6, T: 6, S: 6, As: 6, L: 6 });
+  });
+
+  it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
+    '%s leaves both blocks standing',
+    (_name, entry) => {
+      expect(wrongOutside(caseState(entry), isLastSixOrCorner)).toBe(0);
+    },
+  );
+
+  it.each(
+    pack.cases
+      .filter((entry) => entry.group !== 'O')
+      .map((entry) => [entry.name, entry] as const),
+  )(
+    '%s has the corner shape its group is named for',
+    (_name, entry) => {
+      const twin = twoLook.cases.find((candidate) => candidate.id === SHAPE_OF[entry.group ?? '']);
+      if (!twin) throw new Error(`no shape for ${entry.group}`);
+      expect(aufKey(caseState(entry), cornerShape)).toBe(aufKey(caseState(twin), cornerShape));
+    },
+  );
+
+  it('starts every O case with the corners already up', () => {
+    for (const entry of pack.cases.filter((candidate) => candidate.group === 'O')) {
+      expect(cornerShape(caseState(entry)).replaceAll('.', '')).toBe('yyyy');
+    }
+  });
+
+  it('holds forty-two different cases', () => {
+    const keys = pack.cases.map((entry) => aufKey(caseState(entry), cornerCase));
+    expect(new Set(keys).size).toBe(42);
   });
 });
 

@@ -40,12 +40,13 @@ describe('alg repository', () => {
   it('lists the sets and their cases in pack order', async () => {
     const sets = await listSets();
     expect(sets.map((set) => set.id).sort()).toEqual([
-      // Roux's corners in two looks, the one set that is not CFOP's.
+      // Roux's corners, in two looks and in one: the sets that are not CFOP's.
       '2look-cmll',
       '2look-oll',
       '2look-pll',
       // The first two layers as the beginner's guide builds them.
       'beginner',
+      'cmll',
       // A set to drill rather than to read, but a set all the same.
       'cross',
       'f2l',
@@ -72,6 +73,7 @@ describe('alg repository', () => {
       '2look-pll',
       'pll',
       '2look-cmll',
+      'cmll',
     ]);
   });
 

@@ -1217,11 +1217,24 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
    (CFOP · Roux), jakmile jich je víc. **2-Look CMLL** (7 orientací + Jb a Y, podle
    „2-Look CMLL“ PDF) je hotová a průvodce z ní bere Sune a Jb; celá sada je jeho
    „rychlejší cesta“, jako 2-Look OLL/PLL u CFOP. Sada patří Rouxu přes
-   `set.method` v packu. **Plné CMLL** (42 případů ve skupinách O, H, Pi, U, T, S,
-   As, L; tučný algoritmus z „Kian's CMLLs“ je hlavní, ostatní alternativy) přijde
-   jako další krok a 2-Look CMLL se k němu připojí jako jeho dvoukrokový pohled.
-   Obrázek shora, hrany a M vrstva šedě; ověření spuštěním hlídá, že oba bloky
-   zůstanou celé. Model se nemění: CMLL patří jen Rouxu.
+   `set.method` v packu. **Plné CMLL — hotové.** 42 případů ve skupinách O, H, Pi,
+   U, T, S, As, L z „Kian's CMLLs“: tučný algoritmus je hlavní (u H Columns a
+   L Diag jsou tučné dva, bere se první), ostatní jsou alternativy (81). Názvy
+   mají předponu skupiny („H Columns“) — „Columns“ je v pěti skupinách a drill
+   rozpoznávání nabízí odpovědi podle názvu. Tři překlepy listu jsou opravené
+   ručně (`F''`, `(U)'`, `( U)`) a ověřené spuštěním. 2-Look CMLL je jeho
+   dvoukrokový pohled (přepínač 2-Look | Plná). Obrázek shora s barvami rohů
+   i jejich boků, hrany šedě.
+
+   **Co znamená „vyřešeno“ u CMLL.** Kian sám píše, že půlka algoritmů otočí
+   hrany, a některé nechají otočenou střední vrstvu. Případ je proto vyřešený,
+   když stojí oba bloky a čtyři rohy nahoře (s libovolným dorovnáním U) — šest
+   hran a středy střední vrstvy jsou věc dalšího kroku (`isSolvedAsShown` se
+   stickeringem `blocksAndCorners`). Kostka se před posouzením **nestaví podle
+   středů** (tah M by je posunul a kostku by to převrátilo); místo toho se
+   porovná se složenou kostkou otočenou o 0–3 čtvrtiny kolem svislé osy, protože
+   drill případ ukazuje i v jiných barvách. Tím měřítkem prochází test sad i
+   dorovnání v drillu, pro všechny alternativy ze všech 16 úhlů.
 4. **Později:** druhý blok jako pokročilá sada (~40 případů vložení páru),
    EO (9) / EOLR, OH algoritmy CMLL, drill prvního bloku.
 

@@ -1,0 +1,427 @@
+{
+ "packVersion": 1,
+ "set": {
+  "id": "cmll",
+  "name": "CMLL",
+  "method": "roux"
+ },
+ "cases": [
+  {
+   "id": "cmll-o-adjacent-swap",
+   "name": "O Adjacent Swap",
+   "group": "O",
+   "alg": "R U R' F' R U R' U' R' F R2 U' R'",
+   "others": [
+    "r U R' F' R U R' U' R' F R2 U' r'",
+    "R U R' U' R' F R2 U' R' U' R U R' F'",
+    "r U R' U' r' F R2 U' R' U' R U R' F'",
+    "(U) r U' L U2 R' U R U2 r' L'"
+   ]
+  },
+  {
+   "id": "cmll-o-diagonal-swap",
+   "name": "O Diagonal Swap",
+   "group": "O",
+   "alg": "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+   "others": [
+    "r2 D r' U r D' R2 U' F' U' F",
+    "r' U' r' D' r U' r' D r U r' D' r U r' D r2",
+    "F R U' R' U' R U R' F' r U R' U' r' F R F'",
+    "F R' F R2 U' R' U' R U R' F' R U R' U' F'"
+   ]
+  },
+  {
+   "id": "cmll-h-columns",
+   "name": "H Columns",
+   "group": "H",
+   "alg": "R U2 R' U' R U R' U' R U' R'",
+   "others": [
+    "r U2 R' U' R U R' U' R U' r'",
+    "(U) R U R' U R U' R' U R U2' R'",
+    "r U' r' U' r U r' U r U r'"
+   ]
+  },
+  {
+   "id": "cmll-h-rows",
+   "name": "H Rows",
+   "group": "H",
+   "alg": "F R U R' U' R U R' U' R U R' U' F'",
+   "others": [
+    "R' F R U2' R' F' R U F R U R' U F'"
+   ]
+  },
+  {
+   "id": "cmll-h-column",
+   "name": "H Column",
+   "group": "H",
+   "alg": "(U) R U2' R2' F R F' U2 R' F R F'",
+   "others": [
+    "(U) F R U' R' U R U2 R' U' R U R' U' F'"
+   ]
+  },
+  {
+   "id": "cmll-h-row",
+   "name": "H Row",
+   "group": "H",
+   "alg": "(U2) r U' r2' D' r U' r' D r2 U r'",
+   "others": [
+    "(U') R U R' U R U r' F R' F' r",
+    "r U' r' F U2' r2' F r U' r"
+   ]
+  },
+  {
+   "id": "cmll-pi-right-bar",
+   "name": "Pi Right Bar",
+   "group": "Pi",
+   "alg": "F R U R' U' R U R' U' F'",
+   "others": [
+    "R U2' R2' U' R2 U' R2' U2' R",
+    "f R U R' U' R U R' U' f'",
+    "(U2) F U R U' R' U R U' R' F'",
+    "(U2) F' L' U' L U L' U' L U F",
+    "r' U r2 U' r2' U' r2 U r'",
+    "r U' r2' U r2 U r2' U' r",
+    "R' U2 r U' r' U2 r U r' U2 R"
+   ]
+  },
+  {
+   "id": "cmll-pi-back-slash",
+   "name": "Pi Back Slash",
+   "group": "Pi",
+   "alg": "(U) F R' F' R U2 R U' R' U R U2' R'",
+   "others": [
+    "(U) F U R U' R' U R U' R2' F' R U R U' R'",
+    "(U) R U2 R' U' R U' R2 U L U' R U L'"
+   ]
+  },
+  {
+   "id": "cmll-pi-x-checkerboard",
+   "name": "Pi X Checkerboard",
+   "group": "Pi",
+   "alg": "(U') R' F R U F U' R U R' U' F'",
+   "others": [
+    "R' F2 D R2 U' R2' D' F2 R"
+   ]
+  },
+  {
+   "id": "cmll-pi-forward-slash",
+   "name": "Pi Forward Slash",
+   "group": "Pi",
+   "alg": "R U2 R' U' R U R' U2' R' F R F'",
+   "others": [
+    "R U R' U' R' F R2 U R' U' R U R' U' F'",
+    "(U') R' U2 R U R' U R2 U' L' U R' U' L"
+   ]
+  },
+  {
+   "id": "cmll-pi-columns",
+   "name": "Pi Columns",
+   "group": "Pi",
+   "alg": "(U') r U' r2' D' r U r' D r2 U r'",
+   "others": [
+    "(U2) r' F R F' r U' R' U' R U' R'",
+    "(U2) R' U R U' R2' F R2 U R' U' F' R",
+    "R' U L U' R U' L' U' L U' L'"
+   ]
+  },
+  {
+   "id": "cmll-pi-left-bar",
+   "name": "Pi Left Bar",
+   "group": "Pi",
+   "alg": "(U') R' U' R' F R F' R U' R' U2 R",
+   "others": [
+    "(U) R U2 R' U' F' R U2 R' U' R U' R' F R U' R'",
+    "(U2) R' U' R U' R' U F' U F R"
+   ]
+  },
+  {
+   "id": "cmll-u-forward-slash",
+   "name": "U Forward Slash",
+   "group": "U",
+   "alg": "(U2) R2 D R' U2 R D' R' U2 R'",
+   "others": [
+    "r U' r' U' r U' r' U' F' U2' F"
+   ]
+  },
+  {
+   "id": "cmll-u-back-slash",
+   "name": "U Back Slash",
+   "group": "U",
+   "alg": "R2' D' R U2 R' D R U2 R",
+   "others": [
+    "R' F R U R' F R U F U2' F'"
+   ]
+  },
+  {
+   "id": "cmll-u-front-row",
+   "name": "U Front Row",
+   "group": "U",
+   "alg": "R2' F U' F U F2 R2 U' R' F R",
+   "others": [
+    "(U) R U2' R2' U' R2 U' R' U R' U' R U R' U R",
+    "R' U' R U' R' U2' R2 U R' U R U2' R'"
+   ]
+  },
+  {
+   "id": "cmll-u-rows",
+   "name": "U Rows",
+   "group": "U",
+   "alg": "(U') F R2 D R' U R D' R2' U' F'",
+   "others": [
+    "R' F R U' R' U' R U R' F' R U R' U' R' F R F' R"
+   ]
+  },
+  {
+   "id": "cmll-u-x-checkerboard",
+   "name": "U X Checkerboard",
+   "group": "U",
+   "alg": "(U2) r U' r' U r' D' r U' r' D r",
+   "others": [
+    "R U R' U' R' F2 R2 U' R' U' R U R' F2",
+    "(U2) R' F U' R F R' U R F'",
+    "(U') R' D R U' R U' R' U R' D' R",
+    "r' U r' D' r U r' D r U' r"
+   ]
+  },
+  {
+   "id": "cmll-u-back-row",
+   "name": "U Back Row",
+   "group": "U",
+   "alg": "(U') F R U R' U' F'",
+   "others": [
+    "R U' R' U' R U R D R' U R D' R2",
+    "(U') f R U R' U' f'",
+    "(U) F U R U' R' F'"
+   ]
+  },
+  {
+   "id": "cmll-t-left-bar",
+   "name": "T Left Bar",
+   "group": "T",
+   "alg": "(U') R U R' U' R' F R F'",
+   "others": [
+    "(U') r U R' U' r' F R F'"
+   ]
+  },
+  {
+   "id": "cmll-t-right-bar",
+   "name": "T Right Bar",
+   "group": "T",
+   "alg": "(U) L' U' L U L F' L' F",
+   "others": [
+    "(U) l' U' L U l F' L' F",
+    "(U') F R U' R' U R U R' F'"
+   ]
+  },
+  {
+   "id": "cmll-t-rows",
+   "name": "T Rows",
+   "group": "T",
+   "alg": "F R' F R2 U' R' U' R U R' F2",
+   "others": [
+    "(U') R U R' U R U' R' U R' U' R2 U' R2' U2' R",
+    "R U2' R' U' R U' R2' U2' R U R' U R"
+   ]
+  },
+  {
+   "id": "cmll-t-front-row",
+   "name": "T Front Row",
+   "group": "T",
+   "alg": "r' U r U2' R2' F R F' R",
+   "others": [
+    "R' U r U2' R2' F R F' r"
+   ]
+  },
+  {
+   "id": "cmll-t-back-row",
+   "name": "T Back Row",
+   "group": "T",
+   "alg": "r' D' r U r' D r U' r U r'",
+   "others": [
+    "(U2) F R U R' U' R U' R' U' R U R' F'",
+    "(U) R' D R U' R U R' U R' D' R",
+    "r U' r D r' U r D' r' U r'"
+   ]
+  },
+  {
+   "id": "cmll-t-columns",
+   "name": "T Columns",
+   "group": "T",
+   "alg": "(U2) r2' D' r U r' D r2 U' r' U' r",
+   "others": [
+    "R' U R2 D r' U2 r D' R2' U' R",
+    "(U2) r U' r2' D' r U2 r' D r2 U r'"
+   ]
+  },
+  {
+   "id": "cmll-s-left-bar",
+   "name": "S Left Bar",
+   "group": "S",
+   "alg": "(U) R U R' U R U2 R'",
+   "others": [
+    "(U) r U R' U R U2 r'"
+   ]
+  },
+  {
+   "id": "cmll-s-x-checkerboard",
+   "name": "S X Checkerboard",
+   "group": "S",
+   "alg": "(U) L' U2 L U2' L F' L' F",
+   "others": [
+    "(U) L' U2 L U2' l F' L' F M'"
+   ]
+  },
+  {
+   "id": "cmll-s-forward-slash",
+   "name": "S Forward Slash",
+   "group": "S",
+   "alg": "(U) F R' F' R U2 R U2' R'",
+   "others": [
+    "(U) M F R' F' R U2 R U2' r'"
+   ]
+  },
+  {
+   "id": "cmll-s-columns",
+   "name": "S Columns",
+   "group": "S",
+   "alg": "(U) R U R' U' R' F R F' R U R' U R U2' R'",
+   "others": [
+    "R U R' U R U' R D R' U' R D' R2'"
+   ]
+  },
+  {
+   "id": "cmll-s-right-bar",
+   "name": "S Right Bar",
+   "group": "S",
+   "alg": "(U') R U R' U R' F R F' R U2' R'",
+   "others": [
+    "(U') R U R' U L' U R U' L U2 R'"
+   ]
+  },
+  {
+   "id": "cmll-s-back-slash",
+   "name": "S Back Slash",
+   "group": "S",
+   "alg": "(U) R U' L' U R' U' L",
+   "others": [
+    "(U) r U' r' F R' F' R",
+    "(U') L U' R' U L' U' R"
+   ]
+  },
+  {
+   "id": "cmll-as-right-bar",
+   "name": "As Right Bar",
+   "group": "As",
+   "alg": "(U) R' U' R U' R' U2' R",
+   "others": [
+    "(U) r' U' R U' R' U2' r",
+    "(U2) R U2 R' U' R U' R'"
+   ]
+  },
+  {
+   "id": "cmll-as-columns",
+   "name": "As Columns",
+   "group": "As",
+   "alg": "(U') R2 D R' U R D' R' U R' U' R U' R'",
+   "others": [
+    "(U') r R D R' U R D' R' U R' U' R U' r'"
+   ]
+  },
+  {
+   "id": "cmll-as-back-slash",
+   "name": "As Back Slash",
+   "group": "As",
+   "alg": "(U') F' L F L' U2' L' U2 L",
+   "others": [
+    "(U') M F' L F L' U2' L' U2 L M'"
+   ]
+  },
+  {
+   "id": "cmll-as-x-checkerboard",
+   "name": "As X Checkerboard",
+   "group": "As",
+   "alg": "(U') R U2' R' U2 R' F R F'",
+   "others": [
+    "(U') R U2' R' U2 r' F R F' M'"
+   ]
+  },
+  {
+   "id": "cmll-as-forward-slash",
+   "name": "As Forward Slash",
+   "group": "As",
+   "alg": "(U') L' U R U' L U R'",
+   "others": [
+    "(U') R' F R F' r U r'",
+    "(U) R' U L U' R U L'"
+   ]
+  },
+  {
+   "id": "cmll-as-left-bar",
+   "name": "As Left Bar",
+   "group": "As",
+   "alg": "R' U' R U' R' U R' F R F' U R",
+   "others": [
+    "(U') R' U' R U' L U' R' U L' U2 R"
+   ]
+  },
+  {
+   "id": "cmll-l-mirror",
+   "name": "L Mirror",
+   "group": "L",
+   "alg": "(U2) F R U' R' U' R U R' F'",
+   "others": [
+    "R2' D' R U' R' D R U R",
+    "(U') F' r U r' U' r' F r",
+    "(U') F' r U R' U' r' F R"
+   ]
+  },
+  {
+   "id": "cmll-l-inverse",
+   "name": "L Inverse",
+   "group": "L",
+   "alg": "(U2) F R' F' R U R U' R'",
+   "others": [
+    "(U2) F R' F' r U R U' r'"
+   ]
+  },
+  {
+   "id": "cmll-l-pure",
+   "name": "L Pure",
+   "group": "L",
+   "alg": "R U2 R' U' R U R' U' R U R' U' R U' R'",
+   "others": [
+    "R U R' U' R' F R F' R' F R F' r U r'",
+    "R U R' U R U' R' U R U' R' U R U2 R'"
+   ]
+  },
+  {
+   "id": "cmll-l-front-commutator",
+   "name": "L Front Commutator",
+   "group": "L",
+   "alg": "(U2) R U2 R D R' U2 R D' R2'",
+   "others": [
+    "R U R' U R' F R F' U2 R' F R F'",
+    "(U2) R U R' U' F' U2' F U R U R'"
+   ]
+  },
+  {
+   "id": "cmll-l-diag",
+   "name": "L Diag",
+   "group": "L",
+   "alg": "R' U' R U R' F' R U R' U' R' F R2",
+   "others": [
+    "(U2) R U2' R2' F R F' R U2' R'",
+    "(U2) r U2' R2' F R F' R U2' r'"
+   ]
+  },
+  {
+   "id": "cmll-l-back-commutator",
+   "name": "L Back Commutator",
+   "group": "L",
+   "alg": "(U) R' U2 R' D' R U2 R' D R2",
+   "others": [
+    "(U2) R U R' U' R' F R2 U' R' U R U R' F'"
+   ]
+  }
+ ]
+}

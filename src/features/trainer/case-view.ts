@@ -2,6 +2,7 @@ import type { DiagramView } from '../../components/CubeDiagram';
 import {
   BEGINNER_GROUPS,
   BEGINNER_SET_ID,
+  CMLL_SET_ID,
   LEVEL_BASE_SETS,
   TWO_LOOK_CMLL_GROUPS,
   TWO_LOOK_CMLL_SET_ID,
@@ -82,6 +83,16 @@ export function diagramFor(setId: string, group: string): Diagram {
       view: 'lastLayer',
       stickering: isOrientation ? 'cornerOrientation' : 'corners',
       playerStickering: isOrientation ? 'cornerOrientation' : 'lastLayerCorners',
+      orientation: '',
+    };
+  }
+  // A CMLL case is the four corners read against the two blocks: their side
+  // colours tell the forty-two apart, and the six edges are left grey.
+  if (setId === CMLL_SET_ID) {
+    return {
+      view: 'lastLayer',
+      stickering: 'blocksAndCorners',
+      playerStickering: 'blocksAndCorners',
       orientation: '',
     };
   }

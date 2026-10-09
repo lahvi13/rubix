@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseAlg, type Move } from './notation';
 import { applyAlg, solvedState } from './state';
-import { isometricView, lastLayerView, netView, permutationArrows } from './views';
+import { isSolvedAsShown, isometricView, lastLayerView, netView, permutationArrows } from './views';
 
 function alg(text: string): Move[] {
   const parsed = parseAlg(text);
@@ -240,5 +240,30 @@ describe('the bottom-layer stickering', () => {
 
     expect(view.up.filter((sticker) => sticker !== null)).toHaveLength(2);
     expect(view.front[5]).toBeNull();
+  });
+});
+
+describe('judging Roux corners', () => {
+  const turned = (text: string) => {
+    const parsed = parseAlg(text);
+    if (!parsed.ok) throw new Error(text);
+    return applyAlg(solvedState(), parsed.moves);
+  };
+
+  it.each([
+    ['the middle slice turned', 'M'],
+    ['the last six edges stirred', "M' U2 M U2 M2"],
+    ['a case met in other colours', 'y'],
+    ['other colours and a turned slice', "y M2 U2 M U2"],
+  ])('counts %s as done', (_label, alg) => {
+    expect(isSolvedAsShown(turned(alg), 'blocksAndCorners')).toBe(true);
+  });
+
+  it.each([
+    ['two top corners swapped', "R U R' F' R U R' U' R' F R2 U' R' U'"],
+    ['a block broken', "R U R'"],
+    ['the top turned a quarter', 'U'],
+  ])('does not count %s', (_label, alg) => {
+    expect(isSolvedAsShown(turned(alg), 'blocksAndCorners')).toBe(false);
   });
 });

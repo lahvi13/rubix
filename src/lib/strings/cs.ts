@@ -453,7 +453,7 @@ export const cs: Strings = {
     rouxSource: 'Kroky vycházejí z průvodců Rouxu od Kiana Mansoura a komunity Rouxu, na',
     rouxSourceLink: 'Kianově webu o Rouxu',
     rouxHideHint:
-      'Až budeš skládat bez čtení, zrychli: na kroky 3 a 4 se nauč celé 2-Look CMLL – najdeš ho v trenažéru. Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
+      'Až budeš skládat bez čtení, zrychli: na kroky 3 a 4 se nauč celé 2-Look CMLL a později plné CMLL, které je udělá najednou – obojí najdeš v trenažéru. Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
     rouxSituations: {
       frontPair: 'Pár vpředu: přední stěnou ho sklop na blok.',
       backPair: 'Pár vzadu: zadní stěnou ho sklop na blok.',

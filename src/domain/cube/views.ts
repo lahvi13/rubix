@@ -233,6 +233,17 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
 
 const SOLVED = solvedState();
 
+/** The solved cube turned about its vertical axis: none, a quarter, a half, three quarters. */
+const SOLVED_TURNED: readonly CubeState[] = [0, 1, 2, 3].map((quarters) => {
+  const turn = movePermutation({ family: 'y', amount: 1, text: 'y' });
+  let state = SOLVED;
+  for (let done = 0; done < quarters; done++) {
+    const before = state;
+    state = turn.map((source) => colourAt(before, source));
+  }
+  return state;
+});
+
 /**
  * Whether a cube is solved as far as `stickering` looks: the last layer in
  * everything the stickering shows of it, and every layer under it outright.
@@ -241,6 +252,19 @@ const SOLVED = solvedState();
  * for. The cube must already stand the right way up (`canonicalise`).
  */
 export function isSolvedAsShown(state: CubeState, stickering: Stickering): boolean {
+  // Roux's corners are judged on the whole cube as the stickering sees it:
+  // the blocks outright, the top corners, and nothing of the six edges or the
+  // middle slice's centres, which CMLL is free to leave anywhere. Nor is the
+  // cube stood up first: its blocks are wherever its left and right are, so
+  // it is held against the solved cube turned every way about the vertical
+  // axis instead — the colours a case is met in, not the faces.
+  if (stickering === 'blocksAndCorners') {
+    return SOLVED_TURNED.some((reference) =>
+      FACELETS.every(
+        (_, index) => cell(state, index, stickering) === cell(reference, index, stickering),
+      ),
+    );
+  }
   return FACELETS.every((sticker, index) =>
     sticker.position[1] === 1
       ? cell(state, index, stickering) === cell(SOLVED, index, stickering)
