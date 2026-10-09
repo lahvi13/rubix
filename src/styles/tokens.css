@@ -38,6 +38,10 @@
      grades: the accent, the gold and the amber all say how something went. */
   --own: light-dark(#2563eb, #60a5fa);
   --danger: light-dark(#c62d2d, #f87171);
+  /* The trend chart's slow ao50 under the green ao12. A hue none of the
+     grades above use, so the two read as two averages rather than a good one
+     and a bad one; the same blue as --own, but it does not mean that. */
+  --series-long: light-dark(#2563eb, #60a5fa);
 
   /* A wash over whatever an open menu or sheet is covering. */
   --scrim: light-dark(rgb(15 24 40 / 32%), rgb(0 0 0 / 45%));

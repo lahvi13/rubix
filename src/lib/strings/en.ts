@@ -231,7 +231,7 @@ export const en = {
     plusTwoRate: '+2 rate',
     distribution: 'Time distribution',
     trend: 'Trend',
-    bySolve: 'Rolling ao12',
+    bySolve: 'By solve',
     byDay: 'By day',
     trendNeedsSolves: 'The rolling ao12 starts at the twelfth solve.',
     dailyMean: 'Mean',
@@ -256,6 +256,7 @@ export const en = {
     windowTitle: (at: 'current' | 'best' | object, n: number) =>
       at === 'best' ? `Best ao${n}` : at === 'current' ? `Current ao${n}` : `ao${n}`,
     /** Why the average is not the plain mean of the times listed under it. */
+    longTrendSeries: 'ao50',
     windowTrimNote: (trim: number) =>
       trim === 1
         ? 'The fastest and the slowest solve are cut (in brackets); the average is the mean of the rest.'
@@ -297,6 +298,8 @@ export const en = {
     bestAo12: 'Best ao12',
     containsCurrent: 'Current ao12 falls here',
     touchBar: 'Touch a bar to see its range and count.',
+    trendAxesLong:
+      'The green line is the average of the twelve solves ending at each point, the blue one of the fifty; the dots are the solves themselves, oldest first. Green under blue means you are faster than lately.',
   },
   history: {
     empty: 'Nothing matches these filters.',

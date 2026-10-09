@@ -58,6 +58,9 @@ export const GOAL_RECENT_SOLVES = 50;
 /** The trend chart tracks rolling ao12 (SPEC 3.4). */
 const TREND_WINDOW = 12;
 
+/** The slower line under it, which says whether today's ao12 is a change of form. */
+const LONG_TREND_WINDOW = 50;
+
 /** How many solves "the latest" reads across every session. */
 export const RECENT_SOLVES = 100;
 
@@ -126,6 +129,8 @@ export interface TrendPoint {
   /** When the solve was made, so the readout can say which day it was. */
   at: number;
   aoMs: number | null;
+  /** Null until the fiftieth solve, and over a DNF average. */
+  longAoMs: number | null;
   /** The solve's own result, drawn as a dot behind the line; null is a DNF. */
   singleMs: number | null;
 }
@@ -248,12 +253,18 @@ export function useSessionStats(
     // Two cuts, in this order: the recent window the reader asked for, then
     // the run of solves at the start that have no ao12 yet.
     const trendStart = Math.max(0, finals.length - window);
+    // Only the solves the chart draws, and the ones their windows reach back
+    // into: a pass over every solve in the scope costs as much again, after
+    // every solve, for averages nobody sees.
+    const longStart = Math.max(0, trendStart - LONG_TREND_WINDOW + 1);
+    const longRolling = rollingAverage(finals.slice(longStart), LONG_TREND_WINDOW);
     const windowed = rolling
       .slice(trendStart)
       .map((aoMs, offset) => ({
         index: trendStart + offset + 1,
         at: solves[trendStart + offset]?.createdAt ?? 0,
         aoMs,
+        longAoMs: longRolling[trendStart + offset - longStart] ?? null,
         singleMs: finals[trendStart + offset] ?? null,
       }));
     const firstWithAverage = windowed.findIndex((point) => point.aoMs !== null);

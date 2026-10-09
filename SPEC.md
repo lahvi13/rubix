@@ -159,7 +159,8 @@ kromě PB, které je globální per `puzzle`.
 - směrodatná odchylka (populační, nad neDNF solvy)
 - DNF rate, +2 rate
 - histogram časů (šířka koše odvozená z rozsahu, min. 0,5 s)
-- trend rolling ao12 (line chart, osa X = index solvu)
+- trend rolling ao12 a pod ním rolling ao50 (line chart, osa X = index solvu); ao50
+  ukazuje, jestli je dnešní ao12 změna formy, nebo jen výkyv
 - **filtr podle tagu**: pod volbou rozsahu řada tagů, jen když nějaký tag existuje.
   Zvolený tag omezí všechno na obrazovce — průměry, grafy, rekordy, cíl, praxi i fáze —
   na solvy s tagem; PB single zůstává globální. U „Posledních 100“ se nejdřív filtruje

@@ -28,7 +28,11 @@ interface TrendChartProps {
   goalMs: number | null;
 }
 
-/** Rolling ao12 over the recent window. Gaps are DNF averages — never faked. */
+/**
+ * Rolling ao12 over the recent window, with the ao50 under it: the ao12 alone
+ * says how today is going, and only next to the slower line does it say
+ * whether that is a change of form. Gaps are DNF averages — never faked.
+ */
 export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps) {
   const [readout, setReadout] = useState<HTMLDivElement | null>(null);
   // The averages always fit. A single fits unless it is past the fence: one
@@ -41,6 +45,7 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
     .map((point) => point.aoMs)
     .filter((ms): ms is number => ms !== null)
     .concat(singles)
+    .concat(points.map((point) => point.longAoMs).filter((ms): ms is number => ms !== null))
     .concat(bestMs === null ? [] : [bestMs])
     .concat(goalMs === null ? [] : [goalMs]);
 
@@ -48,6 +53,10 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
   // Infinity — which recharts would happily try to draw.
   const axis =
     values.length === 0 ? null : timeAxis(Math.min(...values), Math.max(...values));
+
+  // Under fifty solves there is no line to draw, and a legend entry for one
+  // would promise it.
+  const hasLong = points.some((point) => point.longAoMs !== null);
 
   const first = points[0]?.index ?? 1;
   const last = points[points.length - 1]?.index ?? first;
@@ -101,6 +110,15 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
                         colour: 'var(--accent)',
                         value: formatMs(value),
                       },
+                      ...(hasLong
+                        ? [
+                            {
+                              label: strings.stats.longTrendSeries,
+                              colour: 'var(--series-long)',
+                              value: formatTime(point.longAoMs),
+                            },
+                          ]
+                        : []),
                       // The distance to the record is the question the reference
                       // line raises; the tooltip is where it gets a number.
                       ...(bestMs === null
@@ -144,6 +162,20 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
             connectNulls={false}
             isAnimationActive={false}
           />
+          {/* Under the ao12 and without dots: it moves slowly enough that the
+              line is all there is to read, and where the two cross the ao12
+              has to stay on top. */}
+          {hasLong ? (
+            <Line
+              dataKey="longAoMs"
+              stroke="var(--series-long)"
+              strokeWidth={1.75}
+              dot={false}
+              activeDot={false}
+              connectNulls={false}
+              isAnimationActive={false}
+            />
+          ) : null}
           <Line
             dataKey="aoMs"
             stroke="var(--accent)"
@@ -162,6 +194,9 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
         entries={[
           { label: strings.stats.singleSeries, colour: 'var(--muted)', isDot: true },
           { label: strings.stats.trendSeries, colour: 'var(--accent)' },
+          ...(hasLong
+            ? [{ label: strings.stats.longTrendSeries, colour: 'var(--series-long)' }]
+            : []),
           ...(bestMs === null
             ? []
             : [{ label: strings.stats.bestAo12, colour: 'var(--warn)', isReference: true }]),
@@ -177,7 +212,9 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
               ]),
         ]}
       />
-      <p className="chart-note">{strings.stats.trendAxes}</p>
+      <p className="chart-note">
+        {hasLong ? strings.stats.trendAxesLong : strings.stats.trendAxes}
+      </p>
     </>
   );
 }

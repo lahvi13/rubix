@@ -212,7 +212,7 @@ export const cs: Strings = {
     plusTwoRate: 'Podíl +2',
     distribution: 'Rozložení časů',
     trend: 'Vývoj',
-    bySolve: 'Klouzavý ao12',
+    bySolve: 'Po složeních',
     byDay: 'Po dnech',
     trendNeedsSolves: 'Klouzavý ao12 začíná dvanáctým složením.',
     dailyMean: 'Průměr',
@@ -237,6 +237,7 @@ export const cs: Strings = {
     windowTitle: (at: 'current' | 'best' | object, n: number) =>
       at === 'best' ? `Nejlepší ao${n}` : at === 'current' ? `Aktuální ao${n}` : `ao${n}`,
     windowTrimNote: (trim: number) =>
+    longTrendSeries: 'ao50',
       trim === 1
         ? 'Nejrychlejší a nejpomalejší složení se škrtají (v závorce); průměr je ze zbytku.'
         : `${trim} ${plural(trim, 'nejrychlejší', 'nejrychlejší', 'nejrychlejších')} a ${trim} ${plural(trim, 'nejpomalejší', 'nejpomalejší', 'nejpomalejších')} složení se ${plural(trim, 'škrtá', 'škrtají', 'škrtá')} (v závorce); průměr je ze zbytku.`,
@@ -277,6 +278,8 @@ export const cs: Strings = {
     bestAo12: 'Nejlepší ao12',
     containsCurrent: 'Sem spadá aktuální ao12',
     touchBar: 'Ťukni na sloupec a uvidíš jeho rozsah a počet.',
+    trendAxesLong:
+      'Zelená čára je průměr dvanácti složení končících v daném bodě, modrá padesáti; tečky jsou samotná složení, od nejstaršího. Zelená pod modrou znamená, že jsi rychlejší než v poslední době.',
   },
   history: {
     empty: 'Těmto filtrům nic neodpovídá.',
