@@ -1200,19 +1200,28 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
    **Existující session si metodu nechává**, její splity patří k fázím, pod
    kterými byly změřeny. Ve výběru session se metoda píše k řádku, až když jich
    seznam míchá víc. První session na zařízení je CFOP.
-2. **Průvodce pro začátečníky Roux** (autor si o něj řekl). Stránka Učení dostane
-   přepínač **CFOP | Roux**, výchozí podle metody aktivní session — kdo na Roux
-   přechází, chce průvodce číst dřív, než si Roux session založí. Obsah podle
-   „Roux Beginner Supplemental Guide“: bloky (situace s krátkými tahy), rohy
-   jen Sune + J-perm (v appce už jsou), LSE = orientace hran `M' U' M'`, přední
-   a zadní výměna `M' U2 M` / `M U2 M'` a dořešení M vrstvy. Nové obrázky:
-   zvýraznění bloků a pohled na M vrstvu.
-3. **Trenažér seskupený podle metody + sada CMLL** (42 případů ve skupinách O, H,
-   Pi, U, T, S, As, L; tučný algoritmus z „Kian's CMLLs“ je hlavní, ostatní
-   alternativy). Obrázek shora, hrany a M vrstva šedě; ověření spuštěním hlídá,
-   že oba bloky zůstanou celé. Z průvodce na ni vede „rychlejší cesta“ u rohů,
-   jako z CFOP průvodce plné OLL/PLL. Model se nemění: CMLL patří jen Rouxu,
-   `AlgSet.methodId` stačí.
+2. **Průvodce pro začátečníky Roux** (autor si o něj řekl) — **hotový**. Stránka
+   Učení má přepínač **CFOP | Roux**, výchozí podle metody aktivní session — kdo na
+   Roux přechází, chce průvodce číst dřív, než si Roux session založí. Sedm kroků
+   jako u CFOP: levý blok, pravý blok, rohy žlutou nahoru (Sune), rohy na místo
+   (Jb), orientace hran (šipka a `M' U M`), boční hrany (`M2`), střední vrstva
+   (`U2 M2 U2 M2`, `U2 M' U2 M'`). Struktura podle „ROUX_guide_rev4“, vysvětlení
+   bloků podle „Beginners guide to 3x3 cube with Roux“, situace podle „Roux
+   Beginner Supplemental Guide“ — 11 obrázků místo 34, zbytek je intuitivní a
+   říká ho text. Bloky a hrany jsou situace (obrázek = složený stav s vysunutými
+   dílky, jako u crossu); levý blok je kreslený i přehrávaný **z levého předního
+   rohu**, každý krok má vlastní zvýraznění (jen levý blok, oba bloky, jen žlutá
+   rohů, jen žlutá a bílá šesti hran). Kostka stojí jako v těch průvodcích:
+   žlutá nahoře, modrá vlevo, červená vpředu (`y'` oproti skinům).
+3. **Trenažér seskupený podle metody + CMLL.** Řada sad má řádek na metodu
+   (CFOP · Roux), jakmile jich je víc. **2-Look CMLL** (7 orientací + Jb a Y, podle
+   „2-Look CMLL“ PDF) je hotová a průvodce z ní bere Sune a Jb; celá sada je jeho
+   „rychlejší cesta“, jako 2-Look OLL/PLL u CFOP. Sada patří Rouxu přes
+   `set.method` v packu. **Plné CMLL** (42 případů ve skupinách O, H, Pi, U, T, S,
+   As, L; tučný algoritmus z „Kian's CMLLs“ je hlavní, ostatní alternativy) přijde
+   jako další krok a 2-Look CMLL se k němu připojí jako jeho dvoukrokový pohled.
+   Obrázek shora, hrany a M vrstva šedě; ověření spuštěním hlídá, že oba bloky
+   zůstanou celé. Model se nemění: CMLL patří jen Rouxu.
 4. **Později:** druhý blok jako pokročilá sada (~40 případů vložení páru),
    EO (9) / EOLR, OH algoritmy CMLL, drill prvního bloku.
 

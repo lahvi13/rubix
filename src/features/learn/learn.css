@@ -134,6 +134,14 @@ li:not(.learn__aside) + .learn__aside {
 }
 
 /* The row of things the page itself offers, before the guide starts. */
+/* Which guide: one per method, above everything the guide says. */
+.learn__methods {
+  display: flex;
+  gap: var(--space-3);
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-5);
+}
+
 .learn__tools {
   display: flex;
   gap: var(--space-3);

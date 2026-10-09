@@ -3,9 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../../db/schema';
 import { getSetting } from '../../../db/repositories/settings-repository';
+import { createSession } from '../../../db/repositories/session-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { strings } from '../../../lib/strings';
-import { LEARN_STEPS } from '../steps';
+import { LEARN_STEPS, ROUX_STEPS } from '../steps';
 import { LearnScreen } from './LearnScreen';
 
 describe('LearnScreen', () => {
@@ -187,6 +188,39 @@ describe('LearnScreen', () => {
     await waitFor(async () => {
       expect(await getSetting('ui.showLearn')).toBe(false);
     });
+  });
+
+  it('opens on the guide of the method being timed in', async () => {
+    await createSession('Blocks', '333', 'freestyle', 'roux');
+    render(<LearnScreen />);
+
+    await waitFor(() =>
+      expect(sections().map((section) => section.querySelector('h2')?.textContent)).toEqual(
+        ROUX_STEPS.map((step, index) => `${index + 1}${step.title}`),
+      ),
+    );
+  });
+
+  it('switches to the other guide, each Roux step shown by pictures or one algorithm', async () => {
+    const user = userEvent.setup();
+    render(<LearnScreen />);
+    await settled();
+
+    await user.click(screen.getByRole('button', { name: 'Roux' }));
+    await settled();
+
+    expect(screen.getByRole('button', { name: 'Roux' })).toHaveAttribute('aria-pressed', 'true');
+    // Two pairs for each block, Sune and Jb, the arrow, the side edges, and
+    // the two ways the middle slice can be left.
+    await waitFor(() =>
+      expect(sections().map((section) => caseButtons(section).length)).toEqual([
+        2, 2, 1, 1, 1, 1, 2,
+      ]),
+    );
+    expect(screen.getByRole('link', { name: strings.learn.rouxSourceLink })).toHaveAttribute(
+      'href',
+      'https://sites.google.com/view/kianroux/',
+    );
   });
 
   it('says where the method came from', () => {

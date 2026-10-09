@@ -10,22 +10,29 @@ import { useTap } from '../../../hooks/use-tap';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
 import { AlgText, CasePlayer } from '../../trainer';
-import { holdState, type LearnSituation } from '../steps';
+import { holdState, type LearnSituation, type SituationPicture } from '../steps';
 
 interface SituationSheetProps {
   situation: LearnSituation;
+  picture: SituationPicture;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
   onClose: () => void;
 }
 
 /**
- * A cross situation opened the way every case on the page opens: a sheet with
+ * A situation opened the way every case on the page opens: a sheet with
  * the cube, its controls and the moves. Only that — the case sheet's learning
  * state, variants and attempts belong to an algorithm worth learning, and two
  * or four moves read off a picture are not one.
  */
-export function SituationSheet({ situation, skin, triggers, onClose }: SituationSheetProps) {
+export function SituationSheet({
+  situation,
+  picture: drawing,
+  skin,
+  triggers,
+  onClose,
+}: SituationSheetProps) {
   const parsed = parseAlg(situation.alg);
   const moves = parsed.ok ? parsed.moves : [];
   const playback = usePlayback(situation.alg);
@@ -37,9 +44,9 @@ export function SituationSheet({ situation, skin, triggers, onClose }: Situation
   const picture = (
     <CubeDiagram
       className="case-detail__diagram"
-      state={holdState(situation)}
-      view="isometric"
-      stickering="cross"
+      state={holdState(situation, drawing.standing)}
+      view={drawing.view}
+      stickering={drawing.stickering}
       skin={skin}
       label={situation.text}
     />
@@ -52,9 +59,13 @@ export function SituationSheet({ situation, skin, triggers, onClose }: Situation
       <div className="case-detail__stage" {...tap}>
         {isPlaying ? (
           <CasePlayer
-            setupAlg={formatAlg(invertAlg(moves))}
+            // The standing goes first, as the trainer puts a set's rotation:
+            // the picture and the cube that replaces it are held the same way.
+            setupAlg={`${drawing.standing} ${formatAlg(invertAlg(moves))}`.trim()}
             alg={formatAlg(moves)}
-            stickering="cross"
+            stickering={drawing.playerStickering}
+            standing={drawing.standing}
+            isFromLeft={drawing.view === 'isometricLeft'}
             request={playback.request}
             onMove={setPlayingMove}
             onStopped={playback.stopped}

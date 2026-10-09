@@ -447,6 +447,85 @@ export const cs: Strings = {
       noSide:
         'Žádná strana není hotová: spusť algoritmus odkudkoli a jedna bude.',
     },
+    method: 'Metoda',
+    rouxIntro:
+      'Sedm kroků Rouxu: dva bloky postavené rukama, rohy nahoře dvěma algoritmy a nakonec posledních šest hran jen tahy M a U. Obrázky mají žlutou nahoře, bílou dole a modrou prvního bloku vlevo. Tlačítko Notace vysvětlí písmena jako M nebo r.',
+    rouxSource: 'Kroky vycházejí z průvodců Rouxu od Kiana Mansoura a komunity Rouxu, na',
+    rouxSourceLink: 'Kianově webu o Rouxu',
+    rouxHideHint:
+      'Až budeš skládat bez čtení, zrychli: na kroky 3 a 4 se nauč celé 2-Look CMLL – najdeš ho v trenažéru. Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
+    rouxSituations: {
+      frontPair: 'Pár vpředu: přední stěnou ho sklop na blok.',
+      backPair: 'Pár vzadu: zadní stěnou ho sklop na blok.',
+      pairInFront: 'Pár vpředu, roh vlevo: zvedni slot, vlož pár a vrať ho.',
+      pairColourUp: 'Pár vzadu se zelenou nahoře: překlop ho a vlož.',
+      arrow: 'Šipka: tři barevné hrany nahoře, hrot nad čtvrtou dole vpředu.',
+      sideEdgesDown: 'Obě boční hrany dole: otoč vrškem, M2 a vrškem zpět.',
+      twoSwaps: 'Dvě dvojice prohozené, nahoře i dole.',
+      threeCycle: 'Tři hrany v kruhu.',
+    },
+    rouxHolds: {
+      headlightsLeft:
+        'Headlights – dva rohy stejné barvy na jedné straně: otáčej vrškem, dokud nebudou vlevo nad modrým blokem.',
+    },
+    rouxSteps: {
+      firstBlock: {
+        title: 'Levý blok',
+        points: [
+          'Modrý střed vlevo, bílá dolů. Vlevo postavíš blok 1×2×3: bílo-modrou hranu dole a před ní a za ní pár rohu s hranou.',
+          'Nejdřív dej bílo-modrou hranu pod modrý střed, bílou dolů.',
+          "Každý pár: hranu dej dopředu dolů, roh do horní vrstvy tak, aby bílá nebyla nahoře, a spoj je tahem M' – nebo M2, když barvy nesedí.",
+          "Pár otoč vrškem doleva a sklop ho na blok: vpředu F', vzadu B.",
+        ],
+        warning: 'teď neotáčej L ani D – rozbil bys, co už stojí.',
+      },
+      secondBlock: {
+        title: 'Pravý blok',
+        points: [
+          'Stejný blok vpravo kolem zeleného středu – jenže už smíš otáčet jen U, R, r a M; zbytek drží levý blok.',
+          'Nejdřív bílo-zelená hrana: dej ji nahoru bílou nahoru, nad zelený střed, a R2 ji položí dolů.',
+          'Páry spoj jako vlevo a vlož je shora tahy R nebo r – obrázky ukazují obě cesty.',
+        ],
+      },
+      cornerOrientation: {
+        title: 'Rohy žlutou nahoru',
+        points: [
+          'Teď záleží jen na čtyřech rozích nahoře, hrany přijdou na řadu nakonec.',
+          'Jeden algoritmus je všechny otočí žlutou nahoru: opakuj ho, dokud nejsou. Před každým během drž kostku podle toho, kolik rohů už má žlutou nahoře.',
+        ],
+      },
+      cornerPermutation: {
+        title: 'Rohy na místo',
+        points: [
+          'Hledej headlights: dva rohy na jedné straně se stejnou barvou.',
+          'Otoč vrškem, ať jsou vlevo, a spusť algoritmus. Pak vrškem dorovnej rohy k blokům.',
+        ],
+      },
+      edgeOrientation: {
+        title: 'Hrany nahoru nebo dolů',
+        points: [
+          'Zbývá šest hran: čtyři nahoře a dvě dole vpředu a vzadu. Hrana je dobrá, když její žlutá nebo bílá míří nahoru nebo dolů.',
+          "Udělej šipku: tři špatné hrany nahoře a jednu dole. Dostaneš se k ní tahy M, M' a U – zkoušej.",
+          "Hrot šipky dej nad špatnou hranu dole, pak M', U, M – a všechny hrany jsou dobré.",
+        ],
+        tip: 'špatných hran je vždycky sudý počet: dvě, čtyři nebo šest.',
+      },
+      sideEdges: {
+        title: 'Boční hrany',
+        points: [
+          'Žluto-modrou a žluto-zelenou hranu dostaň dolů, jednu dopředu a druhou dozadu, tahy M2 a U.',
+          'Otoč vrškem, aby rohy nad přední hranou měly barvu té zadní, pak M2 a vrškem zpět: levá i pravá strana jsou hotové.',
+        ],
+      },
+      middleSlice: {
+        title: 'Střední vrstva',
+        points: [
+          'Zbývá jen střední vrstva. Teď otáčej jen M a U2.',
+          "Dvě prohozené dvojice: U2 M2 U2 M2. Tři hrany v kruhu: U2 M' U2 M' – nebo opačně U2 M U2 M.",
+          'Nakonec otoč M, ať jsou středy doma: kostka je složená.',
+        ],
+      },
+    },
   },
   trainer: {
     progress: { new: 'Nový', learning: 'Učím se', known: 'Umím' },

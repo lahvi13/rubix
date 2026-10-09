@@ -21,11 +21,20 @@ import {
   type TrainerCase,
 } from '../../trainer';
 import { useCurrentStep } from '../../../hooks/use-current-step';
-import { LEARN_STEPS, holdState, type LearnSituation, type LearnStep } from '../steps';
+import { useActiveMethodId, useMethodList } from '../hooks/use-guide-method';
+import {
+  GUIDES,
+  holdState,
+  situationPicture,
+  type LearnSituation,
+  type LearnStep,
+  type SituationPicture,
+} from '../steps';
 import { SituationSheet } from './SituationSheet';
 
 const anchorOf = (step: LearnStep) => `learn-${step.id}`;
-const STEP_IDS = LEARN_STEPS.map(anchorOf);
+const GUIDE_IDS = Object.keys(GUIDES);
+const FALLBACK_METHOD = 'cfop';
 
 /** Which case sheet is open, and which set and group it belongs to. */
 interface OpenCase {
@@ -53,14 +62,35 @@ export function LearnScreen() {
   const [showNotation, setShowNotation] = useState(false);
   const [showLearn, setShowLearn] = useSetting('ui.showLearn');
   const [isExplained, setExplained] = useSetting('ui.learnExplanations');
-  const nav = useRef<HTMLElement>(null);
-  const [read, jumpTo] = useCurrentStep(STEP_IDS, nav);
-  // Above the first step is still the first step: the guide starts at its top.
-  const current = Math.max(read, 0);
+  // The guide for the method being timed in, until the reader picks the other:
+  // somebody about to start Roux wants to read it before making a session.
+  const activeMethodId = useActiveMethodId();
+  const methods = useMethodList();
+  const [chosenMethodId, setChosenMethodId] = useState<string | null>(null);
+  const wanted = chosenMethodId ?? activeMethodId ?? FALLBACK_METHOD;
+  const methodId = Object.hasOwn(GUIDES, wanted) ? wanted : FALLBACK_METHOD;
+  const isRoux = methodId === 'roux';
+  const nameOf = (id: string) => methods?.find((method) => method.id === id)?.name ?? id;
 
   return (
     <main className="screen screen--scroll learn">
-      {isExplained ? <p className="learn__intro">{strings.learn.intro}</p> : null}
+      <div className="learn__methods" role="group" aria-label={strings.learn.method}>
+        {GUIDE_IDS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            className={id === methodId ? 'is-active' : ''}
+            aria-pressed={id === methodId}
+            onClick={() => setChosenMethodId(id)}
+          >
+            {nameOf(id)}
+          </button>
+        ))}
+      </div>
+
+      {isExplained ? (
+        <p className="learn__intro">{isRoux ? strings.learn.rouxIntro : strings.learn.intro}</p>
+      ) : null}
 
       <div className="learn__tools">
         <button
@@ -83,35 +113,16 @@ export function LearnScreen() {
 
       {showNotation ? <NotationReference skin={skin} /> : null}
 
-      {/* Numbers, not names: seven names do not fit across a phone, and the
-          numbers are the ones every step is headed with. */}
-      <nav ref={nav} className="learn__nav" aria-label={strings.learn.stepsNav}>
-        {LEARN_STEPS.map((step, index) => (
-          <button
-            key={step.id}
-            type="button"
-            className={index === current ? 'is-active' : ''}
-            aria-label={step.title}
-            aria-current={index === current ? 'true' : undefined}
-            onClick={() => jumpTo(index)}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </nav>
-
-      {LEARN_STEPS.map((step, index) => (
-        <StepSection
-          key={step.id}
-          id={anchorOf(step)}
-          number={index + 1}
-          step={step}
-          isExplained={isExplained}
-          skin={skin}
-          triggers={definitions}
-          onOpen={(id, setId, group) => setOpenCase({ id, setId, group })}
-        />
-      ))}
+      {/* Keyed by the method: the other guide is a different page, and the
+          step being read is worked out afresh for it. */}
+      <GuideSteps
+        key={methodId}
+        steps={GUIDES[methodId] ?? []}
+        isExplained={isExplained}
+        skin={skin}
+        triggers={definitions}
+        onOpen={(id, setId, group) => setOpenCase({ id, setId, group })}
+      />
 
       {/* After the guide, not before it: the top of the page belongs to the
           steps, and Settings has the same switch for whoever looks there. */}
@@ -125,14 +136,20 @@ export function LearnScreen() {
           {strings.learn.hide}
         </label>
         {isExplained ? (
-          <p className="learn__caption learn__caption--left">{strings.learn.hideHint}</p>
+          <p className="learn__caption learn__caption--left">
+            {isRoux ? strings.learn.rouxHideHint : strings.learn.hideHint}
+          </p>
         ) : null}
       </div>
 
       <p className="learn__credit">
-        {strings.learn.source}{' '}
-        <a href="http://badmephisto.com" target="_blank" rel="noopener noreferrer">
-          {strings.learn.sourceLink}
+        {isRoux ? strings.learn.rouxSource : strings.learn.source}{' '}
+        <a
+          href={isRoux ? 'https://sites.google.com/view/kianroux/' : 'http://badmephisto.com'}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {isRoux ? strings.learn.rouxSourceLink : strings.learn.sourceLink}
         </a>
       </p>
 
@@ -146,6 +163,56 @@ export function LearnScreen() {
         />
       ) : null}
     </main>
+  );
+}
+
+interface GuideStepsProps {
+  steps: readonly LearnStep[];
+  isExplained: boolean;
+  skin: CubeSkin;
+  triggers: readonly TriggerDefinition[];
+  onOpen: (caseId: string, setId: string, group: string) => void;
+}
+
+/** One method's steps, with the row of numbers that jumps between them. */
+function GuideSteps({ steps, isExplained, skin, triggers, onOpen }: GuideStepsProps) {
+  const nav = useRef<HTMLElement>(null);
+  const [read, jumpTo] = useCurrentStep(steps.map(anchorOf), nav);
+  // Above the first step is still the first step: the guide starts at its top.
+  const current = Math.max(read, 0);
+
+  return (
+    <>
+      {/* Numbers, not names: seven names do not fit across a phone, and the
+          numbers are the ones every step is headed with. */}
+      <nav ref={nav} className="learn__nav" aria-label={strings.learn.stepsNav}>
+        {steps.map((step, index) => (
+          <button
+            key={step.id}
+            type="button"
+            className={index === current ? 'is-active' : ''}
+            aria-label={step.title}
+            aria-current={index === current ? 'true' : undefined}
+            onClick={() => jumpTo(index)}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </nav>
+
+      {steps.map((step, index) => (
+        <StepSection
+          key={step.id}
+          id={anchorOf(step)}
+          number={index + 1}
+          step={step}
+          isExplained={isExplained}
+          skin={skin}
+          triggers={triggers}
+          onOpen={onOpen}
+        />
+      ))}
+    </>
   );
 }
 
@@ -172,13 +239,16 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
     ? casesOf(advancedGroups, step.advanced?.group ?? null, [])
     : casesOf(groups, step.group, step.caseIds);
 
-  const setId = (isAdvanced ? step.advanced?.setId : step.setId) ?? step.setId;
+  const setId = (isAdvanced ? step.advanced?.setId : step.setId) ?? step.setId ?? '';
   const group = (isAdvanced ? step.advanced?.group : step.group) ?? '';
   const diagram = diagramFor(setId, group);
+  const picture = situationPicture(step);
 
   // The cross has no case of its own in any set; what it needs is a picture
-  // of the thing being made, and of where its pieces start.
+  // of the thing being made, and of where its pieces start. Roux's blocks
+  // and its last edges are taught the same way, from situations alone.
   const isCross = step.setId === CROSS_SET_ID;
+  const hasCases = step.setId !== null && !isCross;
   const isLoading = groups === undefined || (step.advanced !== null && advancedGroups === undefined);
 
   return (
@@ -212,7 +282,13 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
       {step.situations.length === 0 ? null : (
         <div className="learn__situations">
           {step.situations.map((situation) => (
-            <Situation key={situation.alg} situation={situation} skin={skin} triggers={triggers} />
+            <Situation
+              key={situation.alg}
+              situation={situation}
+              picture={picture}
+              skin={skin}
+              triggers={triggers}
+            />
           ))}
         </div>
       )}
@@ -234,7 +310,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
         </figure>
       ) : null}
 
-      {isCross ? null : isLoading ? (
+      {!hasCases ? null : isLoading ? (
         <p className="learn__caption">{strings.learn.loading}</p>
       ) : (
         <>
@@ -306,15 +382,17 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
 
 interface SituationProps {
   situation: LearnSituation;
+  picture: SituationPicture;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
 }
 
 /**
- * Where a cross edge can be, and the moves that take it down: a card like
- * every case on the page, which opens its own sheet to play them.
+ * Where a piece can be, and the moves that take it home — a cross edge, a
+ * Roux pair, the last edges: a card like every case on the page, which opens
+ * its own sheet to play them.
  */
-function Situation({ situation, skin, triggers }: SituationProps) {
+function Situation({ situation, picture, skin, triggers }: SituationProps) {
   const [isOpen, setOpen] = useState(false);
 
   return (
@@ -324,9 +402,9 @@ function Situation({ situation, skin, triggers }: SituationProps) {
         <span className="learn__case-row">
           <CubeDiagram
             className="learn__case-diagram"
-            state={holdState(situation)}
-            view="isometric"
-            stickering="cross"
+            state={holdState(situation, picture.standing)}
+            view={picture.view}
+            stickering={picture.stickering}
             skin={skin}
             label={null}
           />
@@ -336,6 +414,7 @@ function Situation({ situation, skin, triggers }: SituationProps) {
       {isOpen ? (
         <SituationSheet
           situation={situation}
+          picture={picture}
           skin={skin}
           triggers={triggers}
           onClose={() => setOpen(false)}

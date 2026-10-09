@@ -12,7 +12,14 @@ import { PACKS } from '../../db/seed/packs';
 import { formatAlg, parseAlg } from '../../domain/cube/notation';
 import { FACELETS, isSolved, applyAlg, type CubeState } from '../../domain/cube/state';
 import { isSolvedAsShown } from '../../domain/cube/views';
-import { LEARN_STEPS, holdState, type LearnStep } from './steps';
+import {
+  GUIDES,
+  LEARN_STEPS,
+  ROUX_STEPS,
+  holdState,
+  situationPicture,
+  type LearnStep,
+} from './steps';
 
 function movesOf(text: string) {
   const parsed = parseAlg(text);
@@ -69,7 +76,9 @@ function stepAlg(step: LearnStep): string {
   return parsed.ok ? formatAlg(parsed.moves) : '';
 }
 
-const withHolds = LEARN_STEPS.filter((step) => step.holds.length > 0);
+const withHolds = Object.values(GUIDES).flatMap((steps) =>
+  steps.filter((step) => step.holds.length > 0),
+);
 
 describe('the guide', () => {
   it('has something to say at every step', () => {
@@ -114,18 +123,39 @@ describe('the guide', () => {
     },
   );
 
-  it('draws the two situations the last-layer face has to be held in', () => {
-    const step = LEARN_STEPS.find((candidate) => candidate.id === 'corner-orientation');
-    const [two, none] = step?.holds ?? [];
-    if (!two || !none) throw new Error('the face step lost its pictures');
+  it.each(['corner-orientation', 'roux-corner-orientation'])(
+    '%s draws the two situations the corners have to be held in',
+    (id) => {
+      const step = [...LEARN_STEPS, ...ROUX_STEPS].find((candidate) => candidate.id === id);
+      const [two, none] = step?.holds ?? [];
+      if (!two || !none) throw new Error('the face step lost its pictures');
 
-    // Two corners already showing, and the sheet's rule for where to turn them:
-    // the top colour of the front-left corner pointing at the reader.
-    expect(orientedCorners(holdState(two))).toBe(2);
-    expect(frontLeftFacing(holdState(two))).toBe('F');
-    // None showing, and that same corner's top colour pointing left.
-    expect(orientedCorners(holdState(none))).toBe(0);
-    expect(frontLeftFacing(holdState(none))).toBe('L');
+      // Two corners already showing, and the sheet's rule for where to turn them:
+      // the top colour of the front-left corner pointing at the reader.
+      expect(orientedCorners(holdState(two))).toBe(2);
+      expect(frontLeftFacing(holdState(two))).toBe('F');
+      // None showing, and that same corner's top colour pointing left.
+      expect(orientedCorners(holdState(none))).toBe(0);
+      expect(frontLeftFacing(holdState(none))).toBe('L');
+    },
+  );
+
+  it('draws Roux corners with no headlights anywhere', () => {
+    const step = ROUX_STEPS.find((candidate) => candidate.id === 'roux-corner-permutation');
+    const hold = step?.holds[0];
+    if (!hold) throw new Error('the corner step lost its picture');
+    const state = holdState(hold);
+
+    // Headlights are two top corners on one side showing that side the same
+    // colour; the picture is the case with none, so none may be drawn.
+    const sides = (['F', 'R', 'B', 'L'] as const).filter((face) => {
+      const [left, right] = FACELETS.flatMap((sticker, index) =>
+        sticker.face === face && sticker.row === 0 && sticker.column !== 1 ? [index] : [],
+      );
+      return left !== undefined && right !== undefined && state[left] === state[right];
+    });
+    expect(sides).toHaveLength(0);
+    expect(homeOnTop(state, 3)).toBe(0);
   });
 
   it('draws corners with no headlights, and leaves the edges out of it', () => {
@@ -170,5 +200,99 @@ describe('the guide', () => {
     expect(white).toHaveLength(1);
     expect(isSolvedAsShown(state, 'cross')).toBe(false);
     expect(isSolvedAsShown(applyAlg(state, movesOf(situation.alg)), 'cross')).toBe(true);
+  });
+});
+
+describe('the Roux guide', () => {
+  const step = (id: string): LearnStep => {
+    const found = ROUX_STEPS.find((candidate) => candidate.id === id);
+    if (!found) throw new Error(`no step ${id}`);
+    return found;
+  };
+
+  /** Which faces and slices a situation turns, as the step's warning names them. */
+  const familiesOf = (alg: string): string[] => movesOf(alg).map((move) => move.family);
+
+  it('has seven steps, each with something to say', () => {
+    expect(ROUX_STEPS).toHaveLength(7);
+    for (const entry of ROUX_STEPS) {
+      expect(entry.title).not.toBe('');
+      expect(entry.points.length).toBeGreaterThan(0);
+    }
+  });
+
+  it.each(
+    ROUX_STEPS.flatMap((entry) =>
+      entry.situations.map((situation) => [entry.id, entry, situation] as const),
+    ),
+  )(
+    '%s: the situation is undone by its moves',
+    (_id, entry, situation) => {
+      const picture = situationPicture(entry);
+      const state = holdState(situation, picture.standing);
+      expect(isSolvedAsShown(state, picture.stickering)).toBe(false);
+      const stood = holdState({ alg: '', text: '' }, picture.standing);
+      expect(applyAlg(state, movesOf(situation.alg))).toEqual(stood);
+    },
+  );
+
+  it('builds the left block without turning L or D', () => {
+    for (const situation of step('roux-first-block').situations) {
+      expect(familiesOf(situation.alg)).not.toContain('L');
+      expect(familiesOf(situation.alg)).not.toContain('D');
+    }
+  });
+
+  it('builds the right block with U, R, r and M only', () => {
+    for (const situation of step('roux-second-block').situations) {
+      for (const family of familiesOf(situation.alg)) {
+        expect(['U', 'R', 'Rw', 'M']).toContain(family);
+      }
+    }
+  });
+
+  it.each(['roux-edge-orientation', 'roux-side-edges', 'roux-middle-slice'])(
+    '%s turns nothing but M and U',
+    (id) => {
+      for (const situation of step(id).situations) {
+        for (const family of familiesOf(situation.alg)) expect(['M', 'U']).toContain(family);
+      }
+    },
+  );
+
+  it('opens the corner swap on headlights on the left, where the step says to put them', () => {
+    const setId = step('roux-corner-permutation').setId;
+    const pack = PACKS.find((candidate) => candidate.set.id === setId);
+    const jb = pack?.cases.find((entry) => entry.id === '2cmll-jb');
+    if (!jb) throw new Error('the corner step lost its case');
+    const state = holdState({ alg: jb.alg, text: '' });
+
+    const sides = (['F', 'R', 'B', 'L'] as const).filter((face) => {
+      const [left, right] = FACELETS.flatMap((sticker, index) =>
+        sticker.face === face && sticker.row === 0 && sticker.column !== 1 ? [index] : [],
+      );
+      return left !== undefined && right !== undefined && state[left] === state[right];
+    });
+    expect(sides).toEqual(['L']);
+  });
+
+  it('draws the arrow: three bad edges on top and its point over the fourth below', () => {
+    const entry = step('roux-edge-orientation');
+    const situation = entry.situations[0];
+    if (!situation) throw new Error('the edge step lost its picture');
+    const state = holdState(situation, situationPicture(entry).standing);
+
+    // An edge is good when its top or bottom colour faces up or down.
+    const badAt = (position: string): boolean => {
+      const stickers = FACELETS.flatMap((sticker, index) =>
+        sticker.position.join(',') === position ? [index] : [],
+      );
+      const pole = stickers.find((index) => state[index] === 'U' || state[index] === 'D');
+      const face = pole === undefined ? undefined : FACELETS[pole]?.face;
+      return face !== 'U' && face !== 'D';
+    };
+    const top = ['0,1,1', '-1,1,0', '1,1,0', '0,1,-1'];
+    expect(top.filter(badAt)).toEqual(['0,1,1', '-1,1,0', '1,1,0']);
+    expect(['0,-1,1', '0,-1,-1'].filter(badAt)).toEqual(['0,-1,1']);
   });
 });

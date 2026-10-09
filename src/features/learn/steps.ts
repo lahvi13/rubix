@@ -1,8 +1,16 @@
-import type { MarkedCorner } from '../../components/CubeDiagram';
-import { BEGINNER_GROUPS, BEGINNER_SET_ID, CROSS_SET_ID } from '../../domain/alg/sets';
+import type { DiagramView, MarkedCorner } from '../../components/CubeDiagram';
+import {
+  BEGINNER_GROUPS,
+  BEGINNER_SET_ID,
+  CROSS_SET_ID,
+  TWO_LOOK_CMLL_GROUPS,
+  TWO_LOOK_CMLL_SET_ID,
+} from '../../domain/alg/sets';
 import { invertAlg, parseAlg } from '../../domain/cube/notation';
 import { applyAlg, solvedState, type CubeState } from '../../domain/cube/state';
+import type { Stickering } from '../../domain/cube/views';
 import { strings } from '../../lib/strings';
+import type { PlayerStickering } from '../trainer';
 
 /**
  * A situation the step's one algorithm has to be repeated from: a picture and
@@ -25,6 +33,26 @@ export interface LearnSituation {
   text: string;
 }
 
+/**
+ * How a step's situations are drawn and played: from which corner, with which
+ * pieces in colour, and with the cube turned which way first. The cross is
+ * looked at like F2L; Roux's blocks each have their own.
+ */
+export interface SituationPicture {
+  view: DiagramView;
+  stickering: Stickering;
+  playerStickering: PlayerStickering;
+  /** A whole-cube rotation before the situation is set up; empty for none. */
+  standing: string;
+}
+
+const CROSS_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'cross',
+  playerStickering: 'cross',
+  standing: '',
+};
+
 export interface LearnStep {
   id: string;
   title: string;
@@ -34,8 +62,8 @@ export interface LearnStep {
   warning?: string;
   /** What to do when the cube is not in the picture the points assume. */
   tip?: string;
-  /** Where the step's algorithms live. */
-  setId: string;
+  /** Where the step's algorithms live; null for a step taught by situations alone. */
+  setId: string | null;
   /** The group inside that set; null means the whole set. */
   group: string | null;
   /** The cases a beginner needs. Empty means every case of the group. */
@@ -46,6 +74,8 @@ export interface LearnStep {
   holds: readonly LearnHold[];
   /** Where the piece can be, for a step taught by pictures instead of cases. */
   situations: readonly LearnSituation[];
+  /** How those situations are drawn; the cross's way when left out. */
+  picture?: SituationPicture;
   /**
    * The corner every picture of the opening algorithm frames: the one its
    * text says where to put. Not on the quicker cases, which hold no rule.
@@ -165,8 +195,168 @@ export const LEARN_STEPS: readonly LearnStep[] = [
   },
 ];
 
-/** The cube as the reader meets it: the way out, undone. */
-export function holdState(hold: LearnHold): CubeState {
-  const parsed = parseAlg(hold.alg);
-  return parsed.ok ? applyAlg(solvedState(), invertAlg(parsed.moves)) : solvedState();
+/**
+ * Roux, held the way its guides hold it: yellow up, the first block's blue on
+ * the left and red in front — one quarter turn from how every skin is written.
+ */
+const ROUX_STANDING = "y'";
+
+const LEFT_BLOCK_PICTURE: SituationPicture = {
+  view: 'isometricLeft',
+  stickering: 'leftBlock',
+  playerStickering: 'leftBlock',
+  standing: ROUX_STANDING,
+};
+
+const BLOCKS_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'blocks',
+  playerStickering: 'blocks',
+  standing: ROUX_STANDING,
+};
+
+const EDGE_ORIENTATION_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'lseOrientation',
+  playerStickering: 'lseOrientation',
+  standing: ROUX_STANDING,
+};
+
+const LAST_EDGES_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'full',
+  playerStickering: 'full',
+  standing: ROUX_STANDING,
+};
+
+const JB_PERM = "R U R' F' R U R' U' R' F R2 U' R' U'";
+
+/**
+ * Roux in seven steps, the way a first solve goes: two blocks built by hand,
+ * the corners with the two algorithms every Roux guide starts on, and the last
+ * six edges with nothing but M and U. The blocks and the edges are taught
+ * from pictures, like the cross; the corners are cases out of 2-Look CMLL,
+ * which is also where the quicker way through them lives.
+ */
+export const ROUX_STEPS: readonly LearnStep[] = [
+  {
+    id: 'roux-first-block',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [
+      { alg: "F'", text: strings.learn.rouxSituations.frontPair },
+      { alg: 'B', text: strings.learn.rouxSituations.backPair },
+    ],
+    picture: LEFT_BLOCK_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.rouxSteps.firstBlock,
+  },
+  {
+    id: 'roux-second-block',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [
+      { alg: "R U' R'", text: strings.learn.rouxSituations.pairInFront },
+      { alg: "r' U' R", text: strings.learn.rouxSituations.pairColourUp },
+    ],
+    picture: BLOCKS_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.rouxSteps.secondBlock,
+  },
+  {
+    id: 'roux-corner-orientation',
+    setId: TWO_LOOK_CMLL_SET_ID,
+    group: TWO_LOOK_CMLL_GROUPS.orientation,
+    caseIds: ['2cmll-sune'],
+    keyText: strings.learn.holds.oneOriented,
+    holds: [
+      { alg: `${SUNE} ${SUNE} U2 ${SUNE}`, text: strings.learn.holds.twoOriented },
+      { alg: `${SUNE} ${SUNE}`, text: strings.learn.holds.noneOriented },
+    ],
+    situations: [],
+    markedCorner: 'frontLeft',
+    advanced: { setId: TWO_LOOK_CMLL_SET_ID, group: TWO_LOOK_CMLL_GROUPS.orientation },
+    ...strings.learn.rouxSteps.cornerOrientation,
+  },
+  {
+    id: 'roux-corner-permutation',
+    setId: TWO_LOOK_CMLL_SET_ID,
+    group: TWO_LOOK_CMLL_GROUPS.permutation,
+    caseIds: ['2cmll-jb'],
+    keyText: strings.learn.rouxHolds.headlightsLeft,
+    holds: [{ alg: `${JB_PERM} U2 ${JB_PERM}`, text: strings.learn.holds.noHeadlights }],
+    situations: [],
+    markedCorner: null,
+    advanced: { setId: TWO_LOOK_CMLL_SET_ID, group: TWO_LOOK_CMLL_GROUPS.permutation },
+    ...strings.learn.rouxSteps.cornerPermutation,
+  },
+  {
+    id: 'roux-edge-orientation',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [{ alg: "M' U M", text: strings.learn.rouxSituations.arrow }],
+    picture: EDGE_ORIENTATION_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.rouxSteps.edgeOrientation,
+  },
+  {
+    id: 'roux-side-edges',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [{ alg: "U M2 U'", text: strings.learn.rouxSituations.sideEdgesDown }],
+    picture: LAST_EDGES_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.rouxSteps.sideEdges,
+  },
+  {
+    id: 'roux-middle-slice',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [
+      { alg: 'U2 M2 U2 M2', text: strings.learn.rouxSituations.twoSwaps },
+      { alg: "U2 M' U2 M'", text: strings.learn.rouxSituations.threeCycle },
+    ],
+    picture: LAST_EDGES_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.rouxSteps.middleSlice,
+  },
+];
+
+/** A guide per method, by the method's id. */
+export const GUIDES: Readonly<Record<string, readonly LearnStep[]>> = {
+  cfop: LEARN_STEPS,
+  roux: ROUX_STEPS,
+};
+
+/** How a step's situations are drawn: its own picture, or the cross's. */
+export function situationPicture(step: LearnStep): SituationPicture {
+  return step.picture ?? CROSS_PICTURE;
+}
+
+/** The cube as the reader meets it: stood as the step holds it, then the way out undone. */
+export function holdState(hold: LearnHold, standing = ''): CubeState {
+  const turn = parseAlg(standing);
+  const stood = turn.ok ? applyAlg(solvedState(), turn.moves) : solvedState();
+  const way = parseAlg(hold.alg);
+  return way.ok ? applyAlg(stood, invertAlg(way.moves)) : stood;
 }
