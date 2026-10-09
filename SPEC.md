@@ -161,6 +161,8 @@ kromě PB, které je globální per `puzzle`.
 - histogram časů (šířka koše odvozená z rozsahu, min. 0,5 s)
 - trend rolling ao12 a pod ním rolling ao50 (line chart, osa X = index solvu); ao50
   ukazuje, jestli je dnešní ao12 změna formy, nebo jen výkyv
+- historie rekordů (single a každé okno): seznam a nad ním schodový graf podle data,
+  takže je vidět i to, jak dlouho rekord stál
 - **filtr podle tagu**: pod volbou rozsahu řada tagů, jen když nějaký tag existuje.
   Zvolený tag omezí všechno na obrazovce — průměry, grafy, rekordy, cíl, praxi i fáze —
   na solvy s tagem; PB single zůstává globální. U „Posledních 100“ se nejdřív filtruje

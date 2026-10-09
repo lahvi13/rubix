@@ -27,6 +27,9 @@ vi.mock('../charts/DailyTrendChart', () => ({
 vi.mock('../charts/PracticeChart', () => ({
   PracticeChart: () => <div data-testid="practice-chart" />,
 }));
+vi.mock('../charts/RecordsChart', () => ({
+  RecordsChart: () => <div data-testid="records-chart" />,
+}));
 
 async function seedSolve(sessionId: string, rawMs: number) {
   return addSolve({

@@ -264,6 +264,7 @@ export const cs: Strings = {
     records: 'Rekordy',
     recordKind: 'Který rekord',
     noRecords: (n: number) =>
+    recordsChart: 'Rekordy v čase, každý jako schod dolů',
       n === 1 ? 'Zatím žádné rekordy.' : `Zatím žádný ao${n} — je na něj potřeba ${n} složení.`,
     firstRecord: 'první',
     allRecords: (count: number) => `Zobrazit všech ${count}`,

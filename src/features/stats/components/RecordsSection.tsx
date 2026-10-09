@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { AVERAGE_WINDOWS, type AverageWindow } from '../../../domain/stats/averages';
 import { formatDate, formatMs } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import type { RecordEntry, RecordKind } from '../hooks/use-session-stats';
+
+const RecordsChart = lazy(() =>
+  import('../charts/RecordsChart').then((module) => ({ default: module.RecordsChart })),
+);
 
 const KINDS: readonly RecordKind[] = ['single', ...AVERAGE_WINDOWS];
 /** A first session sets a record nearly every solve; the recent ones are the story. */
@@ -33,8 +37,8 @@ export function RecordsSection({
   // The history's two tiers: the newest row is the best of what is read, in
   // gold only when it is the personal best itself. An average has no PB to
   // be — archived sessions and older solves are not in the list it is from.
-  const topClass =
-    kind === 'single' && records[0]?.ms === globalPbMs ? 'record is-record' : 'record is-best';
+  const isPb = kind === 'single' && records[0]?.ms === globalPbMs;
+  const topClass = isPb ? 'record is-record' : 'record is-best';
 
   return (
     <section className="stats-panel">
@@ -55,6 +59,13 @@ export function RecordsSection({
           </button>
         ))}
       </div>
+
+      {/* One record is a dot, not a history. */}
+      {records.length < 2 ? null : (
+        <Suspense fallback={null}>
+          <RecordsChart records={records} colour={isPb ? 'var(--record)' : 'var(--accent)'} />
+        </Suspense>
+      )}
 
       {records.length === 0 ? (
         <p className="detail__hint">{strings.stats.noRecords(kind === 'single' ? 1 : kind)}</p>
