@@ -74,20 +74,18 @@
   z-index: 5;
   /* Space above belongs to the padding, not to a margin: pinned, the heading
      paints its padding but never its margin, and the row sliding under would
-     surface through the gap. */
+     surface through the gap. The same above and below, and the same on every
+     heading, the first one too: pinned they all stand in one place, and a
+     date that sat flush under the header on one day and a step lower on the
+     next looked like the bar jumping. */
   margin: 0;
-  padding: var(--space-5) 0 var(--space-4);
+  padding: var(--space-5) 0;
   background: var(--bg);
   font-size: var(--text-2xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
-}
-
-/* The first one opens the list, so it needs no room above it. */
-.history__day:first-child {
-  padding-top: 0;
 }
 
 /* Only there while something is selected, so it may take a row of its own
