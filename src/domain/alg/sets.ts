@@ -122,6 +122,7 @@ export const SET_ORDER: readonly string[] = [
   'oll',
   '2look-pll',
   'pll',
+  '2look-cmll',
 ];
 
 /**
@@ -141,6 +142,16 @@ export const BEGINNER_GROUPS = {
   edges: 'Middle layer edges',
   cornersHome: 'Corners home',
   edgesHome: 'Edges home',
+} as const;
+
+/**
+ * Roux's corners in two looks: turn them up, then put them in place. The
+ * guide teaches one case of each look; the set holds the rest.
+ */
+export const TWO_LOOK_CMLL_SET_ID = '2look-cmll';
+export const TWO_LOOK_CMLL_GROUPS = {
+  orientation: '1 / Orientation',
+  permutation: '2 / Permutation',
 } as const;
 
 export const CROSS_SET_ID = 'cross';

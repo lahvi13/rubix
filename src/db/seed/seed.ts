@@ -368,7 +368,7 @@ function buildSet(pack: AlgPack, existing: AlgSet | undefined): AlgSet {
     id: pack.set.id,
     name: pack.set.name,
     puzzle: PACK_PUZZLE,
-    methodId: PACK_METHOD_ID,
+    methodId: pack.set.method ?? PACK_METHOD_ID,
     packVersion: pack.packVersion,
     createdAt: existing?.createdAt ?? now(),
     updatedAt: now(),

@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { AlgCase, AlgSet, Algorithm } from '../../../db/types';
+import type { AlgCase, AlgSet, Algorithm, Method } from '../../../db/types';
+import { listMethods } from '../../../db/repositories/method-repository';
 import { listCasesWithAlgs, listSets } from '../../../db/repositories/alg-repository';
 import { costsASlot } from '../../../domain/alg/cost';
 import { parseAlg } from '../../../domain/cube/notation';
@@ -34,6 +35,11 @@ export interface CaseGroup {
  */
 export function useAlgSets(): AlgSet[] | undefined {
   return useLiveQuery(listSets, []);
+}
+
+/** The methods the sets belong to, for naming the rows they are grouped in. */
+export function useMethods(): Method[] | undefined {
+  return useLiveQuery(listMethods, []);
 }
 
 /**

@@ -10,7 +10,8 @@ import {
 import { navigate } from '../../../app/router';
 import { diagramFor } from '../case-view';
 import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../levels';
-import { useAlgSets, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
+import { useAlgSets, useMethods, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
+import type { AlgSet } from '../../../db/types';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CaseLayout } from '../../../lib/appearance';
@@ -48,6 +49,16 @@ export function TrainerScreen() {
       set.id !== CROSS_SET_ID &&
       set.id !== BEGINNER_SET_ID,
   );
+  // In solving order within a method, the methods in the order their first
+  // set comes — CFOP's sets lead the list.
+  const setsByMethod = fullSets.reduce<{ methodId: string; sets: AlgSet[] }[]>((rows, set) => {
+    const row = rows.find((candidate) => candidate.methodId === set.methodId);
+    if (row) row.sets.push(set);
+    else rows.push({ methodId: set.methodId, sets: [set] });
+    return rows;
+  }, []);
+  const methods = useMethods();
+  const methodNames = new Map((methods ?? []).map((method) => [method.id, method.name]));
   // Remembered rather than held for the visit: coming back from the timer to
   // the set you were working through is what the drill already does.
   const [rememberedSetId, setRememberedSetId] = useSetting('trainer.setId');
@@ -98,23 +109,30 @@ export function TrainerScreen() {
 
   return (
     <main className="screen screen--scroll">
-      <div className="trainer__sets">
-        {fullSets.map((set) => (
-          <button
-            key={set.id}
-            type="button"
-            className={set.id === baseSetId ? 'is-active' : ''}
-            onClick={() => {
-              // Back to the level last looked at in this set, not to its first:
-              // a detour through OLL is not a decision to start F2L again.
-              setRememberedSetId(entryOf(set.id, lastLevels));
-              setOpenCase(null);
-            }}
-          >
-            {packLabel(set.name)}
-          </button>
-        ))}
-      </div>
+      {/* One row of sets per method once there is more than one, named, so
+          2-Look CMLL is not read as the step after PLL. */}
+      {setsByMethod.map(({ methodId, sets: methodSets }) => (
+        <div key={methodId} className="trainer__sets">
+          {setsByMethod.length > 1 ? (
+            <span className="trainer__method">{methodNames.get(methodId) ?? methodId}</span>
+          ) : null}
+          {methodSets.map((set) => (
+            <button
+              key={set.id}
+              type="button"
+              className={set.id === baseSetId ? 'is-active' : ''}
+              onClick={() => {
+                // Back to the level last looked at in this set, not to its first:
+                // a detour through OLL is not a decision to start F2L again.
+                setRememberedSetId(entryOf(set.id, lastLevels));
+                setOpenCase(null);
+              }}
+            >
+              {packLabel(set.name)}
+            </button>
+          ))}
+        </div>
+      ))}
 
       {/* How far into the set: the cases everybody meets, and the two sets of
           cases that only turn up once another slot is in the way. */}

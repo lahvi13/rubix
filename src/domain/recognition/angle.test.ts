@@ -88,9 +88,9 @@ describe('aufForAngle', () => {
       }
     }
 
-    // 195 cases, four rotations, four AUFs — a guard against the loop quietly
+    // 204 cases, four rotations, four AUFs — a guard against the loop quietly
     // running over nothing.
-    expect(checked).toBe(195 * 16);
+    expect(checked).toBe(204 * 16);
   });
 
   it('finds the turn for an OLL of your own that orients and permutes its own way', () => {

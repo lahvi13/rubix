@@ -182,10 +182,10 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
 
     // F2L is one look; there is nothing to switch between.
     expect(await screen.findByRole('button', { name: 'F2L' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /2-Look/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^2-Look \d/ })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'OLL' }));
-    await user.click(await screen.findByRole('button', { name: /2-Look/ }));
+    await user.click(await screen.findByRole('button', { name: /^2-Look \d/ }));
 
     // Three edge shapes and seven corner cases instead of fifty-seven.
     await waitFor(() => {
@@ -211,7 +211,7 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     render(<TrainerScreen />);
 
     await user.click(await screen.findByRole('button', { name: 'PLL' }));
-    await user.click(await screen.findByRole('button', { name: /2-Look/ }));
+    await user.click(await screen.findByRole('button', { name: /^2-Look \d/ }));
 
     // The setting, not the screen: what has to survive is the leaving.
     await waitFor(async () => {

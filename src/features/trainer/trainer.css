@@ -7,6 +7,13 @@
  * screen — the last button wrapped and sat alone under the set names, reading
  * as one of them.
  */
+/* The method a row of sets belongs to, ahead of its sets. */
+.trainer__method {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  margin-inline-end: var(--space-2);
+}
+
 .trainer__sets,
 .trainer__actions {
   display: flex;

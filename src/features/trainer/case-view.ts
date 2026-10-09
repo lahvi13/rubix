@@ -1,5 +1,11 @@
 import type { DiagramView } from '../../components/CubeDiagram';
-import { BEGINNER_GROUPS, BEGINNER_SET_ID, LEVEL_BASE_SETS } from '../../domain/alg/sets';
+import {
+  BEGINNER_GROUPS,
+  BEGINNER_SET_ID,
+  LEVEL_BASE_SETS,
+  TWO_LOOK_CMLL_GROUPS,
+  TWO_LOOK_CMLL_SET_ID,
+} from '../../domain/alg/sets';
 import type { PlayerStickering } from './components/CasePlayer';
 import type { Stickering } from '../../domain/cube/views';
 
@@ -63,6 +69,19 @@ export function diagramFor(setId: string, group: string): Diagram {
       view: 'lastLayer',
       stickering: isCorners ? 'corners' : 'edges',
       playerStickering: isCorners ? 'lastLayerCorners' : 'full',
+      orientation: '',
+    };
+  }
+  // Roux's corners, read with the edges grey: they are still loose when CMLL
+  // comes round, so a yellow or coloured edge sticker would be read as part of
+  // the case. The first look is which way the corners face, the second where
+  // they go.
+  if (setId === TWO_LOOK_CMLL_SET_ID) {
+    const isOrientation = group === TWO_LOOK_CMLL_GROUPS.orientation;
+    return {
+      view: 'lastLayer',
+      stickering: isOrientation ? 'cornerOrientation' : 'corners',
+      playerStickering: isOrientation ? 'cornerOrientation' : 'lastLayerCorners',
       orientation: '',
     };
   }

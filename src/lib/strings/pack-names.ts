@@ -40,6 +40,8 @@ const CS: Record<string, string> = {
   '1 / Edges': '1 / Hrany',
   '2 / Corners': '2 / Rohy',
   '2 / Edges': '2 / Hrany',
+  '1 / Orientation': '1 / Orientace',
+  '2 / Permutation': '2 / Permutace',
 
   // PLL, grouped by what the case does rather than by its shape.
   'Adjacent corner swap': 'Prohozené sousední rohy',
@@ -82,6 +84,7 @@ export const KEPT_IN_ENGLISH: readonly string[] = [
   'PLL',
   '2-Look OLL',
   '2-Look PLL',
+  '2-Look CMLL',
   'Cross',
   // OLL shapes, as J Perm and every OLL chart name them.
   'Dot',

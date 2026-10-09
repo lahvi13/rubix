@@ -339,6 +339,63 @@ describe('two-look PLL', () => {
   );
 });
 
+describe('two-look CMLL', () => {
+  const pack = packById('2look-cmll');
+  const orientation = pack.cases.filter((entry) => entry.group === '1 / Orientation');
+  const permutation = pack.cases.filter((entry) => entry.group === '2 / Permutation');
+
+  /** Roux's two blocks: everything but the top layer and the middle slice. */
+  const isLastSixOrCorner = (index: number): boolean => {
+    const position = FACELETS[index]?.position;
+    return position !== undefined && (position[1] === 1 || position[0] === 0);
+  };
+
+  const cornersOriented = (state: CubeStateOf): boolean =>
+    FACELETS.every(
+      (sticker, index) => sticker.face !== 'U' || !isCornerSticker(index) || state[index] === 'U',
+    );
+
+  /** Only which way the top corners face — the edges are Roux's last step. */
+  const cornerOrientationKey = (state: CubeStateOf): string =>
+    FACELETS.map((sticker, index) =>
+      sticker.position[1] === 1 && isCornerSticker(index) ? (state[index] === 'U' ? 'y' : '.') : '',
+    ).join('');
+
+  it('is the seven shapes and the two swaps of the short route', () => {
+    expect(pack.set.method).toBe('roux');
+    expect(orientation).toHaveLength(7);
+    expect(permutation).toHaveLength(2);
+  });
+
+  it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
+    '%s leaves both blocks standing',
+    (_name, entry) => {
+      expect(wrongOutside(caseState(entry), isLastSixOrCorner)).toBe(0);
+    },
+  );
+
+  it.each(orientation.map((entry) => [entry.name, entry] as const))(
+    '%s starts with corners to turn up',
+    (_name, entry) => {
+      expect(cornersOriented(caseState(entry))).toBe(false);
+    },
+  );
+
+  it.each(permutation.map((entry) => [entry.name, entry] as const))(
+    '%s starts with the corners up and out of place',
+    (_name, entry) => {
+      const state = caseState(entry);
+      expect(cornersOriented(state)).toBe(true);
+      expect(wrongOutside(state, (index) => !isCornerSticker(index))).toBeGreaterThan(0);
+    },
+  );
+
+  it('holds seven different corner shapes', () => {
+    const keys = orientation.map((entry) => aufKey(caseState(entry), cornerOrientationKey));
+    expect(new Set(keys).size).toBe(7);
+  });
+});
+
 describe('F2L', () => {
   const f2l = PACKS.find((pack) => pack.set.id === 'f2l');
   if (!f2l) return;

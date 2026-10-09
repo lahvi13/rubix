@@ -10,6 +10,7 @@ import f2lAdvanced from './f2l-advanced.json';
 import f2lExpert from './f2l-expert.json';
 import oll from './oll.json';
 import pll from './pll.json';
+import twoLookCmll from './two-look-cmll.json';
 import twoLookOll from './two-look-oll.json';
 import twoLookPll from './two-look-pll.json';
 import { CROSS_CASE_ID, CROSS_SET_ID } from '../../domain/alg/sets';
@@ -57,11 +58,12 @@ export interface PackCase {
 
 export interface AlgPack {
   packVersion: number;
-  set: { id: string; name: string };
+  /** The method the set belongs to; CFOP unless it says otherwise. */
+  set: { id: string; name: string; method?: string };
   cases: PackCase[];
 }
 
-/** Every pack is a 3x3x3 CFOP set; nothing else exists yet. */
+/** Every pack is a 3x3x3 set; CFOP's unless the pack names another method. */
 export const PACK_PUZZLE = '333';
 export const PACK_METHOD_ID = 'cfop';
 export const ROUX_METHOD_ID = 'roux';
@@ -75,6 +77,7 @@ export const PACKS: readonly AlgPack[] = [
   twoLookOll,
   twoLookPll,
   beginner,
+  twoLookCmll,
 ];
 
 /**
