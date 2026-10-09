@@ -45,7 +45,8 @@ export function diagramUrl(
 ): string {
   // Everything the theme changes about a skin belongs in the key, or a picture
   // drawn before the theme flipped gets handed back after it.
-  const key = `${skin.id}|${skin.muted}|${view}|${stickering}|${mark}|${stateKey(state)}`;
+  const skinKey = `${skin.id}|${skin.muted}|${skin.outline}`;
+  const key = `${skinKey}|${view}|${stickering}|${mark}|${stateKey(state)}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
 

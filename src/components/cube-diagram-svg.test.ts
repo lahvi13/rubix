@@ -44,6 +44,16 @@ describe('cube diagrams as text', () => {
     expect(skin.arrow.band).toBe(skin.outline);
   });
 
+  it('stands the cube on slate plastic on a light page, and black on a dark one', () => {
+    const light = skinById('classic', 'light');
+    const dark = skinById('classic', 'dark');
+
+    expect(diagramSvg(tPerm, 'lastLayer', 'full', light)).toContain(`fill="${light.outline}"`);
+    expect(light.outline).not.toBe(dark.outline);
+    // Except on the skin whose whole point is to be stark.
+    expect(skinById('contrast', 'light').outline).toBe(skinById('contrast', 'dark').outline);
+  });
+
   it('keeps the two themes apart in the cache', () => {
     // Greyed stickers are the part of a picture the theme changes.
     const dark = diagramUrl(tPerm, 'lastLayer', 'corners', defaultSkin('dark'));

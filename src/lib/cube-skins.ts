@@ -4,11 +4,14 @@
  * The last layer is drawn yellow-on-top, the way every CFOP diagram is drawn:
  * the cross is white and lives on the bottom, so U is the yellow face here.
  * `muted` is for stickers a case does not depend on — they are still drawn,
- * because an empty square reads as a hole in the cube. Those are the one part
- * of a skin that has to know about the theme: a sticker that recedes into a
- * dark card is a slab of ink on a white one. On paper it is still a mid grey,
- * not a pale one: the white face, shaded on the side of a cube, comes down to
- * a pale grey itself, and the two must never be mistaken for each other.
+ * because an empty square reads as a hole in the cube. Those, and the plastic
+ * under the stickers, are the parts of a skin that have to know about the
+ * theme: a sticker that recedes into a dark card is a slab of ink on a white
+ * one, and so is near-black plastic, which on a white card turned the grid
+ * between the stickers into heavy black lines. On paper the plastic is a slate
+ * grey and the muted sticker a lighter one — but still a mid grey, not a pale
+ * one: the white face, shaded on the side of a cube, comes down to a pale grey
+ * itself, and the two must never be mistaken for each other.
  */
 
 import type { Face } from '../domain/cube/notation';
@@ -42,14 +45,18 @@ export interface CubeSkin {
 export const SIDE_SHADE = { front: 0.88, right: 0.74 } as const;
 
 /**
- * A skin as it is written down. The muted sticker is still a choice at this
- * point — the theme makes it, not the skin.
+ * A skin as it is written down. The muted sticker and the plastic are still a
+ * choice at this point — the theme makes it, not the skin.
  */
-interface CubeSkinDefinition extends Omit<CubeSkin, 'muted' | 'arrow'> {
+interface CubeSkinDefinition extends Omit<CubeSkin, 'muted' | 'outline' | 'arrow'> {
   muted: Record<ResolvedTheme, string>;
+  outline: Record<ResolvedTheme, string>;
   /** The pale neutral of the pair; `outline` is the dark one. */
   pale: string;
 }
+
+/** Slate rather than black on a light page, for every skin that does not exist to be stark. */
+const PLASTIC = { dark: '#0f1115', light: '#4b5364' } as const;
 
 /*
  * Every skin is one real cube, written down as it is held here: yellow up,
@@ -70,8 +77,8 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#d63a3a',
       R: '#e8811c',
     },
-    muted: { dark: '#525b70', light: '#9099ab' },
-    outline: '#0f1115',
+    muted: { dark: '#525b70', light: '#a7afbd' },
+    outline: PLASTIC,
     pale: '#f4f6fb',
   },
   {
@@ -86,7 +93,9 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       R: '#ff8a00',
     },
     muted: { dark: '#4b5468', light: '#8a93a6' },
-    outline: '#000000',
+    // The one skin that keeps black plastic on a light page: being stark is
+    // what it is for.
+    outline: { dark: '#000000', light: '#000000' },
     pale: '#ffffff',
   },
   {
@@ -100,8 +109,8 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#e79a9a',
       R: '#f0b681',
     },
-    muted: { dark: '#5a6379', light: '#a4acbc' },
-    outline: '#1b1f28',
+    muted: { dark: '#5a6379', light: '#b4bbc8' },
+    outline: { dark: '#1b1f28', light: PLASTIC.light },
     pale: '#f2f4f8',
   },
   {
@@ -117,8 +126,8 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#d55e00',
       R: '#e69f00',
     },
-    muted: { dark: '#4f586d', light: '#8f98aa' },
-    outline: '#0f1115',
+    muted: { dark: '#4f586d', light: '#a5adbb' },
+    outline: PLASTIC,
     pale: '#f8fafc',
   },
 ];
@@ -127,8 +136,8 @@ const FALLBACK: CubeSkinDefinition = {
   id: 'classic',
   name: 'Classic',
   faces: { U: '#f2d024', D: '#f4f4f4', F: '#25b05a', B: '#2f6fd0', L: '#d63a3a', R: '#e8811c' },
-  muted: { dark: '#525b70', light: '#9099ab' },
-  outline: '#0f1115',
+  muted: { dark: '#525b70', light: '#a7afbd' },
+  outline: PLASTIC,
   pale: '#f4f6fb',
 };
 
@@ -147,9 +156,9 @@ export function skinById(id: string, theme: ResolvedTheme): CubeSkin {
     id: definition.id,
     name: definition.name,
     faces: definition.faces,
-    outline: definition.outline,
+    outline: definition.outline[theme],
     muted: definition.muted[theme],
-    arrow: { fill: definition.pale, band: definition.outline },
+    arrow: { fill: definition.pale, band: definition.outline[theme] },
   };
 }
 
