@@ -1,9 +1,10 @@
 import type { MethodPhase } from '../../../db/types';
-import type { PhaseAverageRow } from '../../../domain/stats/phases';
+import { averageSolve, type PhaseAverageRow } from '../../../domain/stats/phases';
 import type { Average } from '../../../domain/stats/averages';
 import { formatAverage } from '../../../lib/format';
 import { phaseFillColour } from '../../../lib/phase-colours';
 import { strings } from '../../../lib/strings';
+import { PhaseBar } from './PhaseBar';
 
 /** The window column: an average, every solve, or the fastest each phase has been. */
 function rowLabel(n: PhaseAverageRow['n']): string {
@@ -36,6 +37,10 @@ export function PhaseAverages({
   onOpenSolve,
 }: PhaseAveragesProps) {
   if (measuredCount === 0 || phases.length === 0) return null;
+  const average = averageSolve(
+    rows,
+    phases.map((phase) => phase.key),
+  );
 
   return (
     <section className="stats-panel">
@@ -47,6 +52,24 @@ export function PhaseAverages({
       <p className="chart-note chart-note--above">
         {strings.splits.measuredNote(measuredCount, solveCount)}
       </p>
+      {/* Where the time goes, at a glance — what a pie chart would say, in
+          the strip the rest of the app already reads phases by. Labelled like
+          a row of the table under it, because it is one. */}
+      {average === null ? null : (
+        <div
+          className="phase-share"
+          role="group"
+          aria-label={strings.splits.shareBar(average.n)}
+        >
+          <span className="phase-share__label">{rowLabel(average.n)}</span>
+          <PhaseBar
+            splits={average.splits}
+            phases={phases}
+            rawMs={average.totalMs}
+            detail="shares"
+          />
+        </div>
+      )}
       <div className="table-scroll">
         <table className="averages-table averages-table--phases">
           <thead>

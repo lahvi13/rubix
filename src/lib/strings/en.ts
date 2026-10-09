@@ -125,6 +125,10 @@ export const en = {
     bestPhase: (phase: string) => `Best ${phase} of this session`,
     title: 'Phases',
     phaseAverages: 'Phase averages',
+    shareBar: (n: number | 'all') =>
+      n === 'all'
+        ? 'How the mean of every phase-timed solve divides between the phases'
+        : `How the current ao${n} divides between the phases`,
     phaseTrend: 'Phase trend',
     /** Counted among phase-timed solves only, so not the solve number elsewhere. */
     phaseTrendSolve: (index: number) => `Phase-timed solve ${index}`,
@@ -252,11 +256,11 @@ export const en = {
     daysOf: (active: number, total: number) => `${active} of ${total}`,
     practiceNote: (days: number) => `Solves per day over the last ${days} days.`,
     trendSeries: 'ao12',
+    longTrendSeries: 'ao50',
     singleSeries: 'Single',
     windowTitle: (at: 'current' | 'best' | object, n: number) =>
       at === 'best' ? `Best ao${n}` : at === 'current' ? `Current ao${n}` : `ao${n}`,
     /** Why the average is not the plain mean of the times listed under it. */
-    longTrendSeries: 'ao50',
     windowTrimNote: (trim: number) =>
       trim === 1
         ? 'The fastest and the slowest solve are cut (in brackets); the average is the mean of the rest.'
@@ -294,12 +298,12 @@ export const en = {
     distributionAxes: 'Each bar is a range of solve times; height is how many solves fell in it.',
     trendAxes:
       'The line is the average of the twelve solves ending at each point; the dots are the solves themselves, oldest first.',
+    trendAxesLong:
+      'The green line is the average of the twelve solves ending at each point, the blue one of the fifty; the dots are the solves themselves, oldest first. Green under blue means you are faster than lately.',
     andUp: 'and up',
     bestAo12: 'Best ao12',
     containsCurrent: 'Current ao12 falls here',
     touchBar: 'Touch a bar to see its range and count.',
-    trendAxesLong:
-      'The green line is the average of the twelve solves ending at each point, the blue one of the fifty; the dots are the solves themselves, oldest first. Green under blue means you are faster than lately.',
   },
   history: {
     empty: 'Nothing matches these filters.',

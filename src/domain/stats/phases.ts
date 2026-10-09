@@ -7,7 +7,7 @@
  * empty nearly every time.
  */
 
-import type { Solve } from '../../db/types';
+import type { Solve, Split } from '../../db/types';
 import { finalMs, isDnf } from '../solve/final-time';
 import { phaseDurations } from '../solve/splits';
 import { AVERAGE_WINDOWS, trimCount, windowAverage, type Average } from './averages';
@@ -49,6 +49,42 @@ export function phaseAverageTable(
   const measured = measuredSolves(solves);
   const lengths = lengthsBySolve(measured, phaseKeys);
   return PHASE_AVERAGE_WINDOWS.map((n) => phaseAverageRow(measured, phaseKeys, n, lengths));
+}
+
+/** One solve made of average phases, for the share bar above the table. */
+export interface AverageSolve {
+  /** The row it was built from. */
+  n: 12 | 'all';
+  splits: Split[];
+  /** The phases' sum, not the row's total: a +2 belongs to no phase. */
+  totalMs: number;
+}
+
+/**
+ * The current ao12 as one solve, so the bar can show how it divides between
+ * the phases. Before there are twelve phase-timed solves it falls back to all
+ * of them; with a phase nobody recorded there is no whole to divide, and no bar.
+ */
+export function averageSolve(
+  rows: readonly PhaseAverageRow[],
+  phaseKeys: readonly string[],
+): AverageSolve | null {
+  for (const n of [12, 'all'] as const) {
+    const row = rows.find((candidate) => candidate.n === n);
+    const lengths = row?.phases.map((phase) => phase.ms) ?? [];
+    if (lengths.length === 0 || lengths.length !== phaseKeys.length) continue;
+    if (!lengths.every((ms): ms is number => ms !== null)) continue;
+
+    let atMs = 0;
+    // The last phase ends at the stop, which a split never records.
+    const splits = phaseKeys.slice(0, -1).map((phase, index) => {
+      atMs += lengths[index] ?? 0;
+      return { phase, atMs, source: 'manual' as const };
+    });
+    const totalMs = lengths.reduce((sum, ms) => sum + ms, 0);
+    if (totalMs > 0) return { n, splits, totalMs };
+  }
+  return null;
 }
 
 /** A solve's phase lengths, in method order; null where a boundary is missing. */

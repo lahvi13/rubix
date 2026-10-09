@@ -105,6 +105,10 @@ export const cs: Strings = {
     bestPhase: (phase: string) => `Nejlepší ${phase} této session`,
     title: 'Fáze',
     phaseAverages: 'Průměry fází',
+    shareBar: (n: number | 'all') =>
+      n === 'all'
+        ? 'Jak se průměr všech složení s fázemi dělí mezi fáze'
+        : `Jak se aktuální ao${n} dělí mezi fáze`,
     phaseTrend: 'Vývoj fází',
     phaseTrendSolve: (index: number) => `${index}. složení s fázemi`,
     best: 'Nejlepší',
@@ -233,11 +237,11 @@ export const cs: Strings = {
     practiceNote: (days: number) =>
       `Složení po dnech za posledních ${days} ${plural(days, 'den', 'dny', 'dní')}.`,
     trendSeries: 'ao12',
+    longTrendSeries: 'ao50',
     singleSeries: 'Single',
     windowTitle: (at: 'current' | 'best' | object, n: number) =>
       at === 'best' ? `Nejlepší ao${n}` : at === 'current' ? `Aktuální ao${n}` : `ao${n}`,
     windowTrimNote: (trim: number) =>
-    longTrendSeries: 'ao50',
       trim === 1
         ? 'Nejrychlejší a nejpomalejší složení se škrtají (v závorce); průměr je ze zbytku.'
         : `${trim} ${plural(trim, 'nejrychlejší', 'nejrychlejší', 'nejrychlejších')} a ${trim} ${plural(trim, 'nejpomalejší', 'nejpomalejší', 'nejpomalejších')} složení se ${plural(trim, 'škrtá', 'škrtají', 'škrtá')} (v závorce); průměr je ze zbytku.`,
@@ -274,12 +278,12 @@ export const cs: Strings = {
       'Každý sloupec je rozsah časů; výška říká, kolik složení do něj spadá.',
     trendAxes:
       'Čára je průměr dvanácti složení končících v daném bodě; tečky jsou samotná složení, od nejstaršího.',
+    trendAxesLong:
+      'Zelená čára je průměr dvanácti složení končících v daném bodě, modrá padesáti; tečky jsou samotná složení, od nejstaršího. Zelená pod modrou znamená, že jsi rychlejší než v poslední době.',
     andUp: 'a více',
     bestAo12: 'Nejlepší ao12',
     containsCurrent: 'Sem spadá aktuální ao12',
     touchBar: 'Ťukni na sloupec a uvidíš jeho rozsah a počet.',
-    trendAxesLong:
-      'Zelená čára je průměr dvanácti složení končících v daném bodě, modrá padesáti; tečky jsou samotná složení, od nejstaršího. Zelená pod modrou znamená, že jsi rychlejší než v poslední době.',
   },
   history: {
     empty: 'Těmto filtrům nic neodpovídá.',

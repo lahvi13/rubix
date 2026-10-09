@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Penalty, Solve, Split } from '../../db/types';
 import {
+  averageSolve,
   bestPhasesIn,
   bestsOf,
   measuredSolves,
@@ -102,6 +103,47 @@ describe('phaseAverageTable', () => {
   it('says nothing at all when no solve was timed by phase', () => {
     const table = phaseAverageTable([solve(10_000, []), solve(11_000, [])], PHASES);
     expect(table.every((entry) => entry.totalMs === null)).toBe(true);
+  });
+});
+
+describe('averageSolve', () => {
+  const ofSolves = (solves: Solve[]) => averageSolve(phaseAverageTable(solves, PHASES), PHASES);
+  const twelve = (lengths: number[]) =>
+    Array.from({ length: 12 }, () => {
+      let at = 0;
+      const splits = lengths.slice(0, -1).map((ms) => (at += ms));
+      return solve(lengths.reduce((sum, ms) => sum + ms, 0), splits);
+    });
+
+  it('lays the ao12 phases end to end, the last one ending at the total', () => {
+    expect(ofSolves(twelve([2000, 15_000, 5000, 6000]))).toEqual({
+      n: 12,
+      splits: [
+        { phase: 'cross', atMs: 2000, source: 'manual' },
+        { phase: 'f2l', atMs: 17_000, source: 'manual' },
+        { phase: 'oll', atMs: 22_000, source: 'manual' },
+      ],
+      totalMs: 28_000,
+    });
+  });
+
+  it('reads every phase-timed solve until there are twelve', () => {
+    const result = ofSolves([solve(20_000, [2000, 12_000, 16_000])]);
+    expect(result?.n).toBe('all');
+    expect(result?.totalMs).toBe(20_000);
+  });
+
+  it('has nothing to divide when a phase was never recorded', () => {
+    expect(ofSolves([solve(20_000, [2000])])).toBeNull();
+    expect(ofSolves([])).toBeNull();
+  });
+
+  it('leaves a +2 out of the whole, since it belongs to no phase', () => {
+    const solves = twelve([2000, 15_000, 5000, 6000]).map((entry) => ({
+      ...entry,
+      penalty: 'plus2' as const,
+    }));
+    expect(ofSolves(solves)?.totalMs).toBe(28_000);
   });
 });
 

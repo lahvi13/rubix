@@ -298,6 +298,25 @@
   color: var(--muted);
 }
 
+/* The ao12 as one strip above the table, its label in the column the
+   table's own row labels stand in. */
+.phase-share {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-block-end: var(--space-4);
+}
+
+.phase-share__label {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.phase-share .phase-bar {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Phases plus a total is more columns than a phone has room for. The scroll
    is the last resort, not the layout: a table that has to be pushed sideways
    to find its total is a table read in two halves. */
