@@ -1047,7 +1047,7 @@ který DB v3 přidala bez změny formátu — zálohy z doby před ním jinak ne
 
 | # | Obrazovka | Obsah |
 |---|---|---|
-| 1 | **Timer** | scramble v mřížce (tah na buňku) + náhled, velký čas (setiny tišeji), inspekce s ubývajícím kruhem, přepínač „po fázích“, pruh běžících i dokončených fází, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12/session mean) a pod nimi, jen když to jde, čas, pod který musí příští solve, aby padl nejlepší ao5 / ao12 session. Během solvu je na obrazovce jen hodiny — vycentrované na viewport a o kus větší |
+| 1 | **Timer** | scramble v mřížce (tah na buňku) + náhled, velký čas (setiny tišeji), inspekce s ubývajícím kruhem, přepínač „po fázích“, pruh běžících i dokončených fází, poslední solve s rychlou penaltou, mini-statistiky (ao5/ao12; session mean jen ve statistikách) a pod nimi, jen když to jde, čas, pod který musí příští solve, aby padl nejlepší ao5 / ao12 session. Během solvu je na obrazovce jen hodiny — vycentrované na viewport a o kus větší |
 | 2 | **Historie** | seznam solvů session s pruhem fází u měřených (s procentním podílem v každém bloku), zvýrazněný nejlepší výsledek i nejlepší délka každé fáze ve vyfiltrovaném výběru, filtry (tag, penalta, hvězdička), hromadné akce. Čas u solvu je hodina; u staršího než dnešek i den (a rok, pokud je z jiného) — stejně jako v seznamu na timeru |
 | 3 | **Detail solvu** | modal/drawer: čas, scramble + náhled, splity, tagy, poznámka, editace |
 | 4 | **Sessiony** | seznam, založení, přejmenování, archivace, přepnutí aktivní |

@@ -11,8 +11,10 @@ interface MiniStatsProps {
 }
 
 /**
- * The timer screen's one-line summary: current ao5, ao12 and session mean,
- * and under it what the next solve needs for a best average of the session.
+ * The timer screen's one-line summary: current ao5 and ao12, and under it
+ * what the next solve needs for a best average of the session. No session
+ * mean: it is the stats screen's, and with minute-long times it pushed the
+ * row onto two lines on a phone.
  * Memoised because the host screen repaints on animation frames while timing.
  */
 export const MiniStats = memo(function MiniStats({ solves }: MiniStatsProps) {
@@ -30,10 +32,6 @@ export const MiniStats = memo(function MiniStats({ solves }: MiniStatsProps) {
         <div className="mini-stats__item">
           <dt>ao12</dt>
           <dd>{formatAverage(stats.ao12)}</dd>
-        </div>
-        <div className="mini-stats__item">
-          <dt>{strings.stats.mean}</dt>
-          <dd>{formatAverage(stats.meanMs)}</dd>
         </div>
       </dl>
       {/* Only what can still happen: a best out of reach is not news, and a
