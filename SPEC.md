@@ -384,7 +384,8 @@ pokusy o rozpoznání s `mode: 'recognition'`. Do hlavních statistik a PB
 
 ### 3.6 Fázové splity
 
-Splity dělí solve na fáze (u CFOP cross / F2L / OLL / PLL). Fáze se berou
+Splity dělí solve na fáze (u CFOP cross / F2L / OLL / PLL, u Rouxu FB / SB /
+CMLL / LSE). Fáze se berou
 z `Method.phases` aktivní session, **nikdy z enumu v kódu** — jiná metoda je pak
 data, ne migrace.
 
@@ -1187,9 +1188,39 @@ nemigruje.
 drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
 → *Použitelné jako: analýza slabé fáze.*
 
-### Fáze 7 — Další metody a další kostky (návrh, zatím se nestaví)
+### Fáze 7 — Další metody a další kostky (Roux se staví, zbytek je návrh)
 
-Nápad z 2026-09-24, předřazený smart cube. Zapsaný rozbor, ne rozhodnutí:
+**Roux — rozhodnuto 2026-10-09, staví se v tomto pořadí:**
+
+1. **Metoda u session.** Seedovaná metoda Roux se čtyřmi fázemi **FB · SB · CMLL ·
+   LSE** — LSE je jedna fáze, ne EO / UL-UR / M vrstva: proběhne za pár vteřin M a
+   U a tři ťuknutí navíc by stála víc, než změří. Metoda se volí **ve formuláři
+   nové session** (CFOP | Roux, předvyplněná metodou aktivní session), ne
+   globálním nastavením — přejít na Roux znamená založit si Roux session.
+   **Existující session si metodu nechává**, její splity patří k fázím, pod
+   kterými byly změřeny. Ve výběru session se metoda píše k řádku, až když jich
+   seznam míchá víc. První session na zařízení je CFOP.
+2. **Průvodce pro začátečníky Roux** (autor si o něj řekl). Stránka Učení dostane
+   přepínač **CFOP | Roux**, výchozí podle metody aktivní session — kdo na Roux
+   přechází, chce průvodce číst dřív, než si Roux session založí. Obsah podle
+   „Roux Beginner Supplemental Guide“: bloky (situace s krátkými tahy), rohy
+   jen Sune + J-perm (v appce už jsou), LSE = orientace hran `M' U' M'`, přední
+   a zadní výměna `M' U2 M` / `M U2 M'` a dořešení M vrstvy. Nové obrázky:
+   zvýraznění bloků a pohled na M vrstvu.
+3. **Trenažér seskupený podle metody + sada CMLL** (42 případů ve skupinách O, H,
+   Pi, U, T, S, As, L; tučný algoritmus z „Kian's CMLLs“ je hlavní, ostatní
+   alternativy). Obrázek shora, hrany a M vrstva šedě; ověření spuštěním hlídá,
+   že oba bloky zůstanou celé. Z průvodce na ni vede „rychlejší cesta“ u rohů,
+   jako z CFOP průvodce plné OLL/PLL. Model se nemění: CMLL patří jen Rouxu,
+   `AlgSet.methodId` stačí.
+4. **Později:** druhý blok jako pokročilá sada (~40 případů vložení páru),
+   EO (9) / EOLR, OH algoritmy CMLL, drill prvního bloku.
+
+Zdroje dodal autor jako PDF (CMLL, druhý blok, EO, EO + ULUR, OH CMLL,
+začátečnický průvodce); obsah se z nich přebírá, nehádá.
+
+**Zbytek fáze — nápad z 2026-09-24, předřazený smart cube.** Zapsaný rozbor, ne
+rozhodnutí:
 **obsah (fáze metod, algoritmy) se bude brát ze zdrojů, které dodá autor** —
 Roux ani ZZ sám neskládá, takže volba fází a algoritmů není na odhadu.
 Zdroje, které autor doporučil:
@@ -1239,7 +1270,8 @@ jsou, jen je žádná obrazovka neukáže.
 4. **Drilly intuitivních fází** (EOLine, první blok Rouxu) až nakonec — každý chce
    vlastní solver jako cross drill a první blok i jiný pohled na kostku (zleva).
 
-Průvodce pro začátečníky zůstává CFOP — začátečník se učí CFOP skoro vždycky.
+Průvodce pro začátečníky je CFOP a Roux (viz výše); pro další metody se
+rozhodne, až na ně dojde.
 
 ### Fáze 8 — Smart cube (později)
 
