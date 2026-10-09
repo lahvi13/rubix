@@ -55,6 +55,53 @@ describe('SessionPicker', () => {
     });
     expect(onClose).toHaveBeenCalled();
   });
+  describe('method', () => {
+    beforeEach(async () => {
+      const phases = [{ key: 'a', label: 'A', order: 0 }];
+      await db.methods.bulkPut([
+        { id: 'cfop', name: 'CFOP', puzzle: '333', phases, createdAt: 1, updatedAt: 1 },
+        { id: 'roux', name: 'Roux', puzzle: '333', phases, createdAt: 2, updatedAt: 2 },
+      ]);
+    });
+
+    it('times a new session in the method chosen for it', async () => {
+      await getOrCreateActiveSession('333', 'freestyle');
+      const user = userEvent.setup();
+
+      render(<SessionPicker onClose={vi.fn()} />);
+      await user.click(await screen.findByRole('button', { name: 'Roux' }));
+      await user.type(screen.getByLabelText('New session name'), 'Blocks');
+      await user.click(screen.getByRole('button', { name: 'Create' }));
+
+      await waitFor(async () => {
+        expect((await getActiveSession('333', 'freestyle'))?.methodId).toBe('roux');
+      });
+    });
+
+    it("offers the active session's method for the next one", async () => {
+      await createSession('Blocks', '333', 'freestyle', 'roux');
+
+      render(<SessionPicker onClose={vi.fn()} />);
+
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Roux' })).toHaveAttribute('aria-pressed', 'true'),
+      );
+    });
+
+    it('names the method on each row only once the list mixes them', async () => {
+      await getOrCreateActiveSession('333', 'freestyle');
+      const { unmount } = render(<SessionPicker onClose={vi.fn()} />);
+      await screen.findByRole('button', { current: true });
+      expect(screen.queryByText(/· CFOP ·/)).toBeNull();
+      unmount();
+
+      await createSession('Blocks', '333', 'freestyle', 'roux');
+      render(<SessionPicker onClose={vi.fn()} />);
+      expect(await screen.findByText(/· Roux ·/)).toBeInTheDocument();
+      expect(screen.getByText(/· CFOP ·/)).toBeInTheDocument();
+    });
+  });
+
   describe('renaming', () => {
     it('renames on Enter', async () => {
       await getOrCreateActiveSession('333', 'freestyle');

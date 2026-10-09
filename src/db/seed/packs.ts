@@ -64,6 +64,7 @@ export interface AlgPack {
 /** Every pack is a 3x3x3 CFOP set; nothing else exists yet. */
 export const PACK_PUZZLE = '333';
 export const PACK_METHOD_ID = 'cfop';
+export const ROUX_METHOD_ID = 'roux';
 
 export const PACKS: readonly AlgPack[] = [
   pll,

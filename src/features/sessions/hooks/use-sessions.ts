@@ -1,8 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { Puzzle, Session, SolveMode } from '../../../db/types';
+import type { Method, Puzzle, Session, SolveMode } from '../../../db/types';
+import { listMethods } from '../../../db/repositories/method-repository';
 import {
   activateSession,
   createSession,
+  DEFAULT_METHOD_ID,
   listSessions,
   renameSession,
   setSessionArchived,
@@ -15,8 +17,12 @@ export interface SessionWithCount extends Session {
 
 export interface SessionsView {
   sessions: SessionWithCount[];
+  /** The methods a new session can be timed in. */
+  methods: Method[];
+  /** What a new session is timed in unless told otherwise: the active one's method. */
+  newMethodId: string;
   isLoading: boolean;
-  create: (name: string, puzzle: Puzzle, mode: SolveMode) => Promise<void>;
+  create: (name: string, puzzle: Puzzle, mode: SolveMode, methodId: string) => Promise<void>;
   rename: (id: string, name: string) => Promise<void>;
   activate: (id: string) => Promise<void>;
   setArchived: (id: string, archived: boolean) => Promise<void>;
@@ -37,12 +43,16 @@ export function useSessions(includeArchived: boolean): SessionsView {
       })),
     );
   }, [includeArchived]);
+  const methods = useLiveQuery(listMethods, []);
 
   return {
     sessions: sessions ?? [],
+    methods: methods ?? [],
+    newMethodId:
+      sessions?.find((session) => session.isActive === 1)?.methodId ?? DEFAULT_METHOD_ID,
     isLoading: sessions === undefined,
-    create: async (name, puzzle, mode) => {
-      await createSession(name, puzzle, mode);
+    create: async (name, puzzle, mode, methodId) => {
+      await createSession(name, puzzle, mode, methodId);
     },
     rename: renameSession,
     activate: activateSession,

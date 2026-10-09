@@ -77,14 +77,19 @@ export async function listSessions(
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
-/** Creating a session also makes it the active one — that is why you create it. */
+/**
+ * Creating a session also makes it the active one — that is why you create it.
+ * The method is fixed for the session's life: its splits belong to the phases
+ * they were timed under.
+ */
 export async function createSession(
   name: string,
   puzzle: Puzzle,
   mode: SolveMode,
+  methodId: string = DEFAULT_METHOD_ID,
 ): Promise<Session> {
   return db.transaction('rw', db.sessions, async () => {
-    const session = buildSession(name, puzzle, mode);
+    const session = buildSession(name, puzzle, mode, methodId);
     await clearActive(puzzle, mode);
     await db.sessions.add(session);
     return session;
@@ -178,14 +183,19 @@ export async function restoreSession({ session, solves }: DeletedSession): Promi
   });
 }
 
-function buildSession(name: string, puzzle: Puzzle, mode: SolveMode): Session {
+function buildSession(
+  name: string,
+  puzzle: Puzzle,
+  mode: SolveMode,
+  methodId: string = DEFAULT_METHOD_ID,
+): Session {
   const timestamp = now();
   return {
     id: createId(),
     name,
     puzzle,
     mode,
-    methodId: DEFAULT_METHOD_ID,
+    methodId,
     isArchived: 0,
     isActive: 1,
     createdAt: timestamp,

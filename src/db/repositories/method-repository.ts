@@ -5,10 +5,16 @@ import type { Method, MethodPhase } from '../types';
  * The methods table has been in the schema since v1 but nothing read it until
  * phase splits arrived. Phases come from here, never from an enum in the
  * code: a split's phase is a free string pointing at Method.phases[].key
- * (SPEC 3.6), so adding Roux later is data, not a migration.
+ * (SPEC 3.6), so Roux arrived as data, not a migration.
  */
 export async function getMethod(id: string): Promise<Method | undefined> {
   return db.methods.get(id);
+}
+
+/** Every method a session can be timed in, in the order they were seeded. */
+export async function listMethods(): Promise<Method[]> {
+  const methods = await db.methods.toArray();
+  return methods.sort((a, b) => a.createdAt - b.createdAt || a.name.localeCompare(b.name));
 }
 
 /** Phase keys in method order — the order splits are assigned in. */

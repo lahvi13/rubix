@@ -58,6 +58,14 @@ describe('seed', () => {
     expect(await db.methods.get('cfop')).toBeDefined();
   });
 
+  it('seeds Roux beside CFOP, with its four phases in order', async () => {
+    await seedPacks();
+
+    const roux = await db.methods.get('roux');
+    expect(roux?.phases.map((phase) => phase.key)).toEqual(['fb', 'sb', 'cmll', 'lse']);
+    expect(roux?.phases.map((phase) => phase.order)).toEqual([0, 1, 2, 3]);
+  });
+
   it('gives every case a setup that undoes its algorithm', async () => {
     await seedPacks();
 

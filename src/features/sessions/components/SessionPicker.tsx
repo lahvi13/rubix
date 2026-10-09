@@ -31,10 +31,24 @@ interface SessionPickerProps {
 export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
   const isChoosing = onPick !== undefined;
   const [includeArchived, setIncludeArchived] = useState(false);
-  const { sessions, create, rename, activate, setArchived } = useSessions(
-    isChoosing ? false : includeArchived,
-  );
+  const {
+    sessions,
+    methods,
+    newMethodId: suggestedMethodId,
+    create,
+    rename,
+    activate,
+    setArchived,
+  } = useSessions(isChoosing ? false : includeArchived);
   const [newName, setNewName] = useState('');
+  // A new session is timed like the one in use unless told otherwise: someone
+  // starting their third Roux session should not have to say Roux again.
+  const [chosenMethodId, setChosenMethodId] = useState<string | null>(null);
+  const newMethodId = chosenMethodId ?? suggestedMethodId;
+  // Which method a session is timed in only needs saying once there is more
+  // than one in the list; a list of nothing but CFOP would say CFOP on every row.
+  const methodNames = new Map(methods.map((method) => [method.id, method.name]));
+  const isMethodShown = new Set(sessions.map((session) => session.methodId)).size > 1;
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   // Escape takes the field away, and a browser that blurs a field on its way
@@ -52,7 +66,7 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
     const name = newName.trim();
     if (name === '') return;
     setNewName('');
-    await create(name, PUZZLE, MODE);
+    await create(name, PUZZLE, MODE, newMethodId);
     onClose();
   };
 
@@ -114,7 +128,10 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
                   ) : null}
                 </span>
                 <span className="session__meta">
-                  {strings.sessions.solveCount(session.solveCount)} · {formatDate(session.createdAt)}
+                  {strings.sessions.solveCount(session.solveCount)}
+                  {isMethodShown ? ` · ${methodNames.get(session.methodId) ?? session.methodId}` : ''}
+                  {' · '}
+                  {formatDate(session.createdAt)}
                 </span>
               </button>
             )}
@@ -191,13 +208,31 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
               void submitNew();
             }}
           >
-            <input
-              value={newName}
-              onChange={(event) => setNewName(event.target.value)}
-              placeholder={strings.sessions.namePlaceholder}
-              aria-label={strings.sessions.namePlaceholder}
-            />
-            <button type="submit">{strings.sessions.create}</button>
+            {methods.length > 1 ? (
+              <div className="session-form__methods" role="group" aria-label={strings.sessions.method}>
+                <span className="session-form__label">{strings.sessions.method}</span>
+                {methods.map((method) => (
+                  <button
+                    key={method.id}
+                    type="button"
+                    className={method.id === newMethodId ? 'is-active' : undefined}
+                    aria-pressed={method.id === newMethodId}
+                    onClick={() => setChosenMethodId(method.id)}
+                  >
+                    {method.name}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <div className="session-form__row">
+              <input
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+                placeholder={strings.sessions.namePlaceholder}
+                aria-label={strings.sessions.namePlaceholder}
+              />
+              <button type="submit">{strings.sessions.create}</button>
+            </div>
           </form>
         </>
       )}

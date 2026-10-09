@@ -386,6 +386,8 @@ export const en = {
     confirmDelete: 'Delete session',
     cancel: 'Cancel',
     namePlaceholder: 'New session name',
+    /** Over the choice a new session is timed in: CFOP or Roux. */
+    method: 'Method',
   },
   learn: {
     intro:

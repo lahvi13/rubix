@@ -13,11 +13,30 @@
 
 .session-form {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.session-form__row {
+  display: flex;
   gap: var(--space-3);
 }
 
-.session-form input {
+.session-form__row input {
   flex: 1;
+}
+
+/* Which method the new session is timed in, above the name it gets. */
+.session-form__methods {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.session-form__label {
+  font-size: var(--text-sm);
+  color: var(--muted);
 }
 
 .sessions {

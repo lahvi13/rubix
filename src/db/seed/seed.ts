@@ -7,6 +7,7 @@ import {
   PACKS,
   PACK_METHOD_ID,
   PACK_PUZZLE,
+  ROUX_METHOD_ID,
   type AlgPack,
   type PackCase,
 } from './packs';
@@ -154,8 +155,11 @@ function planSeed(current: CurrentState): SeedChanges {
 
   const agreed = agreedProgress(current.algCases);
 
-  const method = buildMethod(current.methods.get(PACK_METHOD_ID));
-  if (hasChanged(current.methods.get(PACK_METHOD_ID), method)) changes.methods.push(method);
+  for (const definition of METHODS) {
+    const existing = current.methods.get(definition.id);
+    const method = buildMethod(definition, existing);
+    if (hasChanged(existing, method)) changes.methods.push(method);
+  }
 
   // Cross rides along with the algorithm sets: it is a set to drill, just not
   // one to read.
@@ -317,7 +321,9 @@ function hasChanged(existing: object | undefined, next: object): boolean {
   return existing === undefined || fingerprint(existing) !== fingerprint(next);
 }
 
-const CFOP = {
+type MethodDefinition = Omit<Method, 'createdAt' | 'updatedAt'>;
+
+const CFOP: MethodDefinition = {
   id: PACK_METHOD_ID,
   name: 'CFOP',
   puzzle: PACK_PUZZLE,
@@ -327,12 +333,31 @@ const CFOP = {
     { key: 'oll', label: 'OLL', order: 2 },
     { key: 'pll', label: 'PLL', order: 3 },
   ],
-} as const;
+};
 
-function buildMethod(existing: Method | undefined): Method {
+/**
+ * Last six edges is one phase, not EO, UL/UR and the M slice: it goes by in a
+ * couple of seconds of M and U, and three more taps inside it would cost more
+ * than they measured.
+ */
+const ROUX: MethodDefinition = {
+  id: ROUX_METHOD_ID,
+  name: 'Roux',
+  puzzle: PACK_PUZZLE,
+  phases: [
+    { key: 'fb', label: 'FB', order: 0 },
+    { key: 'sb', label: 'SB', order: 1 },
+    { key: 'cmll', label: 'CMLL', order: 2 },
+    { key: 'lse', label: 'LSE', order: 3 },
+  ],
+};
+
+const METHODS: readonly MethodDefinition[] = [CFOP, ROUX];
+
+function buildMethod(definition: MethodDefinition, existing: Method | undefined): Method {
   return {
-    ...CFOP,
-    phases: CFOP.phases.map((phase) => ({ ...phase })),
+    ...definition,
+    phases: definition.phases.map((phase) => ({ ...phase })),
     createdAt: existing?.createdAt ?? now(),
     updatedAt: now(),
   };

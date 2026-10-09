@@ -352,6 +352,7 @@ export const cs: Strings = {
     confirmDelete: 'Smazat session',
     cancel: 'Zrušit',
     namePlaceholder: 'Název nové session',
+    method: 'Metoda',
   },
   learn: {
     intro:

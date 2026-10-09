@@ -18,6 +18,12 @@ describe('session repository', () => {
     await Promise.all(db.tables.map((table) => table.clear()));
   });
 
+  it('times a session in CFOP unless it is given another method', async () => {
+    expect((await createSession('Evening', '333', 'freestyle')).methodId).toBe('cfop');
+    const roux = await createSession('Roux', '333', 'freestyle', 'roux');
+    expect((await db.sessions.get(roux.id))?.methodId).toBe('roux');
+  });
+
   it('creates the default session once and reuses it afterwards', async () => {
     const first = await getOrCreateActiveSession('333', 'freestyle');
     const second = await getOrCreateActiveSession('333', 'freestyle');
