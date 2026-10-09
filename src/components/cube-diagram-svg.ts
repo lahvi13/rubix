@@ -15,12 +15,14 @@ import {
   netView,
   permutationArrows,
   type Cell,
+  type IsometricCorner,
   type PieceArrow,
   type Stickering,
 } from '../domain/cube/views';
 import { SIDE_SHADE, type CubeSkin } from '../lib/cube-skins';
 
-export type DiagramView = 'lastLayer' | 'isometric' | 'net';
+/** `isometricLeft` looks from the front-left corner, at Roux's first block. */
+export type DiagramView = 'lastLayer' | 'isometric' | 'isometricLeft' | 'net';
 
 /**
  * A corner of the top layer singled out with a frame — the one a step tells
@@ -87,7 +89,7 @@ export function diagramSvg(
 ): string {
   if (view === 'lastLayer') return lastLayerSvg(state, stickering, skin, mark);
   if (view === 'net') return netSvg(state, stickering, skin);
-  return isometricSvg(state, stickering, skin);
+  return isometricSvg(state, stickering, skin, view === 'isometricLeft' ? 'frontLeft' : 'frontRight');
 }
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -387,8 +389,13 @@ function point(u: number, v: number, w: number): string {
   return `${x.toFixed(2)},${y.toFixed(2)}`;
 }
 
-function isometricSvg(state: CubeState, stickering: Stickering, skin: CubeSkin): string {
-  const view = isometricView(state, stickering);
+function isometricSvg(
+  state: CubeState,
+  stickering: Stickering,
+  skin: CubeSkin,
+  corner: IsometricCorner,
+): string {
+  const view = isometricView(state, stickering, corner);
   const gap = 0.06;
   const size = 1 - gap * 2;
 

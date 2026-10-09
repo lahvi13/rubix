@@ -81,6 +81,67 @@ export function maskHidingLayerPieces(
   );
 }
 
+/** A face of the cube as it is shown: up is up, left is the viewer's left. */
+export type ShownFace = 'U' | 'D' | 'L' | 'R' | 'F' | 'B';
+
+/** Where a sticker's piece lives once the cube stands as shown, and which of its stickers it is. */
+interface StickerHome {
+  orbit: string;
+  /** The faces of the place the piece belongs in, on the cube as it is shown. */
+  home: ReadonlySet<ShownFace>;
+  /** Which of the piece's stickers, counted from the one facing U or D. */
+  facelet: number;
+}
+
+/**
+ * A mask decided by where each piece belongs on the cube as shown: after the
+ * cube has been stood yellow up and turned the way the case is held
+ * (`standing`). The layer masks above can name cubing.js's own layers, since
+ * every rotation they meet is about the vertical axis; a block on the left
+ * cannot, because a quarter turn about that axis is what decides which side
+ * is the left.
+ */
+export async function maskByHome(
+  standing: string,
+  paint: (sticker: StickerHome) => Paint,
+): Promise<StickeringMask> {
+  const { cube3x3x3 } = await import('cubing/puzzles');
+  const kpuzzle = await cube3x3x3.kpuzzle();
+  const stood = kpuzzle.algToTransformation(standing).transformationData;
+  const faces: readonly ShownFace[] = ['U', 'D', 'L', 'R', 'F', 'B'];
+  const turns = faces.map(
+    (face) => [face, kpuzzle.algToTransformation(face).transformationData] as const,
+  );
+
+  const orbits: StickeringMask['orbits'] = {};
+  for (const orbit of kpuzzle.definition.orbits) {
+    const placement = stood[orbit.orbitName];
+    orbits[orbit.orbitName] = {
+      pieces: Array.from({ length: orbit.numPieces }, (_, piece) => {
+        // The place the piece ends up in once the cube is stood: the slot
+        // whose occupant, after the rotation, is this piece.
+        const place = placement === undefined ? piece : placement.permutation.indexOf(piece);
+        const home = new Set<ShownFace>();
+        for (const [face, turn] of turns) {
+          const moved = turn[orbit.orbitName];
+          if (
+            moved !== undefined &&
+            (moved.permutation[place] !== place || moved.orientationDelta[place] !== 0)
+          ) {
+            home.add(face);
+          }
+        }
+        return {
+          facelets: Array.from({ length: orbit.numOrientations }, (_, facelet) =>
+            paint({ orbit: orbit.orbitName, home, facelet }),
+          ),
+        };
+      }),
+    };
+  }
+  return { orbits };
+}
+
 async function maskByLayer(
   layer: Layer,
   paint: (sticker: StickerAt) => Paint,

@@ -8,8 +8,8 @@
  * it is coming from.
  */
 
-import type { Face } from './notation';
-import { FACELETS, solvedState, type CubeState } from './state';
+import type { Face, Move } from './notation';
+import { FACELETS, movePermutation, solvedState, type CubeState } from './state';
 
 export type Stickering =
   /** Every sticker in its own colour. */
@@ -42,6 +42,29 @@ export type Stickering =
    * layer says look at me about a piece that does not matter yet.
    */
   | 'bottomLayer'
+  /**
+   * Roux's first block: the left centre and the five pieces of the 1×2×3 on
+   * the left, wherever they have got to. Nothing else is built yet, and every
+   * other piece is only in the way.
+   */
+  | 'leftBlock'
+  /** Both of Roux's blocks: the left one standing and the right one being built. */
+  | 'blocks'
+  /** The two blocks and the four top corners — all that CMLL reads. */
+  | 'blocksAndCorners'
+  /**
+   * Whether each top corner faces up, and nothing about the edges: in Roux
+   * they are still loose when the corners are oriented, and a yellow edge
+   * sticker would be read as part of the case.
+   */
+  | 'cornerOrientation'
+  /**
+   * The last six edges as Roux orients them: only the top and bottom colours
+   * of those edges, and of the centres they are read against. An edge is good
+   * when that colour faces up or down, which is the whole of what this step
+   * looks at.
+   */
+  | 'lseOrientation'
   /**
    * No colours at all: the shape of a cube, standing in for one that is not
    * known yet — the scramble still being generated.
@@ -122,6 +145,37 @@ function isCrossEdge(state: CubeState, index: number): boolean {
   return stickers.length === 2 && stickers.some((sibling) => colourAt(state, sibling) === 'D');
 }
 
+/**
+ * A piece of the Roux block on `side`: the side's centre, or a piece wearing
+ * the side's colour and not the top one. The side's colour is read off its
+ * centre, which no move of the solve shifts — the cube may have been turned
+ * about its vertical axis before the case was set up. The top colour is the
+ * U letter, as everywhere else: the top centre is no help here, since every
+ * `M` and `r` carries it away.
+ */
+function isBlockPiece(state: CubeState, index: number, side: 'L' | 'R'): boolean {
+  const sideColour = colourAt(state, indexOf(side, 1, 1));
+  const colours = siblingsOf(index).map((sibling) => colourAt(state, sibling));
+  if (colours.length === 1) return colours[0] === sideColour;
+  return colours.includes(sideColour) && !colours.includes('U');
+}
+
+function isTopCorner(state: CubeState, index: number): boolean {
+  return pieceSize(index) === 3 && isLastLayerPiece(state, index);
+}
+
+/**
+ * One of the six edges left once both blocks stand: the top layer's four and
+ * the two of the M slice.
+ */
+function isLastSixEdge(state: CubeState, index: number): boolean {
+  return (
+    pieceSize(index) === 2 &&
+    !isBlockPiece(state, index, 'L') &&
+    !isBlockPiece(state, index, 'R')
+  );
+}
+
 /** A piece is told apart by how many stickers it has: 3, 2 or 1. */
 function pieceSize(index: number): number {
   return siblingsOf(index).length;
@@ -150,6 +204,23 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       return pieceSize(index) === 1 || isCrossEdge(state, index) ? colour : null;
     case 'bottomLayer':
       return pieceSize(index) === 1 || isBottomPiece(state, index) ? colour : null;
+    case 'leftBlock':
+      return isBlockPiece(state, index, 'L') ? colour : null;
+    case 'blocks':
+      return isBlockPiece(state, index, 'L') || isBlockPiece(state, index, 'R') ? colour : null;
+    case 'blocksAndCorners':
+      return isBlockPiece(state, index, 'L') ||
+        isBlockPiece(state, index, 'R') ||
+        isTopCorner(state, index)
+        ? colour
+        : null;
+    case 'cornerOrientation':
+      return pieceSize(index) === 3 && colour === 'U' ? 'U' : null;
+    case 'lseOrientation':
+      return (pieceSize(index) === 1 || isLastSixEdge(state, index)) &&
+        (colour === 'U' || colour === 'D')
+        ? colour
+        : null;
     case 'blank':
       return null;
     case 'firstTwoLayers':
@@ -211,13 +282,41 @@ export function lastLayerView(state: CubeState, stickering: Stickering = 'full')
   };
 }
 
-/** Three faces of the cube as drawn in an isometric view, for F2L cases. */
-export function isometricView(state: CubeState, stickering: Stickering = 'full'): IsometricView {
-  return {
-    top: faceGrid(state, 'U', stickering),
-    front: faceGrid(state, 'F', stickering),
-    right: faceGrid(state, 'R', stickering),
+/**
+ * Which corner an isometric picture looks at the cube from. The front-right
+ * one for everything built on the right — F2L, Roux's second block — and the
+ * front-left one for Roux's first block, which is built where the usual
+ * picture cannot see.
+ */
+export type IsometricCorner = 'frontRight' | 'frontLeft';
+
+/** Turning the cube a quarter to the right brings its left face round to the front. */
+const LEFT_TO_FRONT: Move = { family: 'y', amount: -1, text: "y'" };
+
+/**
+ * Three faces of the cube as drawn in an isometric view. From the front-left
+ * corner the left face takes the front's place and the front the right's.
+ * The stickering is read before the cube is turned, since it is about which
+ * pieces belong where on the cube as held, not as drawn.
+ */
+export function isometricView(
+  state: CubeState,
+  stickering: Stickering = 'full',
+  corner: IsometricCorner = 'frontRight',
+): IsometricView {
+  const cells = FACELETS.map((_, index) => cell(state, index, stickering));
+  const seen =
+    corner === 'frontLeft'
+      ? movePermutation(LEFT_TO_FRONT).map((source) => cells[source] ?? null)
+      : cells;
+  const grid = (face: Face): Cell[] => {
+    const out: Cell[] = [];
+    for (let row = 0; row < 3; row++) {
+      for (let column = 0; column < 3; column++) out.push(seen[indexOf(face, row, column)] ?? null);
+    }
+    return out;
   };
+  return { top: grid('U'), front: grid('F'), right: grid('R') };
 }
 
 export interface PieceArrow {

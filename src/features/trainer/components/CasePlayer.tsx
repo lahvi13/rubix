@@ -7,10 +7,12 @@ import { useTwistySkin } from '../../../hooks/use-twisty-skin';
 import { strings } from '../../../lib/strings';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
 import {
+  maskByHome,
   maskHidingLayer,
   maskHidingLayerPieces,
   maskKeepingLayer,
   maskOrientingLayer,
+  type ShownFace,
   type StickeringMask,
 } from '../../../lib/twisty-stickering';
 
@@ -20,7 +22,9 @@ import {
  * the last layer's yellow, the way an OLL picture reads, or the yellow of its
  * edges alone for the first look; or, for the beginner's
  * steps, just the pieces the step is about — the cross, the bottom layer
- * being built, or the last layer's corners without its edges.
+ * being built, or the last layer's corners without its edges. Roux's steps
+ * each have their own: the left block, both blocks, the corners' yellow, and
+ * the top and bottom colours of the last six edges.
  */
 export type PlayerStickering =
   | 'full'
@@ -29,7 +33,11 @@ export type PlayerStickering =
   | 'edgeOrientation'
   | 'cross'
   | 'bottomLayer'
-  | 'lastLayerCorners';
+  | 'lastLayerCorners'
+  | 'leftBlock'
+  | 'blocks'
+  | 'cornerOrientation'
+  | 'lseOrientation';
 
 interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
@@ -47,6 +55,13 @@ interface CasePlayerProps {
    */
   onStopped: (at: PlaybackPosition) => void;
   /**
+   * The rotation at the head of `setupAlg`, said apart as well: a mask that
+   * picks out the left block has to know which side that is.
+   */
+  standing?: string;
+  /** Looked at from the front-left, for Roux's first block; the front-right otherwise. */
+  isFromLeft?: boolean;
+  /**
    * Shown while the player's chunk arrives. Where the player takes a still
    * picture's place, that picture is better than a line of text: a flash of
    * "loading" where a cube just was reads as the cube having gone.
@@ -63,6 +78,8 @@ export function CasePlayer({
   setupAlg,
   alg,
   stickering,
+  standing = '',
+  isFromLeft = false,
   request,
   onMove,
   onStopped,
@@ -78,15 +95,17 @@ export function CasePlayer({
   // every colour for its first few frames.
   useEffect(() => {
     let cancelled = false;
-    void Promise.all([import('cubing/twisty'), maskFor(stickering)]).then(([, nextMask]) => {
-      if (cancelled) return;
-      setMask(nextMask);
-      setReady(true);
-    });
+    void Promise.all([import('cubing/twisty'), maskFor(stickering, standing)]).then(
+      ([, nextMask]) => {
+        if (cancelled) return;
+        setMask(nextMask);
+        setReady(true);
+      },
+    );
     return () => {
       cancelled = true;
     };
-  }, [stickering]);
+  }, [stickering, standing]);
 
   useEffect(() => {
     const element = player.current;
@@ -120,7 +139,8 @@ export function CasePlayer({
         visualization="3D"
         background="none"
         camera-latitude={CAMERA_LATITUDE}
-        camera-longitude={CAMERA_LONGITUDE}
+        // Mirrored for the left block, which the usual corner cannot see.
+        camera-longitude={isFromLeft ? -CAMERA_LONGITUDE : CAMERA_LONGITUDE}
         control-panel="none"
         hint-facelets="none"
       />
@@ -137,7 +157,14 @@ export function CasePlayer({
  * In cubing.js's frame, where the cube stands on its head (`CUBE_ORIENTATION`):
  * our last layer is its D, and the bottom layer built first is its U.
  */
-function maskFor(stickering: PlayerStickering): Promise<StickeringMask | null> {
+function maskFor(stickering: PlayerStickering, standing: string): Promise<StickeringMask | null> {
+  // Roux's masks are decided on the cube as shown, yellow up and turned the
+  // way the case is held — where the left block is depends on both.
+  const shown = `${CUBE_ORIENTATION} ${standing}`;
+  const isBlock = (home: ReadonlySet<ShownFace>) =>
+    (home.has('L') || home.has('R')) && !home.has('U');
+  const isLeftBlock = (home: ReadonlySet<ShownFace>) => home.has('L') && !home.has('U');
+
   switch (stickering) {
     case 'full':
       return Promise.resolve(null);
@@ -153,5 +180,20 @@ function maskFor(stickering: PlayerStickering): Promise<StickeringMask | null> {
       return maskKeepingLayer('U');
     case 'lastLayerCorners':
       return maskHidingLayerPieces('D', 'EDGES');
+    case 'leftBlock':
+      return maskByHome(shown, ({ home }) => (isLeftBlock(home) ? 'regular' : 'ignored'));
+    case 'blocks':
+      return maskByHome(shown, ({ home }) => (isBlock(home) ? 'regular' : 'ignored'));
+    case 'cornerOrientation':
+      // A piece's first sticker is the one that faces up or down when it is
+      // home: for a top corner, its yellow.
+      return maskByHome(shown, ({ orbit, home, facelet }) =>
+        orbit === 'CORNERS' && home.has('U') && facelet === 0 ? 'regular' : 'ignored',
+      );
+    case 'lseOrientation':
+      return maskByHome(shown, ({ orbit, home, facelet }) => {
+        if (orbit === 'CENTERS') return home.has('U') || home.has('D') ? 'regular' : 'ignored';
+        return orbit === 'EDGES' && !isBlock(home) && facelet === 0 ? 'regular' : 'ignored';
+      });
   }
 }
