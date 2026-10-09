@@ -3,7 +3,7 @@ import { PACKS } from '../../db/seed/packs';
 import { formatAlg, invertAlg, parseAlg, type Move } from '../cube/notation';
 import { canonicalise } from '../cube/orientation';
 import { applyAlg, isSolvedIgnoringOrientation, type CubeState } from '../cube/state';
-import { isSolvedAsShown, type Stickering } from '../cube/views';
+import { isJudgedAsHeld, isSolvedAsShown, type Stickering } from '../cube/views';
 import { diagramFor } from '../../features/trainer/case-view';
 import { DRILL_AUFS, DRILL_ROTATIONS, drillScramble } from '../drill/scramble';
 import { aufForAngle } from './angle';
@@ -88,9 +88,9 @@ describe('aufForAngle', () => {
       }
     }
 
-    // 246 cases, four rotations, four AUFs — a guard against the loop quietly
+    // 257 cases, four rotations, four AUFs — a guard against the loop quietly
     // running over nothing.
-    expect(checked).toBe(246 * 16);
+    expect(checked).toBe(257 * 16);
   });
 
   it('finds the turn for an OLL of your own that orients and permutes its own way', () => {
@@ -180,6 +180,6 @@ describe('aufForAngle', () => {
 function solvesAsShown(state: CubeState, stickering: Stickering): boolean {
   // Stood up as the drill stands it: a Roux case not at all, since CMLL may
   // leave the middle slice turned.
-  const upright = stickering === 'blocksAndCorners' ? state : canonicalise(state);
+  const upright = isJudgedAsHeld(stickering) ? state : canonicalise(state);
   return DRILL_AUFS.some((end) => isSolvedAsShown(end === '' ? upright : applyAlg(upright, moves(end)), stickering));
 }

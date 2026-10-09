@@ -101,10 +101,14 @@ const edgesOriented = (state: CubeStateOf): boolean =>
  */
 function answers(entry: PackCase, moves: Move[], setId = ''): boolean {
   const before = caseState(entry);
-  if (setId === 'cmll') {
+  // Roux's edge orientation the same way, judged on the edges' top and bottom
+  // colours alone.
+  const rouxJudge: Stickering | null =
+    setId === 'cmll' ? 'blocksAndCorners' : setId === 'roux-eo' ? 'lseOrientation' : null;
+  if (rouxJudge !== null) {
     const after = applyAlg(before, moves);
     return ['', 'U', 'U2', "U'"].some((end) =>
-      isSolvedAsShown(applyAlg(after, movesOf(end)), 'blocksAndCorners'),
+      isSolvedAsShown(applyAlg(after, movesOf(end)), rouxJudge),
     );
   }
   const after = canonicalise(applyAlg(before, moves));
@@ -216,9 +220,15 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
     (_name, entry) => {
       // An algorithm that ends with the cube tilted would draw its case from
       // the wrong side and hand the next case over rotated. Rotations are
-      // allowed inside an algorithm as long as they cancel out.
+      // allowed inside an algorithm as long as they cancel out. A Roux case may
+      // start with the middle slice turned — that is the case, not a tilt — so
+      // there the left and right centres are what has to be home.
       const state = caseState(entry);
-      expect(stateKey(canonicalise(state))).toBe(stateKey(state));
+      if (pack.set.method === 'roux') {
+        expect([state[4 + 9 * 2], state[4 + 9 * 3]]).toEqual(['L', 'R']);
+      } else {
+        expect(stateKey(canonicalise(state))).toBe(stateKey(state));
+      }
     },
   );
 });
@@ -478,6 +488,66 @@ describe('CMLL', () => {
   it('holds forty-two different cases', () => {
     const keys = pack.cases.map((entry) => aufKey(caseState(entry), cornerCase));
     expect(new Set(keys).size).toBe(42);
+  });
+});
+
+describe('Roux edge orientation', () => {
+  const pack = packById('roux-eo');
+
+  /** The six edges by place: four on top, two at the bottom of the middle slice. */
+  const SIX: Record<string, string> = {
+    UF: '0,1,1',
+    UB: '0,1,-1',
+    UL: '-1,1,0',
+    UR: '1,1,0',
+    DF: '0,-1,1',
+    DB: '0,-1,-1',
+  };
+
+  /** The edges whose top or bottom colour faces neither up nor down. */
+  const badEdges = (state: CubeStateOf): string[] =>
+    Object.entries(SIX)
+      .filter(([, position]) => {
+        const stickers = FACELETS.flatMap((sticker, index) =>
+          sticker.position.join(',') === position ? [index] : [],
+        );
+        const pole = stickers.find((index) => state[index] === 'U' || state[index] === 'D');
+        const face = pole === undefined ? undefined : FACELETS[pole]?.face;
+        return face !== 'U' && face !== 'D';
+      })
+      .map(([name]) => name);
+
+  const COUNT_OF: Record<string, number> = {
+    'Two bad edges': 2,
+    'Four bad edges': 4,
+    'Six bad edges': 6,
+  };
+
+  it('is the eleven cases of the two sheets', () => {
+    expect(pack.set.method).toBe('roux');
+    expect(pack.cases).toHaveLength(11);
+  });
+
+  it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
+    '%s has as many bad edges as its group says, and leaves blocks and corners alone',
+    (_name, entry) => {
+      const state = caseState(entry);
+      expect(badEdges(state)).toHaveLength(COUNT_OF[entry.group ?? ''] ?? -1);
+      const isBlockOrCorner = (index: number): boolean => {
+        const [x = 0, y = 0, z = 0] = FACELETS[index]?.position ?? [];
+        return (x !== 0 && y !== 1) || (y === 1 && x !== 0 && z !== 0);
+      };
+      const cornersAnyTurn = ['', 'U', 'U2', "U'"].some((end) => {
+        const turned = applyAlg(state, movesOf(end));
+        return FACELETS.every((_, index) => !isBlockOrCorner(index) || turned[index] === solved[index]);
+      });
+      expect(cornersAnyTurn).toBe(true);
+    },
+  );
+
+  it('holds eleven different cases', () => {
+    const keys = pack.cases.map((entry) => aufKey(caseState(entry), (state) => badEdges(state).join(' ')));
+    expect(new Set(keys).size).toBe(11);
   });
 });
 

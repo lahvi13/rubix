@@ -1235,8 +1235,17 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
    porovná se složenou kostkou otočenou o 0–3 čtvrtiny kolem svislé osy, protože
    drill případ ukazuje i v jiných barvách. Tím měřítkem prochází test sad i
    dorovnání v drillu, pro všechny alternativy ze všech 16 úhlů.
-4. **Později:** druhý blok jako pokročilá sada (~40 případů vložení páru),
-   EO (9) / EOLR, OH algoritmy CMLL, drill prvního bloku.
+4. **Orientace hran — hotová.** Sada „Orientace hran“ (`roux-eo`): 11 případů ve
+   skupinách podle počtu špatných hran (2 / 4 / 6). Kianových 9 z „roux_EO“ plus
+   dva zrcadlové z „ROUX_guide_rev4“ (obrácená šipka, obrácená úhlopříčka), které
+   Kian řeší otočením kostky; rev4 je řeší bez něj. Hlavní algoritmus Kianův, u
+   šipky `M' U M` jako v průvodci; alternativy z rev4 (algoritmus, který rev4
+   uvádí u „4 edges on top“, ve skutečnosti řeší Plus a je zařazený tam). Vyřešeno
+   = bloky a rohy beze změny a žlutá i bílá všech šesti hran nahoře nebo dole
+   (`lseOrientation`), kostka posuzovaná, jak leží. Krok 5 průvodce otevírá šipku
+   z této sady a „Všechny případy“ ukážou celou.
+5. **Později:** druhý blok jako pokročilá sada (~40 případů vložení páru), EOLR,
+   OH algoritmy CMLL, drill prvního bloku.
 
 Zdroje dodal autor jako PDF (CMLL, druhý blok, EO, EO + ULUR, OH CMLL,
 začátečnický průvodce); obsah se z nich přebírá, nehádá.

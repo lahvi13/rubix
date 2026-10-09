@@ -43,6 +43,22 @@ const CS: Record<string, string> = {
   '1 / Orientation': '1 / Orientace',
   '2 / Permutation': '2 / Permutace',
 
+  // Roux's edge orientation: a plain description, so it is translated.
+  'Edge orientation': 'Orientace hran',
+  'Two bad edges': 'Dvě špatné hrany',
+  'Four bad edges': 'Čtyři špatné hrany',
+  'Six bad edges': 'Šest špatných hran',
+  'Two on top': 'Dvě nahoře',
+  'Two on top, adjacent': 'Dvě nahoře vedle sebe',
+  'Two at the bottom': 'Dvě dole',
+  'Diagonal': 'Úhlopříčka',
+  'Inverse diagonal': 'Obrácená úhlopříčka',
+  'Arrow': 'Šipka',
+  'Inverse arrow': 'Obrácená šipka',
+  'Four on top': 'Čtyři nahoře',
+  'One': 'Jednička',
+  'All six': 'Všech šest',
+
   // PLL, grouped by what the case does rather than by its shape.
   'Adjacent corner swap': 'Prohozené sousední rohy',
   'Diagonal corner swap': 'Prohozené protilehlé rohy',
@@ -86,6 +102,8 @@ export const KEPT_IN_ENGLISH: readonly string[] = [
   '2-Look PLL',
   '2-Look CMLL',
   'CMLL',
+  // The edge-orientation case every Roux chart calls Plus.
+  'Plus',
   'Cross',
   // OLL shapes, as J Perm and every OLL chart name them.
   'Dot',

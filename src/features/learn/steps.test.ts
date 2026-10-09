@@ -251,14 +251,19 @@ describe('the Roux guide', () => {
     }
   });
 
-  it.each(['roux-edge-orientation', 'roux-side-edges', 'roux-middle-slice'])(
-    '%s turns nothing but M and U',
-    (id) => {
-      for (const situation of step(id).situations) {
-        for (const family of familiesOf(situation.alg)) expect(['M', 'U']).toContain(family);
-      }
-    },
-  );
+  it.each(['roux-side-edges', 'roux-middle-slice'])('%s turns nothing but M and U', (id) => {
+    for (const situation of step(id).situations) {
+      for (const family of familiesOf(situation.alg)) expect(['M', 'U']).toContain(family);
+    }
+  });
+
+  /** The case a step opens on, out of its pack. */
+  const openingCase = (entry: LearnStep) => {
+    const pack = PACKS.find((candidate) => candidate.set.id === entry.setId);
+    const found = pack?.cases.find((candidate) => entry.caseIds.includes(candidate.id));
+    if (!found) throw new Error(`${entry.id} lost its case`);
+    return found;
+  };
 
   it('opens the corner swap on headlights on the left, where the step says to put them', () => {
     const setId = step('roux-corner-permutation').setId;
@@ -277,10 +282,10 @@ describe('the Roux guide', () => {
   });
 
   it('draws the arrow: three bad edges on top and its point over the fourth below', () => {
-    const entry = step('roux-edge-orientation');
-    const situation = entry.situations[0];
-    if (!situation) throw new Error('the edge step lost its picture');
-    const state = holdState(situation, situationPicture(entry).standing);
+    const arrow = openingCase(step('roux-edge-orientation'));
+    // The arrow the guide teaches, with the moves it names: M', U, M.
+    expect(arrow.alg).toBe("M' U M");
+    const state = holdState({ alg: arrow.alg, text: '' });
 
     // An edge is good when its top or bottom colour faces up or down.
     const badAt = (position: string): boolean => {

@@ -4,6 +4,7 @@ import {
   BEGINNER_SET_ID,
   CMLL_SET_ID,
   LEVEL_BASE_SETS,
+  ROUX_EO_SET_ID,
   TWO_LOOK_CMLL_GROUPS,
   TWO_LOOK_CMLL_SET_ID,
 } from '../../domain/alg/sets';
@@ -94,6 +95,16 @@ export function diagramFor(setId: string, group: string): Diagram {
       stickering: 'blocksAndCorners',
       playerStickering: 'blocksAndCorners',
       orientation: '',
+    };
+  }
+  // The six edges as the guide shows them: only their top and bottom colours,
+  // the cube held with the first block's blue on the left.
+  if (setId === ROUX_EO_SET_ID) {
+    return {
+      view: 'isometric',
+      stickering: 'lseOrientation',
+      playerStickering: 'lseOrientation',
+      orientation: "y'",
     };
   }
   if (setId === 'oll') {

@@ -29,7 +29,7 @@
 import { canonicalise } from '../cube/orientation';
 import { formatAlg, invertAlg, parseAlg, type Move } from '../cube/notation';
 import { applyAlg, isSolvedIgnoringOrientation, type CubeState } from '../cube/state';
-import { isSolvedAsShown, lastLayerView, type Stickering } from '../cube/views';
+import { isJudgedAsHeld, isSolvedAsShown, lastLayerView, type Stickering } from '../cube/views';
 
 /** Shortest first: no turn, a quarter either way, then a half. Order decides ties. */
 const AUFS: readonly string[] = ['', 'U', "U'", 'U2'];
@@ -82,7 +82,7 @@ export function aufForAngle(
   // A Roux case is not stood up at all: the algorithm may leave the middle
   // slice turned, which moves the centres the usual way goes by, and its
   // blocks are wherever its left and right are (isSolvedAsShown).
-  const standUp = stickering === 'blocksAndCorners' ? (turned: CubeState) => turned : canonicalise;
+  const standUp = isJudgedAsHeld(stickering) ? (turned: CubeState) => turned : canonicalise;
   const asShown = results.findIndex((result) => {
     const upright = standUp(result);
     return CANDIDATES.some((end) => isSolvedAsShown(applyAlg(upright, end), stickering));

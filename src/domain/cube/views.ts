@@ -245,6 +245,15 @@ const SOLVED_TURNED: readonly CubeState[] = [0, 1, 2, 3].map((quarters) => {
 });
 
 /**
+ * The stickerings whose cases are judged as the cube lies rather than stood up
+ * by its centres first: a Roux step may leave the middle slice turned, and the
+ * centres are what that turn moves.
+ */
+export function isJudgedAsHeld(stickering: Stickering): boolean {
+  return stickering === 'blocksAndCorners' || stickering === 'lseOrientation';
+}
+
+/**
  * Whether a cube is solved as far as `stickering` looks: the last layer in
  * everything the stickering shows of it, and every layer under it outright.
  * The judge of an algorithm somebody wrote themselves — an OLL that orients
@@ -263,6 +272,19 @@ export function isSolvedAsShown(state: CubeState, stickering: Stickering): boole
       FACELETS.every(
         (_, index) => cell(state, index, stickering) === cell(reference, index, stickering),
       ),
+    );
+  }
+  // Roux's edge orientation, judged the same way: the blocks and the corners
+  // left as they were, and every top or bottom sticker of the six edges and
+  // the middle centres showing a top or bottom colour. Where those pieces sit
+  // is the next step's business.
+  if (stickering === 'lseOrientation') {
+    return SOLVED_TURNED.some((reference) =>
+      FACELETS.every((sticker, index) => {
+        if (cell(reference, index, 'blocksAndCorners') !== null) return state[index] === reference[index];
+        if (sticker.face !== 'U' && sticker.face !== 'D') return true;
+        return state[index] === 'U' || state[index] === 'D';
+      }),
     );
   }
   return FACELETS.every((sticker, index) =>

@@ -11,6 +11,7 @@ import f2lAdvanced from './f2l-advanced.json';
 import f2lExpert from './f2l-expert.json';
 import oll from './oll.json';
 import pll from './pll.json';
+import rouxEo from './roux-eo.json';
 import twoLookCmll from './two-look-cmll.json';
 import twoLookOll from './two-look-oll.json';
 import twoLookPll from './two-look-pll.json';
@@ -80,6 +81,7 @@ export const PACKS: readonly AlgPack[] = [
   beginner,
   twoLookCmll,
   cmll,
+  rouxEo,
 ];
 
 /**

@@ -126,6 +126,7 @@ export const SET_ORDER: readonly string[] = [
   'pll',
   '2look-cmll',
   'cmll',
+  'roux-eo',
 ];
 
 /**
@@ -155,6 +156,18 @@ export const TWO_LOOK_CMLL_SET_ID = '2look-cmll';
 
 /** All of Roux's corners in one look: forty-two cases, read by the blocks around them. */
 export const CMLL_SET_ID = 'cmll';
+
+/**
+ * The first part of Roux's last six edges: turning every edge so its top or
+ * bottom colour faces up or down, with M and U. Eleven cases by where the bad
+ * edges are, grouped by how many there are.
+ */
+export const ROUX_EO_SET_ID = 'roux-eo';
+export const ROUX_EO_GROUPS = {
+  two: 'Two bad edges',
+  four: 'Four bad edges',
+  six: 'Six bad edges',
+} as const;
 export const TWO_LOOK_CMLL_GROUPS = {
   orientation: '1 / Orientation',
   permutation: '2 / Permutation',

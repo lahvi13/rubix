@@ -1,0 +1,104 @@
+{
+ "packVersion": 1,
+ "set": {
+  "id": "roux-eo",
+  "name": "Edge orientation",
+  "method": "roux"
+ },
+ "cases": [
+  {
+   "id": "roux-eo-two-top",
+   "name": "Two on top",
+   "group": "Two bad edges",
+   "alg": "M' U M U' M' U' M'",
+   "others": [
+    "M' U M' M' U M' U M' U M'",
+    "R U R' U' M' U R U' Rw'"
+   ]
+  },
+  {
+   "id": "roux-eo-two-adjacent",
+   "name": "Two on top, adjacent",
+   "group": "Two bad edges",
+   "alg": "M' U M' U2 M' U' M'",
+   "others": [
+    "M' U M' U2 M' U M'",
+    "U2 Rw U R' U M U' R U' R'"
+   ]
+  },
+  {
+   "id": "roux-eo-two-bottom",
+   "name": "Two at the bottom",
+   "group": "Two bad edges",
+   "alg": "M' U M' U' M U' M'",
+   "others": [
+    "M' U M' U' M U M'"
+   ]
+  },
+  {
+   "id": "roux-eo-diagonal",
+   "name": "Diagonal",
+   "group": "Two bad edges",
+   "alg": "M' U' M' U' M U' M'",
+   "others": [
+    "M' U M' U M U M'"
+   ]
+  },
+  {
+   "id": "roux-eo-inverse-diagonal",
+   "name": "Inverse diagonal",
+   "group": "Two bad edges",
+   "alg": "M U M U M' U M"
+  },
+  {
+   "id": "roux-eo-arrow",
+   "name": "Arrow",
+   "group": "Four bad edges",
+   "alg": "M' U M",
+   "others": [
+    "M' U' M'",
+    "M' U M'"
+   ]
+  },
+  {
+   "id": "roux-eo-inverse-arrow",
+   "name": "Inverse arrow",
+   "group": "Four bad edges",
+   "alg": "M U M"
+  },
+  {
+   "id": "roux-eo-four-top",
+   "name": "Four on top",
+   "group": "Four bad edges",
+   "alg": "M' U2 M' U2 M' U' M'"
+  },
+  {
+   "id": "roux-eo-plus",
+   "name": "Plus",
+   "group": "Four bad edges",
+   "alg": "M' U2 M' U2 M U' M'",
+   "others": [
+    "M' U2 M' U2 M U M'",
+    "M U2 M' U2 M' U M'"
+   ]
+  },
+  {
+   "id": "roux-eo-one",
+   "name": "One",
+   "group": "Four bad edges",
+   "alg": "M2 U' M' U' M'",
+   "others": [
+    "M2 U' M' U M'"
+   ]
+  },
+  {
+   "id": "roux-eo-six",
+   "name": "All six",
+   "group": "Six bad edges",
+   "alg": "R U' r' U' M' U r U r'",
+   "others": [
+    "M' U M' U2 M U M U M' U M'"
+   ]
+  }
+ ]
+}

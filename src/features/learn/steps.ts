@@ -3,6 +3,8 @@ import {
   BEGINNER_GROUPS,
   BEGINNER_SET_ID,
   CROSS_SET_ID,
+  ROUX_EO_GROUPS,
+  ROUX_EO_SET_ID,
   TWO_LOOK_CMLL_GROUPS,
   TWO_LOOK_CMLL_SET_ID,
 } from '../../domain/alg/sets';
@@ -84,9 +86,9 @@ export interface LearnStep {
   /**
    * The same step for somebody who wants it fast: every case with an algorithm
    * of its own, usually out of a different set. Null where the step is already
-   * as short as it gets.
+   * as short as it gets; a null group is the whole set.
    */
-  advanced: { setId: string; group: string } | null;
+  advanced: { setId: string; group: string | null } | null;
 }
 
 const SUNE = "R U R' U R U2 R'";
@@ -215,13 +217,6 @@ const BLOCKS_PICTURE: SituationPicture = {
   standing: ROUX_STANDING,
 };
 
-const EDGE_ORIENTATION_PICTURE: SituationPicture = {
-  view: 'isometric',
-  stickering: 'lseOrientation',
-  playerStickering: 'lseOrientation',
-  standing: ROUX_STANDING,
-};
-
 const LAST_EDGES_PICTURE: SituationPicture = {
   view: 'isometric',
   stickering: 'full',
@@ -300,15 +295,16 @@ export const ROUX_STEPS: readonly LearnStep[] = [
   },
   {
     id: 'roux-edge-orientation',
-    setId: null,
-    group: null,
-    caseIds: [],
-    keyText: null,
+    setId: ROUX_EO_SET_ID,
+    group: ROUX_EO_GROUPS.four,
+    caseIds: ['roux-eo-arrow'],
+    keyText: strings.learn.rouxSituations.arrow,
     holds: [],
-    situations: [{ alg: "M' U M", text: strings.learn.rouxSituations.arrow }],
-    picture: EDGE_ORIENTATION_PICTURE,
+    situations: [],
     markedCorner: null,
-    advanced: null,
+    // Every case of edge orientation, for somebody who wants it without the
+    // trial and error of making the arrow first.
+    advanced: { setId: ROUX_EO_SET_ID, group: null },
     ...strings.learn.rouxSteps.edgeOrientation,
   },
   {
