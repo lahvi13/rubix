@@ -56,7 +56,7 @@ interface CubeSkinDefinition extends Omit<CubeSkin, 'muted' | 'outline' | 'arrow
 }
 
 /** Slate rather than black on a light page, for every skin that does not exist to be stark. */
-const PLASTIC = { dark: '#0f1115', light: '#4b5364' } as const;
+const PLASTIC = { dark: '#0f1115', light: '#2e3441' } as const;
 
 /*
  * Every skin is one real cube, written down as it is held here: yellow up,
@@ -77,7 +77,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#d63a3a',
       R: '#e8811c',
     },
-    muted: { dark: '#525b70', light: '#a7afbd' },
+    muted: { dark: '#525b70', light: '#9ea6b5' },
     outline: PLASTIC,
     pale: '#f4f6fb',
   },
@@ -109,7 +109,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#e79a9a',
       R: '#f0b681',
     },
-    muted: { dark: '#5a6379', light: '#b4bbc8' },
+    muted: { dark: '#5a6379', light: '#adb4c2' },
     outline: { dark: '#1b1f28', light: PLASTIC.light },
     pale: '#f2f4f8',
   },
@@ -126,7 +126,7 @@ export const CUBE_SKINS: readonly CubeSkinDefinition[] = [
       L: '#d55e00',
       R: '#e69f00',
     },
-    muted: { dark: '#4f586d', light: '#a5adbb' },
+    muted: { dark: '#4f586d', light: '#9ca4b3' },
     outline: PLASTIC,
     pale: '#f8fafc',
   },
@@ -136,7 +136,7 @@ const FALLBACK: CubeSkinDefinition = {
   id: 'classic',
   name: 'Classic',
   faces: { U: '#f2d024', D: '#f4f4f4', F: '#25b05a', B: '#2f6fd0', L: '#d63a3a', R: '#e8811c' },
-  muted: { dark: '#525b70', light: '#a7afbd' },
+  muted: { dark: '#525b70', light: '#9ea6b5' },
   outline: PLASTIC,
   pale: '#f4f6fb',
 };
