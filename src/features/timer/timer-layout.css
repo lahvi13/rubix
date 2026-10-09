@@ -142,3 +142,19 @@
   justify-content: flex-end;
   gap: 0 var(--space-5);
 }
+
+/* The switches' names cut short for a phone, where the session and both
+   switches share one row; past that they are written out. */
+.solves-panel__full {
+  display: none;
+}
+
+@media (min-width: 34rem) {
+  .solves-panel__short {
+    display: none;
+  }
+
+  .solves-panel__full {
+    display: inline;
+  }
+}

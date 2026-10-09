@@ -461,7 +461,14 @@ export function TimerScreen() {
                     onChange={(event) => timer.setInspectionEnabled(event.target.checked)}
                     aria-label={strings.timer.inspectionToggleLabel}
                   />
-                  {strings.timer.inspectionToggle}
+                  {/* Abbreviated only where the row is short of room; the
+                      input carries the full name for a screen reader. */}
+                  <span className="solves-panel__short" aria-hidden="true">
+                    {strings.timer.inspectionToggle}
+                  </span>
+                  <span className="solves-panel__full" aria-hidden="true">
+                    {strings.timer.inspectionToggleLabel}
+                  </span>
                 </label>
                 <label className="toggle solves-panel__toggle">
                   <input
@@ -471,7 +478,12 @@ export function TimerScreen() {
                     onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
                     aria-label={strings.timer.phaseToggleLabel}
                   />
-                  {strings.timer.phaseToggle}
+                  <span className="solves-panel__short" aria-hidden="true">
+                    {strings.timer.phaseToggle}
+                  </span>
+                  <span className="solves-panel__full" aria-hidden="true">
+                    {strings.timer.phaseToggleLabel}
+                  </span>
                 </label>
               </span>
             )}
