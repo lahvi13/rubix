@@ -570,9 +570,13 @@
 
 /* Mini stats on the timer screen */
 
+/* Three pairs in a row, and the last drops to a line of its own when they do
+   not fit: minute-long times at the large text size are wider than a 360px
+   phone, and the row pushed the whole page sideways. */
 .mini-stats {
   display: flex;
-  gap: var(--space-7);
+  flex-wrap: wrap;
+  gap: 0 var(--space-7);
   margin: 0 0 var(--space-4);
   font-size: var(--text-md);
 }
