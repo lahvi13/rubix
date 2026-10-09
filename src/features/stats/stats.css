@@ -586,6 +586,16 @@
   gap: var(--space-3);
 }
 
+.mini-stats__item--wide {
+  display: none;
+}
+
+@media (min-width: 34rem) {
+  .mini-stats__item--wide {
+    display: flex;
+  }
+}
+
 .mini-stats__item dt {
   color: var(--muted);
 }
