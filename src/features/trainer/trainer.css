@@ -197,7 +197,7 @@
 
 .case-grid--large .alg--compact {
   font-size: var(--text-2xl);
-  line-height: 1.6;
+  line-height: 1.45;
 }
 
 /*
@@ -235,5 +235,5 @@
   grid-row: 1 / span 2;
   text-align: start;
   font-size: var(--text-2xl);
-  line-height: 1.6;
+  line-height: 1.45;
 }

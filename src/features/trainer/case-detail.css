@@ -236,10 +236,11 @@
   /* Read at arm's length on a phone. At the size of the case's name, bold, the
      primes were specks and the letters ran together; a size up and a weight
      down reads better than either change alone. The line height is room for
-     the blocks: tighter, the outline of one touched the one below. */
+     the blocks: at 1.35 the outline of one touched the one below, and at 1.7
+     an algorithm broken over four lines on a phone came apart. */
   font-size: var(--text-lg);
   font-weight: 600;
-  line-height: 1.7;
+  line-height: 1.5;
   letter-spacing: 0;
 }
 
