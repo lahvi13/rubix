@@ -29,7 +29,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 ### History and sessions
 - Every solve with its scramble, penalty, tags, note and star; fix a mistyped
   time or a penalty later.
-- Separate sessions for different practice, archived when you are done with them.
+- Separate sessions for different practice, each timed in CFOP or Roux, archived
+  when you are done with them.
 - Deleting a solve can be undone for a few seconds.
 
 ### Statistics
@@ -44,16 +45,19 @@ Free, no account, no ads. Once opened, it works without a connection. English an
   algorithm on a 3D cube move by move.
 - Alternative algorithms for a case, your own algorithms, and named triggers
   (sexy move, sledgehammer…) highlighted inside them.
+- Roux: CMLL — all 42 cases, and 2-Look CMLL on the way there — and the eleven
+  cases of edge orientation.
 - Drill a chosen set of cases against the clock and see which ones are your slowest.
 
 ### Phase splits
-- Time cross, F2L, OLL and PLL separately by tapping as you finish each one.
+- Time each phase by tapping as you finish it: cross, F2L, OLL and PLL in CFOP,
+  the two blocks, CMLL and the last six edges in Roux.
 - See your average and best time for every phase, how your current ao12 divides
   between them, and how they change over time.
 
 ### Beginner guide
-- A whole first solve in seven steps, one algorithm each, with pictures of how
-  to hold the cube.
+- A whole first solve in seven steps, with pictures of how to hold the cube —
+  for CFOP, or for Roux with its blocks built by hand and only two algorithms.
 - Can be hidden once you no longer need it.
 
 ### Sharing
