@@ -95,6 +95,7 @@ export function SettingsScreen() {
   const [isPreviewShown, setPreviewShown] = useSetting('timer.showScramblePreview');
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
   const [haptics, setHaptics] = useSetting('timer.haptics');
+  const [showNextRecord, setShowNextRecord] = useSetting('timer.showNextRecord');
 
   // Not a setting of the database's: the copy is read while the modules that
   // name it are loading, so the language is a property of the load, and
@@ -275,6 +276,16 @@ export function SettingsScreen() {
           />
           {strings.settings.showScramblePreview}
         </label>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={showNextRecord}
+            onChange={(event) => setShowNextRecord(event.target.checked)}
+          />
+          {strings.settings.showNextRecord}
+        </label>
+        <p className="data-section__hint">{strings.settings.showNextRecordHint}</p>
 
         {/* Offered only where it can do something: an iPhone has no way to be
             asked to vibrate, and a switch that changes nothing is a lie. */}

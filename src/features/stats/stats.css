@@ -593,3 +593,16 @@
 .mini-stats__item dd {
   margin: 0;
 }
+
+/* Tucked up under the averages it is about, and in the green the solve list
+   gives a best of the session — gold is the all-time record's. */
+.mini-stats__next {
+  margin: calc(var(--space-3) * -1) 0 var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.mini-stats__chance {
+  white-space: nowrap;
+  color: var(--accent);
+}

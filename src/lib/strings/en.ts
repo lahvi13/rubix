@@ -229,6 +229,9 @@ export const en = {
     pbSingle: 'PB single',
     sessionBest: 'Session best',
     mean: 'Mean',
+    /** Under the timer's averages, before what the next solve needs. */
+    nextRecord: 'For a session best:',
+    nextRecordBelow: (n: number, time: string) => `ao${n} under ${time}`,
     median: 'Median',
     stdDev: 'Std dev',
     dnfRate: 'DNF rate',
@@ -282,10 +285,10 @@ export const en = {
     goalAll: (count: number) => `All ${count} solves`,
     goalSeries: 'Goal',
     records: 'Records',
+    recordsChart: 'Each record over time, as a step down',
     recordKind: 'Which record',
     noRecords: (n: number) => (n === 1 ? 'No records yet.' : `No ao${n} yet — it takes ${n} solves.`),
     /** In place of the gain on the first record, which beat nothing. */
-    recordsChart: 'Each record over time, as a step down',
     firstRecord: 'first',
     allRecords: (count: number) => `Show all ${count}`,
     fewerRecords: 'Show fewer',
@@ -680,6 +683,9 @@ export const en = {
     holdThreshold: 'Hold to start',
     holdOff: 'Off',
     showScramblePreview: 'Show the cube below the scramble',
+    showNextRecord: 'Show what the next solve needs for a best',
+    showNextRecordHint:
+      'Under the averages on the timer, and only while a best ao5 or ao12 of the session is still in reach.',
     haptics: 'Vibrate when ready and when stopped',
     runningDisplay: 'Time while solving',
     runningHundredths: '0.00',

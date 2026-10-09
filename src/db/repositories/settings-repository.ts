@@ -23,6 +23,11 @@ export interface SettingValues {
   /** How much of the time the clock shows while a solve runs (see RunningDisplay). */
   'timer.runningDisplay': RunningDisplay;
   /**
+   * The line under the timer's averages saying what the next solve needs for
+   * a best ao5 / ao12 of the session. A spur to some, pressure to others.
+   */
+  'timer.showNextRecord': boolean;
+  /**
    * Device-local: a buzz when a held press turns green and when the clock
    * stops. Whether that is welcome depends on the phone and on the table it
    * lies on, not on the person.
@@ -201,6 +206,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'timer.showScramblePreview': true,
   'timer.splitMode': 'total',
   'timer.runningDisplay': 'hundredths',
+  'timer.showNextRecord': true,
   'timer.haptics': true,
   'ui.theme': 'dark',
   'ui.font': 'sans',
