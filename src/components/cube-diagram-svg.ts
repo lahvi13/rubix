@@ -23,6 +23,12 @@ import { SIDE_SHADE, type CubeSkin } from '../lib/cube-skins';
 export type DiagramView = 'lastLayer' | 'isometric' | 'net';
 
 /**
+ * A corner of the top layer singled out with a frame — the one a step tells
+ * the reader to look at. Only the last-layer picture draws it.
+ */
+export type MarkedCorner = 'backLeft' | 'backRight' | 'frontLeft' | 'frontRight';
+
+/**
  * Big enough for every set drawn twice over, small enough to throw away
  * without a thought. Changing the skin makes every key miss, which is when the
  * whole thing is worth dropping.
@@ -35,14 +41,16 @@ export function diagramUrl(
   view: DiagramView,
   stickering: Stickering,
   skin: CubeSkin,
+  mark: MarkedCorner | null = null,
 ): string {
   // Everything the theme changes about a skin belongs in the key, or a picture
   // drawn before the theme flipped gets handed back after it.
-  const key = `${skin.id}|${skin.muted}|${view}|${stickering}|${stateKey(state)}`;
+  const key = `${skin.id}|${skin.muted}|${view}|${stickering}|${mark}|${stateKey(state)}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
 
-  const url = `data:image/svg+xml,${encodeURIComponent(diagramSvg(state, view, stickering, skin))}`;
+  const drawn = diagramSvg(state, view, stickering, skin, mark);
+  const url = `data:image/svg+xml,${encodeURIComponent(drawn)}`;
   if (cache.size >= CACHE_LIMIT) cache.clear();
   cache.set(key, url);
   return url;
@@ -74,8 +82,9 @@ export function diagramSvg(
   view: DiagramView,
   stickering: Stickering,
   skin: CubeSkin,
+  mark: MarkedCorner | null = null,
 ): string {
-  if (view === 'lastLayer') return lastLayerSvg(state, stickering, skin);
+  if (view === 'lastLayer') return lastLayerSvg(state, stickering, skin, mark);
   if (view === 'net') return netSvg(state, stickering, skin);
   return isometricSvg(state, stickering, skin);
 }
@@ -137,7 +146,12 @@ const OFFSET = STRIP + 2;
 const SIZE = OFFSET * 2 + CELL * 3;
 const INSET = 1;
 
-function lastLayerSvg(state: CubeState, stickering: Stickering, skin: CubeSkin): string {
+function lastLayerSvg(
+  state: CubeState,
+  stickering: Stickering,
+  skin: CubeSkin,
+  mark: MarkedCorner | null,
+): string {
   const view = lastLayerView(state, stickering);
 
   // The plastic under the top face and the strips round it, as the cross it
@@ -189,7 +203,39 @@ function lastLayerSvg(state: CubeState, stickering: Stickering, skin: CubeSkin):
     .map((arrow) => arrowSvg(arrow, skin))
     .join('');
 
-  return svg(`0 0 ${SIZE} ${SIZE}`, plastic + top + sides + arrows);
+  const [under, frame] = mark === null ? ['', ''] : cornerFrameSvg(mark, skin);
+
+  return svg(`0 0 ${SIZE} ${SIZE}`, under + plastic + top + sides + arrows + frame);
+}
+
+/** Line widths of the frame round a marked corner; a sticker is 20. */
+const FRAME = { line: 2.4, band: 1.3 } as const;
+
+/**
+ * A square round a corner's three stickers — its top and the two side strips
+ * beside it — in the arrow's pale-on-dark, which reads on a yellow sticker and
+ * on a grey one alike. A square rather than the corner's own outline: that
+ * one is an L with a notch, and reads as a shape of its own.
+ *
+ * Comes in two parts: the frame over the stickers, and plastic under them to
+ * fill the notch — on a light page the notch is the page, a pale chip inside
+ * the square.
+ */
+function cornerFrameSvg(mark: MarkedCorner, skin: CubeSkin): readonly [string, string] {
+  const side = OFFSET + CELL;
+  // Pulled in off the picture's edges, or the outer half of the line is cut.
+  const edge = FRAME.line / 2 + FRAME.band;
+  const length = side - edge;
+  const x = mark === 'backLeft' || mark === 'frontLeft' ? edge : SIZE - side;
+  const y = mark === 'backLeft' || mark === 'backRight' ? edge : SIZE - side;
+  const box = `x="${n(x)}" y="${n(y)}" width="${n(length)}" height="${n(length)}" rx="3"`;
+
+  return [
+    `<rect ${box} fill="${skin.outline}"/>`,
+    `<rect ${box} fill="none" stroke="${skin.arrow.band}"` +
+      ` stroke-width="${n(FRAME.line + FRAME.band * 2)}"/>` +
+      `<rect ${box} fill="none" stroke="${skin.arrow.fill}" stroke-width="${n(FRAME.line)}"/>`,
+  ];
 }
 
 /** Centre of a cell of the top-face grid. */

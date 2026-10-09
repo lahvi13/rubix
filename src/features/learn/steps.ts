@@ -1,3 +1,4 @@
+import type { MarkedCorner } from '../../components/CubeDiagram';
 import { BEGINNER_GROUPS, BEGINNER_SET_ID, CROSS_SET_ID } from '../../domain/alg/sets';
 import { invertAlg, parseAlg } from '../../domain/cube/notation';
 import { applyAlg, solvedState, type CubeState } from '../../domain/cube/state';
@@ -46,6 +47,11 @@ export interface LearnStep {
   /** Where the piece can be, for a step taught by pictures instead of cases. */
   situations: readonly LearnSituation[];
   /**
+   * The corner every picture of the opening algorithm frames: the one its
+   * text says where to put. Not on the quicker cases, which hold no rule.
+   */
+  markedCorner: MarkedCorner | null;
+  /**
    * The same step for somebody who wants it fast: every case with an algorithm
    * of its own, usually out of a different set. Null where the step is already
    * as short as it gets.
@@ -78,6 +84,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
       { alg: 'F2', text: strings.learn.crossCases.whiteUp },
       { alg: "U' R' F R", text: strings.learn.crossCases.whiteFront },
     ],
+    markedCorner: null,
     advanced: null,
     ...strings.learn.steps.cross,
   },
@@ -89,6 +96,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     keyText: null,
     holds: [],
     situations: [],
+    markedCorner: null,
     advanced: null,
     ...strings.learn.steps.corners,
   },
@@ -100,6 +108,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     keyText: null,
     holds: [],
     situations: [],
+    markedCorner: null,
     advanced: null,
     ...strings.learn.steps.middle,
   },
@@ -111,6 +120,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     keyText: null,
     holds: [],
     situations: [],
+    markedCorner: null,
     advanced: null,
     ...strings.learn.steps.edgeOrientation,
   },
@@ -125,6 +135,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
       { alg: `${SUNE} ${SUNE}`, text: strings.learn.holds.noneOriented },
     ],
     situations: [],
+    markedCorner: 'frontLeft',
     advanced: { setId: '2look-oll', group: '2 / Corners' },
     ...strings.learn.steps.cornerOrientation,
   },
@@ -136,6 +147,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     keyText: strings.learn.holds.headlights,
     holds: [{ alg: `${A_PERM} U ${A_PERM} U'`, text: strings.learn.holds.noHeadlights }],
     situations: [],
+    markedCorner: null,
     advanced: { setId: '2look-pll', group: '1 / Corners' },
     ...strings.learn.steps.cornerPermutation,
   },
@@ -147,6 +159,7 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     keyText: strings.learn.holds.oneSide,
     holds: [{ alg: `${U_PERM} U ${U_PERM} U'`, text: strings.learn.holds.noSide }],
     situations: [],
+    markedCorner: null,
     advanced: { setId: '2look-pll', group: '2 / Edges' },
     ...strings.learn.steps.edgePermutation,
   },

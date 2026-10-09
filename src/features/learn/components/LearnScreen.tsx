@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { CubeDiagram } from '../../../components/CubeDiagram';
+import { CubeDiagram, type MarkedCorner } from '../../../components/CubeDiagram';
 import { CROSS_SET_ID } from '../../../domain/alg/sets';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
@@ -250,6 +250,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
                 entry={entry}
                 diagram={diagram}
                 skin={skin}
+                mark={isAdvanced ? null : step.markedCorner}
                 triggers={triggers}
                 onOpen={() => onOpen(entry.algCase.id, setId, group)}
               />
@@ -271,6 +272,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
                         view={diagram.view}
                         stickering={diagram.stickering}
                         skin={skin}
+                        mark={step.markedCorner}
                         label={null}
                       />
                       <figcaption className="learn__caption learn__caption--left">
@@ -365,6 +367,7 @@ interface LearnCaseProps {
   entry: TrainerCase;
   diagram: Diagram;
   skin: CubeSkin;
+  mark: MarkedCorner | null;
   triggers: readonly TriggerDefinition[];
   onOpen: () => void;
 }
@@ -374,7 +377,7 @@ interface LearnCaseProps {
  * the moves side by side, readable at arm's length rather than at the size of
  * a thumbnail.
  */
-function LearnCase({ entry, diagram, skin, triggers, onOpen }: LearnCaseProps) {
+function LearnCase({ entry, diagram, skin, mark, triggers, onOpen }: LearnCaseProps) {
   const parsed = entry.algorithm ? parseAlg(entry.algorithm.moves) : null;
   const name = packLabel(caseTitle(entry.algCase));
 
@@ -388,6 +391,7 @@ function LearnCase({ entry, diagram, skin, triggers, onOpen }: LearnCaseProps) {
           view={diagram.view}
           stickering={diagram.stickering}
           skin={skin}
+          mark={mark}
           label={null}
         />
         {parsed?.ok ? (

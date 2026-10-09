@@ -61,6 +61,45 @@ describe('cube diagrams as text', () => {
     expect(diagramUrl(tPerm, 'lastLayer', 'full', skinById(other?.id ?? '', 'dark'))).not.toBe(first);
   });
 
+  it('frames a marked corner, and only in the last-layer picture', () => {
+    const skin = defaultSkin('dark');
+    const frame = `fill="none" stroke="${skin.arrow.fill}"`;
+
+    expect(diagramSvg(tPerm, 'lastLayer', 'orientation', skin, 'frontLeft')).toContain(frame);
+    expect(diagramSvg(tPerm, 'lastLayer', 'orientation', skin)).not.toContain(frame);
+    expect(diagramSvg(tPerm, 'isometric', 'full', skin, 'frontLeft')).toBe(
+      diagramSvg(tPerm, 'isometric', 'full', skin),
+    );
+  });
+
+  it.each(['backLeft', 'backRight', 'frontLeft', 'frontRight'] as const)(
+    'keeps the frame round the %s corner whole inside the picture',
+    (mark) => {
+      const svg = diagramSvg(solvedState(), 'lastLayer', 'orientation', defaultSkin('dark'), mark);
+      const size = Number(/viewBox="0 0 (\d+)/.exec(svg)?.[1]);
+      // The wider of the two strokes: the dark band the pale line sits on.
+      const box = new RegExp(
+        '<rect x="([\\d.]+)" y="([\\d.]+)" width="([\\d.]+)" height="[\\d.]+" rx="3"' +
+          ' fill="none" stroke="[^"]+" stroke-width="([\\d.]+)"',
+      ).exec(svg);
+      const [x, y, side, width] = (box?.slice(1) ?? []).map(Number) as number[];
+
+      expect(box).not.toBeNull();
+      for (const start of [x ?? 0, y ?? 0]) {
+        expect(start - (width ?? 0) / 2).toBeGreaterThanOrEqual(0);
+        expect(start + (side ?? 0) + (width ?? 0) / 2).toBeLessThanOrEqual(size);
+      }
+    },
+  );
+
+  it('keeps a marked picture apart from the plain one in the cache', () => {
+    const skin = defaultSkin('dark');
+
+    expect(diagramUrl(tPerm, 'lastLayer', 'orientation', skin, 'frontLeft')).not.toBe(
+      diagramUrl(tPerm, 'lastLayer', 'orientation', skin),
+    );
+  });
+
   it('is a url an <img> can load', () => {
     const url = diagramUrl(tPerm, 'isometric', 'firstTwoLayers', defaultSkin('dark'));
 

@@ -405,7 +405,7 @@ export const cs: Strings = {
         title: 'Orientace poslední vrstvy',
         points: [
           'Na celou žlutou stěnu stačí jeden algoritmus: opakuj ho, dokud není hotová. Víc než tři spuštění to nikdy nepotřebuje.',
-          'Před každým spuštěním natoč kostku podle obrázků — podle toho, kolik rohů už ukazuje žlutou.',
+          'Před každým spuštěním natoč kostku podle obrázků — podle toho, kolik rohů už má žlutou nahoře.',
         ],
       },
       cornerPermutation: {
@@ -425,12 +425,11 @@ export const cs: Strings = {
       },
     },
     holds: {
-      oneOriented:
-        'Jeden roh ukazuje žlutou nahoru: dej ho dopředu doleva.',
+      oneOriented: 'Jeden roh má žlutou nahoře: otáčej vrškem, dokud nebude vpředu vlevo.',
       twoOriented:
-        'Dva rohy ukazují žlutou nahoru: otoč vrškem, ať žlutá na rohu vpředu vlevo míří na tebe.',
+        'Dva rohy mají žlutou nahoře: otáčej vrškem, dokud roh vpředu vlevo nemá žlutou na přední stěně.',
       noneOriented:
-        'Žádný roh neukazuje žlutou nahoru: otoč vrškem, ať žlutá na rohu vpředu vlevo míří doleva.',
+        'Žádný roh nemá žlutou nahoře: otáčej vrškem, dokud roh vpředu vlevo nemá žlutou na levé stěně.',
       headlights: 'Headlights vzadu: zbylé tři rohy se protočí na svá místa.',
       noHeadlights:
         'Žádné headlights: spusť algoritmus odkudkoli a objeví se.',

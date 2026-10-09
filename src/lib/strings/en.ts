@@ -438,7 +438,7 @@ export const en = {
         title: 'Last layer face',
         points: [
           'One algorithm does the whole yellow face: repeat it until the face is done. It never takes more than three goes.',
-          'Before each go, hold the cube as the pictures show — by how many corners already show yellow.',
+          'Before each go, hold the cube as the pictures show — by how many corners already have yellow on top.',
         ],
       },
       cornerPermutation: {
@@ -458,12 +458,11 @@ export const en = {
       },
     },
     holds: {
-      oneOriented:
-        'One corner shows yellow on top: put it at the front left.',
+      oneOriented: 'One corner has yellow on top: turn the top until it is at the front left.',
       twoOriented:
-        'Two show yellow on top: turn the top until the yellow on the front-left corner faces you.',
+        'Two have yellow on top: turn the top until the front-left corner has its yellow on the front.',
       noneOriented:
-        'None shows yellow on top: turn the top until the yellow on the front-left corner faces left.',
+        'None has yellow on top: turn the top until the front-left corner has its yellow on the left.',
       headlights: 'Headlights at the back: the other three corners go round into place.',
       noHeadlights:
         'No headlights anywhere: run it from any side and some appear.',
