@@ -23,6 +23,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
   of the scrambled cube. Paste your own scramble to practise a particular situation.
 - While the clock runs, only the time is on screen — and you choose whether it
   shows hundredths, tenths, whole seconds or nothing at all.
+- Under your averages, what the next solve needs for a new best ao5 or ao12 —
+  shown only while one is in reach, and it can be turned off.
 
 ### History and sessions
 - Every solve with its scramble, penalty, tags, note and star; fix a mistyped
@@ -33,7 +35,7 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 ### Statistics
 - Current and best ao5, ao12, ao50 and ao100, personal bests, mean, median,
   standard deviation, DNF and +2 rate.
-- A histogram of times and a trend of the rolling ao12.
+- A histogram of times, and a trend of the rolling ao12 against the slower ao50.
 - Averages follow the csTimer convention, so the numbers match what you are used to.
 
 ### Algorithm trainer
@@ -46,7 +48,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 
 ### Phase splits
 - Time cross, F2L, OLL and PLL separately by tapping as you finish each one.
-- See your average and best time for every phase and how they change over time.
+- See your average and best time for every phase, how your current ao12 divides
+  between them, and how they change over time.
 
 ### Beginner guide
 - A whole first solve in seven steps, one algorithm each, with pictures of how
