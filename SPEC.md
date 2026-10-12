@@ -136,7 +136,7 @@ dostávají hotová data z domény.
   na kombinaci `puzzle + mode`
 - **archivace a smazání nejsou totéž.** Archivovaná session zmizí z přepínače, ale
   její solvy pořád platí — PB single je nad všemi freestyle sessiony puzzle a
-  archivací se nemění. Osobní rekord, který se hne při úklidu seznamu session,
+  metody a archivací se nemění. Osobní rekord, který se hne při úklidu seznamu session,
   není rekord. Kdo chce solvy pryč z čísel, session smaže: to vezme i všechny
   její solvy (tombstony pro session i pro každý solve). Karta se předtím zeptá
   podruhé a řekne, kolika solvů se to týká; po smazání se dá — stejně jako u solvů
@@ -151,7 +151,22 @@ dostávají hotová data z domény.
 ### 3.4 Statistiky
 
 Počítáno vždy nad **finálními** časy (viz 4.4), v rámci aktivní session,
-kromě PB, které je globální per `puzzle`.
+kromě PB, které je globální per `puzzle` a metodu.
+
+**Metoda je to, co dělá dvě složení srovnatelná** (rozhodnuto 2026-10-12, když
+k CFOP přibyl Roux a ZZ). Zůstává vlastností session, ne složení: session je
+řada srovnatelných časů a ao5 přes dvě metody neříká nic o žádné. Metoda u
+složení by chtěla migraci, přepínač na timeru a filtr v každém pohledu uvnitř
+session; kdo si chce jednou složit jinak, má na to druhou session. Z toho:
+
+- **rozsahy „Všechny session“ a „Posledních 100“ čtou jen session metody, ve
+  které se právě měří** — průměry, rekordy, grafy, cíl, praxi i fáze. Průměr
+  dvacetivteřinového CFOP a minutového Rouxu je číslo o ničem. Když se tím
+  něco vynechá, říká to řádek s počtem („2 složení · jen Roux“); dokud jsou
+  všechny session jedné metody, obrazovka je stejná jako dřív
+- **PB single se vede pro každou metodu zvlášť**, napříč všemi jejími session
+  včetně archivovaných. První Roux pod minutu je rekord, ať CFOP dělá cokoli —
+  na timeru, v historii, v detailu i ve statistikách (`getMethodPbSolve`)
 
 - current / best ao5, ao12, ao50, ao100
 - PB single, PB každého okna
@@ -386,15 +401,13 @@ pokusy o rozpoznání s `mode: 'recognition'`. Do hlavních statistik a PB
 
 Splity dělí solve na fáze (u CFOP cross / F2L / OLL / PLL, u Rouxu FB / SB /
 CMLL / LSE, u ZZ EOCross / F2L / LL). **Fáze patří metodě, a statistiky fází
-se čtou jen ze složení té metody**: rozsah „Všechny session“ může míchat
-session různých metod, a tabulka fází pak bere sloupce z metody aktivní session
-a řádky jen ze složení session téže metody (`solvesOfMethod`), včetně sloupce
-Celkem a počtu v nadpisu; poznámka pod nadpisem to říká, když se něco
-vynechalo. Do 2026-10-12 se řádky počítaly ze všech složení: sloupce Rouxu
-tak stály na jediném Roux složení, kdežto Celkem a počet na všech CFOP — a
-protože CFOP i ZZ mají fázi s klíčem `f2l`, pod ZZ session by si poslední
-vrstva ZZ vzala OLL a PLL ze složení CFOP. Detail složení si fáze bere z metody
-session, ve které složení leží, ne z obrazovky, která ho otevřela. Fáze se berou
+se čtou jen ze složení té metody** — jako všechno ostatní, co se čte napříč
+session (viz 3.4, `solvesOfMethod`). Do 2026-10-12 se tabulka fází na „Všechny
+session“ počítala ze všech složení: sloupce Rouxu tak stály na jediném Roux
+složení, kdežto Celkem a počet na všech CFOP — a protože CFOP i ZZ mají fázi
+s klíčem `f2l`, pod ZZ session by si poslední vrstva ZZ vzala OLL a PLL ze
+složení CFOP. Detail složení si fáze bere z metody session, ve které složení
+leží, ne z obrazovky, která ho otevřela. Fáze se berou
 z `Method.phases` aktivní session, **nikdy z enumu v kódu** — jiná metoda je pak
 data, ne migrace.
 
@@ -936,6 +949,7 @@ export class RubixDB extends Dexie {
 | `solves.[caseId+createdAt]` | statistiky konkrétního případu v trenažéru |
 | `solves.[mode+puzzle]` | oddělení drillů od freestyle napříč sessiony |
 | `solves.[puzzle+mode+penalty]` | globální PB single (přeskočí DNF bez načítání všeho) |
+| `solves.[sessionId+penalty+rawMs]` | PB single metody: nejrychlejší složení každé její session, dva řádky na session (DB v8) |
 | `solves.[mode+updatedAt]` | co chybí v záloze, po druzích — složení, pokusy v drillu, pokusy o rozpoznání (DB v7) |
 | `solves.*tagIds` | filtr historie podle tagu |
 | `solves.starred` | seznam „k rozboru“ |

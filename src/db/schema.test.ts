@@ -28,6 +28,33 @@ describe('schema upgrades', () => {
     await Dexie.delete(name);
   });
 
+  it('orders each session by time when v8 adds the index the best of a method is read from', async () => {
+    const name = 'rubix-upgrade-v8';
+    // The solves table as v7 left it, with rows in it.
+    const v7 = new Dexie(name);
+    v7.version(7).stores({
+      solves:
+        'id, sessionId, caseId, createdAt, updatedAt, starred, *tagIds, ' +
+        '[sessionId+createdAt], [caseId+createdAt], [mode+puzzle], [puzzle+mode+penalty], ' +
+        '[puzzle+mode+penalty+rawMs], [mode+updatedAt]',
+    });
+    await v7.table('solves').bulkAdd([
+      { id: 'slow', sessionId: 'blocks', penalty: 'none', rawMs: 64_000, tagIds: [] },
+      { id: 'fast', sessionId: 'blocks', penalty: 'none', rawMs: 58_000, tagIds: [] },
+      { id: 'other', sessionId: 'morning', penalty: 'none', rawMs: 15_000, tagIds: [] },
+    ]);
+    v7.close();
+
+    const upgraded = new RubixDB(name);
+    const first = await upgraded.solves
+      .where('[sessionId+penalty+rawMs]')
+      .between(['blocks', 'none', Dexie.minKey], ['blocks', 'none', Dexie.maxKey])
+      .first();
+    expect(first?.id).toBe('fast');
+    upgraded.close();
+    await Dexie.delete(name);
+  });
+
   it('says every solve stored before v5 was on a scramble the app drew', async () => {
     const name = 'rubix-upgrade-v5';
     const v4 = new Dexie(name);

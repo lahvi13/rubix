@@ -24,7 +24,7 @@ export function HistoryScreen() {
   const session = useActiveSession(PUZZLE, MODE);
   const phases = usePhases(session?.methodId ?? null);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
-  const history = useHistory(session?.id ?? null, PUZZLE, phaseKeys);
+  const history = useHistory(session?.id ?? null, PUZZLE, phaseKeys, session?.methodId ?? null);
   const tags = useTags();
   const days = useSolveDays(session?.id ?? null);
   const at = now();

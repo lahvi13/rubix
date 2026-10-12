@@ -11,8 +11,8 @@ import {
   countSolvesChangedSince,
   deleteSolve,
   deleteSolves,
-  getGlobalPbSingle,
-  getGlobalPbSolve,
+  getMethodPbSingle,
+  getMethodPbSolve,
   listRecentSolves,
   listSolves,
   listPuzzleSolvesChronological,
@@ -211,19 +211,32 @@ describe('stats queries', () => {
 
     const solves = await listPuzzleSolvesChronological('333');
     expect(solves.map((solve) => solve.rawMs)).toEqual([12_000]);
-    expect(await getGlobalPbSingle('333')).toBe(5000);
+    expect(await getMethodPbSingle('333', 'cfop')).toBe(5000);
   });
 
-  it('finds the global PB across sessions and applies the +2', async () => {
+  it('finds the PB across the sessions of a method and applies the +2', async () => {
     await addSolve(await makeSolve(sessionId, 10_000));
-    const other = await addSolve(await makeSolve('other-session', 9000));
+    const elsewhere = await createSession('Evening', '333', 'freestyle');
+    const other = await addSolve(await makeSolve(elsewhere.id, 9000));
     await updateSolve(other.id, { penalty: 'plus2' });
 
     // 9000 raw would win, but with the +2 it is 11000 — the clean 10s stays.
-    expect(await getGlobalPbSingle('333')).toBe(10_000);
+    expect(await getMethodPbSingle('333', 'cfop')).toBe(10_000);
 
-    await addSolve(await makeSolve('other-session', 7000));
-    expect(await getGlobalPbSingle('333')).toBe(7000);
+    await addSolve(await makeSolve(elsewhere.id, 7000));
+    expect(await getMethodPbSingle('333', 'cfop')).toBe(7000);
+  });
+
+  it('keeps a PB for each method, whichever is the faster', async () => {
+    await addSolve(await makeSolve(sessionId, 15_000));
+    const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
+    const firstRoux = await addSolve(await makeSolve(blocks.id, 58_000));
+    await addSolve(await makeSolve(blocks.id, 64_000));
+
+    // A Roux solve four times slower than the CFOP best is still Roux's best.
+    expect(await getMethodPbSingle('333', 'cfop')).toBe(15_000);
+    expect((await getMethodPbSolve('333', 'roux'))?.id).toBe(firstRoux.id);
+    expect(await getMethodPbSingle('333', 'zz')).toBeNull();
   });
 
   it('gives a tie for the PB to the clean solve over the +2', async () => {
@@ -231,24 +244,35 @@ describe('stats queries', () => {
     const penalised = await addSolve(await makeSolve(sessionId, 8000));
     await updateSolve(penalised.id, { penalty: 'plus2' });
 
-    expect((await getGlobalPbSolve('333'))?.id).toBe(clean.id);
+    expect((await getMethodPbSolve('333', 'cfop'))?.id).toBe(clean.id);
   });
 
-  it('ignores DNFs, drills and other puzzles for the global PB', async () => {
+  it('gives a tie between two sessions to the solve that set it', async () => {
+    const first = await addSolve({ ...(await makeSolve(sessionId, 10_000)), startedAt: 1000 });
+    const elsewhere = await createSession('Evening', '333', 'freestyle');
+    await addSolve({ ...(await makeSolve(elsewhere.id, 10_000)), startedAt: 2000 });
+
+    expect((await getMethodPbSolve('333', 'cfop'))?.id).toBe(first.id);
+  });
+
+  it('ignores DNFs, drills and other puzzles for the PB', async () => {
     const dnf = await addSolve(await makeSolve(sessionId, 1000));
     await updateSolve(dnf.id, { penalty: 'dnf' });
-    await addSolve({ ...(await makeSolve(sessionId, 2000)), mode: 'drill' });
-    await addSolve({ ...(await makeSolve(sessionId, 3000)), puzzle: '222' });
+    // Drills and other puzzles are timed in sessions of their own.
+    const drill = await createSession('Drill', '333', 'drill');
+    await addSolve({ ...(await makeSolve(drill.id, 2000)), mode: 'drill' });
+    const small = await createSession('Two by two', '222', 'freestyle');
+    await addSolve({ ...(await makeSolve(small.id, 3000)), puzzle: '222' });
     await addSolve(await makeSolve(sessionId, 8000));
 
-    expect(await getGlobalPbSingle('333')).toBe(8000);
+    expect(await getMethodPbSingle('333', 'cfop')).toBe(8000);
   });
 
-  it('has no global PB when nothing counts', async () => {
+  it('has no PB when nothing counts', async () => {
     const dnf = await addSolve(await makeSolve(sessionId, 1000));
     await updateSolve(dnf.id, { penalty: 'dnf' });
 
-    expect(await getGlobalPbSingle('333')).toBeNull();
+    expect(await getMethodPbSingle('333', 'cfop')).toBeNull();
   });
 });
 

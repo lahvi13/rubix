@@ -50,6 +50,12 @@ some tens of milliseconds, which is why 10 000 can open faster than 5 000.
 5. **The PB comes from a time-ordered index** (schema v4,
    `[puzzle+mode+penalty+rawMs]`). It used to walk every clean and +2 solve
    with a cursor, and a live query records every key a cursor hands it.
+   Since 2026-10-12 the PB is kept per method, and comes from a second such
+   index, `[sessionId+penalty+rawMs]` (schema v8): the fastest clean solve and
+   the fastest +2 of each of the method's sessions, two rows read per session.
+   Filtering the puzzle-wide index by session would have been the cursor
+   again — past every faster solve of another method, which for somebody
+   learning a second one is all of them.
 6. **One read of the session's solves on the timer screen** (2026-09-29,
    `hooks/use-session-solves.ts`). `useMiniStats` and `useSessionRecords` both
    ran `listSolvesChronological` for the active session, so the same thousands

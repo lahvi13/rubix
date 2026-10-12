@@ -10,7 +10,7 @@ import {
   type NewRecognitionAttempt,
 } from './recognition-repository';
 import { getActiveSession, getOrCreateActiveSession } from './session-repository';
-import { getGlobalPbSingle, listSolvesChronological } from './solve-repository';
+import { getMethodPbSingle, listSolvesChronological } from './solve-repository';
 
 function makeAttempt(
   caseId: string,
@@ -72,7 +72,7 @@ describe('recognition repository', () => {
 
     const session = await getOrCreateActiveSession('333', 'freestyle');
     expect(await listSolvesChronological(session.id)).toHaveLength(0);
-    expect(await getGlobalPbSingle('333')).toBeNull();
+    expect(await getMethodPbSingle('333', 'cfop')).toBeNull();
   });
 
   it('keeps the two kinds of practice apart on the same case', async () => {

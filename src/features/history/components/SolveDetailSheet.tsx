@@ -47,6 +47,7 @@ export function SolveDetailSheet({
     solve?.sessionId ?? null,
     solve?.puzzle ?? '333',
     phaseKeys,
+    session?.methodId ?? null,
   );
   const tags = useTags();
   const removeSolves = useRemoveSolves();

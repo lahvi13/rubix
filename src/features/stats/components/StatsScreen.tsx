@@ -144,9 +144,8 @@ function sessionBestTier(bestMs: number | null, pbMs: number | null): StatTier |
 
 export function StatsScreen() {
   const session = useActiveSession(PUZZLE, MODE);
-  // The phases are those of the method being timed in. Across sessions that
-  // is not every solve's method, and the numbers about phases are read from
-  // the solves it is — see useSessionStats.
+  // The method being timed in names the phases, and across sessions it is
+  // also whose solves are read — see useSessionStats.
   const methodId = session?.methodId ?? null;
   const phases = usePhases(methodId);
   const methodName = useMethodName(methodId);
@@ -168,7 +167,6 @@ export function StatsScreen() {
     PUZZLE,
     phaseKeys,
     tagId,
-    methodId,
   );
   const isAllSessions = scope !== 'session';
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
@@ -264,6 +262,11 @@ export function StatsScreen() {
                 ? strings.stats.solvesOf(stats.solveCount, stats.availableCount)
                 : strings.stats.solveCount(stats.solveCount)}
               {tag === null ? null : ` · ${strings.stats.withTag(tag.name)}`}
+              {/* Only where it changes the answer: with every session in one
+                  method there is nobody to tell the numbers apart from. */}
+              {stats.otherMethodsLeftOut && methodName !== null
+                ? ` · ${strings.stats.methodOnly(methodName)}`
+                : null}
             </span>
           </p>
         </div>
@@ -438,10 +441,7 @@ export function StatsScreen() {
                   rows={stats.phaseRows}
                   phases={phases}
                   measuredCount={stats.measuredCount}
-                  solveCount={stats.phaseSolveCount}
-                  otherMethodsLeftOut={
-                    stats.phaseSolveCount < stats.solveCount ? methodName : null
-                  }
+                  solveCount={stats.solveCount}
                   onOpenSolve={setOpenSolveId}
                 />
               </div>

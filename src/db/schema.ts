@@ -119,6 +119,19 @@ export class RubixDB extends Dexie {
         '[sessionId+createdAt], [caseId+createdAt], [mode+puzzle], [puzzle+mode+penalty], ' +
         '[puzzle+mode+penalty+rawMs], [mode+updatedAt]',
     });
+
+    // v8 keeps a personal best per method. A method's best is the fastest
+    // solve of its sessions, and the index v4 added runs over the whole puzzle:
+    // asked for some sessions only, it would have to be walked past every
+    // faster solve of the others. This one is ordered by time within a session
+    // and penalty, so a method's best is two rows read per session. Nothing
+    // about a row changes.
+    this.version(8).stores({
+      solves:
+        'id, sessionId, caseId, createdAt, updatedAt, starred, *tagIds, ' +
+        '[sessionId+createdAt], [caseId+createdAt], [mode+puzzle], [puzzle+mode+penalty], ' +
+        '[puzzle+mode+penalty+rawMs], [mode+updatedAt], [sessionId+penalty+rawMs]',
+    });
   }
 }
 

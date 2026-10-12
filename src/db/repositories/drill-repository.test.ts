@@ -13,7 +13,7 @@ import {
 import { getActiveSession, getOrCreateActiveSession } from './session-repository';
 import {
   addSolve,
-  getGlobalPbSingle,
+  getMethodPbSingle,
   listSolvesChronological,
 } from './solve-repository';
 
@@ -77,7 +77,7 @@ describe('drill repository', () => {
     await addDrillSolve(makeAttempt('pll-t', 1500));
 
     expect(await listSolvesChronological(freestyle.id)).toHaveLength(1);
-    expect(await getGlobalPbSingle('333')).toBe(20_000);
+    expect(await getMethodPbSingle('333', 'cfop')).toBe(20_000);
   });
 
   it('lists a case oldest first, across sessions', async () => {

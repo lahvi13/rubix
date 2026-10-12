@@ -164,34 +164,53 @@ export async function listPuzzleSolvesChronological(puzzle: Puzzle): Promise<Sol
 }
 
 /**
- * The best single a puzzle has ever seen, across all freestyle sessions, and
- * the solve it belongs to: the fastest clean solve or the fastest +2, whichever
- * ends up faster once the penalty is in. The index is ordered by time within
- * each penalty, so that is two rows read — DNFs and drills are never touched.
- * On a tie the clean solve holds it.
+ * The best single a puzzle has seen in one method, across every freestyle
+ * session timed in it — archived ones too — and the solve it belongs to. A
+ * best is kept per method because a method is what makes two solves the same
+ * feat: somebody's first Roux solve under a minute is a record, whatever
+ * their CFOP does.
+ *
+ * Each session gives its fastest clean solve and its fastest +2, off an index
+ * ordered by time within a session and penalty: two rows read per session, and
+ * DNFs are never touched. Drills are in sessions of their own. Whichever ends
+ * up fastest once the penalty is in holds the best; on a tie the clean solve
+ * does, and between two of a kind the earlier one, which set it.
  *
  * The solve itself, not only the time: the history marks the row it is on and
  * the stats offer to open it, and both need to know which one it is. It may
  * well be in another session than the one being read.
  */
-export async function getGlobalPbSolve(puzzle: Puzzle): Promise<Solve | null> {
-  const fastest = (penalty: Penalty) =>
+export async function getMethodPbSolve(puzzle: Puzzle, methodId: string): Promise<Solve | null> {
+  const sessions = (await db.sessions.where('puzzle').equals(puzzle).toArray()).filter(
+    (session) => session.mode === 'freestyle' && session.methodId === methodId,
+  );
+  const fastest = (sessionId: string, penalty: Penalty) =>
     db.solves
-      .where('[puzzle+mode+penalty+rawMs]')
-      .between([puzzle, 'freestyle', penalty, Dexie.minKey], [puzzle, 'freestyle', penalty, Dexie.maxKey])
+      .where('[sessionId+penalty+rawMs]')
+      .between([sessionId, penalty, Dexie.minKey], [sessionId, penalty, Dexie.maxKey])
       .first();
-  const clean = await fastest('none');
-  const plusTwo = await fastest('plus2');
-  const cleanMs = clean === undefined ? null : finalMs(clean);
-  const plusTwoMs = plusTwo === undefined ? null : finalMs(plusTwo);
-  if (plusTwo !== undefined && plusTwoMs !== null && (cleanMs === null || plusTwoMs < cleanMs)) {
-    return plusTwo;
+  const candidates = await Promise.all(
+    sessions.flatMap((session) => [fastest(session.id, 'none'), fastest(session.id, 'plus2')]),
+  );
+
+  let best: Solve | null = null;
+  for (const solve of candidates) {
+    if (solve !== undefined && (best === null || holdsBestOver(solve, best))) best = solve;
   }
-  return clean ?? null;
+  return best;
 }
 
-export async function getGlobalPbSingle(puzzle: Puzzle): Promise<number | null> {
-  const solve = await getGlobalPbSolve(puzzle);
+/** Whether `solve` takes the best from `holder`: faster, or as fast and cleaner, or as clean and earlier. */
+function holdsBestOver(solve: Solve, holder: Solve): boolean {
+  const ms = finalMs(solve) ?? Number.POSITIVE_INFINITY;
+  const heldMs = finalMs(holder) ?? Number.POSITIVE_INFINITY;
+  if (ms !== heldMs) return ms < heldMs;
+  if (solve.penalty !== holder.penalty) return solve.penalty === 'none';
+  return solve.createdAt < holder.createdAt;
+}
+
+export async function getMethodPbSingle(puzzle: Puzzle, methodId: string): Promise<number | null> {
+  const solve = await getMethodPbSolve(puzzle, methodId);
   return solve === null ? null : finalMs(solve);
 }
 

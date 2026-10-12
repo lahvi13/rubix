@@ -51,12 +51,14 @@ export function useHistory(
   sessionId: string | null,
   puzzle: Puzzle,
   phaseKeys: readonly string[],
+  /** The session's method: the personal best is kept per method. */
+  methodId: string | null,
 ): HistoryView {
   const removeSolves = useRemoveSolves();
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [filters, setFilters] = useState<SolveFilters>({});
 
-  const { bests, globalPbMs } = useSessionRecords(sessionId, puzzle, phaseKeys);
+  const { bests, globalPbMs } = useSessionRecords(sessionId, puzzle, phaseKeys, methodId);
 
   const result = useLiveQuery(async () => {
     if (!sessionId) return { matched: [], total: 0 };

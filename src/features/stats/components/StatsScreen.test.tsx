@@ -327,8 +327,9 @@ describe('StatsScreen', () => {
   });
 
   /**
-   * Phases belong to a method. Read across sessions, the solves may have been
-   * timed in more than one, and the table is about the one being timed in now.
+   * A method is what makes two solves comparable. Read across sessions, the
+   * solves may have been timed in more than one, and every number on the
+   * screen is about the one being timed in now.
    */
   describe('across sessions timed in different methods', () => {
     const split = (phase: string, atMs: number) => ({ phase, atMs, source: 'manual' as const });
@@ -369,11 +370,66 @@ describe('StatsScreen', () => {
         .getAllByRole('row')
         .find((row) => row.querySelector('th')?.textContent === name)?.textContent;
 
+    // A card is pressable once the solve behind it is known, a tick after the number.
+    const card = async (label: RegExp) =>
+      (await screen.findByRole('button', { name: label })).textContent;
+
     beforeEach(async () => {
       await seedPacks();
     });
 
-    it('reads a method’s phases from the solves timed in it, and says so', async () => {
+    it('reads the sessions of the method being timed in, and says which', async () => {
+      await seedSolve(sessionId, 20_000);
+      await seedSolve(sessionId, 22_000);
+      const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
+      await seedSolve(blocks.id, 60_000);
+
+      render(<StatsScreen />);
+
+      // One Roux solve — not three solves with a mean of thirty-four seconds.
+      expect(await screen.findByText(/^1 solve · Roux only$/)).toBeInTheDocument();
+      expect(screen.getByText('Mean').closest('.stat-card')?.textContent).toContain('1:00.00');
+    });
+
+    it('goes back to the other method’s numbers with its session', async () => {
+      await seedSolve(sessionId, 20_000);
+      await seedSolve(sessionId, 22_000);
+      const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
+      await seedSolve(blocks.id, 60_000);
+      await activateSession(sessionId);
+
+      render(<StatsScreen />);
+
+      expect(await screen.findByText(/^2 solves · CFOP only$/)).toBeInTheDocument();
+      expect(screen.getByText('Mean').closest('.stat-card')?.textContent).toContain('21.00');
+    });
+
+    it('does not name the method while every session is timed in the same one', async () => {
+      await seedSolve(sessionId, 20_000);
+      const evening = await createSession('Evening', '333', 'freestyle');
+      await seedSolve(evening.id, 22_000);
+
+      render(<StatsScreen />);
+
+      expect(await screen.findByText('2 solves')).toBeInTheDocument();
+      expect(screen.queryByText(/only$/)).not.toBeInTheDocument();
+    });
+
+    it('keeps a personal best for each method', async () => {
+      await seedSolve(sessionId, 15_000);
+      const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
+      await seedSolve(blocks.id, 58_000);
+      await seedSolve(blocks.id, 64_000);
+
+      render(<StatsScreen />);
+      await screen.findByText(/^2 solves · Roux only$/);
+
+      // Four times slower than the CFOP best, and the best Roux there is.
+      expect(await card(/PB single/i)).toContain('58.00');
+      expect(await card(/PB single/i)).not.toContain('15.00');
+    });
+
+    it('reads a method’s phases from the solves timed in it', async () => {
       await seedPhased(sessionId, 20_000, CFOP, [2000, 10_000, 14_000]);
       await seedPhased(sessionId, 22_000, CFOP, [3000, 12_000, 16_000]);
       const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
@@ -382,9 +438,7 @@ describe('StatsScreen', () => {
       render(<StatsScreen />);
 
       const section = await phaseTable();
-      // One Roux solve, out of the one solve timed in Roux — not out of three.
       expect(within(section).getByText('Phase averages · 1')).toBeInTheDocument();
-      expect(section.textContent).toContain('Only the solves timed in Roux');
       expect(section.textContent).toContain('1 of 1 solves were timed by phase');
       // Its four phases, and a total that is theirs: the CFOP solves are in
       // neither.
@@ -392,48 +446,17 @@ describe('StatsScreen', () => {
       expect(rowOf(section, 'Best')).toBe('Best3.005.0010.0012.0030.00');
     });
 
-    it('says nothing about other methods where every solve read is this one’s', async () => {
-      await seedPhased(sessionId, 20_000, CFOP, [2000, 10_000, 14_000]);
-      await seedSolve(sessionId, 25_000);
-
-      render(<StatsScreen />);
-
-      const section = await phaseTable();
-      expect(section.textContent).not.toContain('Only the solves timed in');
-      expect(section.textContent).toContain('1 of 2 solves were timed by phase');
-      expect(rowOf(section, 'All')).toBe('All2.008.004.006.0020.00');
-    });
-
     it('does not read one method’s phase as another’s because they share a name', async () => {
       // CFOP and ZZ both call a phase F2L. A CFOP solve read by ZZ's phases
       // would hand its OLL and PLL to ZZ's last layer.
       await seedPhased(sessionId, 20_000, CFOP, [2000, 10_000, 14_000]);
-      await createSession('Edges first', '333', 'freestyle', 'zz');
+      const edges = await createSession('Edges first', '333', 'freestyle', 'zz');
+      await seedSolve(edges.id, 50_000);
 
       render(<StatsScreen />);
 
-      await screen.findByText('1 solve');
+      await screen.findByText(/^1 solve · ZZ only$/);
       expect(screen.queryByText(/^Phase averages/)).not.toBeInTheDocument();
-    });
-
-    it('opens a solve with the phases it was timed in, whatever method is on screen', async () => {
-      await seedPhased(sessionId, 9000, CFOP, [1000, 5000, 7000]);
-      const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
-      await seedPhased(blocks.id, 30_000, ROUX, [3000, 8000, 18_000]);
-      const user = userEvent.setup();
-
-      render(<StatsScreen />);
-      await phaseTable();
-
-      // The all-time best is the CFOP solve; the screen is reading Roux.
-      await user.click(screen.getByRole('button', { name: /PB single/i }));
-
-      const sheet = await screen.findByRole('dialog');
-      await waitFor(() => {
-        expect(sheet.textContent).toContain('Cross');
-      });
-      expect(sheet.textContent).toContain('PLL');
-      expect(sheet.textContent).not.toContain('CMLL');
     });
   });
 

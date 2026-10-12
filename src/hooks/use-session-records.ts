@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { Puzzle, Solve } from '../db/types';
-import { getGlobalPbSolve } from '../db/repositories/solve-repository';
+import { getMethodPbSolve } from '../db/repositories/solve-repository';
 import { finalMs } from '../domain/solve/final-time';
 import { bestsOf, type Bests } from '../domain/stats/phases';
 import { useSessionSolves } from './use-session-solves';
@@ -11,7 +11,10 @@ const NO_BESTS: Bests = { totalMs: null, phaseMs: [] };
 export interface SessionRecords {
   /** Best result and best phase lengths, over the whole session. */
   bests: Bests;
-  /** The best single of this puzzle anywhere, which may be another session's. */
+  /**
+   * The best single of this puzzle in the session's method, across every
+   * session timed in it — which may be another session's.
+   */
   globalPbMs: number | null;
 }
 
@@ -28,8 +31,10 @@ export function useSessionRecords(
   sessionId: string | null,
   puzzle: Puzzle,
   phaseKeys: readonly string[],
+  /** The method the session is timed in; null while it is not known. */
+  methodId: string | null,
 ): SessionRecords {
-  return useRecordsOf(useSessionSolves(sessionId), puzzle, phaseKeys);
+  return useRecordsOf(useSessionSolves(sessionId), puzzle, phaseKeys, methodId);
 }
 
 /** The same, over a session's solves the caller has already read (`useSessionSolves`). */
@@ -37,11 +42,15 @@ export function useRecordsOf(
   solves: readonly Solve[] | undefined,
   puzzle: Puzzle,
   phaseKeys: readonly string[],
+  methodId: string | null,
 ): SessionRecords {
   // Its own query: no filter on one session can move the best of them all, and
   // re-reading every solve of the puzzle each time one is tapped would be work
   // for an answer already known.
-  const pb = useLiveQuery(() => getGlobalPbSolve(puzzle), [puzzle]);
+  const pb = useLiveQuery(
+    () => (methodId === null ? null : getMethodPbSolve(puzzle, methodId)),
+    [puzzle, methodId],
+  );
 
   const bests = useMemo(
     () => (solves === undefined ? NO_BESTS : bestsOf(solves, phaseKeys)),

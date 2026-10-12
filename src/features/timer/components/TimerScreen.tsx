@@ -237,7 +237,7 @@ export function TimerScreen() {
   // Read once for both the records and the numbers under the list — see
   // useSessionSolves for why not twice.
   const sessionSolves = useSessionSolves(session?.id ?? null);
-  const records = useRecordsOf(sessionSolves, PUZZLE, listedPhaseKeys);
+  const records = useRecordsOf(sessionSolves, PUZZLE, listedPhaseKeys, session?.methodId ?? null);
   const showBrowsing = isBrowsing && status === 'idle';
   const { panel: sheetPanel, slot: sheetSlot, isSheet } = useSheetMotion(
     showBrowsing,

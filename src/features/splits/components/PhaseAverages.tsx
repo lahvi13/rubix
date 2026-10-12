@@ -18,13 +18,8 @@ interface PhaseAveragesProps {
   phases: readonly MethodPhase[];
   /** Solves behind the table — the ones that were timed by phase. */
   measuredCount: number;
-  /** Solves timed in the method, so the heading can say why the two differ. */
+  /** Solves being read, so the heading can say why the two differ. */
   solveCount: number;
-  /**
-   * The method the phases belong to, where solves timed in another have been
-   * left out; null where every solve read is this method's.
-   */
-  otherMethodsLeftOut?: string | null;
   /** Opens the solve a best was set in. */
   onOpenSolve?: (solveId: string) => void;
 }
@@ -39,7 +34,6 @@ export function PhaseAverages({
   phases,
   measuredCount,
   solveCount,
-  otherMethodsLeftOut = null,
   onOpenSolve,
 }: PhaseAveragesProps) {
   if (measuredCount === 0 || phases.length === 0) return null;
@@ -56,9 +50,6 @@ export function PhaseAverages({
       {/* "· 19" under a session of 20 read as an error until it said which
           nineteen it meant. */}
       <p className="chart-note chart-note--above">
-        {/* Said first where it applies: it is why the count is not the one
-            at the top of the screen. */}
-        {otherMethodsLeftOut === null ? null : `${strings.splits.methodNote(otherMethodsLeftOut)} `}
         {strings.splits.measuredNote(measuredCount, solveCount)}
       </p>
       {/* Where the time goes, at a glance — what a pie chart would say, in
