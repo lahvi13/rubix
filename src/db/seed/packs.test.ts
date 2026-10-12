@@ -270,15 +270,17 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
     (_name, entry) => {
       // An algorithm that ends with the cube tilted would draw its case from
       // the wrong side and hand the next case over rotated. Rotations are
-      // allowed inside an algorithm as long as they cancel out. A Roux case may
-      // start with the middle slice turned — that is the case, not a tilt — so
-      // there the left and right centres are what has to be home.
+      // allowed inside an algorithm as long as they cancel out.
+      //
+      // A Roux case has to pass the same check, though its algorithm is free
+      // to leave the middle slice turned: a drill is scrambled into with face
+      // turns alone, which never move a centre, so a case that starts with
+      // the slice off cannot be reached and the drill falls back to showing
+      // the setup — the answer, read backwards. Such a case carries a setup
+      // of its own that turns the slice first, so the algorithm undone leaves
+      // every centre where it began.
       const state = caseState(entry);
-      if (pack.set.method === 'roux') {
-        expect([state[4 + 9 * 2], state[4 + 9 * 3]]).toEqual(['L', 'R']);
-      } else {
-        expect(stateKey(canonicalise(state))).toBe(stateKey(state));
-      }
+      expect(stateKey(canonicalise(state))).toBe(stateKey(state));
     },
   );
 });

@@ -11,7 +11,7 @@
    "name": "Arrow UF DF",
    "group": "Arrow",
    "alg": "M",
-   "setup": "M U M2 U' M'"
+   "setup": "M' U M2 U' M'"
   },
   {
    "id": "eolr-arrow-ub-ur",
@@ -25,21 +25,21 @@
    "name": "Arrow UR DB",
    "group": "Arrow",
    "alg": "M' U M",
-   "setup": "U M2 M' U' M"
+   "setup": "M2 U M2 M' U' M"
   },
   {
    "id": "eolr-arrow-uf-ur",
    "name": "Arrow UF UR",
    "group": "Arrow",
    "alg": "U M' U2 M U M",
-   "setup": "M U M2 U' M' U' M' U2 M U'"
+   "setup": "M' U M2 U' M' U' M' U2 M U'"
   },
   {
    "id": "eolr-6-uf-df",
    "name": "6 UF DF",
    "group": "All six",
    "alg": "U' M U M' U' M U' M' U2 M",
-   "setup": "M U M2 U' M' U2 M U M' U M U' M' U"
+   "setup": "M' U M2 U' M' U2 M U M' U M U' M' U"
   },
   {
    "id": "eolr-6-df-db",
@@ -74,7 +74,7 @@
    "name": "2o/2 UF UR",
    "group": "Plus",
    "alg": "M' U2 M' U2 M U M",
-   "setup": "U M2 M' U' M' U2 M U2 M"
+   "setup": "M2 U M2 M' U' M' U2 M U2 M"
   },
   {
    "id": "eolr-2o2-uf-df",
@@ -109,56 +109,56 @@
    "name": "2o/0 UF DF",
    "group": "Two on top",
    "alg": "M U M' U' M U' M'",
-   "setup": "U' M2 M U M' U M U' M'"
+   "setup": "M2 U' M2 M U M' U M U' M'"
   },
   {
    "id": "eolr-2o0-ur-df",
    "name": "2o/0 UR DF",
    "group": "Two on top",
    "alg": "M' U M U' M",
-   "setup": "M U M2 U' M' U M' U' M"
+   "setup": "M' U M2 U' M' U M' U' M"
   },
   {
    "id": "eolr-2o0-ur-ul",
    "name": "2o/0 UR UL",
    "group": "Two on top",
    "alg": "M' U' M' U' M' U2 M U' M'",
-   "setup": "M U' M2 M U M' U2 M U M U M"
+   "setup": "M' U' M2 M U M' U2 M U M U M"
   },
   {
    "id": "eolr-2o0-df-db",
    "name": "2o/0 DF DB",
    "group": "Two on top",
    "alg": "R U R' U' M' U R U' r'",
-   "setup": "U M2 U' r U R' U' M U R U' R'"
+   "setup": "M2 U M2 U' r U R' U' M U R U' R'"
   },
   {
    "id": "eolr-02-uf-ur",
    "name": "0/2 UF UR",
    "group": "Two at the bottom",
    "alg": "M' U' M' U M'",
-   "setup": "M U M2 U' M U' M U M"
+   "setup": "M' U M2 U' M U' M U M"
   },
   {
    "id": "eolr-02-ul-ur",
    "name": "0/2 UL UR",
    "group": "Two at the bottom",
    "alg": "M' U' M U' M U2 M' U' M",
-   "setup": "M U' M2 M' U M U2 M' U M' U M"
+   "setup": "M' U' M2 M' U M U2 M' U M' U M"
   },
   {
    "id": "eolr-02-uf-df",
    "name": "0/2 UF DF",
    "group": "Two at the bottom",
    "alg": "U M' U' M' U M U M",
-   "setup": "U M2 U M' U' M' U' M U M U'"
+   "setup": "M2 U M2 U M' U' M' U' M U M U'"
   },
   {
    "id": "eolr-02-df-db",
    "name": "0/2 DF DB",
    "group": "Two at the bottom",
    "alg": "M' U' M' U M U' M'",
-   "setup": "U' M U M' U' M U M"
+   "setup": "M2 U' M U M' U' M U M"
   },
   {
    "id": "eolr-2a0-uf-ul",
@@ -179,7 +179,7 @@
    "name": "2a/0 UF UB",
    "group": "Two on top, adjacent",
    "alg": "M' U M U M' U2 M U' M",
-   "setup": "M U' M2 M' U M' U2 M U' M' U' M"
+   "setup": "M' U' M2 M' U M' U2 M U' M' U' M"
   },
   {
    "id": "eolr-2a0-ul-ub",
@@ -193,7 +193,7 @@
    "name": "2a/0 UF DF",
    "group": "Two on top, adjacent",
    "alg": "U2 M U M' U2 M U' M'",
-   "setup": "U M2 U' M U M' U2 M U' M' U2"
+   "setup": "M2 U M2 U' M U M' U2 M U' M' U2"
   },
   {
    "id": "eolr-2a0-ul-df",
@@ -207,7 +207,7 @@
    "name": "2a/0 DF DB",
    "group": "Two on top, adjacent",
    "alg": "M' U M' U2 M' U' M'",
-   "setup": "U M2 U M U M U2 M U' M"
+   "setup": "M2 U M2 U M U M U2 M U' M"
   },
   {
    "id": "eolr-2a2-uf-ul",
@@ -242,42 +242,42 @@
    "name": "2a/2 UF DF",
    "group": "One",
    "alg": "U' M2 U M U M",
-   "setup": "U M2 M' U' M' U' M2 U"
+   "setup": "M2 U M2 M' U' M' U' M2 U"
   },
   {
    "id": "eolr-2a2-ul-df",
    "name": "2a/2 UL DF",
    "group": "One",
    "alg": "U2 M' U2 M' U M'",
-   "setup": "M U M2 M U' M U2 M U2"
+   "setup": "M' U M2 M U' M U2 M U2"
   },
   {
    "id": "eolr-2a2-df-db",
    "name": "2a/2 DF DB",
    "group": "One",
    "alg": "U M' U' M' U' M' U' M'",
-   "setup": "U M2 U M U M U M U M U'"
+   "setup": "M2 U M2 U M U M U M U M U'"
   },
   {
    "id": "eolr-11f-uf-ur",
    "name": "1/1 F UF UR",
    "group": "Diagonal",
    "alg": "M' U M' U M U M",
-   "setup": "U' M2 M' U' M' U' M U' M"
+   "setup": "M2 U' M2 M' U' M' U' M U' M"
   },
   {
    "id": "eolr-11f-uf-df",
    "name": "1/1 F UF DF",
    "group": "Diagonal",
    "alg": "U' M' U M' U2 M U M",
-   "setup": "U' M2 M' U' M' U2 M U' M U"
+   "setup": "M2 U' M2 M' U' M' U2 M U' M U"
   },
   {
    "id": "eolr-11f-uf-db",
    "name": "1/1 F UF DB",
    "group": "Diagonal",
    "alg": "M' U' M' U' M U M",
-   "setup": "U' M2 M' U' M' U M U M"
+   "setup": "M2 U' M2 M' U' M' U M U M"
   },
   {
    "id": "eolr-11f-uf-ub",
@@ -305,7 +305,7 @@
    "name": "1/1 F UR DF",
    "group": "Diagonal",
    "alg": "M' U' M' U' M'",
-   "setup": "M U M2 U M U M U M"
+   "setup": "M' U M2 U M U M U M"
   },
   {
    "id": "eolr-11f-ur-db",
@@ -326,21 +326,21 @@
    "name": "1/1 F DF DB",
    "group": "Diagonal",
    "alg": "M' U' M' U2 M' U2 M' U M",
-   "setup": "M U M2 U' M' U' M U2 M U2 M U M"
+   "setup": "M' U M2 U' M' U' M U2 M U2 M U M"
   },
   {
    "id": "eolr-11b-ub-ur",
    "name": "1/1 B UB UR",
    "group": "Inverse diagonal",
    "alg": "M U' M U' M' U' M'",
-   "setup": "U M2 M U M U M' U M'"
+   "setup": "M2 U M2 M U M U M' U M'"
   },
   {
    "id": "eolr-11b-ub-db",
    "name": "1/1 B UB DB",
    "group": "Inverse diagonal",
    "alg": "M' U' M U' M' U' M",
-   "setup": "U M2 M' U M U M' U M"
+   "setup": "M2 U M2 M' U M U M' U M"
   },
   {
    "id": "eolr-11b-ub-df",
@@ -354,14 +354,14 @@
    "name": "1/1 B UB UF",
    "group": "Inverse diagonal",
    "alg": "M' U' M U2 M' U2 M U' M",
-   "setup": "M U M2 U M' U M' U2 M U2 M' U M"
+   "setup": "M' U M2 U M' U M' U2 M U2 M' U M"
   },
   {
    "id": "eolr-11b-ur-uf",
    "name": "1/1 B UR UF",
    "group": "Inverse diagonal",
    "alg": "M' U M U M",
-   "setup": "M U M2 U M' U' M' U' M"
+   "setup": "M' U M2 U M' U' M' U' M"
   },
   {
    "id": "eolr-11b-ur-ul",
@@ -389,7 +389,7 @@
    "name": "1/1 B UF DB",
    "group": "Inverse diagonal",
    "alg": "U' M U2 M' U' M' U' M U' M",
-   "setup": "M U M2 U M' U M' U M U M U2 M' U"
+   "setup": "M' U M2 U M' U M' U M U M U2 M' U"
   },
   {
    "id": "eolr-11b-df-db",

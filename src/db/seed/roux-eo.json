@@ -11,6 +11,7 @@
    "name": "Two on top",
    "group": "Two bad edges",
    "alg": "M' U M U' M' U' M'",
+   "setup": "M' U M U M' U' M",
    "others": [
     "M' U M' M' U M' U M' U M'",
     "R U R' U' M' U R U' Rw'"
@@ -31,6 +32,7 @@
    "name": "Two at the bottom",
    "group": "Two bad edges",
    "alg": "M' U M' U' M U' M'",
+   "setup": "M' U M' U M U' M",
    "others": [
     "M' U M' U' M U M'"
    ]
@@ -40,6 +42,7 @@
    "name": "Diagonal",
    "group": "Two bad edges",
    "alg": "M' U' M' U' M U' M'",
+   "setup": "M' U M' U M U M",
    "others": [
     "M' U M' U M U M'"
    ]
@@ -48,7 +51,8 @@
    "id": "roux-eo-inverse-diagonal",
    "name": "Inverse diagonal",
    "group": "Two bad edges",
-   "alg": "M U M U M' U M"
+   "alg": "M U M U M' U M",
+   "setup": "M U' M U' M' U' M'"
   },
   {
    "id": "roux-eo-arrow",
@@ -64,7 +68,8 @@
    "id": "roux-eo-inverse-arrow",
    "name": "Inverse arrow",
    "group": "Four bad edges",
-   "alg": "M U M"
+   "alg": "M U M",
+   "setup": "M U' M'"
   },
   {
    "id": "roux-eo-four-top",
@@ -77,6 +82,7 @@
    "name": "Plus",
    "group": "Four bad edges",
    "alg": "M' U2 M' U2 M U' M'",
+   "setup": "M' U M' U2 M U2 M",
    "others": [
     "M' U2 M' U2 M U M'",
     "M U2 M' U2 M' U M'"

@@ -31,6 +31,7 @@
    "name": "SB 3",
    "group": "Bottom colour on the side",
    "alg": "U2 M U' r U' r'",
+   "setup": "M r U r' U M' U2",
    "others": [
     "U' R U R' U2 R U' R'",
     "U' R U R' U' R U2 R'",
@@ -54,6 +55,7 @@
    "name": "SB 5",
    "group": "Bottom colour on the side",
    "alg": "U' M U2 r U' r'",
+   "setup": "M r U r' U2 M' U",
    "others": [
     "U' R U2 R' U2 R U' R'",
     "U r U2 M U R'"
@@ -64,6 +66,7 @@
    "name": "SB 6",
    "group": "Bottom colour on the side",
    "alg": "r U2 M2 U' r'",
+   "setup": "M2 r U M2 U2 r'",
    "others": [
     "U2 M U2 M' r U r'",
     "U F' U2 F U' r U r'",
@@ -75,6 +78,7 @@
    "name": "SB 7",
    "group": "Bottom colour on the side",
    "alg": "M U r U' r'",
+   "setup": "M r U r' U' M'",
    "others": [
     "R U R' U2 R U' R' U R U' R'",
     "F' U F U2 R U R'",
@@ -89,6 +93,7 @@
    "name": "SB 8",
    "group": "Bottom colour on the side",
    "alg": "R U' R' U' M R U' R'",
+   "setup": "M R U R' M' U R U R'",
    "others": [
     "R U' R' U' r' R2 U' R'",
     "U M U' M' r U r'",
@@ -130,6 +135,7 @@
    "name": "SB 12",
    "group": "Bottom colour on the side",
    "alg": "M2 U r U' r'",
+   "setup": "M2 r U r' U' M2",
    "others": [
     "U' R U' R' U F' U' F"
    ]
@@ -149,6 +155,7 @@
    "name": "SB 14",
    "group": "Bottom colour on the side",
    "alg": "U2 M2 U' r U' r'",
+   "setup": "M2 r U r' U M2 U2",
    "others": [
     "M U' M2 U2 R U' R'",
     "U2 r U' M2 U' r'"
@@ -159,6 +166,7 @@
    "name": "SB 15",
    "group": "Bottom colour on the side",
    "alg": "r M2 U2 M' U' r'",
+   "setup": "M r U M U2 M2 r'",
    "others": [
     "R U' R' U R U' R' U2 R U' R'",
     "R' U2 R2 U R2 U R",
@@ -174,6 +182,7 @@
    "name": "SB 16",
    "group": "Bottom colour on the side",
    "alg": "U' M2 U2 r U' r'",
+   "setup": "M2 r U r' U2 M2 U",
    "others": [
     "U' R U2 R' U F' U' F"
    ]
@@ -189,6 +198,7 @@
    "name": "SB 18",
    "group": "Bottom colour on top",
    "alg": "r U' r' U2 M' r U r'",
+   "setup": "M' r U' r' M U2 r U r'",
    "others": [
     "U' F' U2 F r U r'",
     "U' M' U R U2 R' U' R U R'",
@@ -235,6 +245,7 @@
    "name": "SB 22",
    "group": "Bottom colour on top",
    "alg": "M' U R U2 R' U R U' R'",
+   "setup": "M' R U R' U' R U2 R' U' M",
    "others": [
     "r U' R' U R U' R' U R U R'",
     "R U R' U' R U R' U' r U r'",
@@ -272,6 +283,7 @@
    "name": "SB 26",
    "group": "Corner in the slot",
    "alg": "M' U R U' R' U R U' R'",
+   "setup": "M' R U R' U' R U R' U' M",
    "others": [
     "R' F R F' R' F R F'",
     "M' U R U' R2 F R F'",
@@ -303,6 +315,7 @@
    "name": "SB 29",
    "group": "Corner in the slot",
    "alg": "U' r U' M U r' U'",
+   "setup": "M U r U' M' U r' U",
    "others": [
     "U' F' R U R' U' R' F R",
     "U' R' F R F' R U R'",
@@ -318,6 +331,7 @@
    "name": "SB 30",
    "group": "Corner in the slot",
    "alg": "U R U' M' U R'",
+   "setup": "M' R U' M U R' U'",
    "others": [
     "r U2 r' U' r U' r'",
     "U r U r' U r U2 r'"
@@ -360,6 +374,7 @@
    "name": "SB 34",
    "group": "Edge in the slot",
    "alg": "U2 R U M' U R'",
+   "setup": "M' R U' M U' R' U2",
    "others": [
     "U2 R U' M U' R'"
    ]
@@ -383,6 +398,7 @@
    "name": "SB 36",
    "group": "Edge in the slot",
    "alg": "r U' r' M U' r U' r'",
+   "setup": "M r U r' U M' r U r'",
    "others": [
     "U' r U r' U M' r U r'",
     "r U' M2 U' M' U' r'",
@@ -397,6 +413,7 @@
    "name": "SB 37",
    "group": "Pair in the slot",
    "alg": "r U' M2 U2 M' U' r'",
+   "setup": "M r U M U2 M2 U r'",
    "others": [
     "r U' M' U2 M2 U' r'",
     "R2 U2 F R2 F' U2 R' U R'"
@@ -407,6 +424,7 @@
    "name": "SB 38",
    "group": "Pair in the slot",
    "alg": "R U' R' U2 M U' r U' r'",
+   "setup": "M r U r' U M' U2 R U R'",
    "others": [
     "R U' R' U' R U R' U2 R U' R'",
     "R U R' U' R U2 R' U' R U R'",
@@ -418,6 +436,7 @@
    "name": "SB 39",
    "group": "Pair in the slot",
    "alg": "r U' r' M U r U' r'",
+   "setup": "M r U r' U' M' r U r'",
    "others": [
     "r U M' U2 r' U r U' r'",
     "R F U R U' R' F' U' R'",
@@ -433,6 +452,7 @@
    "name": "SB 40",
    "group": "Pair in the slot",
    "alg": "r U r' U M' U2 R U R'",
+   "setup": "M' R U' R' U2 M U' r U' r'",
    "others": [
     "R U2 R' U R U' R' U R U R'",
     "R U2 R U R' U R U2 R2"
@@ -443,6 +463,7 @@
    "name": "SB 41",
    "group": "Pair in the slot",
    "alg": "r U r' U' M' r U r'",
+   "setup": "M' r U' r' M U r U' r'",
    "others": [
     "R U' R' F' r' F2 r F",
     "R U F R U R' U' F' R'",
@@ -455,6 +476,7 @@
    "name": "SB 42",
    "group": "Edge in the middle slice",
    "alg": "U2 M2 U R U2 R' U R U' R'",
+   "setup": "M2 R U R' U' R U2 R' U' M2 U2",
    "others": [
     "r2 U2 R' U' R U' R2",
     "U2 R U M' U R' U' r U r'",
@@ -482,6 +504,7 @@
    "name": "SB 44",
    "group": "Edge in the middle slice",
    "alg": "R' r2 U r'",
+   "setup": "M' r U' r2 R",
    "others": [
     "M' r U r'"
    ]
@@ -491,6 +514,7 @@
    "name": "SB 45",
    "group": "Edge in the middle slice",
    "alg": "U2 M2 U2 r U r'",
+   "setup": "M2 r U' r' U2 M2 U2",
    "others": [
     "U2 M' U2 R U R'",
     "R U2 M' U' R'",
@@ -502,6 +526,7 @@
    "name": "SB 46",
    "group": "Edge in the middle slice",
    "alg": "M2 U2 R U' R'",
+   "setup": "M2 R U R' U2 M2",
    "others": [
     "M2 U' R U2 R'"
    ]
