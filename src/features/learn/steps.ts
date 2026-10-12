@@ -80,6 +80,30 @@ export interface LearnFigure {
   isSetupShown: boolean;
 }
 
+/**
+ * A rule drawn as the thing to look for. Its text is the rule itself, so it
+ * stays when the explanations are folded away: like how to hold the cube for
+ * a repeat, it is the page as a cheat sheet.
+ */
+export interface LearnRule {
+  view: DiagramView;
+  stickering: Stickering;
+  standing: string;
+  text: string;
+}
+
+/**
+ * Situations kept behind a button: the long way round, for a step whose first
+ * pictures are all most readers need.
+ */
+export interface LearnMore {
+  situations: readonly LearnSituation[];
+  /** What the pictures are and the order they are walked in. */
+  lead: string;
+  show: string;
+  hide: string;
+}
+
 export interface LearnStep {
   id: string;
   title: string;
@@ -105,8 +129,12 @@ export interface LearnStep {
   picture?: SituationPicture;
   /** The finished thing, for a step that builds something a sentence cannot show. */
   goal?: LearnGoal;
-  /** Examples of what the points say, for a step that teaches a rule and no moves. */
+  /** What to look for, drawn, for a step that teaches a rule and no moves. */
+  rules?: readonly LearnRule[];
+  /** A cube to try the rules on, and its answer. */
   figures?: readonly LearnFigure[];
+  /** Further situations, behind a button of their own. */
+  more?: LearnMore;
   /**
    * The corner every picture of the opening algorithm frames: the one its
    * text says where to put. Not on the quicker cases, which hold no rule.
@@ -490,9 +518,10 @@ const BAD_EDGES_EXAMPLE = "F' L' D U2 L B' D";
  * last layer is CFOP's own last three steps, minus the one the edges already
  * did.
  *
- * The pairs are a procedure too: both pieces up, apart, then by the colour on
- * top of the corner. As it is worded it was run over every place a pair can
- * be, for each of the four slots, before it was written down.
+ * The pairs open on the two shapes a pair goes in from. The way to them is a
+ * procedure — both pieces up, apart, then by the colour on top of the corner
+ * — and as it is worded it was run over every place a pair can be, for each
+ * of the four slots, before it was written down.
  */
 export const ZZ_STEPS: readonly LearnStep[] = [
   {
@@ -503,6 +532,22 @@ export const ZZ_STEPS: readonly LearnStep[] = [
     keyText: null,
     holds: [],
     situations: [],
+    // The two things that give a bad edge away, each a picture of what to
+    // look for and where. As sentences they were a list of nine places.
+    rules: [
+      {
+        view: 'isometric',
+        stickering: 'sideColourTells',
+        standing: ZZ_STANDING,
+        text: strings.learn.zzRules.sideColours,
+      },
+      {
+        view: 'isometric',
+        stickering: 'poleColourTells',
+        standing: ZZ_STANDING,
+        text: strings.learn.zzRules.poleColours,
+      },
+    ],
     // The same cube twice: once to count on, once with the answer.
     figures: [
       {
@@ -569,18 +614,25 @@ export const ZZ_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: null,
     holds: [],
-    // The two shapes a pair goes in from, then the way to them in the order
-    // it is walked: a piece out of a slot, the two apart, and the three
-    // colours the top of the corner can be.
+    // The two shapes a pair goes in from. Whoever gets this far knows F2L, and
+    // those two with the rule about what may turn are most of what is new.
     situations: [
       { alg: "R U' R'", text: strings.learn.zzSituations.joined },
       { alg: "R U R'", text: strings.learn.zzSituations.split },
-      { alg: "R U R'", next: "U' R U R'", text: strings.learn.zzSituations.stuck },
-      { alg: "R U2 R'", next: "U' R U R'", text: strings.learn.zzSituations.touching },
-      { alg: "R U2 R'", next: "U R U' R'", text: strings.learn.zzSituations.whiteUp },
-      { alg: "R U2 R'", next: "U' R U2 R'", text: strings.learn.zzSituations.topsMatch },
-      { alg: "R U R'", next: "U R U R'", text: strings.learn.zzSituations.topsDiffer },
     ],
+    // The way to them, in the order it is walked: a piece out of a slot, the
+    // two apart, and the three colours the top of the corner can be. Behind a
+    // button — seven cards at once read as seven things to learn.
+    more: {
+      situations: [
+        { alg: "R U R'", next: "U' R U R'", text: strings.learn.zzSituations.stuck },
+        { alg: "R U2 R'", next: "U' R U R'", text: strings.learn.zzSituations.touching },
+        { alg: "R U2 R'", next: "U R U' R'", text: strings.learn.zzSituations.whiteUp },
+        { alg: "R U2 R'", next: "U' R U2 R'", text: strings.learn.zzSituations.topsMatch },
+        { alg: "R U R'", next: "U R U R'", text: strings.learn.zzSituations.topsDiffer },
+      ],
+      ...strings.learn.zzPairsMore,
+    },
     picture: ZZ_PAIR_PICTURE,
     markedCorner: null,
     advanced: null,
@@ -603,6 +655,11 @@ export const GUIDES: Readonly<Record<string, readonly LearnStep[]>> = {
   roux: ROUX_STEPS,
   zz: ZZ_STEPS,
 };
+
+/** Every situation of a step, the ones behind its button included. */
+export function allSituations(step: LearnStep): readonly LearnSituation[] {
+  return [...step.situations, ...(step.more?.situations ?? [])];
+}
 
 /** How a step's situations are drawn: its own picture, or the cross's. */
 export function situationPicture(step: LearnStep): SituationPicture {

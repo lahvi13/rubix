@@ -567,6 +567,11 @@ export const cs: Strings = {
       more: 'V session založené jako ZZ měří timer tři fáze (tlačítko Fáze): EOCross – hrany a cross, kroky 1 až 3; F2L – čtyři páry, krok 4; LL – last layer, poslední vrstva, kroky 5 až 7.',
       hide: 'Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
     },
+    zzRules: {
+      sideColours:
+        'Červená nebo oranžová – barvy levého a pravého středu – nahoře, nebo vpředu vedle středu.',
+      poleColours: 'Žlutá nebo bílá na boku, nebo vpředu nad středem a pod ním.',
+    },
     zzFigures: {
       tryIt:
         'Zkus si to: složená kostka, žlutá nahoře a modrá vpředu, a tahy pod obrázkem. Kolik hran je špatných?',
@@ -592,15 +597,19 @@ export const cs: Strings = {
       topsDiffer:
         'Na vršku různé barvy: roh dozadu vpravo, zvedni slot, ale hranu pošli doleva, od něj pryč. Rozdělený.',
     },
+    zzPairsMore: {
+      lead: 'V tomto pořadí: dílek ven ze slotu, dva dotýkající se od sebe, a pak podle barvy na vršku rohu – bílá, stejná jako na vršku hrany, nebo ta druhá.',
+      show: 'Jak se k nim dostat',
+      hide: 'Jen ty dva tvary',
+    },
     zzSteps: {
       badEdges: {
         title: 'Špatné hrany',
         points: [
-          'Žlutý střed nahoru, modrý dopředu – a tak kostka zůstane, dokud nejsou hotové první dvě vrstvy. Které hrany jsou špatné, záleží na tom, jak ji držíš.',
-          'Hrana je dobrá, když ji domů dostanou tahy R, L, U a D, a špatná, když potřebuje čtvrtotáčku přední nebo zadní stěny. Dívej se jen na hrany; špatnou prozradí dvě věci:',
-          'Červená nebo oranžová – barvy levého a pravého středu – nahoře, dole, nebo v prostřední řadě přední či zadní stěny.',
-          'Žlutá nebo bílá na levé či pravé stěně, nebo v horní či spodní řadě přední či zadní stěny.',
-          'Spočítej je. Vždycky jich je sudý počet, od žádné po dvanáct.',
+          'Žlutý střed nahoru, modrý dopředu – a tak kostka zůstane, dokud nejsou hotové první dvě vrstvy.',
+          'Dívej se jen na hrany. Špatná má barvu tam, kde ta barva být nesmí: ukazují to dva obrázky.',
+          'Spodek se čte jako vršek, zadek jako předek a levá stěna jako pravá.',
+          'Spočítej špatné: vždycky jich je sudý počet, od žádné po dvanáct. Zkus si to na kostce pod obrázky.',
         ],
         tip: 'je špatných víc než dobrých? Sleduj ty dobré.',
       },
@@ -629,11 +638,9 @@ export const cs: Strings = {
       pairs: {
         title: 'První dvě vrstvy',
         points: [
-          'Čtyři sloty mezi hranami crossu, do každého patří roh a hrana se stejnými dvěma bočními barvami – pár. Kostka se pořád neotáčí a F ani B se nehýbou: slot zvedá jeho vlastní stěna, R pro dva vpravo a L pro dva vlevo, a zbytek udělá vršek.',
-          'Pár se vkládá ze dvou tvarů, spojený nebo rozdělený – první dva obrázky. Všechno ostatní je cesta k jednomu z nich, v tomto pořadí:',
-          'Oba dílky nahoru. Když je jeden ve slotu, vytáhne ho třetí obrázek.',
-          'Dotýkají se, ale nejsou spojené jako na prvním obrázku? Čtvrtý obrázek je oddělí.',
-          'Pak rozhoduje barva na vršku rohu: bílá, stejná jako na vršku hrany, nebo ta druhá. Poslední tři obrázky, každý končí spojeným nebo rozděleným párem.',
+          'Čtyři páry do čtyř slotů jako v CFOP – jen se kostka neotáčí a F ani B se nehýbou. Slot zvedá jeho vlastní stěna, R pro dva vpravo a L pro dva vlevo, a zbytek udělá vršek.',
+          'Pár se vkládá ze dvou tvarů, spojený nebo rozdělený: dva obrázky.',
+          'Co bys řešil přes F, B nebo otočení kostky, má místo toho cestu k jednomu z těch dvou tvarů. Projde ji tlačítko pod obrázky.',
         ],
         tip: "obrázky ukazují slot vpředu vpravo. Vpředu vlevo je to zrcadlově, L' místo R. Zadní sloty se zvedají opačně: vpravo R', vlevo L.",
       },

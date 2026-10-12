@@ -258,20 +258,28 @@ describe('LearnScreen', () => {
       ZZ_STEPS.map((step, index) => `${index + 1}${step.title}`),
     );
     // Nothing to turn while the bad edges are being counted; four ways to turn
-    // them good, two for the cross, seven for a pair, and the last layer as
-    // the first guide has it.
+    // them good, two for the cross, the two shapes a pair goes in from, and
+    // the last layer as the first guide has it.
     await waitFor(() =>
       expect(sections().map((section) => caseButtons(section).length)).toEqual([
-        0, 4, 2, 7, 1, 1, 1,
+        0, 4, 2, 2, 1, 1, 1,
       ]),
     );
-    // The cube to count on and the same cube with the answer, the moves that
-    // make it printed once.
-    const [badEdges] = sections();
-    if (!badEdges) throw new Error('the guide lost its first step');
-    expect(within(badEdges).getAllByRole('figure')).toHaveLength(2);
+    // The two rules as pictures, then the cube to count on and the same cube
+    // with the answer, the moves that make it printed once.
+    const [badEdges, , , pairs] = sections();
+    if (!badEdges || !pairs) throw new Error('the guide lost a step');
+    expect(within(badEdges).getAllByRole('figure')).toHaveLength(4);
+    expect(within(badEdges).getByText(strings.learn.zzRules.sideColours)).toBeInTheDocument();
     expect(within(badEdges).getByText(strings.learn.zzFigures.answer)).toBeInTheDocument();
     expect(badEdges.querySelectorAll('.alg')).toHaveLength(1);
+
+    // The way to the two shapes is there for whoever asks, and goes away again.
+    await user.click(within(pairs).getByRole('button', { name: strings.learn.zzPairsMore.show }));
+    expect(caseButtons(pairs)).toHaveLength(7);
+    expect(within(pairs).getByText(strings.learn.zzPairsMore.lead)).toBeInTheDocument();
+    await user.click(within(pairs).getByRole('button', { name: strings.learn.zzPairsMore.hide }));
+    expect(caseButtons(pairs)).toHaveLength(2);
 
     expect(screen.getByText(strings.learn.zzNext.more)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: strings.learn.zzSourceLink })).toHaveAttribute(

@@ -333,6 +333,43 @@ describe("the stickerings of ZZ's first steps", () => {
     expect(cells.filter((cell) => cell !== null)).toHaveLength(6);
   });
 
+  it('draws the places a left or right colour gives a bad edge away, in those two colours', () => {
+    const view = isometricView(solvedState(), 'sideColourTells');
+
+    // The top's four edges, the left colour on the left half; the front's two
+    // beside the centre; nothing on the side.
+    expect(view.top).toEqual(['.', 'L', '.', 'L', 'U', 'R', '.', 'R', '.'].map(dotToNull));
+    expect(view.front).toEqual(['.', '.', '.', 'L', 'F', 'R', '.', '.', '.'].map(dotToNull));
+    expect(view.right).toEqual(['.', '.', '.', '.', 'R', '.', '.', '.', '.'].map(dotToNull));
+  });
+
+  it('draws the places a top or bottom colour gives one away, in those two colours', () => {
+    const view = isometricView(solvedState(), 'poleColourTells');
+
+    expect(view.top).toEqual(['.', '.', '.', '.', 'U', '.', '.', '.', '.'].map(dotToNull));
+    // Above and below the centre in front; all four edges of the side.
+    expect(view.front).toEqual(['.', 'U', '.', '.', 'F', '.', '.', 'D', '.'].map(dotToNull));
+    expect(view.right).toEqual(['.', 'U', '.', 'U', 'R', 'D', '.', 'D', '.'].map(dotToNull));
+  });
+
+  it('gives every edge sticker to exactly one of the two rules, whatever the cube', () => {
+    const state = after("F' L' D U2 L B' D");
+    const cells = (stickering: 'sideColourTells' | 'poleColourTells') => {
+      const view = netView(state, stickering);
+      return [view.up, view.left, view.front, view.right, view.back, view.down].flat();
+    };
+    const side = cells('sideColourTells');
+    const pole = cells('poleColourTells');
+    // On a face of nine, the edges are the odd cells.
+    const isEdge = (at: number) => (at % 9) % 2 === 1;
+
+    for (const at of side.keys()) {
+      if (!isEdge(at)) continue;
+      expect([side[at] !== null, pole[at] !== null].filter(Boolean)).toHaveLength(1);
+    }
+    expect(side.filter((cell, at) => isEdge(at) && cell !== null)).toHaveLength(12);
+  });
+
   it('draws every edge and centre in colour and leaves the corners out', () => {
     const view = netView(after("F' L' D U2 L B' D"), 'allEdges');
 

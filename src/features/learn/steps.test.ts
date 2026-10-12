@@ -18,6 +18,7 @@ import {
   LEARN_STEPS,
   ROUX_STEPS,
   ZZ_STEPS,
+  allSituations,
   figureState,
   holdState,
   situationPicture,
@@ -449,7 +450,7 @@ describe('the ZZ guide', () => {
   const pictures = (id: string) => {
     const entry = step(id);
     const { standing } = situationPicture(entry);
-    return entry.situations.map((situation) => {
+    return allSituations(entry).map((situation) => {
       const before = holdState(situation, standing);
       return { situation, before, after: applyAlg(before, movesOf(situation.alg)) };
     });
@@ -482,7 +483,7 @@ describe('the ZZ guide', () => {
 
   it.each(
     ZZ_STEPS.flatMap((entry) =>
-      entry.situations.map((situation) => [entry.id, entry, situation] as const),
+      allSituations(entry).map((situation) => [entry.id, entry, situation] as const),
     ),
   )('%s: the situation is undone by its moves and what the step does next', (_id, entry, situation) => {
     const { standing } = situationPicture(entry);
@@ -494,8 +495,10 @@ describe('the ZZ guide', () => {
 
   it('holds the cube yellow up and blue in front, and never turns it round', () => {
     for (const entry of ZZ_STEPS.slice(0, 4)) {
-      // Every picture of the step: its example, its situations, what it builds.
+      // Every picture of the step: its rules, its example, its situations,
+      // what it builds.
       const standings = [
+        ...(entry.rules ?? []).map((rule) => rule.standing),
         ...(entry.figures ?? []).map((figure) => figure.picture.standing),
         ...(entry.situations.length > 0 ? [situationPicture(entry).standing] : []),
         ...(entry.goal ? [entry.goal.picture.standing] : []),
@@ -505,12 +508,30 @@ describe('the ZZ guide', () => {
         const stood = holdState({ alg: '', text: '' }, standing);
         expect([centreOf(stood, 'U'), centreOf(stood, 'F')]).toEqual(['U', 'B']);
       }
-      for (const situation of entry.situations) {
+      for (const situation of allSituations(entry)) {
         for (const move of movesOf(wayOut(situation))) {
           expect(['x', 'y', 'z', 'M', 'E', 'S']).not.toContain(move.family);
         }
       }
     }
+  });
+
+  it('draws the two rules for spotting a bad edge, one colour pair to a picture', () => {
+    const rules = step('zz-bad-edges').rules ?? [];
+
+    expect(rules.map((rule) => rule.stickering)).toEqual(['sideColourTells', 'poleColourTells']);
+    // From the corner the cube is held at, where top, front and side all show.
+    expect(rules.map((rule) => rule.view)).toEqual(['isometric', 'isometric']);
+    // The step is a rule and a cube to try it on: nothing in it is turned.
+    expect(allSituations(step('zz-bad-edges'))).toHaveLength(0);
+  });
+
+  it('opens the pairs on the two shapes and keeps the way to them behind a button', () => {
+    const pairs = step('zz-pairs');
+
+    expect(pairs.situations.map((situation) => situation.alg)).toEqual(["R U' R'", "R U R'"]);
+    expect(pairs.more?.situations).toHaveLength(5);
+    expect(pairs.more?.show).not.toBe(pairs.more?.hide);
   });
 
   it('gives an example to count on, and the same cube with the answer', () => {
@@ -644,7 +665,7 @@ describe('the ZZ guide', () => {
     const split = () => turned(drawn(1).before);
 
     it('turns nothing but the right side and the top', () => {
-      for (const situation of step('zz-pairs').situations) {
+      for (const situation of allSituations(step('zz-pairs'))) {
         for (const move of movesOf(wayOut(situation))) expect(['R', 'U']).toContain(move.family);
       }
     });

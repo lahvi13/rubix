@@ -134,6 +134,47 @@ li:not(.learn__aside) + .learn__aside {
   margin: 0 0 var(--space-3);
 }
 
+/* A rule beside the cube that draws it: the picture is the rule and the line
+   names it, so the line is set like the points above, not like a caption. */
+.learn__rules {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-5);
+}
+
+.learn__rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+/* Larger than a card's thumbnail: six stickers of it are what is being read. */
+.learn__rule-diagram {
+  flex: none;
+  width: 6.5rem;
+}
+
+.learn__rule-text {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* The rest of a step's situations, behind its button: the button sits where
+   the next card would, and what it opens follows like any other cards. */
+.learn__ways {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-5);
+}
+
+.learn__ways .learn__more {
+  margin-top: 0;
+}
+
+.learn__ways .learn__situations {
+  margin: var(--space-4) 0 0;
+}
+
 /* The moves that make a figure's cube: done once, with a cube in the hand,
    not learned. Under the picture and flush with it, at a size that is read
    and no more — the size of an algorithm said these were the thing to keep. */

@@ -608,6 +608,12 @@ export const en = {
       more: 'In a session made as ZZ the timer splits a solve into three phases (the Phase button): EOCross — the edges and the cross, steps 1 to 3; F2L — the four pairs, step 4; LL — the last layer, steps 5 to 7.',
       hide: 'After that, take this guide out of the menu; Settings puts it back.',
     },
+    /* The two rules of the first step, each beside the cube that draws it. */
+    zzRules: {
+      sideColours:
+        'Red or orange — the colours of the left and right centres — on top, or beside the centre in front.',
+      poleColours: 'Yellow or white on the side, or above or below the centre in front.',
+    },
     zzFigures: {
       tryIt:
         'Try it: a solved cube, yellow on top and blue in front, and the moves under the picture. How many edges are bad?',
@@ -635,15 +641,21 @@ export const en = {
       topsDiffer:
         'Different colours on top: corner to the back right, lift the slot, but send the edge to the left, away from it. Split.',
     },
+    /* The rest of the pairs, behind a button: what it is called, and what the
+       five pictures under it are. */
+    zzPairsMore: {
+      lead: 'In this order: a piece out of a slot, two that touch apart, and then by the colour on top of the corner — white, the same as on top of the edge, or the other one.',
+      show: 'How to get to them',
+      hide: 'Just the two shapes',
+    },
     zzSteps: {
       badEdges: {
         title: 'Bad edges',
         points: [
-          'Yellow centre on top, blue in front — and the cube stays that way round until the first two layers are done. Which edges are bad depends on how it is held.',
-          'An edge is good when turns of R, L, U and D can take it home, and bad when it needs a quarter turn of the front or back. Only the edges count, and two things give a bad one away:',
-          'Red or orange — the colours of the left and right centres — on top, on the bottom, or in the middle row of the front or back.',
-          'Yellow or white on the left or the right side, or in the top or bottom row of the front or back.',
-          'Count them. There is always an even number, anything from none to twelve.',
+          'Yellow centre on top, blue in front — and the cube stays that way round until the first two layers are done.',
+          'Look at the edges only. A bad one shows a colour where that colour must not be: the two pictures.',
+          'The bottom is read like the top, the back like the front, the left like the right.',
+          'Count the bad ones: there is always an even number, from none to twelve. Try it on the cube under the pictures.',
         ],
         tip: 'more bad than good? Keep track of the good ones instead.',
       },
@@ -672,11 +684,9 @@ export const en = {
       pairs: {
         title: 'First two layers',
         points: [
-          'Four slots between the cross edges, each for a corner and the edge that shares its two side colours — a pair. Still no turning the cube round, and no F or B: a slot is lifted by its own side, R for the two on the right and L for the two on the left, and the top does the rest.',
-          'A pair goes in from one of two shapes, joined or split — the first two pictures. The rest is getting to one of them, in this order:',
-          'Both pieces to the top. If one is in a slot, the third picture brings it up.',
-          'Touching, but not joined as in the first picture? The fourth picture parts them.',
-          'Then the colour on top of the corner decides: white, the same colour as on top of the edge, or the other one. The last three pictures, each ending joined or split.',
+          'Four pairs into four slots, as in CFOP — but the cube never turns round, and F and B stay still. A slot is lifted by its own side, R for the two on the right and L for the two on the left, and the top does the rest.',
+          'A pair goes in from one of two shapes, joined or split: the two pictures.',
+          'Whatever you would solve with F, B or a turn of the cube has a way to one of the two shapes instead. The button under the pictures walks it.',
         ],
         tip: "the pictures are the front right slot. Front left is its mirror image, L' where they say R. The back slots lift the other way: R' on the right, L on the left.",
       },

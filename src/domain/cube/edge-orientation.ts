@@ -10,6 +10,8 @@
  * its front or back colour. The edge is good exactly when that sticker is
  * there.
  *
+ * The first set is called the inner places here.
+ *
  * Which edges are bad depends on how the cube is held — a quarter turn about
  * the vertical axis changes the answer — so the cube is read as it lies, its
  * colours against its own centres.
@@ -41,6 +43,17 @@ function homeOf(state: CubeState, colour: Face | undefined): Face | undefined {
 const isPole = (face: Face | undefined): boolean => face === 'U' || face === 'D';
 const isFrontOrBack = (face: Face | undefined): boolean => face === 'F' || face === 'B';
 
+/**
+ * Whether an edge sticker's place is an inner one: on the top or bottom face,
+ * or in the middle row of the front or back. False for the other twelve, and
+ * for every corner and centre.
+ */
+export function isInnerPlace(index: number): boolean {
+  const place = FACELETS[index];
+  if (place === undefined || (PARTNER[index] ?? -1) < 0) return false;
+  return isPole(place.face) || (isFrontOrBack(place.face) && place.position[1] === 0);
+}
+
 /** Whether the sticker at `index` is on a bad edge. Never true of a corner or a centre. */
 export function isBadEdge(state: CubeState, index: number): boolean {
   const partner = PARTNER[index] ?? -1;
@@ -50,12 +63,7 @@ export function isBadEdge(state: CubeState, index: number): boolean {
   const homes = stickers.map((sticker) => homeOf(state, state[sticker]));
   const pole = homes.findIndex(isPole);
   const key = stickers[pole >= 0 ? pole : homes.findIndex(isFrontOrBack)];
-  const place = key === undefined ? undefined : FACELETS[key];
-  if (place === undefined) return false;
-
-  const isWhereItBelongs =
-    isPole(place.face) || (isFrontOrBack(place.face) && place.position[1] === 0);
-  return !isWhereItBelongs;
+  return key !== undefined && !isInnerPlace(key);
 }
 
 /** How many edges are bad: always even, from none to twelve. */

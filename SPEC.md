@@ -1448,15 +1448,22 @@ Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
    Roux | ZZ). Zdroj předpokládá, že čtenář už kostku složit umí a čte notaci —
    je to krok od CFOP dál jako Roux, ne první složení. Sedm kroků, stavěných
    jako ty v Rouxu:
-   - **Špatné hrany** — krok bez jediného tahu. Dvě pravidla ze zdroje:
-     červená nebo oranžová (barvy levého a pravého středu) nahoře, dole nebo v
-     prostřední řadě přední či zadní stěny; žlutá nebo bílá na levé či pravé
-     stěně nebo v horní či spodní řadě přední či zadní. Pod nimi **příklad na
-     vyzkoušení**: rozvinutá kostka s hranami a středy v barvách (rohy šedě,
+   - **Špatné hrany** — krok bez jediného tahu. Dvě pravidla ze zdroje, každé
+     jako **obrázek toho, co hledat** (`rules`): kostka z rohu, ze kterého se
+     drží, a na ní jen místa, kde daná dvojice barev být nesmí, v těch barvách
+     — červená a oranžová nahoře a vpředu vedle středu (`sideColourTells`),
+     žlutá a bílá na boku a vpředu nad středem a pod ním (`poleColourTells`).
+     Vedle každého jedna věta; spodek, zadek a levou stěnu řekne řádek „čte se
+     jako vršek, předek a pravá“. Pod nimi **příklad na vyzkoušení**
+     (`figures`): rozvinutá kostka s hranami a středy v barvách (rohy šedě,
      `allEdges`), sedm tahů, kterými ji čtenář udělá ze složené, a tatáž kostka
      s odpovědí — šest špatných hran fialově (`badEdges`). Krok tak nekončí u
-     „zkus si to“ bez výchozí pozice. Je to nový druh obrázku v kroku
-     (`figures`): ukazuje pravidlo, ne pozici, ze které se odchází
+     „zkus si to“ bez výchozí pozice.
+
+     První verze měla pravidla jako dvě věty s devíti místy („nahoře, dole,
+     nebo v prostřední řadě přední či zadní stěny“) a autor ji hned vrátil:
+     moc informací najednou a nedá se to představit. Obrázek pravidla zůstává
+     i se sbalenými vysvětlivkami — jeho věta je pravidlo, ne komentář
    - **Oprava hran** — podle počtu, obrázek pro každou odpověď: čtyři vpředu a
      `F`; jak tam hranu donést, aniž se přetočí (`R' F`); dvě → jedna vpředu
      se třemi dobrými, otáčka udělá čtyři; šest → tři vpředu s jednou dobrou,
@@ -1466,12 +1473,15 @@ Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
    - **Cross** jen tahy R, L, U, D, `F2` a `B2`. S dobrými hranami míří bílá
      nahoře vždy nahoru a v prostřední vrstvě dopředu nebo dozadu — dva obrázky
      a hotový cross
-   - **První dvě vrstvy** čtyřmi kroky zdroje, sedm obrázků: dva tvary, ze
-     kterých se pár vkládá (spojený `R U' R'`, rozdělený `R U R'`), a cesta k
-     nim v pořadí, v jakém se jde — dílek ven ze slotu, dva dotýkající se od
-     sebe, a tři barvy, které může mít vršek rohu (bílá, stejná jako vršek
-     hrany, ta druhá). Vše pro slot vpředu vpravo; ostatní tři jsou v tipu
-     (`L'` místo `R`, zadní se zvedají opačně)
+   - **První dvě vrstvy** se otevřou na **dvou tvarech, ze kterých se pár
+     vkládá** (spojený `R U' R'`, rozdělený `R U R'`), a na pravidle, čím se
+     smí otáčet: kdo se do ZZ pustí, F2L z CFOP zná, a to nové jsou tyhle dvě
+     věci. Čtyři kroky zdroje — cesta k oběma tvarům odkudkoli — jsou za
+     tlačítkem „Jak se k nim dostat“ (`more`), pět obrázků v pořadí, v jakém
+     se jde: dílek ven ze slotu, dva dotýkající se od sebe, a tři barvy, které
+     může mít vršek rohu (bílá, stejná jako vršek hrany, ta druhá). Sedm
+     obrázků naráz se četlo jako sedm věcí k naučení. Vše pro slot vpředu
+     vpravo; ostatní tři jsou v tipu (`L'` místo `R`, zadní se zvedají opačně)
    - **Poslední vrstva** jsou poslední tři kroky průvodce CFOP — tytéž případy,
      obrázky i „všechny případy“ (7 + 2 + 4, tedy OCLL, CP a EPLL zdroje) —
      jen bez kroku „cross poslední vrstvy“: ten je hotový od prvního kroku, a

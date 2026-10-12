@@ -287,6 +287,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
   // level is on show decides what is drawn.
   const advancedGroups = useSetCases(step.advanced?.setId ?? null);
   const [showAll, setShowAll] = useState(false);
+  const [showMore, setShowMore] = useState(false);
 
   const isAdvanced = showAll && step.advanced !== null;
   const shown = isAdvanced
@@ -305,20 +306,20 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
   const hasCases = step.setId !== null && !isCross;
   const isLoading = groups === undefined || (step.advanced !== null && advancedGroups === undefined);
 
-  const situations =
-    step.situations.length === 0 ? null : (
-      <div className="learn__situations">
-        {step.situations.map((situation) => (
-          <Situation
-            key={wayOut(situation)}
-            situation={situation}
-            picture={picture}
-            skin={skin}
-            triggers={triggers}
-          />
-        ))}
-      </div>
-    );
+  const cards = (list: readonly LearnSituation[]) => (
+    <div className="learn__situations">
+      {list.map((situation) => (
+        <Situation
+          key={wayOut(situation)}
+          situation={situation}
+          picture={picture}
+          skin={skin}
+          triggers={triggers}
+        />
+      ))}
+    </div>
+  );
+  const situations = step.situations.length === 0 ? null : cards(step.situations);
 
   return (
     <section id={id} className="learn__step">
@@ -348,7 +349,28 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
         </ul>
       ) : null}
 
-      {/* A rule's example, straight under the rule: the cube to try it on,
+      {/* What to look for, as pictures: the cube beside the one line that
+          says what it shows. Kept with the explanations folded — the line is
+          the rule, not a comment on it. */}
+      {step.rules === undefined ? null : (
+        <div className="learn__rules">
+          {step.rules.map((rule) => (
+            <figure key={rule.text} className="learn__rule">
+              <CubeDiagram
+                className="learn__rule-diagram"
+                state={holdState({ alg: '', text: '' }, rule.standing)}
+                view={rule.view}
+                stickering={rule.stickering}
+                skin={skin}
+                label={null}
+              />
+              <figcaption className="learn__rule-text">{rule.text}</figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+
+      {/* The rules' example, straight under them: the cube to try them on,
           the moves that make that cube, and the same cube with the answer. */}
       {step.figures?.map((figure) => (
         <figure key={figure.caption} className="learn__figure">
@@ -370,6 +392,29 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
       {/* A step with a case of its own opens on that case, and its situations
           are the ways to it: they go under it, further down. */}
       {hasCases ? null : situations}
+
+      {/* The long way round, for whoever wants it: the step is its first
+          pictures, and these are how to reach them from anywhere. */}
+      {step.more === undefined ? null : (
+        <div className="learn__ways">
+          <button
+            type="button"
+            className="learn__more"
+            aria-expanded={showMore}
+            onClick={() => setShowMore((shown) => !shown)}
+          >
+            {showMore ? step.more.hide : step.more.show}
+          </button>
+          {!showMore ? null : (
+            <>
+              {isExplained ? (
+                <p className="learn__caption learn__caption--left">{step.more.lead}</p>
+              ) : null}
+              {cards(step.more.situations)}
+            </>
+          )}
+        </div>
+      )}
 
       {/* The goal last: what the moves above add up to. */}
       {step.goal === undefined ? null : (

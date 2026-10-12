@@ -8,7 +8,7 @@
  * it is coming from.
  */
 
-import { isBadEdge } from './edge-orientation';
+import { isBadEdge, isInnerPlace } from './edge-orientation';
 import type { Face, Move } from './notation';
 import { FACELETS, movePermutation, solvedState, type CubeState } from './state';
 
@@ -96,6 +96,15 @@ export type Stickering =
    * sight, and the step that follows is about where the bad ones are, not why.
    */
   | 'badEdges'
+  /**
+   * The two rules a bad edge is spotted by, each drawn as the thing to look
+   * for: the places a left or right colour must not be, wearing those two
+   * colours, and the places a top or bottom colour must not be, wearing those.
+   * Not a position — whatever the cube, the picture is the same, but for the
+   * colours of its centres.
+   */
+  | 'sideColourTells'
+  | 'poleColourTells'
   /**
    * No colours at all: the shape of a cube, standing in for one that is not
    * known yet — the scramble still being generated.
@@ -292,6 +301,9 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
     case 'badEdges':
       if (pieceSize(index) === 1) return colour;
       return isBadEdge(state, index) ? MARKED : null;
+    case 'sideColourTells':
+    case 'poleColourTells':
+      return pieceSize(index) === 1 ? colour : tell(state, index, stickering);
     case 'blank':
       return null;
     case 'firstTwoLayers':
@@ -300,6 +312,31 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       // colours would say the slot was filled.
       return isPairSticker(state, index) || !isLastLayerPiece(state, index) ? colour : null;
   }
+}
+
+/**
+ * What gives a bad edge away in this place: a left or right colour in an
+ * inner one, a top or bottom colour in any other. The two colours of a kind
+ * take turns from place to place, so that a picture shows both — the left
+ * colour on the left half and the right on the right, the top colour on the
+ * upper half and the bottom on the lower, and the places in between by
+ * whether they are towards the front.
+ */
+function tell(
+  state: CubeState,
+  index: number,
+  stickering: 'sideColourTells' | 'poleColourTells',
+): Cell {
+  const place = FACELETS[index];
+  if (place === undefined || pieceSize(index) !== 2) return null;
+
+  const [x, y, z] = place.position;
+  if (stickering === 'sideColourTells') {
+    if (!isInnerPlace(index)) return null;
+    return colourAt(state, indexOf(x > 0 || (x === 0 && z > 0) ? 'R' : 'L', 1, 1));
+  }
+  if (isInnerPlace(index)) return null;
+  return colourAt(state, indexOf(y > 0 || (y === 0 && z > 0) ? 'U' : 'D', 1, 1));
 }
 
 const SOLVED = solvedState();
