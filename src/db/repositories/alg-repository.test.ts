@@ -40,8 +40,8 @@ describe('alg repository', () => {
   it('lists the sets and their cases in pack order', async () => {
     const sets = await listSets();
     expect(sets.map((set) => set.id).sort()).toEqual([
-      // Roux's corners, in two looks and in one, and its edge orientation: the
-      // sets that are not CFOP's.
+      // Roux's corners, in two looks and in one, its edge orientation and its
+      // second block: the sets that are not CFOP's.
       '2look-cmll',
       '2look-oll',
       '2look-pll',
@@ -56,6 +56,8 @@ describe('alg repository', () => {
       'oll',
       'pll',
       'roux-eo',
+      'roux-eolr',
+      'roux-sb',
     ]);
 
     const cases = await listCases('pll');
@@ -74,9 +76,11 @@ describe('alg repository', () => {
       'oll',
       '2look-pll',
       'pll',
+      'roux-sb',
       '2look-cmll',
       'cmll',
       'roux-eo',
+      'roux-eolr',
     ]);
   });
 

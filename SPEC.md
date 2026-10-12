@@ -984,6 +984,7 @@ phaseSegments(splits: Split[], phaseKeys: string[], rawMs: number): PhaseSegment
 | `ui.cubeSkin` | 0 | `'classic'` |
 | `ui.showLearn` | 0 | `true` |
 | `ui.learnExplanations` | 0 | `true` |
+| `ui.learnMethod` | 0 | `''` |
 | `ui.installNudgeDismissed` | **1** | `false` |
 | `trainer.twoLookDefault` | 0 | `true` |
 | `trainer.showAlgs` | 0 | `true` |
@@ -1201,8 +1202,11 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
    kterými byly změřeny. Ve výběru session se metoda píše k řádku, až když jich
    seznam míchá víc. První session na zařízení je CFOP.
 2. **Průvodce pro začátečníky Roux** (autor si o něj řekl) — **hotový**. Stránka
-   Učení má přepínač **CFOP | Roux**, výchozí podle metody aktivní session — kdo na
-   Roux přechází, chce průvodce číst dřív, než si Roux session založí. Sedm kroků
+   Učení má přepínač **CFOP | Roux**. Otevře se na průvodci, který byl čtený
+   naposled (`ui.learnMethod`); dokud si čtenář žádný nevybral, na tom podle
+   metody aktivní session. Původně rozhodovala session pokaždé — jenže kdo se
+   Roux učí, měří ještě v CFOP session a stránka se mu při každém návratu
+   přepnula zpátky. Sedm kroků
    jako u CFOP: levý blok, pravý blok, rohy žlutou nahoru (Sune), rohy na místo
    (Jb), orientace hran (šipka a `M' U M`), boční hrany (`M2`), střední vrstva
    (`U2 M2 U2 M2`, `U2 M U2 M'`). Struktura podle „ROUX_guide_rev4“, vysvětlení
@@ -1274,8 +1278,67 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
    = bloky a rohy beze změny a žlutá i bílá všech šesti hran nahoře nebo dole
    (`lseOrientation`), kostka posuzovaná, jak leží. Krok 5 průvodce otevírá šipku
    z této sady a „Všechny případy“ ukážou celou.
-5. **Později:** druhý blok jako pokročilá sada (~40 případů vložení páru), EOLR,
-   OH algoritmy CMLL, drill prvního bloku.
+5. **Druhý blok — hotový.** Sada „SB“ (`roux-sb`) z listu „Second Block
+   Algs“, část „Front Pair Cases with DR Solved“: přední pár (roh + hrana) do
+   předního pravého slotu, když levý blok, hrana pod pravým středem a zadní pár
+   už stojí. **47 případů**: 41 míst, kde pár může být jako u F2L, a 6 navíc
+   s hranou ve střední vrstvě — ta je tu volná, a proto jsou řešení kratší než
+   F2L. Skupiny jako u F2L (spodní barva na boku / nahoře, roh ve slotu, hrana
+   ve slotu, pár ve slotu) plus „Hrana ve střední vrstvě“; „spodní barva“,
+   protože Roux žádný cross nemá. První algoritmus buňky je hlavní, ostatní
+   alternativy (106); co list značí „free slot“, je `multiSlot` (14) — rozbije
+   zadní pár, a rozhoduje o tom, **co algoritmus udělá**, ne poznámka: jeden
+   takový list neoznačil. Opravy listu ověřené spuštěním: v buňce 36 `F'` místo
+   `F` (jak je vytištěný, rozbije levý blok), `(R U R' U')3` rozepsané. Vtipná
+   buňka a poslední dvě strany („Louis' Multislotting“ — DR nesložená, dva páry
+   naráz) v sadě nejsou. Vyřešeno = oba bloky stojí, horní vrstva a střední
+   vrstva jsou věc dalších kroků (`blocks`, posuzováno, jak kostka leží).
+   Obrázek jako u druhého kroku průvodce: oba bloky barevně, zbytek šedě,
+   modrá vlevo.
+6. **OH algoritmy CMLL — hotové**, jako alternativy ke stávajícím případům
+   (`others`), z listu „CMLL OH (right and left handed)“. List má stejných 42
+   případů pod stejnými názvy jako „Kian's CMLLs“, u každého algoritmus pro
+   levou a pro pravou ruku. **58 nových** (alternativ je teď 139), 25 už v sadě
+   bylo — test sad hlídá, že žádný případ nenabízí tytéž tahy dvakrát. Každý prošel stejným měřítkem jako zbytek sady. U H Column, H Row a
+   L Pure kreslí OH list případ z jiného úhlu než hlavní list, takže algoritmus
+   dostal otočení vrchu dopředu (sloučené s tím, které už měl). Levoruký T Rows
+   případ neřeší a jednotahové opravy jsou dvě různé — hádat se nebude, v sadě
+   není. Karta případu je nijak neoznačuje: jsou to „vestavěné · jinak“ jako
+   ostatní alternativy.
+7. **EOLR — hotové.** Sada „EOLR“ (`roux-eolr`) z listu „Roux EO + ULUR“:
+   orientace hran a obě boční hrany jedním algoritmem, tedy rychlejší cesta
+   přes kroky 5 a 6 průvodce. **56 případů** — každý celý algoritmus listu; šest
+   jeho řádků jsou poznámky „pokračuj jiným případem“, ne algoritmy. Skupiny
+   jsou tvary špatných hran pod názvy ze sady EO (list je značí `Arrow`, `6`,
+   `4/0`, `2o/2`, `2o/0`, `0/2`, `2a/0`, `2a/2`, `1/1 F`, `1/1 B` — shodu určilo
+   spuštění, ne obrázek), případ se jmenuje kódem listu a místy, kde boční hrany
+   jsou (`2a/2 UF UL`); kódy a pozice se nepřekládají.
+
+   **Co znamená „vyřešeno“ u EOLR** (`eolr`, posuzováno, jak kostka leží): list
+   to neříká, zjistilo se to spuštěním všech řádků ze všech stavů, na které
+   pasují. Bloky a rohy beze změny, všech šest hran orientovaných a boční hrany
+   **obě dole ve střední vrstvě** (jeden `M2` od domova), nebo už doma. Střední
+   vrstva smí zůstat **o čtvrt otáčky pootočená** — nechává ji tak 22 z 56
+   algoritmů a středy srovná až poslední krok. Orientace se pak čte jinak:
+   čtyři hrany střední vrstvy mají žlutou/bílou do strany (otočka, která vrátí
+   středy, otočí i je), boční hrany pořád nahoru nebo dolů.
+
+   Případ není algoritmus pozpátku ze složené kostky — ten by boční hrany
+   postavil jinam, než kde je řádek čeká. Každý má vlastní `setup`: cílová
+   pozice a z ní algoritmus pozpátku, vybraný tak, aby nahoře byl žlutý nebo
+   bílý střed, špatné hrany dávaly tvar skupiny a boční hrany stály, kde říká
+   název (test sad to u každého kontroluje). Horní rohy sedí k blokům, kromě
+   dvou případů, kde algoritmus dovede boční hrany až domů jen z jednoho
+   natočení vrchu (`6 DF DB`, u něhož to list píše, a `1/1 F UB DF`, u něhož
+   ne). Obrázek je ten ze sady EO s bočními hranami v jejich barvách: špatná
+   boční hrana má nahoře modrou nebo zelenou místo fialové.
+8. **Řádek sad v trenažéru:** název metody je tučně a v barvě textu (je to
+   nadpis řádku, ne popisek), sady Rouxu se jmenují zkratkami jako sady CFOP —
+   **SB · CMLL · EO · EOLR**. „Orientace hran“ a „Druhý blok“ se na řádek
+   telefonu s dalšími sadami nevešly. Případy druhého bloku jsou „SB 12“.
+9. **Později:** drill prvního bloku spíš ne (viz
+   rozhovor 2026-10-12): chtěl by vlastní solver a řešení prvního bloku se
+   netrénuje na čas z náhodné pozice, ale plánováním při inspekci.
 
 Zdroje dodal autor jako PDF (CMLL, druhý blok, EO, EO + ULUR, OH CMLL,
 začátečnický průvodce); obsah se z nich přebírá, nehádá.

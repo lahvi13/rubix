@@ -12,7 +12,14 @@ import { CS_PACK_NAMES, KEPT_IN_ENGLISH, czechName, packLabel } from './pack-nam
 const ALL_PACKS = [...PACKS, CROSS_PACK];
 
 /** Cases the packs number rather than name: "OLL 21", "F2L 3", "Expert 12". */
-const NUMBERED = /^(F2L|OLL|PLL|Advanced|Expert) \d+$/;
+const NUMBERED = /^(F2L|OLL|PLL|Advanced|Expert|SB) \d+$/;
+
+/**
+ * An EOLR case, named as its sheet names it: the shape of the bad edges in
+ * the sheet's shorthand, then the two places the side edges are in. Codes and
+ * positions, which read the same in any language.
+ */
+const EOLR = /^(Arrow|6|4\/0|2o\/2|2o\/0|0\/2|2a\/0|2a\/2|1\/1 [FB]) [UD][FLBR] [UD][FLBR]$/;
 
 function namesOf(): string[] {
   const names = new Set<string>();
@@ -28,7 +35,11 @@ function namesOf(): string[] {
 
 describe('pack names', () => {
   it.each(namesOf())('%s is either translated or knowingly kept', (name) => {
-    const decided = name in CS_PACK_NAMES || KEPT_IN_ENGLISH.includes(name) || NUMBERED.test(name);
+    const decided =
+      name in CS_PACK_NAMES ||
+      KEPT_IN_ENGLISH.includes(name) ||
+      NUMBERED.test(name) ||
+      EOLR.test(name);
     expect(decided).toBe(true);
   });
 
@@ -54,6 +65,9 @@ describe('pack names', () => {
     ['Advanced 1', 'Pokročilé 1'],
     ['Advanced 41', 'Pokročilé 41'],
     ['Expert 7', 'Expert 7'],
+    ['SB 12', 'SB 12'],
+    ['2a/2 UF UL', '2a/2 UF UL'],
+    ['6 DF DB', '6 DF DB'],
     ['F2L 3', 'F2L 3'],
     ['OLL 21', 'OLL 21'],
     ['PLL 2', 'PLL 2'],

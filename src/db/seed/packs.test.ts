@@ -6,7 +6,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { invertAlg, parseAlg, type Move } from '../../domain/cube/notation';
+import { formatAlg, invertAlg, parseAlg, type Move } from '../../domain/cube/notation';
 import { canonicalise } from '../../domain/cube/orientation';
 import { FACELETS, applyAlg, isSolved, solvedState, stateKey } from '../../domain/cube/state';
 import { isSolvedAsShown, lastLayerView, type Stickering } from '../../domain/cube/views';
@@ -47,6 +47,19 @@ const isFrontRightSlot = (index: number): boolean => {
   if (!position) return false;
   const [x, y, z] = position;
   return x === 1 && z === 1 && y !== 1;
+};
+
+const isBackRightSlot = (index: number): boolean => {
+  const position = FACELETS[index]?.position;
+  if (!position) return false;
+  const [x, y, z] = position;
+  return x === 1 && z === -1 && y !== 1;
+};
+
+/** Roux's two blocks: everything on the left and the right under the top layer. */
+const isBlock = (index: number): boolean => {
+  const position = FACELETS[index]?.position;
+  return position !== undefined && position[0] !== 0 && position[1] !== 1;
 };
 
 /** How many pieces of that size are sitting where they belong. */
@@ -103,8 +116,18 @@ function answers(entry: PackCase, moves: Move[], setId = ''): boolean {
   const before = caseState(entry);
   // Roux's edge orientation the same way, judged on the edges' top and bottom
   // colours alone.
+  // And the second block by the two blocks alone: the top layer and the
+  // middle slice are still to come.
   const rouxJudge: Stickering | null =
-    setId === 'cmll' ? 'blocksAndCorners' : setId === 'roux-eo' ? 'lseOrientation' : null;
+    setId === 'cmll'
+      ? 'blocksAndCorners'
+      : setId === 'roux-eo'
+        ? 'lseOrientation'
+        : setId === 'roux-sb'
+          ? 'blocks'
+          : setId === 'roux-eolr'
+            ? 'eolr'
+            : null;
   if (rouxJudge !== null) {
     const after = applyAlg(before, moves);
     return ['', 'U', 'U2', "U'"].some((end) =>
@@ -189,11 +212,21 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
       ),
     ),
   )('%s inserts the pair and costs a slot to do it', (_name, entry, moves) => {
-    const after = canonicalise(applyAlg(caseState(entry), movesOf(moves)));
+    const done = applyAlg(caseState(entry), movesOf(moves));
 
     // Both halves matter. It has to work — the pair goes in — and it has to
     // really cost something, or it is being warned about for nothing and the
     // warning stops meaning anything.
+    if (pack.set.method === 'roux') {
+      // As the cube lies: a block algorithm may leave the middle slice turned,
+      // and standing the cube up by its centres would turn the blocks away.
+      // The slot it costs is the back pair — the left block and the edge
+      // under the right centre are not on offer.
+      expect(wrongOutside(done, (index) => isBackRightSlot(index) || !isBlock(index))).toBe(0);
+      expect(wrongOutside(done, (index) => !isBackRightSlot(index))).toBeGreaterThan(0);
+      return;
+    }
+    const after = canonicalise(done);
     expect(wrongOutside(after, (index) => !isFrontRightSlot(index))).toBe(0);
     expect(wrongOutside(after, isTopLayer)).toBeGreaterThan(0);
   });
@@ -215,6 +248,23 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
     expect(isSolved(after)).toBe(false);
   });
 
+  it('offers no algorithm twice on the same case', () => {
+    // Seen when a second sheet was merged in: the same moves under another
+    // bracketing are still the same algorithm, and two rows of it on a case
+    // sheet read as two ways through.
+    for (const entry of pack.cases) {
+      if (entry.alg === '') continue;
+      const offered = [
+        entry.alg,
+        ...(entry.others ?? []),
+        ...(entry.multiSlot ?? []),
+        ...(entry.orientOnly ?? []),
+      ].map((moves) => formatAlg(movesOf(moves)));
+
+      expect(new Set(offered).size, entry.name).toBe(offered.length);
+    }
+  });
+
   it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
     '%s leaves the cube upright',
     (_name, entry) => {
@@ -229,6 +279,140 @@ describe.each(PACKS.map((pack) => [pack.set.id, pack] as const))('%s pack', (_id
       } else {
         expect(stateKey(canonicalise(state))).toBe(stateKey(state));
       }
+    },
+  );
+});
+
+describe('the second block', () => {
+  const pack = packById('roux-sb');
+
+  /** The stickers of the pieces that belong in the two blocks, wherever they are. */
+  const blockPieces = (state: CubeStateOf): string =>
+    [...CUBIES.values()]
+      .map((indices) => {
+        const colours = indices.map((index) => state[index] ?? '');
+        const isBlockPiece =
+          colours.length > 1 && !colours.includes('U') && colours.some((c) => c === 'L' || c === 'R');
+        return isBlockPiece ? colours.join('') : '.';
+      })
+      .join(' ');
+
+  it('is the forty-one places of a pair and six more with the edge in the middle slice', () => {
+    expect(pack.cases).toHaveLength(47);
+    expect(pack.cases.filter((entry) => entry.group === 'Edge in the middle slice')).toHaveLength(6);
+  });
+
+  it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
+    '%s is the front pair alone, everything else of the blocks in place',
+    (_name, entry) => {
+      const state = caseState(entry);
+
+      expect(wrongOutside(state, (index) => isFrontRightSlot(index) || !isBlock(index))).toBe(0);
+      expect(wrongOutside(state, (index) => !isFrontRightSlot(index))).toBeGreaterThan(0);
+    },
+  );
+
+  it('holds forty-seven different cases', () => {
+    // No turn of the top is forgiven here: with the pair a quarter turn on,
+    // it is another case with another algorithm.
+    const keys = pack.cases.map((entry) => blockPieces(caseState(entry)));
+
+    expect(new Set(keys).size).toBe(47);
+  });
+
+  it('keeps apart the algorithms that cost the back pair', () => {
+    const costly = pack.cases.flatMap((entry) => entry.multiSlot ?? []);
+
+    expect(costly).toHaveLength(14);
+  });
+});
+
+describe('EOLR', () => {
+  const pack = packById('roux-eolr');
+  const shapes = packById('roux-eo');
+
+  const SLOT_NAMES = ['UF', 'UL', 'UB', 'UR', 'DF', 'DB'] as const;
+  type Slot = (typeof SLOT_NAMES)[number];
+  const SLOTS: Record<Slot, string> = {
+    UF: '0,1,1',
+    UL: '-1,1,0',
+    UB: '0,1,-1',
+    UR: '1,1,0',
+    DF: '0,-1,1',
+    DB: '0,-1,-1',
+  };
+  const pieceAt = (state: CubeStateOf, slot: Slot) =>
+    (CUBIES.get(SLOTS[slot]) ?? []).map((index) => [FACELETS[index]?.face, state[index]] as const);
+
+  /** Edges whose top or bottom colour faces sideways. */
+  const badEdges = (state: CubeStateOf): Slot[] =>
+    SLOT_NAMES.filter((slot) =>
+      pieceAt(state, slot).some(
+        ([face, colour]) => (colour === 'U' || colour === 'D') && face !== 'U' && face !== 'D',
+      ),
+    );
+
+  /** Where the two edges that belong over the blocks are. */
+  const sideEdges = (state: CubeStateOf): Slot[] =>
+    SLOT_NAMES.filter((slot) =>
+      pieceAt(state, slot).some(([, colour]) => colour === 'L' || colour === 'R'),
+    );
+
+  it('is every whole algorithm of the sheet', () => {
+    // Fifty-six of its sixty-two lines; the other six are notes that send the
+    // reader on to another case, not algorithms.
+    expect(pack.cases).toHaveLength(56);
+  });
+
+  it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
+    '%s starts as its name and its group say',
+    (_name, entry) => {
+      const state = caseState(entry);
+      const shape = shapes.cases.find((candidate) => candidate.name === entry.group);
+      if (!shape) throw new Error(`${entry.name} is grouped under no edge-orientation case`);
+
+      // Met the way a shape is read: with a top or bottom centre on top.
+      expect(['U', 'D']).toContain(state[4]);
+      // The bad edges of the shape it is filed under, in the same places.
+      expect(badEdges(state)).toEqual(badEdges(caseState(shape)));
+      // The side edges where the last two words of the name put them.
+      const named = entry.name.split(' ').slice(-2);
+      expect(sideEdges(state)).toEqual(SLOT_NAMES.filter((slot) => named.includes(slot)));
+      // And nothing but the six edges out of place. The top corners may be a
+      // turn of the top away from the blocks: two of the algorithms take the
+      // side edges all the way home, and only from the turn that suits them.
+      const isOnlyEdges = ['', 'U', 'U2', "U'"].some(
+        (turn) =>
+          wrongOutside(
+            applyAlg(state, movesOf(turn)),
+            (index) => !isBlock(index) && !isCornerSticker(index),
+          ) === 0,
+      );
+      expect(isOnlyEdges).toBe(true);
+    },
+  );
+
+  it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
+    '%s leaves the side edges one turn of the slice from home, or home',
+    (_name, entry) => {
+      const after = applyAlg(caseState(entry), movesOf(entry.alg));
+      const finishes = ['', 'M2'].flatMap((slice) =>
+        ['', 'U', 'U2', "U'"].flatMap((before) =>
+          ['', 'U', 'U2', "U'"].map((end) => `${before} ${slice} ${end}`),
+        ),
+      );
+
+      // What the judge accepts, said the long way: some turn of the top and
+      // at most a half turn of the slice puts both side edges over their
+      // blocks, with the corners still matching them.
+      const isDone = finishes.some((finish) => {
+        const done = applyAlg(after, movesOf(finish));
+        return (
+          wrongOutside(done, (index) => FACELETS[index]?.position[0] === 0) === 0 &&
+          wrongOutside(done, (index) => !isCornerSticker(index)) === 0
+        );
+      });
+      expect(isDone).toBe(true);
     },
   );
 });

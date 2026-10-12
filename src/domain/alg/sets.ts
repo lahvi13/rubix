@@ -124,9 +124,11 @@ export const SET_ORDER: readonly string[] = [
   'oll',
   '2look-pll',
   'pll',
+  'roux-sb',
   '2look-cmll',
   'cmll',
   'roux-eo',
+  'roux-eolr',
 ];
 
 /**
@@ -149,6 +151,15 @@ export const BEGINNER_GROUPS = {
 } as const;
 
 /**
+ * Roux's second block, a pair at a time: the corner and edge of the front
+ * right slot wherever they start, with the left block, the edge under the
+ * right centre and the back pair already there. The forty-one places an F2L
+ * pair can be, and six more with the edge down in the middle slice — which is
+ * free to turn here, and is what makes these shorter than F2L.
+ */
+export const ROUX_SB_SET_ID = 'roux-sb';
+
+/**
  * Roux's corners in two looks: turn them up, then put them in place. The
  * guide teaches one case of each look; the set holds the rest.
  */
@@ -168,6 +179,14 @@ export const ROUX_EO_GROUPS = {
   four: 'Four bad edges',
   six: 'Six bad edges',
 } as const;
+
+/**
+ * Edge orientation and the two side edges in one go: the same shapes of bad
+ * edges, each split by where the side edges are, with an algorithm that
+ * orients everything and leaves those two at the bottom of the middle slice.
+ * The quicker way through what the guide does as two steps.
+ */
+export const ROUX_EOLR_SET_ID = 'roux-eolr';
 export const TWO_LOOK_CMLL_GROUPS = {
   orientation: '1 / Orientation',
   permutation: '2 / Permutation',

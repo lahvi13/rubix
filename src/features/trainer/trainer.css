@@ -8,9 +8,12 @@
  * as one of them.
  */
 /* The method a row of sets belongs to, ahead of its sets. */
+/* The method a row of sets belongs to: a heading for the row, so it is set
+   in the text's own colour and weight, not in the quiet of a caption. */
 .trainer__method {
   font-size: var(--text-sm);
-  color: var(--muted);
+  font-weight: 600;
+  color: var(--text);
   margin-inline-end: var(--space-2);
 }
 

@@ -1,0 +1,516 @@
+{
+ "packVersion": 1,
+ "set": {
+  "id": "roux-sb",
+  "name": "SB",
+  "method": "roux"
+ },
+ "cases": [
+  {
+   "id": "sb-1",
+   "name": "SB 1",
+   "group": "Bottom colour on the side",
+   "alg": "U R U' R'",
+   "others": [
+    "U2 R U2 R'",
+    "R' F R F'"
+   ]
+  },
+  {
+   "id": "sb-2",
+   "name": "SB 2",
+   "group": "Bottom colour on the side",
+   "alg": "r U r'",
+   "others": [
+    "F R' F' R",
+    "U' F' U F"
+   ]
+  },
+  {
+   "id": "sb-3",
+   "name": "SB 3",
+   "group": "Bottom colour on the side",
+   "alg": "U2 M U' r U' r'",
+   "others": [
+    "U' R U R' U2 R U' R'",
+    "U' R U R' U' R U2 R'",
+    "U' r U' r' U2 r U' r'",
+    "M' U' M U2 R U' R'"
+   ]
+  },
+  {
+   "id": "sb-4",
+   "name": "SB 4",
+   "group": "Bottom colour on the side",
+   "alg": "U' M U M' r U r'",
+   "others": [
+    "U r U r' U2 r U r'",
+    "U F' U' F U' r U r'",
+    "U' r U' r' U R U R'"
+   ]
+  },
+  {
+   "id": "sb-5",
+   "name": "SB 5",
+   "group": "Bottom colour on the side",
+   "alg": "U' M U2 r U' r'",
+   "others": [
+    "U' R U2 R' U2 R U' R'",
+    "U r U2 M U R'"
+   ]
+  },
+  {
+   "id": "sb-6",
+   "name": "SB 6",
+   "group": "Bottom colour on the side",
+   "alg": "r U2 M2 U' r'",
+   "others": [
+    "U2 M U2 M' r U r'",
+    "U F' U2 F U' r U r'",
+    "M' U2 M U2 r U r'"
+   ]
+  },
+  {
+   "id": "sb-7",
+   "name": "SB 7",
+   "group": "Bottom colour on the side",
+   "alg": "M U r U' r'",
+   "others": [
+    "R U R' U2 R U' R' U R U' R'",
+    "F' U F U2 R U R'",
+    "U2 r U M U R'"
+   ],
+   "multiSlot": [
+    "U' R' U R U' R U R'"
+   ]
+  },
+  {
+   "id": "sb-8",
+   "name": "SB 8",
+   "group": "Bottom colour on the side",
+   "alg": "R U' R' U' M R U' R'",
+   "others": [
+    "R U' R' U' r' R2 U' R'",
+    "U M U' M' r U r'",
+    "U' M' U' M U2 r U r'",
+    "R U' R' U2 F' U' F"
+   ]
+  },
+  {
+   "id": "sb-9",
+   "name": "SB 9",
+   "group": "Bottom colour on the side",
+   "alg": "R U R'"
+  },
+  {
+   "id": "sb-10",
+   "name": "SB 10",
+   "group": "Bottom colour on the side",
+   "alg": "F' U' F",
+   "others": [
+    "U M R U' R'"
+   ]
+  },
+  {
+   "id": "sb-11",
+   "name": "SB 11",
+   "group": "Bottom colour on the side",
+   "alg": "U' R U R' U R U R'",
+   "others": [
+    "U2 R U' R' U' R U R'",
+    "R U M' U' M U R'",
+    "r U' r' U' r U' r'"
+   ],
+   "multiSlot": [
+    "R' U R2 U R'"
+   ]
+  },
+  {
+   "id": "sb-12",
+   "name": "SB 12",
+   "group": "Bottom colour on the side",
+   "alg": "M2 U r U' r'",
+   "others": [
+    "U' R U' R' U F' U' F"
+   ]
+  },
+  {
+   "id": "sb-13",
+   "name": "SB 13",
+   "group": "Bottom colour on the side",
+   "alg": "U' R U' R' U R U R'",
+   "others": [
+    "U' M' U M R U R'",
+    "U M U M' U2 R U R'"
+   ]
+  },
+  {
+   "id": "sb-14",
+   "name": "SB 14",
+   "group": "Bottom colour on the side",
+   "alg": "U2 M2 U' r U' r'",
+   "others": [
+    "M U' M2 U2 R U' R'",
+    "U2 r U' M2 U' r'"
+   ]
+  },
+  {
+   "id": "sb-15",
+   "name": "SB 15",
+   "group": "Bottom colour on the side",
+   "alg": "r M2 U2 M' U' r'",
+   "others": [
+    "R U' R' U R U' R' U2 R U' R'",
+    "R' U2 R2 U R2 U R",
+    "U F' U2 F U' R U R'",
+    "M U2 M' U2 R U R'"
+   ],
+   "multiSlot": [
+    "R' U2 R2 U R'"
+   ]
+  },
+  {
+   "id": "sb-16",
+   "name": "SB 16",
+   "group": "Bottom colour on the side",
+   "alg": "U' M2 U2 r U' r'",
+   "others": [
+    "U' R U2 R' U F' U' F"
+   ]
+  },
+  {
+   "id": "sb-17",
+   "name": "SB 17",
+   "group": "Bottom colour on top",
+   "alg": "U R U2 R' U R U' R'"
+  },
+  {
+   "id": "sb-18",
+   "name": "SB 18",
+   "group": "Bottom colour on top",
+   "alg": "r U' r' U2 M' r U r'",
+   "others": [
+    "U' F' U2 F r U r'",
+    "U' M' U R U2 R' U' R U R'",
+    "U' R U' R2 F R F' R U' R'"
+   ],
+   "multiSlot": [
+    "U2 R' U2 R U r U r'"
+   ]
+  },
+  {
+   "id": "sb-19",
+   "name": "SB 19",
+   "group": "Bottom colour on top",
+   "alg": "R U' R' U2 R U R'",
+   "others": [
+    "U2 R U R' U R U' R'",
+    "U R U2 r' U r U' r'"
+   ],
+   "multiSlot": [
+    "U R' U' R U R U R'",
+    "U' r' U r R U' R'"
+   ]
+  },
+  {
+   "id": "sb-20",
+   "name": "SB 20",
+   "group": "Bottom colour on top",
+   "alg": "r U' r' U2 r U r'",
+   "others": [
+    "U2 R U R' F' U' F"
+   ],
+   "multiSlot": [
+    "U R' U' R U r U r'"
+   ]
+  },
+  {
+   "id": "sb-21",
+   "name": "SB 21",
+   "group": "Bottom colour on top",
+   "alg": "R U2 R' U' R U R'"
+  },
+  {
+   "id": "sb-22",
+   "name": "SB 22",
+   "group": "Bottom colour on top",
+   "alg": "M' U R U2 R' U R U' R'",
+   "others": [
+    "r U' R' U R U' R' U R U R'",
+    "R U R' U' R U R' U' r U r'",
+    "U2 r U M' R' U r U' r'",
+    "r U' R U R' U R U2 R2",
+    "U' R' U2 R U R' U R U' r U R'"
+   ]
+  },
+  {
+   "id": "sb-23",
+   "name": "SB 23",
+   "group": "Bottom colour on top",
+   "alg": "U F R' F' R U R U R'",
+   "others": [
+    "r U2 r' U' M' r U r'",
+    "U R U' R' U' R U' R' U R U' R'",
+    "U2 R2 U2 R' U' R U' R2",
+    "M' r U' r' U2 r U r'"
+   ]
+  },
+  {
+   "id": "sb-24",
+   "name": "SB 24",
+   "group": "Bottom colour on top",
+   "alg": "U r U2 r' U r U' r'"
+  },
+  {
+   "id": "sb-25",
+   "name": "SB 25",
+   "group": "Corner in the slot",
+   "alg": "R U R' U' R U R'"
+  },
+  {
+   "id": "sb-26",
+   "name": "SB 26",
+   "group": "Corner in the slot",
+   "alg": "M' U R U' R' U R U' R'",
+   "others": [
+    "R' F R F' R' F R F'",
+    "M' U R U' R2 F R F'",
+    "M' U' r U' r' U r U' r'"
+   ]
+  },
+  {
+   "id": "sb-27",
+   "name": "SB 27",
+   "group": "Corner in the slot",
+   "alg": "R U' R' U R U' R'",
+   "others": [
+    "R U' R2 F R F'",
+    "U2 r U' r' U r U' r'"
+   ]
+  },
+  {
+   "id": "sb-28",
+   "name": "SB 28",
+   "group": "Corner in the slot",
+   "alg": "R U R' U' r U r'",
+   "others": [
+    "F' U F2 R' F' R",
+    "U2 r U2 r' U2 r U r'"
+   ]
+  },
+  {
+   "id": "sb-29",
+   "name": "SB 29",
+   "group": "Corner in the slot",
+   "alg": "U' r U' M U r' U'",
+   "others": [
+    "U' F' R U R' U' R' F R",
+    "U' R' F R F' R U R'",
+    "R' U' R' U' R' U R U R"
+   ],
+   "multiSlot": [
+    "R2 U' R' U R2",
+    "U D' R U' R' D"
+   ]
+  },
+  {
+   "id": "sb-30",
+   "name": "SB 30",
+   "group": "Corner in the slot",
+   "alg": "U R U' M' U R'",
+   "others": [
+    "r U2 r' U' r U' r'",
+    "U r U r' U r U2 r'"
+   ]
+  },
+  {
+   "id": "sb-31",
+   "name": "SB 31",
+   "group": "Edge in the slot",
+   "alg": "U2 r U r' U r U' r'",
+   "others": [
+    "(R U R' U') (R U R' U') (R U R' U')"
+   ]
+  },
+  {
+   "id": "sb-32",
+   "name": "SB 32",
+   "group": "Edge in the slot",
+   "alg": "R U' R' U2 r U r'",
+   "others": [
+    "r U2 r' U' r U r'",
+    "U' R' F R F' R U' R'"
+   ]
+  },
+  {
+   "id": "sb-33",
+   "name": "SB 33",
+   "group": "Edge in the slot",
+   "alg": "U' R U' R' U2 R U' R'",
+   "others": [
+    "U r U r' U' r U' r'",
+    "U' r U r' U2 r U' r'"
+   ],
+   "multiSlot": [
+    "U' D R' U' R D'"
+   ]
+  },
+  {
+   "id": "sb-34",
+   "name": "SB 34",
+   "group": "Edge in the slot",
+   "alg": "U2 R U M' U R'",
+   "others": [
+    "U2 R U' M U' R'"
+   ]
+  },
+  {
+   "id": "sb-35",
+   "name": "SB 35",
+   "group": "Edge in the slot",
+   "alg": "U R U R' U2 R U R'",
+   "others": [
+    "U' R U2 R' U R U R'",
+    "R U' M' U M U R'",
+    "U R' D' R U' R' D R"
+   ],
+   "multiSlot": [
+    "U2 D R' U R D'"
+   ]
+  },
+  {
+   "id": "sb-36",
+   "name": "SB 36",
+   "group": "Edge in the slot",
+   "alg": "r U' r' M U' r U' r'",
+   "others": [
+    "U' r U r' U M' r U r'",
+    "r U' M2 U' M' U' r'",
+    "U2 R' F R F' U2 R U R'",
+    "U F' U' F U' R U R'",
+    "U' R U M' U' R' U R U R'",
+    "U2 R U' M' U r' U2 r U R'"
+   ]
+  },
+  {
+   "id": "sb-37",
+   "name": "SB 37",
+   "group": "Pair in the slot",
+   "alg": "r U' M2 U2 M' U' r'",
+   "others": [
+    "r U' M' U2 M2 U' r'",
+    "R2 U2 F R2 F' U2 R' U R'"
+   ]
+  },
+  {
+   "id": "sb-38",
+   "name": "SB 38",
+   "group": "Pair in the slot",
+   "alg": "R U' R' U2 M U' r U' r'",
+   "others": [
+    "R U' R' U' R U R' U2 R U' R'",
+    "R U R' U' R U2 R' U' R U R'",
+    "R2 U2 R' U' R U' R' U2 R'"
+   ]
+  },
+  {
+   "id": "sb-39",
+   "name": "SB 39",
+   "group": "Pair in the slot",
+   "alg": "r U' r' M U r U' r'",
+   "others": [
+    "r U M' U2 r' U r U' r'",
+    "R F U R U' R' F' U' R'",
+    "R U' R r2 U r U' r'"
+   ],
+   "multiSlot": [
+    "R U r U' R' U2 R U' R2",
+    "r U r2 U' r U M' r U r'"
+   ]
+  },
+  {
+   "id": "sb-40",
+   "name": "SB 40",
+   "group": "Pair in the slot",
+   "alg": "r U r' U M' U2 R U R'",
+   "others": [
+    "R U2 R' U R U' R' U R U R'",
+    "R U2 R U R' U R U2 R2"
+   ]
+  },
+  {
+   "id": "sb-41",
+   "name": "SB 41",
+   "group": "Pair in the slot",
+   "alg": "r U r' U' M' r U r'",
+   "others": [
+    "R U' R' F' r' F2 r F",
+    "R U F R U R' U' F' R'",
+    "r U r' U' r2 R' U R'",
+    "R U' M' U' r' U2 r U r'"
+   ]
+  },
+  {
+   "id": "sb-42",
+   "name": "SB 42",
+   "group": "Edge in the middle slice",
+   "alg": "U2 M2 U R U2 R' U R U' R'",
+   "others": [
+    "r2 U2 R' U' R U' R2",
+    "U2 R U M' U R' U' r U r'",
+    "R U r' U' M U2 R U' R'",
+    "r U r' U M R U' R'",
+    "r U r' F' U' F"
+   ]
+  },
+  {
+   "id": "sb-43",
+   "name": "SB 43",
+   "group": "Edge in the middle slice",
+   "alg": "R U R' U r U' r'",
+   "others": [
+    "U r' U r2 U' r2 U' r",
+    "U' R U2 R' U r U' r'",
+    "U2 R U' M' R' U2 R U R'"
+   ],
+   "multiSlot": [
+    "U r' U r2 U' r'"
+   ]
+  },
+  {
+   "id": "sb-44",
+   "name": "SB 44",
+   "group": "Edge in the middle slice",
+   "alg": "R' r2 U r'",
+   "others": [
+    "M' r U r'"
+   ]
+  },
+  {
+   "id": "sb-45",
+   "name": "SB 45",
+   "group": "Edge in the middle slice",
+   "alg": "U2 M2 U2 r U r'",
+   "others": [
+    "U2 M' U2 R U R'",
+    "R U2 M' U' R'",
+    "U' r U r' U R U R'"
+   ]
+  },
+  {
+   "id": "sb-46",
+   "name": "SB 46",
+   "group": "Edge in the middle slice",
+   "alg": "M2 U2 R U' R'",
+   "others": [
+    "M2 U' R U2 R'"
+   ]
+  },
+  {
+   "id": "sb-47",
+   "name": "SB 47",
+   "group": "Edge in the middle slice",
+   "alg": "r U' r'"
+  }
+ ]
+}

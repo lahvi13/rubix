@@ -43,8 +43,14 @@ const CS: Record<string, string> = {
   '1 / Orientation': '1 / Orientace',
   '2 / Permutation': '2 / Permutace',
 
-  // Roux's edge orientation: a plain description, so it is translated.
-  'Edge orientation': 'Orientace hran',
+  // Roux's second block: grouped like F2L, by where the pair starts. Roux has
+  // no cross, so the colour is the bottom one.
+  'Bottom colour on top': 'Spodní barva nahoře',
+  'Bottom colour on the side': 'Spodní barva na boku',
+  'Edge in the middle slice': 'Hrana ve střední vrstvě',
+
+  // Roux's edge orientation: a plain description, so it is translated. The
+  // same names group EOLR, which is these cases with the side edges added.
   'Two bad edges': 'Dvě špatné hrany',
   'Four bad edges': 'Čtyři špatné hrany',
   'Six bad edges': 'Šest špatných hran',
@@ -102,6 +108,12 @@ export const KEPT_IN_ENGLISH: readonly string[] = [
   '2-Look PLL',
   '2-Look CMLL',
   'CMLL',
+  // Roux's sets by the abbreviations the method goes by, like CFOP's three:
+  // second block, edge orientation, and edge orientation with the side edges.
+  // Spelled out, they did not fit a phone's row of sets.
+  'SB',
+  'EO',
+  'EOLR',
   // The edge-orientation case every Roux chart calls Plus.
   'Plus',
   'Cross',

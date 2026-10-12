@@ -2,7 +2,7 @@
  "packVersion": 1,
  "set": {
   "id": "roux-eo",
-  "name": "Edge orientation",
+  "name": "EO",
   "method": "roux"
  },
  "cases": [

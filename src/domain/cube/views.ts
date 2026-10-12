@@ -75,6 +75,13 @@ export type Stickering =
    */
   | 'sideEdges'
   /**
+   * Edge orientation and the side edges read together, as EOLR reads them:
+   * the last six edges as `lseOrientation` draws them, but the two that
+   * belong over the blocks in their own colours — where they are is the other
+   * half of the case.
+   */
+  | 'eolr'
+  /**
    * No colours at all: the shape of a cube, standing in for one that is not
    * known yet — the scramble still being generated.
    */
@@ -253,6 +260,10 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
       const face = FACELETS[index]?.face;
       return isEdge && (face === 'U' || face === 'D') ? MARKED : null;
     }
+    case 'eolr': {
+      if (isSideEdge(state, index)) return colour;
+      return cell(state, index, 'lseOrientation');
+    }
     case 'sideEdges':
       return pieceSize(index) === 1 ||
         isBlockPiece(state, index, 'L') ||
@@ -290,7 +301,41 @@ const SOLVED_TURNED: readonly CubeState[] = [0, 1, 2, 3].map((quarters) => {
  * centres are what that turn moves.
  */
 export function isJudgedAsHeld(stickering: Stickering): boolean {
-  return stickering === 'blocksAndCorners' || stickering === 'lseOrientation';
+  return (
+    stickering === 'blocks' ||
+    stickering === 'blocksAndCorners' ||
+    stickering === 'lseOrientation' ||
+    stickering === 'eolr'
+  );
+}
+
+/** The places the two edges of the middle slice's bottom are in. */
+const BOTTOM_SLICE_EDGES = ['0,-1,1', '0,-1,-1'];
+const SIDE_EDGE_HOMES = ['-1,1,0', '1,1,0'];
+
+/**
+ * Whether the last six edges are oriented against the middle slice as it
+ * lies. With a top or bottom centre on top that is every edge showing a top
+ * or bottom colour up or down. With the slice a quarter turn off, the four
+ * edges that belong in it are judged the other way round — the turn that
+ * brings the centres back turns them too — while the two side edges, which
+ * end up outside the slice, still have to show theirs up or down.
+ */
+function areLastSixOriented(state: CubeState): boolean {
+  const top = colourAt(state, indexOf('U', 1, 1));
+  const isSliceHome = top === 'U' || top === 'D';
+  for (const stickers of STICKERS_BY_CUBIE.values()) {
+    const first = stickers[0];
+    if (stickers.length !== 2 || first === undefined || !isLastSixEdge(state, first)) continue;
+    const pole = stickers.find((index) => {
+      const colour = colourAt(state, index);
+      return colour === 'U' || colour === 'D';
+    });
+    const face = pole === undefined ? undefined : FACELETS[pole]?.face;
+    const wantsPoleUp = isSliceHome || isSideEdge(state, first);
+    if ((face === 'U' || face === 'D') !== wantsPoleUp) return false;
+  }
+  return true;
 }
 
 /**
@@ -306,8 +351,10 @@ export function isSolvedAsShown(state: CubeState, stickering: Stickering): boole
   // middle slice's centres, which CMLL is free to leave anywhere. Nor is the
   // cube stood up first: its blocks are wherever its left and right are, so
   // it is held against the solved cube turned every way about the vertical
-  // axis instead — the colours a case is met in, not the faces.
-  if (stickering === 'blocksAndCorners') {
+  // axis instead — the colours a case is met in, not the faces. The blocks on
+  // their own are judged the same way: a second-block algorithm owes nothing
+  // to the top layer or the middle slice either.
+  if (stickering === 'blocksAndCorners' || stickering === 'blocks') {
     return SOLVED_TURNED.some((reference) =>
       FACELETS.every(
         (_, index) => cell(state, index, stickering) === cell(reference, index, stickering),
@@ -318,6 +365,26 @@ export function isSolvedAsShown(state: CubeState, stickering: Stickering): boole
   // left as they were, and every top or bottom sticker of the six edges and
   // the middle centres showing a top or bottom colour. Where those pieces sit
   // is the next step's business.
+  // EOLR: the edges oriented as above, and the two side edges either both at
+  // the bottom of the middle slice, one move from home, or home already. The
+  // slice itself may be left a quarter turn off — a third of the algorithms
+  // do, and the centres are the last step's to bring back.
+  if (stickering === 'eolr') {
+    if (!areLastSixOriented(state)) return false;
+    const holdsSideEdge = (cubie: string) =>
+      (STICKERS_BY_CUBIE.get(cubie) ?? []).some((index) => isSideEdge(state, index));
+    return SOLVED_TURNED.some((reference) => {
+      const isKept = FACELETS.every(
+        (_, index) =>
+          cell(reference, index, 'blocksAndCorners') === null || state[index] === reference[index],
+      );
+      if (!isKept) return false;
+      const isHome = SIDE_EDGE_HOMES.every((cubie) =>
+        (STICKERS_BY_CUBIE.get(cubie) ?? []).every((index) => state[index] === reference[index]),
+      );
+      return isHome || BOTTOM_SLICE_EDGES.every(holdsSideEdge);
+    });
+  }
   if (stickering === 'lseOrientation') {
     return SOLVED_TURNED.some((reference) =>
       FACELETS.every((sticker, index) => {

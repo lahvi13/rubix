@@ -40,7 +40,8 @@ export type PlayerStickering =
   | 'blocksAndCorners'
   | 'cornerOrientation'
   | 'lseOrientation'
-  | 'sideEdges';
+  | 'sideEdges'
+  | 'eolr';
 
 interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
@@ -201,6 +202,13 @@ function maskFor(stickering: PlayerStickering, standing: string): Promise<Sticke
       return maskByHome(shown, ({ orbit, home, facelet }) => {
         if (orbit === 'CENTERS') return home.has('U') || home.has('D') ? 'regular' : 'ignored';
         return orbit === 'EDGES' && !isBlock(home) && facelet === 0 ? 'regular' : 'ignored';
+      });
+    case 'eolr':
+      // Edge orientation's mask with the two side edges left in their colours.
+      return maskByHome(shown, ({ orbit, home, facelet }) => {
+        if (orbit === 'CENTERS') return home.has('U') || home.has('D') ? 'regular' : 'ignored';
+        if (orbit !== 'EDGES' || isBlock(home)) return 'ignored';
+        return home.has('L') || home.has('R') || facelet === 0 ? 'regular' : 'ignored';
       });
     case 'sideEdges':
       // Everything but the four edges of the middle slice.

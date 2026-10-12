@@ -4,7 +4,9 @@ import {
   BEGINNER_SET_ID,
   CMLL_SET_ID,
   LEVEL_BASE_SETS,
+  ROUX_EOLR_SET_ID,
   ROUX_EO_SET_ID,
+  ROUX_SB_SET_ID,
   TWO_LOOK_CMLL_GROUPS,
   TWO_LOOK_CMLL_SET_ID,
 } from '../../domain/alg/sets';
@@ -97,6 +99,16 @@ export function diagramFor(setId: string, group: string): Diagram {
       orientation: '',
     };
   }
+  // A pair of the second block, as the guide draws that step: both blocks in
+  // colour wherever their pieces are, everything else grey, blue on the left.
+  if (setId === ROUX_SB_SET_ID) {
+    return {
+      view: 'isometric',
+      stickering: 'blocks',
+      playerStickering: 'blocks',
+      orientation: "y'",
+    };
+  }
   // The six edges as the guide shows them: only their top and bottom colours,
   // the cube held with the first block's blue on the left.
   if (setId === ROUX_EO_SET_ID) {
@@ -104,6 +116,16 @@ export function diagramFor(setId: string, group: string): Diagram {
       view: 'isometric',
       stickering: 'lseOrientation',
       playerStickering: 'lseOrientation',
+      orientation: "y'",
+    };
+  }
+  // The same edges with the two side ones in their own colours: where those
+  // are is the other half of an EOLR case.
+  if (setId === ROUX_EOLR_SET_ID) {
+    return {
+      view: 'isometric',
+      stickering: 'eolr',
+      playerStickering: 'eolr',
       orientation: "y'",
     };
   }
