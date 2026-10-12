@@ -1295,6 +1295,32 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
    vrstva jsou věc dalších kroků (`blocks`, posuzováno, jak kostka leží).
    Obrázek jako u druhého kroku průvodce: oba bloky barevně, zbytek šedě,
    modrá vlevo.
+
+   **Doplněno na 65 (2026-10-12).** Úplná sada (SBLS na speedcubedb.com) má
+   65 případů: 41 jako F2L a **24** s hranou dole ve střední vrstvě (roh ve
+   třech natočeních nahoře nebo ve slotu × hrana dole vpředu nebo vzadu × dvě
+   natočení). List jich z těch 24 má šest. Zbylých 18 (SB 48–65) je ze
+   SpeedCubeDB: první algoritmus stránky jako hlavní, její další jako
+   alternativy — jen pro těchto 18, stávajících 47 má alternativy dál jen z
+   listu, ať se zdroje nemíchají. Porovnáno na modelu kostky, ne podle názvů:
+   případ je poloha rohu a hrany až na otočení vrchu. Ze stránky nefungují dva
+   algoritmy (jeden rozbije levý blok, druhý je překlep) a v sadě nejsou.
+
+   **Názvy a skupiny podle SpeedCubeDB.** Případ se jmenuje stavem rohu a
+   místem hrany — `Dp DB` je roh ve slotu s bílou dopředu a hrana dole vzadu —
+   ne číslem: z předního pravého rohu není hrana dole vzadu vůbec vidět a název
+   je jediné, co říká, kde je. Roh: `U` / `Up` / `Um` nahoře (bílá nahoru /
+   doprava / dopředu), `D` / `Dp` / `Dm` ve slotu (správně / dopředu /
+   doprava); hrana: `UB UR UF UL FR DF DB`, jen `U` vedle rohu ve slotu, a `m`,
+   když je otočená. Šest skupin podle rohu (14 · 14 · 14 · 7 · 8 · 8) a každý
+   nadpis končí kódem v závorce, takže první půlku názvu vysvětluje on —
+   stránka sama `p` a `m` nevysvětluje. Názvy jsou **spočítané z kostky**, ne
+   opsané: automatické čtení stránky přiřadilo jednomu případu při dvou čteních
+   dvě různé výchozí pozice. Vyšlo týchž 65 názvů, jaké má stránka, a test sad
+   každý název čte z kostky znovu. Případy jsou kreslené s rohem nad slotem
+   (a hranou vpravo, když je roh ve slotu), sedm z nich kvůli tomu dostalo
+   otočení vrchu před algoritmus. Id zůstala (`sb-1` … `sb-65`), postup a
+   pokusy se drží jich, ne názvu.
 6. **OH algoritmy CMLL — hotové**, jako alternativy ke stávajícím případům
    (`others`), z listu „CMLL OH (right and left handed)“. List má stejných 42
    případů pod stejnými názvy jako „Kian's CMLLs“, u každého algoritmus pro
@@ -1335,7 +1361,7 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
 8. **Řádek sad v trenažéru:** název metody je tučně a v barvě textu (je to
    nadpis řádku, ne popisek), sady Rouxu se jmenují zkratkami jako sady CFOP —
    **SB · CMLL · EO · EOLR**. „Orientace hran“ a „Druhý blok“ se na řádek
-   telefonu s dalšími sadami nevešly. Případy druhého bloku jsou „SB 12“.
+   telefonu s dalšími sadami nevešly.
 9. **Případ Rouxu začíná se středy na místě.** Drill dostane scramble od
    řešiče, který umí jen otáčky stěn — a ty středy nikdy nepohnou. Případ, jehož
    výchozí pozice má pootočenou střední vrstvu (algoritmus pozpátku s lichým
@@ -1361,7 +1387,16 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
     dvě boční hrany dole v ní vypadají jako rozbitý slot. `costsASlot` teď
     dostává, na co se sada dívá: u druhého bloku je jediný slot k rozbití zadní
     pár (posuzováno, jak kostka leží), u kroků po blocích žádný není.
-13. **Později:** drill prvního bloku spíš ne (viz
+13. **Přehrávaná kostka ví, jak stojí.** Masky Rouxu se určují podle toho, kde
+    je vlevo a vpravo (`maskByHome`), a k tomu potřebují otočení, ve kterém je
+    případ držený (`standing`). Dostával ho jen průvodce; karta případu v
+    trenažéru a oba drilly ne, takže maska vzala „bloky“ z kostky před otočením:
+    svítil předek a zadek, střed pravého bloku a hrana pod ním (i jejich modré
+    protějšky) zešedly. Od 1.23.0 tak hrály i sady EO a EOLR. Statický obrázek
+    byl správně, proto to bylo vidět až při přehrávání — a jen v prohlížeči.
+14. **Zdroje v O aplikaci:** vedle J Perm jsou tam Kianovy listy (sady Rouxu) a
+    SpeedCubeDB (doplněné případy druhého bloku).
+15. **Později:** drill prvního bloku spíš ne (viz
    rozhovor 2026-10-12): chtěl by vlastní solver a řešení prvního bloku se
    netrénuje na čas z náhodné pozice, ale plánováním při inspekci.
 

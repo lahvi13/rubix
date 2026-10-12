@@ -299,10 +299,68 @@ describe('the second block', () => {
       })
       .join(' ');
 
-  it('is the forty-one places of a pair and six more with the edge in the middle slice', () => {
-    expect(pack.cases).toHaveLength(47);
-    expect(pack.cases.filter((entry) => entry.group === 'Edge in the middle slice')).toHaveLength(6);
+  it('is every place the pair can be, grouped by the corner', () => {
+    // A corner on top over the slot or already in it, three ways round each;
+    // the edge in any of seven places, two ways round — less the pair that is
+    // home, and with an edge on top counted once beside a corner in the slot,
+    // where a turn of the top makes all four places the same.
+    expect(pack.cases).toHaveLength(65);
+    const sizes = new Map<string | null, number>();
+    for (const entry of pack.cases) sizes.set(entry.group, (sizes.get(entry.group) ?? 0) + 1);
+    expect([...sizes.values()]).toEqual([14, 14, 14, 7, 8, 8]);
   });
+
+  /** Where the piece wearing exactly these colours is, and the face `lead` lies on. */
+  const locate = (state: CubeStateOf, colours: string, lead: string) => {
+    for (const [position, indices] of CUBIES) {
+      const worn = indices.map((index) => state[index] ?? '');
+      if ([...worn].sort().join('') !== colours) continue;
+      const at = indices.find((index) => state[index] === lead);
+      return { position, face: at === undefined ? '' : (FACELETS[at]?.face ?? '') };
+    }
+    throw new Error(`no piece wearing ${colours}`);
+  };
+
+  const CORNER_CODES: Record<string, string> = {
+    '1,1,1 U': 'U',
+    '1,1,1 R': 'Up',
+    '1,1,1 F': 'Um',
+    '1,-1,1 D': 'D',
+    '1,-1,1 F': 'Dp',
+    '1,-1,1 R': 'Dm',
+  };
+  const EDGE_PLACES: Record<string, string> = {
+    '0,1,-1': 'UB',
+    '1,1,0': 'UR',
+    '0,1,1': 'UF',
+    '-1,1,0': 'UL',
+    '1,0,1': 'FR',
+    '0,-1,1': 'DF',
+    '0,-1,-1': 'DB',
+  };
+
+  it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
+    '%s is named for what the cube shows',
+    (_name, entry) => {
+      // The name is the one thing that says where the edge is when the picture
+      // cannot — at the bottom back it is out of sight — so it is read off the
+      // cube here rather than trusted.
+      const state = caseState(entry);
+      const corner = locate(state, 'DFR', 'D');
+      const edge = locate(state, 'FR', 'R');
+
+      const code = CORNER_CODES[`${corner.position} ${corner.face}`];
+      const place = EDGE_PLACES[edge.position];
+      const isFlipped = place === 'FR' ? edge.face !== 'R' : edge.face === 'U' || edge.face === 'D';
+      // Beside a corner in the slot an edge on top is just "on top", and is
+      // drawn on the right.
+      const where = code?.startsWith('D') && place?.startsWith('U') ? 'U' : place;
+      if (where === 'U') expect(place).toBe('UR');
+
+      expect(`${code} ${where}${isFlipped ? 'm' : ''}`).toBe(entry.name);
+      expect(entry.group?.endsWith(`(${code})`)).toBe(true);
+    },
+  );
 
   it.each(pack.cases.map((entry) => [entry.name, entry] as const))(
     '%s is the front pair alone, everything else of the blocks in place',
@@ -314,12 +372,12 @@ describe('the second block', () => {
     },
   );
 
-  it('holds forty-seven different cases', () => {
-    // No turn of the top is forgiven here: with the pair a quarter turn on,
-    // it is another case with another algorithm.
-    const keys = pack.cases.map((entry) => blockPieces(caseState(entry)));
+  it('holds sixty-five different cases, whichever way the top is turned', () => {
+    // The same pair a turn of the top on is the same case to look up, so the
+    // set would be counting one twice.
+    const keys = pack.cases.map((entry) => aufKey(caseState(entry), blockPieces));
 
-    expect(new Set(keys).size).toBe(47);
+    expect(new Set(keys).size).toBe(65);
   });
 
   it('keeps apart the algorithms that cost the back pair', () => {

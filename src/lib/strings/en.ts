@@ -493,7 +493,7 @@ export const en = {
     rouxNext: {
       lead: 'Once you can solve without reading, the sets in the trainer make each step quicker. They go by the abbreviations you will meet everywhere:',
       sets: [
-        { name: 'SB', text: 'second block: the 47 places a pair can be in, each with an algorithm of its own. For step 2.' },
+        { name: 'SB', text: 'second block: the 65 places a pair can be in, each with an algorithm of its own. For step 2.' },
         { name: 'CMLL', text: 'corners of the last layer: steps 3 and 4 in one algorithm. 2-Look CMLL is the half-way stage, in two.' },
         { name: 'EO', text: 'edge orientation: every shape of bad edges solved outright, without going by way of the arrow. For step 5.' },
         { name: 'EOLR', text: 'EO and the left and right edges: steps 5 and 6 in one algorithm.' },
@@ -1099,6 +1099,8 @@ export const en = {
     source: 'The source code is open, under the GPL-3.0:',
     creditsTitle: 'Thanks',
     creditAlgs: 'Most of the algorithms come from J Perm —',
+    creditRoux: 'The Roux sets come from the sheets of Kian Mansour and the Roux community —',
+    creditSpeedcubedb: 'The second-block cases those sheets leave out are from SpeedCubeDB —',
     creditMethod: 'The beginner method follows badmephisto —',
     creditCubing: 'Scrambles and the 3D cube are cubing.js —',
     creditClaude: 'Built together with Claude Code —',

@@ -455,7 +455,7 @@ export const cs: Strings = {
     rouxNext: {
       lead: 'Až budeš skládat bez čtení, zrychlí tě sady v trenažéru. Jmenují se zkratkami, pod kterými je potkáš všude:',
       sets: [
-        { name: 'SB', text: 'second block, druhý blok: 47 míst, kde pár může být, každé s vlastním algoritmem. Ke kroku 2.' },
+        { name: 'SB', text: 'second block, druhý blok: 65 míst, kde pár může být, každé s vlastním algoritmem. Ke kroku 2.' },
         { name: 'CMLL', text: 'corners of the last layer, rohy poslední vrstvy: kroky 3 a 4 jedním algoritmem. 2-Look CMLL je mezistupeň na dva.' },
         { name: 'EO', text: 'edge orientation, orientace hran: každý tvar špatných hran rovnou, bez cesty přes šipku. Ke kroku 5.' },
         { name: 'EOLR', text: 'EO a k tomu levá a pravá hrana: kroky 5 a 6 jedním algoritmem.' },
@@ -1023,6 +1023,8 @@ export const cs: Strings = {
     source: 'Zdrojový kód je otevřený, pod licencí GPL-3.0:',
     creditsTitle: 'Poděkování',
     creditAlgs: 'Většina algoritmů pochází od J Perm —',
+    creditRoux: 'Sady pro Roux pocházejí z listů Kiana Mansoura a komunity Rouxu —',
+    creditSpeedcubedb: 'Případy druhého bloku, které v nich chybí, jsou ze SpeedCubeDB —',
     creditMethod: 'Metoda pro začátečníky vychází z badmephisto —',
     creditCubing: 'Scramble a 3D kostka jsou cubing.js —',
     creditClaude: 'Vytvořeno společně s Claude Code —',

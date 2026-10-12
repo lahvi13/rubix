@@ -43,11 +43,17 @@ const CS: Record<string, string> = {
   '1 / Orientation': '1 / Orientace',
   '2 / Permutation': '2 / Permutace',
 
-  // Roux's second block: grouped like F2L, by where the pair starts. Roux has
-  // no cross, so the colour is the bottom one.
-  'Bottom colour on top': 'Spodní barva nahoře',
-  'Bottom colour on the side': 'Spodní barva na boku',
-  'Edge in the middle slice': 'Hrana ve střední vrstvě',
+  // Roux's second block, grouped by the corner of the pair: where it is and
+  // which way its white faces. Each heading ends on the code that state has in
+  // a case's name — "Dp DB" is a corner in the slot with white to the front
+  // and the edge at the bottom back — which is how the heading explains the
+  // first half of the name.
+  'Corner on top, white up (U)': 'Roh nahoře, bílá nahoru (U)',
+  'Corner on top, white right (Up)': 'Roh nahoře, bílá doprava (Up)',
+  'Corner on top, white front (Um)': 'Roh nahoře, bílá dopředu (Um)',
+  'Corner in the slot, solved (D)': 'Roh ve slotu, správně (D)',
+  'Corner in the slot, white front (Dp)': 'Roh ve slotu, bílá dopředu (Dp)',
+  'Corner in the slot, white right (Dm)': 'Roh ve slotu, bílá doprava (Dm)',
 
   // Roux's edge orientation: a plain description, so it is translated. The
   // same names group EOLR, which is these cases with the side edges added.

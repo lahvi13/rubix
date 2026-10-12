@@ -12,7 +12,15 @@ import { CS_PACK_NAMES, KEPT_IN_ENGLISH, czechName, packLabel } from './pack-nam
 const ALL_PACKS = [...PACKS, CROSS_PACK];
 
 /** Cases the packs number rather than name: "OLL 21", "F2L 3", "Expert 12". */
-const NUMBERED = /^(F2L|OLL|PLL|Advanced|Expert|SB) \d+$/;
+const NUMBERED = /^(F2L|OLL|PLL|Advanced|Expert) \d+$/;
+
+/**
+ * A second-block case, named the way SpeedCubeDB names it: the corner's state
+ * and where the edge is, with an m for an edge the wrong way round. A code,
+ * read the same in any language; the group's heading says what its first
+ * half means.
+ */
+const SECOND_BLOCK = /^(U|Up|Um|D|Dp|Dm) (UB|UR|UF|UL|U|FR|DB|DF)m?$/;
 
 /**
  * An EOLR case, named as its sheet names it: the shape of the bad edges in
@@ -39,6 +47,7 @@ describe('pack names', () => {
       name in CS_PACK_NAMES ||
       KEPT_IN_ENGLISH.includes(name) ||
       NUMBERED.test(name) ||
+      SECOND_BLOCK.test(name) ||
       EOLR.test(name);
     expect(decided).toBe(true);
   });
@@ -65,7 +74,7 @@ describe('pack names', () => {
     ['Advanced 1', 'Pokročilé 1'],
     ['Advanced 41', 'Pokročilé 41'],
     ['Expert 7', 'Expert 7'],
-    ['SB 12', 'SB 12'],
+    ['Dp DBm', 'Dp DBm'],
     ['2a/2 UF UL', '2a/2 UF UL'],
     ['6 DF DB', '6 DF DB'],
     ['F2L 3', 'F2L 3'],

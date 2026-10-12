@@ -154,8 +154,8 @@ export const BEGINNER_GROUPS = {
  * Roux's second block, a pair at a time: the corner and edge of the front
  * right slot wherever they start, with the left block, the edge under the
  * right centre and the back pair already there. The forty-one places an F2L
- * pair can be, and six more with the edge down in the middle slice — which is
- * free to turn here, and is what makes these shorter than F2L.
+ * pair can be, and twenty-four more with the edge down in the middle slice —
+ * which is free to turn here, and is what makes these shorter than F2L.
  */
 export const ROUX_SB_SET_ID = 'roux-sb';
 

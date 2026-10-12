@@ -45,7 +45,7 @@ Free, no account, no ads. Once opened, it works without a connection. English an
   algorithm on a 3D cube move by move.
 - Alternative algorithms for a case, your own algorithms, and named triggers
   (sexy move, sledgehammer…) highlighted inside them.
-- Roux: the second block's 47 pairs, CMLL — all 42 cases, with one-handed
+- Roux: the second block's 65 pairs, CMLL — all 42 cases, with one-handed
   algorithms among the alternatives, and 2-Look CMLL on the way there — the
   eleven cases of edge orientation, and EOLR, which orients the edges and
   places the side ones in a single algorithm.
