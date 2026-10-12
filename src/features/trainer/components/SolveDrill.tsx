@@ -383,6 +383,7 @@ function Answer({
               setupAlg={`${diagram.orientation} ${current.algCase.setupAlg}`}
               alg={alg}
               stickering={diagram.playerStickering}
+              standing={diagram.orientation}
               request={playback.request}
               onMove={setPlayingMove}
               onStopped={playback.stopped}

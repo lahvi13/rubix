@@ -201,6 +201,11 @@ export function CaseDetail({
             setupAlg={formatAlg(setup)}
             alg={formatAlg(moves)}
             stickering={playerStickering}
+            // Said apart as well: a mask that picks out Roux's blocks goes by
+            // where left and right are, and without this it took them from
+            // the cube before it was turned — the front and back were lit,
+            // and the right block's centre and bottom edge went grey.
+            standing={orientation}
             request={playback.request}
             onMove={setPlayingMove}
             onStopped={playback.stopped}

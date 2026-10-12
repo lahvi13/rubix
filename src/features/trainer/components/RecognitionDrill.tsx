@@ -153,6 +153,9 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
                 setupAlg={question.scramble}
                 alg={formatAlg([...(question.auf ?? []), ...question.algorithm])}
                 stickering={chart.playerStickering}
+                // The question's own turn of the cube, which its scramble
+                // opens on: the blocks are wherever that left them.
+                standing={/^y[2']?(?= |$)/.exec(question.scramble)?.[0] ?? ''}
                 request={playback.request}
                 onMove={setPlayingMove}
                 onStopped={playback.stopped}
