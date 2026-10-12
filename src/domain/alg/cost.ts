@@ -12,6 +12,7 @@
 import { canonicalise } from '../cube/orientation';
 import { applyAlg, FACELETS, solvedState, type CubeState } from '../cube/state';
 import type { Move } from '../cube/notation';
+import { isJudgedAsHeld, type Stickering } from '../cube/views';
 
 const solved = solvedState();
 const BELOW_TOP = FACELETS.flatMap((sticker, index) => (sticker.position[1] === 1 ? [] : [index]));
@@ -21,6 +22,20 @@ const SLOT = FACELETS.flatMap((sticker, index) => {
   const [x, y, z] = sticker.position;
   return x === 1 && z === 1 && y !== 1 ? [index] : [];
 });
+
+/** Roux's blocks: everything on the left and the right under the top layer. */
+const BLOCKS = FACELETS.flatMap((sticker, index) => {
+  const [x, y] = sticker.position;
+  return x !== 0 && y !== 1 ? [index] : [];
+});
+
+/** The back pair of the right block: the slot a second-block algorithm can cost. */
+const BACK_SLOT = new Set(
+  FACELETS.flatMap((sticker, index) => {
+    const [x, y, z] = sticker.position;
+    return x === 1 && z === -1 && y !== 1 ? [index] : [];
+  }),
+);
 
 const layersStanding = (state: CubeState): boolean =>
   BELOW_TOP.every((index) => state[index] === solved[index]);
@@ -55,8 +70,29 @@ export function isFirstTwoLayersCase(state: CubeState): boolean {
  *
  * The cube is stood up before the result is judged, because an algorithm is
  * allowed to turn it and a good many of these do.
+ *
+ * `stickering` is what the case's set looks at, and it decides what there is
+ * to break. Roux's second block has one slot to cost — the back pair — and is
+ * judged as the cube lies, since its algorithms are free to leave the middle
+ * slice anywhere. The steps after it have none: the pieces they leave out of
+ * place under the top layer are the last six edges, which is the job still to
+ * do, not a slot taken apart. Without this every such case whose algorithm
+ * left the slice where it found it was marked as breaking one.
  */
-export function costsASlot(state: CubeState, moves: readonly Move[]): boolean {
+export function costsASlot(
+  state: CubeState,
+  moves: readonly Move[],
+  stickering: Stickering = 'full',
+): boolean {
+  if (stickering === 'blocks') {
+    const after = applyAlg(state, moves);
+    const kept = BLOCKS.filter((index) => !BACK_SLOT.has(index));
+    return (
+      kept.every((index) => after[index] === solved[index]) &&
+      [...BACK_SLOT].some((index) => after[index] !== solved[index])
+    );
+  }
+  if (isJudgedAsHeld(stickering)) return false;
   if (!isFirstTwoLayersCase(state)) return false;
 
   const after = canonicalise(applyAlg(state, moves));

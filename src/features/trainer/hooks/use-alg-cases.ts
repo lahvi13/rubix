@@ -67,7 +67,12 @@ export function useSetCases(setId: string | null): CaseGroup[] | undefined {
       // the picture is turned a quarter for the colours, and a solution read
       // off that cube would be answering about the slot next door.
       costsASlot:
-        moves?.ok === true && costsASlot(stateOf(entry.algCase.setupAlg), moves.moves),
+        moves?.ok === true &&
+        costsASlot(
+          stateOf(entry.algCase.setupAlg),
+          moves.moves,
+          diagramFor(setId ?? '', name).stickering,
+        ),
     };
 
     if (group) group.cases.push(trainerCase);

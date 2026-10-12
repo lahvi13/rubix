@@ -1355,7 +1355,13 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
     EO, EOLR a ke kterému kroku patří) a čtyřmi fázemi, po kterých timer Roux
     měří (FB · SB · CMLL · LSE, každá s kroky, které pokrývá) — zkratky na řádku
     trenažéru ani fáze timeru jinak nikde vysvětlené nejsou.
-12. **Později:** drill prvního bloku spíš ne (viz
+12. **Tečka „rozbije jiný slot“ zná Roux.** Pravidlo bylo psané pro F2L: pár
+    je doma a pod horní vrstvou něco nesedí. U EOLR tak dostalo tečku 14 z 56
+    karet — každá, jejíž algoritmus nechal střední vrstvu, kde byla, protože
+    dvě boční hrany dole v ní vypadají jako rozbitý slot. `costsASlot` teď
+    dostává, na co se sada dívá: u druhého bloku je jediný slot k rozbití zadní
+    pár (posuzováno, jak kostka leží), u kroků po blocích žádný není.
+13. **Později:** drill prvního bloku spíš ne (viz
    rozhovor 2026-10-12): chtěl by vlastní solver a řešení prvního bloku se
    netrénuje na čas z náhodné pozice, ale plánováním při inspekci.
 

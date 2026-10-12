@@ -52,6 +52,41 @@ describe('costsASlot', () => {
     expect(costsASlot(state, moves("R U R' U'"))).toBe(false);
   });
 
+  /**
+   * Roux. A second-block algorithm may leave the middle slice and the top
+   * layer however it likes, so pieces out of place down there are no cost;
+   * the one slot it can take apart is the back pair of the right block.
+   */
+  it.each([
+    // SB 7 on the sheet: its own answer, another of the same, and the one
+    // the sheet marks "free slot".
+    ["M U r U' r'", false],
+    ["F' U F U2 R U R'", false],
+    ["U' R' U R U' R U R'", true],
+  ])('on a second-block case, %s costs the back pair: %s', (alg, expected) => {
+    const state = caseFor("M U r U' r'");
+
+    expect(costsASlot(state, moves(alg), 'blocks')).toBe(expected);
+  });
+
+  it('says nothing about a second-block algorithm that does not put the pair in', () => {
+    const state = caseFor("M U r U' r'");
+
+    expect(costsASlot(state, moves("R U R' U'"), 'blocks')).toBe(false);
+  });
+
+  it.each([
+    // The arrow, which leaves the slice where it found it and two side edges
+    // down in it — seen on a phone as a dot on the card.
+    ['eolr', "U M2 U' M' U' M", "M' U M"],
+    ['lseOrientation', "M U' M'", 'M U M'],
+    ['blocksAndCorners', "R U2 R' U' R U' R'", "R U R' U R U2 R'"],
+  ] as const)('never marks a step after the blocks: %s', (stickering, setup, alg) => {
+    const state = applyAlg(solvedState(), moves(setup));
+
+    expect(costsASlot(state, moves(alg), stickering)).toBe(false);
+  });
+
   it('says nothing about a case that is only the last layer', () => {
     // A T perm leaves the layers below alone whatever is done to the top, so
     // there is no slot for anything to cost.
