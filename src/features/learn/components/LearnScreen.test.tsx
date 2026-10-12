@@ -201,6 +201,24 @@ describe('LearnScreen', () => {
     );
   });
 
+  it('comes back to the guide read last, whatever the session is timed in', async () => {
+    const user = userEvent.setup();
+    const first = render(<LearnScreen />);
+    await settled();
+
+    await user.click(screen.getByRole('button', { name: 'Roux' }));
+    await waitFor(async () => {
+      expect(await getSetting('ui.learnMethod')).toBe('roux');
+    });
+    first.unmount();
+
+    // Still a CFOP session; the page was left on Roux.
+    render(<LearnScreen />);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Roux' })).toHaveAttribute('aria-pressed', 'true'),
+    );
+  });
+
   it('switches to the other guide, each Roux step shown by pictures or one algorithm', async () => {
     const user = userEvent.setup();
     render(<LearnScreen />);

@@ -64,6 +64,13 @@ export interface SettingValues {
    */
   'ui.learnExplanations': boolean;
   /**
+   * Which method's guide was read last; empty until one has been picked, and
+   * then the guide follows the session being timed in. Somebody learning Roux
+   * still times in a CFOP session, and a guide that went back to CFOP on every
+   * visit made them switch it over each time.
+   */
+  'ui.learnMethod': string;
+  /**
    * Device-local: the nudge to put the app on an iPhone's home screen was
    * waved away here. Another device is another Safari, with its own week.
    */
@@ -218,6 +225,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.caseLayout': 'small',
   'ui.showLearn': true,
   'ui.learnExplanations': true,
+  'ui.learnMethod': '',
   'ui.installNudgeDismissed': false,
   'trainer.twoLookDefault': true,
   'trainer.showAlgs': true,

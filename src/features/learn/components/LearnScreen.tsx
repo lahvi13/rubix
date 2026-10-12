@@ -62,12 +62,14 @@ export function LearnScreen() {
   const [showNotation, setShowNotation] = useState(false);
   const [showLearn, setShowLearn] = useSetting('ui.showLearn');
   const [isExplained, setExplained] = useSetting('ui.learnExplanations');
-  // The guide for the method being timed in, until the reader picks the other:
-  // somebody about to start Roux wants to read it before making a session.
+  // The guide read last. Until one has been picked, the one for the method
+  // being timed in: somebody who made a Roux session wants Roux explained.
+  // Not the session's every time — a method is learned from here long before
+  // it is timed, and the page kept going back to the one already known.
   const activeMethodId = useActiveMethodId();
   const methods = useMethodList();
-  const [chosenMethodId, setChosenMethodId] = useState<string | null>(null);
-  const wanted = chosenMethodId ?? activeMethodId ?? FALLBACK_METHOD;
+  const [lastMethodId, setLastMethodId] = useSetting('ui.learnMethod');
+  const wanted = lastMethodId !== '' ? lastMethodId : (activeMethodId ?? FALLBACK_METHOD);
   const methodId = Object.hasOwn(GUIDES, wanted) ? wanted : FALLBACK_METHOD;
   const isRoux = methodId === 'roux';
   const nameOf = (id: string) => methods?.find((method) => method.id === id)?.name ?? id;
@@ -81,7 +83,7 @@ export function LearnScreen() {
             type="button"
             className={id === methodId ? 'is-active' : ''}
             aria-pressed={id === methodId}
-            onClick={() => setChosenMethodId(id)}
+            onClick={() => setLastMethodId(id)}
           >
             {nameOf(id)}
           </button>
