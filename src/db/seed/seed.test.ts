@@ -66,6 +66,14 @@ describe('seed', () => {
     expect(roux?.phases.map((phase) => phase.order)).toEqual([0, 1, 2, 3]);
   });
 
+  it('seeds ZZ with three phases, the last layer as one', async () => {
+    await seedPacks();
+
+    const zz = await db.methods.get('zz');
+    expect(zz?.phases.map((phase) => phase.key)).toEqual(['eocross', 'f2l', 'll']);
+    expect(zz?.phases.map((phase) => phase.order)).toEqual([0, 1, 2]);
+  });
+
   it('gives every case a setup that undoes its algorithm', async () => {
     await seedPacks();
 

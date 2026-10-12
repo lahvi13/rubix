@@ -71,6 +71,7 @@ export interface AlgPack {
 export const PACK_PUZZLE = '333';
 export const PACK_METHOD_ID = 'cfop';
 export const ROUX_METHOD_ID = 'roux';
+export const ZZ_METHOD_ID = 'zz';
 
 export const PACKS: readonly AlgPack[] = [
   pll,

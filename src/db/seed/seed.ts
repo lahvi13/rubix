@@ -8,6 +8,7 @@ import {
   PACK_METHOD_ID,
   PACK_PUZZLE,
   ROUX_METHOD_ID,
+  ZZ_METHOD_ID,
   type AlgPack,
   type PackCase,
 } from './packs';
@@ -15,8 +16,8 @@ import { CASE_TWINS, packAlgId } from '../../domain/alg/sets';
 import { TRIGGER_PACK } from './triggers';
 
 /**
- * Puts the built-in data in place: the CFOP method, the algorithm sets and
- * their cases, one pack algorithm each, and the triggers.
+ * Puts the built-in data in place: the methods, the algorithm sets and their
+ * cases, one pack algorithm each, and the triggers.
  *
  * Runs on every start and is an upsert keyed by id, so a later app version can
  * add cases or correct an algorithm. Three things it must never do: touch a
@@ -352,7 +353,25 @@ const ROUX: MethodDefinition = {
   ],
 };
 
-const METHODS: readonly MethodDefinition[] = [CFOP, ROUX];
+/**
+ * The last layer is one phase, not OCLL and PLL. That is how the method counts
+ * its steps, and what a ZZ split is for is weighing EOCross against the F2L it
+ * buys; the two looks are CFOP's own and would say nothing new. It also has to
+ * be settled once — a session's splits belong to the phases they were timed
+ * under — and a one-look last layer would undo the division anyway.
+ */
+const ZZ: MethodDefinition = {
+  id: ZZ_METHOD_ID,
+  name: 'ZZ',
+  puzzle: PACK_PUZZLE,
+  phases: [
+    { key: 'eocross', label: 'EOCross', order: 0 },
+    { key: 'f2l', label: 'F2L', order: 1 },
+    { key: 'll', label: 'LL', order: 2 },
+  ],
+};
+
+const METHODS: readonly MethodDefinition[] = [CFOP, ROUX, ZZ];
 
 function buildMethod(definition: MethodDefinition, existing: Method | undefined): Method {
   return {
