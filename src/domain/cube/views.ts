@@ -8,6 +8,7 @@
  * it is coming from.
  */
 
+import { isBadEdge } from './edge-orientation';
 import type { Face, Move } from './notation';
 import { FACELETS, movePermutation, solvedState, type CubeState } from './state';
 
@@ -81,6 +82,20 @@ export type Stickering =
    * half of the case.
    */
   | 'eolr'
+  /**
+   * Every edge and every centre in its colours and the corners left out: what
+   * ZZ's first step is read from. Whether an edge is good is a matter of which
+   * colour lies where, and a corner sticker beside it is one more colour to
+   * look past.
+   */
+  | 'allEdges'
+  /**
+   * The edges ZZ has to turn over, flagged whole, and the centres they are
+   * read against; nothing else. Both stickers of a bad edge, not the one that
+   * gives it away: from a corner of the cube only one of the two may be in
+   * sight, and the step that follows is about where the bad ones are, not why.
+   */
+  | 'badEdges'
   /**
    * No colours at all: the shape of a cube, standing in for one that is not
    * known yet — the scramble still being generated.
@@ -272,6 +287,11 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
         isSideEdge(state, index)
         ? colour
         : null;
+    case 'allEdges':
+      return pieceSize(index) === 3 ? null : colour;
+    case 'badEdges':
+      if (pieceSize(index) === 1) return colour;
+      return isBadEdge(state, index) ? MARKED : null;
     case 'blank':
       return null;
     case 'firstTwoLayers':

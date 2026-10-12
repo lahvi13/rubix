@@ -23,6 +23,7 @@ import { useCurrentStep } from '../../../hooks/use-current-step';
 import { useActiveMethodId, useMethodList } from '../hooks/use-guide-method';
 import {
   GUIDES,
+  figureState,
   holdState,
   situationPicture,
   wayOut,
@@ -35,6 +36,50 @@ import { SituationSheet } from './SituationSheet';
 const anchorOf = (step: LearnStep) => `learn-${step.id}`;
 const GUIDE_IDS = Object.keys(GUIDES);
 const FALLBACK_METHOD = 'cfop';
+
+/** What a guide says round its steps: how it opens, where it comes from, what follows it. */
+interface GuideCopy {
+  intro: string;
+  source: string;
+  sourceLink: string;
+  href: string;
+  /**
+   * The trainer's sets for the method and the phases its sessions are timed
+   * in; null for the first guide, whose next step is the method beside it.
+   */
+  next: {
+    lead: string;
+    sets: readonly { name: string; text: string }[];
+    more: string;
+    hide: string;
+  } | null;
+}
+
+const CFOP_COPY: GuideCopy = {
+  intro: strings.learn.intro,
+  source: strings.learn.source,
+  sourceLink: strings.learn.sourceLink,
+  href: 'http://badmephisto.com',
+  next: null,
+};
+
+const GUIDE_COPY: Readonly<Record<string, GuideCopy>> = {
+  cfop: CFOP_COPY,
+  roux: {
+    intro: strings.learn.rouxIntro,
+    source: strings.learn.rouxSource,
+    sourceLink: strings.learn.rouxSourceLink,
+    href: 'https://sites.google.com/view/kianroux/',
+    next: strings.learn.rouxNext,
+  },
+  zz: {
+    intro: strings.learn.zzIntro,
+    source: strings.learn.zzSource,
+    sourceLink: strings.learn.zzSourceLink,
+    href: 'https://www.zzmethod.com/',
+    next: strings.learn.zzNext,
+  },
+};
 
 /** Which case sheet is open, and which set and group it belongs to. */
 interface OpenCase {
@@ -71,7 +116,7 @@ export function LearnScreen() {
   const [lastMethodId, setLastMethodId] = useSetting('ui.learnMethod');
   const wanted = lastMethodId !== '' ? lastMethodId : (activeMethodId ?? FALLBACK_METHOD);
   const methodId = Object.hasOwn(GUIDES, wanted) ? wanted : FALLBACK_METHOD;
-  const isRoux = methodId === 'roux';
+  const copy = GUIDE_COPY[methodId] ?? CFOP_COPY;
   const nameOf = (id: string) => methods?.find((method) => method.id === id)?.name ?? id;
 
   return (
@@ -91,7 +136,7 @@ export function LearnScreen() {
       </div>
 
       {isExplained ? (
-        <p className="learn__intro">{isRoux ? strings.learn.rouxIntro : strings.learn.intro}</p>
+        <p className="learn__intro">{copy.intro}</p>
       ) : null}
 
       <div className="learn__tools">
@@ -137,32 +182,28 @@ export function LearnScreen() {
           />
           {strings.learn.hide}
         </label>
-        {!isExplained ? null : isRoux ? (
+        {!isExplained ? null : copy.next === null ? (
+          <p className="learn__caption learn__caption--left">{strings.learn.hideHint}</p>
+        ) : (
           <>
-            <p className="learn__caption learn__caption--left">{strings.learn.rouxNext.lead}</p>
+            <p className="learn__caption learn__caption--left">{copy.next.lead}</p>
             <ul className="learn__sets">
-              {strings.learn.rouxNext.sets.map((set) => (
+              {copy.next.sets.map((set) => (
                 <li key={set.name}>
                   <strong>{set.name}</strong> — {set.text}
                 </li>
               ))}
             </ul>
-            <p className="learn__caption">{strings.learn.rouxNext.more}</p>
-            <p className="learn__caption learn__caption--left">{strings.learn.rouxNext.hide}</p>
+            <p className="learn__caption">{copy.next.more}</p>
+            <p className="learn__caption learn__caption--left">{copy.next.hide}</p>
           </>
-        ) : (
-          <p className="learn__caption learn__caption--left">{strings.learn.hideHint}</p>
         )}
       </div>
 
       <p className="learn__credit">
-        {isRoux ? strings.learn.rouxSource : strings.learn.source}{' '}
-        <a
-          href={isRoux ? 'https://sites.google.com/view/kianroux/' : 'http://badmephisto.com'}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {isRoux ? strings.learn.rouxSourceLink : strings.learn.sourceLink}
+        {copy.source}{' '}
+        <a href={copy.href} target="_blank" rel="noopener noreferrer">
+          {copy.sourceLink}
         </a>
       </p>
 
@@ -306,6 +347,25 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
           )}
         </ul>
       ) : null}
+
+      {/* A rule's example, straight under the rule: the cube to try it on,
+          the moves that make that cube, and the same cube with the answer. */}
+      {step.figures?.map((figure) => (
+        <figure key={figure.caption} className="learn__figure">
+          <CubeDiagram
+            className={figure.picture.view === 'net' ? 'learn__net' : 'learn__goal'}
+            state={figureState(figure)}
+            view={figure.picture.view}
+            stickering={figure.picture.stickering}
+            skin={skin}
+            label={null}
+          />
+          {figure.isSetupShown ? (
+            <AlgText moves={movesOf(figure.setup)} triggers={triggers} />
+          ) : null}
+          {isExplained ? <figcaption className="learn__caption">{figure.caption}</figcaption> : null}
+        </figure>
+      ))}
 
       {/* A step with a case of its own opens on that case, and its situations
           are the ways to it: they go under it, further down. */}

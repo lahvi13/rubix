@@ -6,7 +6,7 @@ import { getSetting } from '../../../db/repositories/settings-repository';
 import { createSession } from '../../../db/repositories/session-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { strings } from '../../../lib/strings';
-import { LEARN_STEPS, ROUX_STEPS } from '../steps';
+import { LEARN_STEPS, ROUX_STEPS, ZZ_STEPS } from '../steps';
 import { LearnScreen } from './LearnScreen';
 
 describe('LearnScreen', () => {
@@ -243,6 +243,40 @@ describe('LearnScreen', () => {
     expect(screen.getByRole('link', { name: strings.learn.rouxSourceLink })).toHaveAttribute(
       'href',
       'https://sites.google.com/view/kianroux/',
+    );
+  });
+
+  it('has a third guide for ZZ, its first step an example and its edges and pairs all pictures', async () => {
+    const user = userEvent.setup();
+    render(<LearnScreen />);
+    await settled();
+
+    await user.click(screen.getByRole('button', { name: 'ZZ' }));
+    await settled();
+
+    expect(sections().map((section) => section.querySelector('h2')?.textContent)).toEqual(
+      ZZ_STEPS.map((step, index) => `${index + 1}${step.title}`),
+    );
+    // Nothing to turn while the bad edges are being counted; four ways to turn
+    // them good, two for the cross, seven for a pair, and the last layer as
+    // the first guide has it.
+    await waitFor(() =>
+      expect(sections().map((section) => caseButtons(section).length)).toEqual([
+        0, 4, 2, 7, 1, 1, 1,
+      ]),
+    );
+    // The cube to count on and the same cube with the answer, the moves that
+    // make it printed once.
+    const [badEdges] = sections();
+    if (!badEdges) throw new Error('the guide lost its first step');
+    expect(within(badEdges).getAllByRole('figure')).toHaveLength(2);
+    expect(within(badEdges).getByText(strings.learn.zzFigures.answer)).toBeInTheDocument();
+    expect(badEdges.querySelectorAll('.alg')).toHaveLength(1);
+
+    expect(screen.getByText(strings.learn.zzNext.more)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: strings.learn.zzSourceLink })).toHaveAttribute(
+      'href',
+      'https://www.zzmethod.com/',
     );
   });
 

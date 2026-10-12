@@ -67,6 +67,19 @@ export interface LearnGoal {
   caption: string;
 }
 
+/**
+ * A cube drawn to show a rule rather than a position to get out of: the
+ * example a step asks the reader to try, and its answer.
+ */
+export interface LearnFigure {
+  picture: SituationPicture;
+  /** The moves that make the cube drawn, from a solved one stood as the picture stands. */
+  setup: string;
+  caption: string;
+  /** Printed under the picture, for a reader following along with a cube in hand. */
+  isSetupShown: boolean;
+}
+
 export interface LearnStep {
   id: string;
   title: string;
@@ -92,6 +105,8 @@ export interface LearnStep {
   picture?: SituationPicture;
   /** The finished thing, for a step that builds something a sentence cannot show. */
   goal?: LearnGoal;
+  /** Examples of what the points say, for a step that teaches a rule and no moves. */
+  figures?: readonly LearnFigure[];
   /**
    * The corner every picture of the opening algorithm frames: the one its
    * text says where to put. Not on the quicker cases, which hold no rule.
@@ -118,6 +133,48 @@ const U_PERM = "R U' R U R U R U' R' U' R2";
  * things are not in competition — one is how you start, the other is how it
  * gets quick.
  */
+const CORNER_ORIENTATION_STEP: LearnStep = {
+  id: 'corner-orientation',
+  setId: '2look-oll',
+  group: '2 / Corners',
+  caseIds: ['2oll-sune'],
+  keyText: strings.learn.holds.oneOriented,
+  holds: [
+    { alg: `${SUNE} ${SUNE} U2 ${SUNE}`, text: strings.learn.holds.twoOriented },
+    { alg: `${SUNE} ${SUNE}`, text: strings.learn.holds.noneOriented },
+  ],
+  situations: [],
+  markedCorner: 'frontLeft',
+  advanced: { setId: '2look-oll', group: '2 / Corners' },
+  ...strings.learn.steps.cornerOrientation,
+};
+
+const CORNER_PERMUTATION_STEP: LearnStep = {
+  id: 'corner-permutation',
+  setId: BEGINNER_SET_ID,
+  group: BEGINNER_GROUPS.cornersHome,
+  caseIds: [],
+  keyText: strings.learn.holds.headlights,
+  holds: [{ alg: `${A_PERM} U ${A_PERM} U'`, text: strings.learn.holds.noHeadlights }],
+  situations: [],
+  markedCorner: null,
+  advanced: { setId: '2look-pll', group: '1 / Corners' },
+  ...strings.learn.steps.cornerPermutation,
+};
+
+const EDGE_PERMUTATION_STEP: LearnStep = {
+  id: 'edge-permutation',
+  setId: BEGINNER_SET_ID,
+  group: BEGINNER_GROUPS.edgesHome,
+  caseIds: [],
+  keyText: strings.learn.holds.oneSide,
+  holds: [{ alg: `${U_PERM} U ${U_PERM} U'`, text: strings.learn.holds.noSide }],
+  situations: [],
+  markedCorner: null,
+  advanced: { setId: '2look-pll', group: '2 / Edges' },
+  ...strings.learn.steps.edgePermutation,
+};
+
 export const LEARN_STEPS: readonly LearnStep[] = [
   {
     id: 'cross',
@@ -176,45 +233,9 @@ export const LEARN_STEPS: readonly LearnStep[] = [
     advanced: null,
     ...strings.learn.steps.edgeOrientation,
   },
-  {
-    id: 'corner-orientation',
-    setId: '2look-oll',
-    group: '2 / Corners',
-    caseIds: ['2oll-sune'],
-    keyText: strings.learn.holds.oneOriented,
-    holds: [
-      { alg: `${SUNE} ${SUNE} U2 ${SUNE}`, text: strings.learn.holds.twoOriented },
-      { alg: `${SUNE} ${SUNE}`, text: strings.learn.holds.noneOriented },
-    ],
-    situations: [],
-    markedCorner: 'frontLeft',
-    advanced: { setId: '2look-oll', group: '2 / Corners' },
-    ...strings.learn.steps.cornerOrientation,
-  },
-  {
-    id: 'corner-permutation',
-    setId: BEGINNER_SET_ID,
-    group: BEGINNER_GROUPS.cornersHome,
-    caseIds: [],
-    keyText: strings.learn.holds.headlights,
-    holds: [{ alg: `${A_PERM} U ${A_PERM} U'`, text: strings.learn.holds.noHeadlights }],
-    situations: [],
-    markedCorner: null,
-    advanced: { setId: '2look-pll', group: '1 / Corners' },
-    ...strings.learn.steps.cornerPermutation,
-  },
-  {
-    id: 'edge-permutation',
-    setId: BEGINNER_SET_ID,
-    group: BEGINNER_GROUPS.edgesHome,
-    caseIds: [],
-    keyText: strings.learn.holds.oneSide,
-    holds: [{ alg: `${U_PERM} U ${U_PERM} U'`, text: strings.learn.holds.noSide }],
-    situations: [],
-    markedCorner: null,
-    advanced: { setId: '2look-pll', group: '2 / Edges' },
-    ...strings.learn.steps.edgePermutation,
-  },
+  CORNER_ORIENTATION_STEP,
+  CORNER_PERMUTATION_STEP,
+  EDGE_PERMUTATION_STEP,
 ];
 
 /**
@@ -419,10 +440,168 @@ export const ROUX_STEPS: readonly LearnStep[] = [
   },
 ];
 
+/**
+ * ZZ, held the way its tutorial holds it: yellow up and blue in front, a half
+ * turn from how every skin is written. Not the quarter turn the F2L pictures
+ * use to keep green and orange apart: which edges are bad is read against the
+ * front and the back, and a quarter turn round is another cube. A half turn
+ * does that job as well — the front right slot is blue beside red.
+ */
+const ZZ_STANDING = 'y2';
+
+const ALL_EDGES_NET: SituationPicture = {
+  view: 'net',
+  stickering: 'allEdges',
+  playerStickering: 'allEdges',
+  standing: ZZ_STANDING,
+};
+
+const BAD_EDGES_NET: SituationPicture = { ...ALL_EDGES_NET, stickering: 'badEdges' };
+
+/**
+ * Where the bad edges are, from the corner the cube is turned from. The cube
+ * that plays the moves wears its edges' colours instead of the flags: an edge
+ * going good is its colours changing places, and a flag cannot show that.
+ */
+const BAD_EDGES_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'badEdges',
+  playerStickering: 'allEdges',
+  standing: ZZ_STANDING,
+};
+
+const ZZ_CROSS_PICTURE: SituationPicture = { ...CROSS_PICTURE, standing: ZZ_STANDING };
+
+const ZZ_PAIR_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'firstTwoLayers',
+  playerStickering: 'firstTwoLayers',
+  standing: ZZ_STANDING,
+};
+
+/** Seven turns from solved that leave six edges bad, two of them in each layer. */
+const BAD_EDGES_EXAMPLE = "F' L' D U2 L B' D";
+
+/**
+ * ZZ in seven steps. The first two are the method: which edges are bad, and
+ * how to turn them good — a count and a picture for every answer, like Roux's
+ * last three, because that is where somebody coming from CFOP has nothing to
+ * go by. The cross and the pairs are CFOP's with fewer turns allowed, and the
+ * last layer is CFOP's own last three steps, minus the one the edges already
+ * did.
+ *
+ * The pairs are a procedure too: both pieces up, apart, then by the colour on
+ * top of the corner. As it is worded it was run over every place a pair can
+ * be, for each of the four slots, before it was written down.
+ */
+export const ZZ_STEPS: readonly LearnStep[] = [
+  {
+    id: 'zz-bad-edges',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [],
+    // The same cube twice: once to count on, once with the answer.
+    figures: [
+      {
+        picture: ALL_EDGES_NET,
+        setup: BAD_EDGES_EXAMPLE,
+        caption: strings.learn.zzFigures.tryIt,
+        isSetupShown: true,
+      },
+      {
+        picture: BAD_EDGES_NET,
+        setup: BAD_EDGES_EXAMPLE,
+        caption: strings.learn.zzFigures.answer,
+        isSetupShown: false,
+      },
+    ],
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.zzSteps.badEdges,
+  },
+  {
+    id: 'zz-edges-good',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    // The turn itself, one way of carrying an edge to it, and the two counts
+    // that do not divide by four.
+    situations: [
+      { alg: 'F', text: strings.learn.zzSituations.fourOnFront },
+      { alg: "R' F", text: strings.learn.zzSituations.gather },
+      { alg: 'F', next: "R' F", text: strings.learn.zzSituations.twoBad },
+      { alg: 'F', next: "R' L U2 F", text: strings.learn.zzSituations.sixBad },
+    ],
+    picture: BAD_EDGES_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.zzSteps.edgesGood,
+  },
+  {
+    id: 'zz-cross',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [
+      { alg: 'F2', text: strings.learn.zzSituations.crossTop },
+      { alg: "D R' D'", text: strings.learn.zzSituations.crossMiddle },
+    ],
+    picture: ZZ_CROSS_PICTURE,
+    goal: {
+      picture: { ...ZZ_CROSS_PICTURE, view: 'net' },
+      caption: strings.learn.crossCaption,
+    },
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.zzSteps.cross,
+  },
+  {
+    id: 'zz-pairs',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    // The two shapes a pair goes in from, then the way to them in the order
+    // it is walked: a piece out of a slot, the two apart, and the three
+    // colours the top of the corner can be.
+    situations: [
+      { alg: "R U' R'", text: strings.learn.zzSituations.joined },
+      { alg: "R U R'", text: strings.learn.zzSituations.split },
+      { alg: "R U R'", next: "U' R U R'", text: strings.learn.zzSituations.stuck },
+      { alg: "R U2 R'", next: "U' R U R'", text: strings.learn.zzSituations.touching },
+      { alg: "R U2 R'", next: "U R U' R'", text: strings.learn.zzSituations.whiteUp },
+      { alg: "R U2 R'", next: "U' R U2 R'", text: strings.learn.zzSituations.topsMatch },
+      { alg: "R U R'", next: "U R U R'", text: strings.learn.zzSituations.topsDiffer },
+    ],
+    picture: ZZ_PAIR_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.zzSteps.pairs,
+  },
+  // The last layer is CFOP's, cases and pictures and all — only the reason
+  // its cross is already there is ZZ's own.
+  {
+    ...CORNER_ORIENTATION_STEP,
+    id: 'zz-corner-orientation',
+    ...strings.learn.zzSteps.cornersUp,
+  },
+  { ...CORNER_PERMUTATION_STEP, id: 'zz-corner-permutation' },
+  { ...EDGE_PERMUTATION_STEP, id: 'zz-edge-permutation' },
+];
+
 /** A guide per method, by the method's id. */
 export const GUIDES: Readonly<Record<string, readonly LearnStep[]>> = {
   cfop: LEARN_STEPS,
   roux: ROUX_STEPS,
+  zz: ZZ_STEPS,
 };
 
 /** How a step's situations are drawn: its own picture, or the cross's. */
@@ -433,6 +612,12 @@ export function situationPicture(step: LearnStep): SituationPicture {
 /** Everything between a picture and the end of its step: the moves shown, then what follows. */
 export function wayOut(hold: LearnHold | LearnSituation): string {
   return 'next' in hold && hold.next !== undefined ? `${hold.alg} ${hold.next}` : hold.alg;
+}
+
+/** The cube a figure draws: stood as its picture stands, then its moves done. */
+export function figureState(figure: LearnFigure): CubeState {
+  const moves = parseAlg(`${figure.picture.standing} ${figure.setup}`);
+  return moves.ok ? applyAlg(solvedState(), moves.moves) : solvedState();
 }
 
 /** The cube as the reader meets it: stood as the step holds it, then the way out undone. */

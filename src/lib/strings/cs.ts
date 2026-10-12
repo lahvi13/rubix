@@ -554,6 +554,98 @@ export const cs: Strings = {
         ],
       },
     },
+    zzIntro:
+      "ZZ si na začátku připlatí za pohodlný zbytek: než se cokoli postaví, otočí se všechny hrany tak, aby další skládání nepotřebovalo tah přední ani zadní stěnou a žádné otáčení celé kostky. Sedm kroků: najít špatné hrany, opravit je, cross, čtyři páry jen tahy R, L a U a poslední vrstva, která už má žlutý cross hotový. Počítá s tím, že kostku už složit umíš. Obrázky mají žlutou nahoře, bílou dole a modrou vpředu. Tlačítko Notace vysvětlí písmena jako R nebo U'.",
+    zzSource: 'Kroky vycházejí z tutoriálu ZZ od crystalcubera a týmu ZZMethod.com, na',
+    zzSourceLink: 'zzmethod.com',
+    zzNext: {
+      lead: 'Až budeš skládat bez čtení, algoritmy nejdřív pomůžou u poslední vrstvy. V trenažéru jsou pod CFOP, které je má společné:',
+      sets: [
+        { name: 'OCLL', text: 'orient the corners of the last layer, orientace rohů poslední vrstvy: sedm případů, každý s vlastním algoritmem – druhý krok 2-Look OLL. Ke kroku 5.' },
+        { name: 'PLL', text: 'permute the last layer, prohození poslední vrstvy: kroky 6 a 7 jedním algoritmem. 2-Look PLL je mezistupeň na dva.' },
+      ],
+      more: 'V session založené jako ZZ měří timer tři fáze (tlačítko Fáze): EOCross – hrany a cross, kroky 1 až 3; F2L – čtyři páry, krok 4; LL – last layer, poslední vrstva, kroky 5 až 7.',
+      hide: 'Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
+    },
+    zzFigures: {
+      tryIt:
+        'Zkus si to: složená kostka, žlutá nahoře a modrá vpředu, a tahy pod obrázkem. Kolik hran je špatných?',
+      answer: 'Šest – ty fialové. Každou si na obrázku nahoře porovnej s oběma pravidly.',
+    },
+    zzSituations: {
+      fourOnFront: 'Čtyři špatné vpředu: jedna otáčka a všechny jsou dobré.',
+      gather: "Tři vpředu, čtvrtá nahoře vpravo: R' ji k nim snese a nepřetočí. Pak otáčka.",
+      twoBad:
+        'Dvě špatné: jedna vpředu se třemi dobrými, druhá kdekoli jinde. Otáčka z nich udělá čtyři.',
+      sixBad: 'Šest špatných: tři vpředu s jednou dobrou. Po otáčce zbudou čtyři.',
+      crossTop: 'Bílá nahoře, nad středem své druhé barvy: půlotáčka tou stěnou.',
+      crossMiddle: 'Bílá míří na tebe v prostřední vrstvě: spodek stranou, hranu dolů, spodek zpátky.',
+      joined: 'Spojený a mimo stěnu slotu: zvedni slot, natoč pár nad něj a vrať ho.',
+      split: 'Rozdělený, roh nad svým slotem: zvednutí slotu je spojí. Pár vrať nad slot a dolů.',
+      stuck:
+        'Dílek ve slotu: zvedni slot, otáčej vrškem, dokud na té stěně není žádný z obou dílků, a slot vrať.',
+      touching: 'Dotýkají se, nejsou spojené: roh nad slot, zvedni ho, vrškem o půl a vrať.',
+      whiteUp:
+        'Bílá na vršku rohu: natoč hranu nad střed její boční barvy. Zvedni slot, roh natoč nad hranu a slot vrať. Spojený.',
+      topsMatch:
+        'Na vršku obou stejná barva: roh dozadu vpravo. Zvedni slot, roh tím uhne; hranu natoč dozadu, vedle místa, kde byl, a slot vrať. Spojený.',
+      topsDiffer:
+        'Na vršku různé barvy: roh dozadu vpravo, zvedni slot, ale hranu pošli doleva, od něj pryč. Rozdělený.',
+    },
+    zzSteps: {
+      badEdges: {
+        title: 'Špatné hrany',
+        points: [
+          'Žlutý střed nahoru, modrý dopředu – a tak kostka zůstane, dokud nejsou hotové první dvě vrstvy. Které hrany jsou špatné, záleží na tom, jak ji držíš.',
+          'Hrana je dobrá, když ji domů dostanou tahy R, L, U a D, a špatná, když potřebuje čtvrtotáčku přední nebo zadní stěny. Dívej se jen na hrany; špatnou prozradí dvě věci:',
+          'Červená nebo oranžová – barvy levého a pravého středu – nahoře, dole, nebo v prostřední řadě přední či zadní stěny.',
+          'Žlutá nebo bílá na levé či pravé stěně, nebo v horní či spodní řadě přední či zadní stěny.',
+          'Spočítej je. Vždycky jich je sudý počet, od žádné po dvanáct.',
+        ],
+        tip: 'je špatných víc než dobrých? Sleduj ty dobré.',
+      },
+      edgesGood: {
+        title: 'Oprava hran',
+        points: [
+          'Hrany přetočí jen čtvrtotáčka přední nebo zadní stěny – všechny čtyři na té stěně najednou, špatné na dobré a dobré na špatné. Každý jiný tah je jen přenáší: R, L, U, D a půlotáčky F2 a B2.',
+          'Špatné hrany tedy přenes na přední nebo zadní stěnu a otoč jí. Kolik jich tam dát, záleží na tom, kolik jich je:',
+          'Čtyři: všechny na jednu stěnu. Jedna otáčka a jsou dobré. Osm nebo dvanáct jsou čtyři a čtyři.',
+          'Dvě: jednu z nich na stěnu ke třem dobrým. Otáčka z nich udělá čtyři špatné.',
+          'Šest nebo deset: tři na stěnu k jedné dobré. Po otáčce zbudou čtyři, nebo osm.',
+        ],
+        tip: 'začni stěnou, na které už je špatných hran nejvíc. Co obrázky dělají vpředu, funguje i vzadu s B.',
+      },
+      cross: {
+        title: 'Cross',
+        points: [
+          'Čtyři bílé hrany kolem bílého středu dole, každá sedí se středem vedle – stejný cross jako v CFOP.',
+          'Otáčet se teď smí jen R, L, U, D, F2 a B2. S dobrými hranami to stačí: bílá nikdy nemíří nešikovně. Nahoře míří nahoru, v prostřední vrstvě dopředu nebo dozadu.',
+          'Nahoře: otáčej vrškem, dokud hrana nestojí nad středem své druhé barvy, a pak tou stěnou otoč o půl.',
+          'V prostřední vrstvě: dolů ji pošle jedna otáčka stěny, na které je. Nejdřív natoč spodek, ať je její místo pod ní, a potom ho vrať.',
+        ],
+        warning: 'čtvrtotáčka F nebo B nebo otočení celé kostky, a hrany se musí počítat znovu.',
+        tip: 'kroky 1 až 3 se dohromady jmenují EOCross. Časem se plánují najednou, ještě před prvním tahem.',
+      },
+      pairs: {
+        title: 'První dvě vrstvy',
+        points: [
+          'Čtyři sloty mezi hranami crossu, do každého patří roh a hrana se stejnými dvěma bočními barvami – pár. Kostka se pořád neotáčí a F ani B se nehýbou: slot zvedá jeho vlastní stěna, R pro dva vpravo a L pro dva vlevo, a zbytek udělá vršek.',
+          'Pár se vkládá ze dvou tvarů, spojený nebo rozdělený – první dva obrázky. Všechno ostatní je cesta k jednomu z nich, v tomto pořadí:',
+          'Oba dílky nahoru. Když je jeden ve slotu, vytáhne ho třetí obrázek.',
+          'Dotýkají se, ale nejsou spojené jako na prvním obrázku? Čtvrtý obrázek je oddělí.',
+          'Pak rozhoduje barva na vršku rohu: bílá, stejná jako na vršku hrany, nebo ta druhá. Poslední tři obrázky, každý končí spojeným nebo rozděleným párem.',
+        ],
+        tip: "obrázky ukazují slot vpředu vpravo. Vpředu vlevo je to zrcadlově, L' místo R. Zadní sloty se zvedají opačně: vpravo R', vlevo L.",
+      },
+      cornersUp: {
+        title: 'Orientace poslední vrstvy',
+        points: [
+          'Žlutý cross už stojí – za to se na začátku otáčely hrany. Zbývá otočit čtyři rohy a odteď se kostka zase smí otáčet celá.',
+          'Stačí jeden algoritmus: opakuj ho, dokud není stěna žlutá. Víc než tři spuštění to nikdy nepotřebuje.',
+          'Před každým spuštěním natoč kostku podle obrázků – podle toho, kolik rohů už má žlutou nahoře.',
+        ],
+      },
+    },
   },
   trainer: {
     progress: { new: 'Nový', learning: 'Učím se', known: 'Umím' },
@@ -1025,6 +1117,7 @@ export const cs: Strings = {
     creditAlgs: 'Většina algoritmů pochází od J Perm —',
     creditRoux: 'Sady pro Roux pocházejí z listů Kiana Mansoura a komunity Rouxu —',
     creditSpeedcubedb: 'Případy druhého bloku, které v nich chybí, jsou ze SpeedCubeDB —',
+    creditZz: 'Průvodce ZZ vychází z tutoriálu týmu ZZMethod.com —',
     creditMethod: 'Metoda pro začátečníky vychází z badmephisto —',
     creditCubing: 'Scramble a 3D kostka jsou cubing.js —',
     creditClaude: 'Vytvořeno společně s Claude Code —',

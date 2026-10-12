@@ -386,7 +386,7 @@ export const en = {
     confirmDelete: 'Delete session',
     cancel: 'Cancel',
     namePlaceholder: 'New session name',
-    /** Over the choice a new session is timed in: CFOP or Roux. */
+    /** Over the choice a new session is timed in: CFOP, Roux or ZZ. */
     method: 'Method',
   },
   learn: {
@@ -590,6 +590,102 @@ export const en = {
           'None — dots: turn M until the stripe across the top is one colour, then U2 M2 U2 M2. No such stripe to be had? Run it once anyway, and there will be.',
           "One — three edges going round: beside the edge that fits is one that matches neither of its centres. Turn M until that one is on top with the fitting edge straight under it, then U2 M U2 M' at the front, or U2 M' U2 M at the back.",
           'Last, turn M until the centres are home: the cube is solved.',
+        ],
+      },
+    },
+    /* ZZ, the third guide: its introduction and credit, what comes after it,
+       and the steps that are its own — the last two are CFOP's, word for word. */
+    zzIntro:
+      "ZZ pays at the start for an easy rest: before anything is built, every edge is turned so that the solve after it needs no turn of the front or back face and no turning the cube round. Seven steps: find the bad edges, turn them good, the cross, the four pairs with R, L and U alone, and a last layer whose yellow cross is already there. It is for a cube you can already solve. The pictures have yellow on top, white on the bottom and blue in front. The Notation button explains letters like R or U'.",
+    zzSource: 'The steps follow the ZZ tutorial by crystalcuber and the ZZMethod.com team, at',
+    zzSourceLink: 'zzmethod.com',
+    zzNext: {
+      lead: 'Once you can solve without reading, the last layer is where algorithms help first. The trainer keeps them under CFOP, which shares them:',
+      sets: [
+        { name: 'OCLL', text: 'orient the corners of the last layer: seven cases, each with an algorithm of its own — the second look of 2-Look OLL. For step 5.' },
+        { name: 'PLL', text: 'permute the last layer: steps 6 and 7 in one algorithm. 2-Look PLL is the half-way stage, in two.' },
+      ],
+      more: 'In a session made as ZZ the timer splits a solve into three phases (the Phase button): EOCross — the edges and the cross, steps 1 to 3; F2L — the four pairs, step 4; LL — the last layer, steps 5 to 7.',
+      hide: 'After that, take this guide out of the menu; Settings puts it back.',
+    },
+    zzFigures: {
+      tryIt:
+        'Try it: a solved cube, yellow on top and blue in front, and the moves under the picture. How many edges are bad?',
+      answer: 'Six — the purple ones. Hold each against the two rules, in the picture above.',
+    },
+    zzSituations: {
+      fourOnFront: 'Four bad on the front: one turn, and all four are good.',
+      gather:
+        "Three on the front, the fourth on top at the right: R' carries it down to them without turning it over. Then the turn.",
+      twoBad:
+        'Two bad: one on the front with three good edges, the other anywhere else. The turn makes four.',
+      sixBad: 'Six bad: three on the front with one good edge. The turn leaves four.',
+      crossTop: 'White on top, over the centre of its other colour: a half turn of that side.',
+      crossMiddle: 'White facing you in the middle layer: bottom aside, the edge down, bottom back.',
+      joined: "Joined, and off the slot's side: lift the slot, bring the pair over it, put it back.",
+      split:
+        'Split, the corner over its slot: lifting the slot joins them. Bring the pair back over it and down.',
+      stuck:
+        'A piece in a slot: lift the slot, turn the top until neither piece is on that side, put the slot back.',
+      touching: 'Touching, not joined: corner over the slot, lift it, turn the top half way, put it back.',
+      whiteUp:
+        'White on top of the corner: turn the edge over the centre of its side colour. Lift the slot, bring the corner over the edge, put it back. Joined.',
+      topsMatch:
+        'Same colour on top of both: corner to the back right. Lift the slot and it drops out of the way; bring the edge to the back, beside where it was, and put the slot back. Joined.',
+      topsDiffer:
+        'Different colours on top: corner to the back right, lift the slot, but send the edge to the left, away from it. Split.',
+    },
+    zzSteps: {
+      badEdges: {
+        title: 'Bad edges',
+        points: [
+          'Yellow centre on top, blue in front — and the cube stays that way round until the first two layers are done. Which edges are bad depends on how it is held.',
+          'An edge is good when turns of R, L, U and D can take it home, and bad when it needs a quarter turn of the front or back. Only the edges count, and two things give a bad one away:',
+          'Red or orange — the colours of the left and right centres — on top, on the bottom, or in the middle row of the front or back.',
+          'Yellow or white on the left or the right side, or in the top or bottom row of the front or back.',
+          'Count them. There is always an even number, anything from none to twelve.',
+        ],
+        tip: 'more bad than good? Keep track of the good ones instead.',
+      },
+      edgesGood: {
+        title: 'Edges good',
+        points: [
+          'Only a quarter turn of the front or back face turns edges over — all four on that face at once, bad to good and good to bad. Every other turn only carries them about: R, L, U, D, and the half turns F2 and B2.',
+          'So carry bad edges onto the front or the back, and turn it. How many to put there depends on how many are bad:',
+          'Four: all four on one face. One turn and they are good. Eight or twelve are four at a time.',
+          'Two: one of them on a face, with three good edges. The turn makes four bad.',
+          'Six or ten: three on a face, with one good edge. The turn leaves four, or eight.',
+        ],
+        tip: 'start with the face that already has the most bad edges on it. Everything the pictures do at the front works at the back, with B.',
+      },
+      cross: {
+        title: 'Cross',
+        points: [
+          'The four white edges go round the white centre at the bottom, each matching the centre beside it — the same cross as in CFOP.',
+          'Only R, L, U, D, F2 and B2 may turn now. With every edge good that is enough: white never faces the awkward way. On top it faces up, in the middle layer it faces the front or the back.',
+          'On top: turn the top until the edge is over the centre of its other colour, then give that side a half turn.',
+          'In the middle layer: one turn of the side it is on takes it down. Turn the bottom first, so that its place is under it, and back afterwards.',
+        ],
+        warning: 'a quarter turn of F or B, or turning the cube round, and the edges have to be counted again.',
+        tip: 'steps 1 to 3 together are called EOCross. With practice they are planned as one, before the first turn.',
+      },
+      pairs: {
+        title: 'First two layers',
+        points: [
+          'Four slots between the cross edges, each for a corner and the edge that shares its two side colours — a pair. Still no turning the cube round, and no F or B: a slot is lifted by its own side, R for the two on the right and L for the two on the left, and the top does the rest.',
+          'A pair goes in from one of two shapes, joined or split — the first two pictures. The rest is getting to one of them, in this order:',
+          'Both pieces to the top. If one is in a slot, the third picture brings it up.',
+          'Touching, but not joined as in the first picture? The fourth picture parts them.',
+          'Then the colour on top of the corner decides: white, the same colour as on top of the edge, or the other one. The last three pictures, each ending joined or split.',
+        ],
+        tip: "the pictures are the front right slot. Front left is its mirror image, L' where they say R. The back slots lift the other way: R' on the right, L on the left.",
+      },
+      cornersUp: {
+        title: 'Last layer face',
+        points: [
+          'The yellow cross is already there — that is what turning the edges at the start paid for. Only the four corners are left to turn up, and from here on the cube may be turned round again.',
+          'One algorithm does it: repeat it until the face is yellow. It never takes more than three goes.',
+          'Before each go, hold the cube as the pictures show — by how many corners already have yellow on top.',
         ],
       },
     },
@@ -1101,6 +1197,7 @@ export const en = {
     creditAlgs: 'Most of the algorithms come from J Perm —',
     creditRoux: 'The Roux sets come from the sheets of Kian Mansour and the Roux community —',
     creditSpeedcubedb: 'The second-block cases those sheets leave out are from SpeedCubeDB —',
+    creditZz: 'The ZZ guide follows the tutorial by the ZZMethod.com team —',
     creditMethod: 'The beginner method follows badmephisto —',
     creditCubing: 'Scrambles and the 3D cube are cubing.js —',
     creditClaude: 'Built together with Claude Code —',

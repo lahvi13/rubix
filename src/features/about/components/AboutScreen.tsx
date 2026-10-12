@@ -32,6 +32,7 @@ const CREDITS = [
     link: 'sites.google.com/view/kianroux',
   },
   { text: strings.about.creditSpeedcubedb, href: 'https://speedcubedb.com/', link: 'speedcubedb.com' },
+  { text: strings.about.creditZz, href: 'https://www.zzmethod.com/', link: 'zzmethod.com' },
   { text: strings.about.creditMethod, href: 'http://badmephisto.com', link: 'badmephisto.com' },
   { text: strings.about.creditCubing, href: 'https://js.cubing.net/cubing/', link: 'js.cubing.net' },
   { text: strings.about.creditClaude, href: 'https://claude.com/claude-code', link: 'claude.com/claude-code' },

@@ -46,6 +46,15 @@ describe('AboutScreen', () => {
     );
   });
 
+  it('credits the tutorial the ZZ guide follows', () => {
+    render(<AboutScreen />);
+
+    expect(screen.getByRole('link', { name: 'zzmethod.com' })).toHaveAttribute(
+      'href',
+      'https://www.zzmethod.com/',
+    );
+  });
+
   it('credits J Perm for the algorithms', () => {
     render(<AboutScreen />);
 

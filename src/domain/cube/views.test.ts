@@ -312,6 +312,37 @@ describe('the side-edges stickering', () => {
   });
 });
 
+describe("the stickerings of ZZ's first steps", () => {
+  it('flags both stickers of a bad edge and draws nothing else but the centres', () => {
+    // The front turned a quarter: its four edges are bad, the other eight good.
+    const view = netView(after("F'"), 'badEdges');
+
+    expect(view.front).toEqual(['.', 'marked', '.', 'marked', 'F', 'marked', '.', 'marked', '.'].map(dotToNull));
+    expect(view.up).toEqual(['.', '.', '.', '.', 'U', '.', '.', 'marked', '.'].map(dotToNull));
+    expect(view.down).toEqual(['.', 'marked', '.', '.', 'D', '.', '.', '.', '.'].map(dotToNull));
+    expect(view.right).toEqual(['.', '.', '.', 'marked', 'R', '.', '.', '.', '.'].map(dotToNull));
+    expect(view.left).toEqual(['.', '.', '.', '.', 'L', 'marked', '.', '.', '.'].map(dotToNull));
+    expect(view.back).toEqual(['.', '.', '.', '.', 'B', '.', '.', '.', '.'].map(dotToNull));
+  });
+
+  it('flags nothing after turns that turn no edge over', () => {
+    const view = netView(after("R U2 L' D F2 U' B2 R2"), 'badEdges');
+    const cells = [view.up, view.left, view.front, view.right, view.back, view.down].flat();
+
+    expect(cells).not.toContain('marked');
+    expect(cells.filter((cell) => cell !== null)).toHaveLength(6);
+  });
+
+  it('draws every edge and centre in colour and leaves the corners out', () => {
+    const view = netView(after("F' L' D U2 L B' D"), 'allEdges');
+
+    for (const face of [view.up, view.left, view.front, view.right, view.back, view.down]) {
+      expect([0, 2, 6, 8].map((corner) => face[corner])).toEqual([null, null, null, null]);
+      expect([1, 3, 4, 5, 7].map((other) => face[other])).not.toContain(null);
+    }
+  });
+});
+
 describe('judging Roux corners', () => {
   const turned = (text: string) => {
     const parsed = parseAlg(text);

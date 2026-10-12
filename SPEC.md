@@ -385,7 +385,7 @@ pokusy o rozpoznání s `mode: 'recognition'`. Do hlavních statistik a PB
 ### 3.6 Fázové splity
 
 Splity dělí solve na fáze (u CFOP cross / F2L / OLL / PLL, u Rouxu FB / SB /
-CMLL / LSE). Fáze se berou
+CMLL / LSE, u ZZ EOCross / F2L / LL). Fáze se berou
 z `Method.phases` aktivní session, **nikdy z enumu v kódu** — jiná metoda je pak
 data, ne migrace.
 
@@ -1189,7 +1189,7 @@ nemigruje.
 drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
 → *Použitelné jako: analýza slabé fáze.*
 
-### Fáze 7 — Další metody a další kostky (Roux se staví, zbytek je návrh)
+### Fáze 7 — Další metody a další kostky (Roux je hotový, ZZ se staví, zbytek je návrh)
 
 **Roux — rozhodnuto 2026-10-09, staví se v tomto pořadí:**
 
@@ -1416,6 +1416,130 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
 Zdroje dodal autor jako PDF (CMLL, druhý blok, EO, EO + ULUR, OH CMLL,
 začátečnický průvodce); obsah se z nich přebírá, nehádá.
 
+**ZZ — rozhodnuto 2026-10-12, staví se v tomto pořadí:**
+
+Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
+<https://www.zzmethod.com/> (EO, EOCross, ZZF2L, LL), čtený z jeho repa
+`crystalcuber/zz-method-docs`. Podle něj se rozhodlo i to, která ZZ to je:
+
+- **EOCross, ne EOLine.** Zdroj EOLine pro dvě ruce nedoporučuje ani jako
+  mezikrok — F2L po EOLine je jiná dovednost a nemá smysl učit se obě.
+- **Poslední vrstva jde 3 kroky → OCLL + PLL → ZBLL.** COLL, se kterým počítal
+  rozbor z 2026-09-24 níž, zdroj neučí vůbec, a v sadách proto není.
+- **Kostka stojí jako ve zdroji: žlutá nahoře, modrá vpředu** (`y2` proti
+  zápisu skinů, `ZZ_STANDING`), červená vpravo a oranžová vlevo. Původně tu
+  stálo „jako u CFOP, zelená vpředu“ — jenže obrázky F2L v trenažéru se kvůli
+  barvám kreslí otočené o čtvrt (`y'`, zelená vedle oranžové splývá), a čtvrt
+  otáčky je u ZZ jiná kostka: které hrany jsou špatné, se čte proti přední a
+  zadní stěně. Půl otáčky osu nechá a slot vpředu vpravo je modrá s červenou.
+  Po scramblu (bílá nahoře, zelená vpředu) stačí kostku překlopit dopředu, a
+  ukázková složení na webu zdroje jdou točit tak, jak jsou napsaná.
+
+1. **Metoda u session.** Seedovaná metoda ZZ se třemi fázemi **EOCross · F2L ·
+   LL**, volená ve formuláři nové session jako Roux. **LL je jedna fáze**, ne
+   OCLL a PLL: tak metodu dělí zdroj, je to o ťuknutí míň a otázka, na kterou
+   mají splity ZZ odpovědět, je „kolik stojí EOCross a kolik za to vrátí F2L“ —
+   OLL a PLL zná autor z CFOP a jejich časy by nic nového neřekly. Rozhoduje se
+   jednou: fáze metody se po prvních změřených solvech už měnit nedají, a ZBLL
+   by dělení na dva kroky stejně zrušila. CFOP i Roux mají fáze čtyři, takže
+   tři ještě žádná obrazovka neviděla — timer, historii a statistiky ověřit
+   v prohlížeči na 412 px.
+2. **Průvodce ZZ — hotový.** Třetí volba přepínače na stránce Učení (CFOP |
+   Roux | ZZ). Zdroj předpokládá, že čtenář už kostku složit umí a čte notaci —
+   je to krok od CFOP dál jako Roux, ne první složení. Sedm kroků, stavěných
+   jako ty v Rouxu:
+   - **Špatné hrany** — krok bez jediného tahu. Dvě pravidla ze zdroje:
+     červená nebo oranžová (barvy levého a pravého středu) nahoře, dole nebo v
+     prostřední řadě přední či zadní stěny; žlutá nebo bílá na levé či pravé
+     stěně nebo v horní či spodní řadě přední či zadní. Pod nimi **příklad na
+     vyzkoušení**: rozvinutá kostka s hranami a středy v barvách (rohy šedě,
+     `allEdges`), sedm tahů, kterými ji čtenář udělá ze složené, a tatáž kostka
+     s odpovědí — šest špatných hran fialově (`badEdges`). Krok tak nekončí u
+     „zkus si to“ bez výchozí pozice. Je to nový druh obrázku v kroku
+     (`figures`): ukazuje pravidlo, ne pozici, ze které se odchází
+   - **Oprava hran** — podle počtu, obrázek pro každou odpověď: čtyři vpředu a
+     `F`; jak tam hranu donést, aniž se přetočí (`R' F`); dvě → jedna vpředu
+     se třemi dobrými, otáčka udělá čtyři; šest → tři vpředu s jednou dobrou,
+     zbudou čtyři. Osm a dvanáct jsou čtyři a čtyři, deset jako šest. Špatná
+     hrana je fialová **celá**, obě nálepky: z rohu kostky je často vidět jen
+     jedna, a krok je o tom, kde špatné jsou, ne proč
+   - **Cross** jen tahy R, L, U, D, `F2` a `B2`. S dobrými hranami míří bílá
+     nahoře vždy nahoru a v prostřední vrstvě dopředu nebo dozadu — dva obrázky
+     a hotový cross
+   - **První dvě vrstvy** čtyřmi kroky zdroje, sedm obrázků: dva tvary, ze
+     kterých se pár vkládá (spojený `R U' R'`, rozdělený `R U R'`), a cesta k
+     nim v pořadí, v jakém se jde — dílek ven ze slotu, dva dotýkající se od
+     sebe, a tři barvy, které může mít vršek rohu (bílá, stejná jako vršek
+     hrany, ta druhá). Vše pro slot vpředu vpravo; ostatní tři jsou v tipu
+     (`L'` místo `R`, zadní se zvedají opačně)
+   - **Poslední vrstva** jsou poslední tři kroky průvodce CFOP — tytéž případy,
+     obrázky i „všechny případy“ (7 + 2 + 4, tedy OCLL, CP a EPLL zdroje) —
+     jen bez kroku „cross poslední vrstvy“: ten je hotový od prvního kroku, a
+     to je celá odměna metody. Kroky 6 a 7 mají i text společný, krok 5 říká,
+     proč tam cross už je a že se kostka odteď zase smí otáčet
+
+   **Ověřeno spuštěním na modelu kostky, jednorázově a mimo repo:** obě
+   formulace špatné hrany (pravidla zdroje a „nálepka, která patří nahoru,
+   dolů nebo do prostřední řady vpředu a vzadu“) se shodují na všech hranách
+   20 000 scramblů; hranu přetočí jen čtvrtotáčka F nebo B, vždy všechny čtyři;
+   z každého z 2 048 rozložení špatných hran jde potřebný počet donést na
+   jednu stěnu nejvýš pěti tahy. **Postup F2L, jak ho text říká, prošel každý
+   stav páru** — 192 s otevřenými sloty a 75 u posledního slotu, pro každý ze
+   čtyř slotů — bez chyby, nejvýš 18 tahů na pár. V repu zůstávají testy
+   obrázků (`steps.test.ts`): každý je to, co jeho popisek tvrdí, jeho tahy
+   nechají, co slibuje, a žádný nerozbije cross, jiný slot ani dobrou hranu.
+
+   Přehrávaná kostka u opravy hran nenosí fialovou, ale barvy hran a středů:
+   přetočení hrany je výměna jejích barev mezi místy, a to maska ukázat
+   neumí — stejná vědomá výjimka jako u Rouxu. Čtení špatných hran je v
+   `domain/cube/edge-orientation.ts` (`isBadEdge`, `badEdgeCount`), odkud ho
+   vezme i drill z kroku 3. `LearnScreen` už nevětví přes `isRoux`: úvod,
+   zdroj a závěr má každá metoda jako záznam.
+
+   Strategii podle počtu (osm, deset, dvanáct; „začni stěnou, kde jich je
+   nejvíc“) doplnil druhý zdroj, který autor dodal: tutoriál Conrada Ridera
+   (<https://cube.rider.biz/zz.php?v=beginner>). Jen tu: jinak učí EOLine a
+   F2L z bloků, tedy jinou ZZ, a nemá otevřenou licenci. Texty průvodce jsou
+   vlastní, ne překlad žádného z obou.
+3. **Drill rozpoznání EO.** Scramble a otázka „kolik hran je špatných?“ — to
+   jediné, co je na ZZ doopravdy nové a co se musí stihnout při inspekci.
+   Odpověď je spočítaná z modelu kostky. Podoba (počet, nebo ťuknutí na hrany)
+   se rozhodne z náhledu.
+4. **Řádek ZZ v trenažéru.** Sada dnes patří jedné metodě (`AlgSet.methodId`),
+   ZZ ale sdílí PLL a kus OLL s CFOP. Metoda proto dostane **vlastní seznam
+   sad** — statický, v `domain/alg/sets.ts` vedle pořadí sad, ne v databázi:
+   packy jsou statické taky a obejde se to bez migrace. `AlgSet.methodId`
+   zůstává, čím byl. Případy jsou tytéž řádky, takže postup v nich je s CFOP
+   společný sám od sebe. Na řádku: **F2L** (krok 5), **OCLL** — sedm případů
+   skupiny „Cross“ ze sady OLL, zbylých padesát v ZZ nenastane — a **PLL**;
+   CP a EPLL jsou obě skupiny 2-Look PLL. Jestli je OCLL pohled na skupinu,
+   nebo dvojče jako 2-Look sady, rozhodne drill. Algoritmy, které zdroj uvádí
+   jinak než pack (Antisune, L a H u OCLL, Z perm, část PLL), přibudou jako
+   alternativy; každý ověřený spuštěním.
+5. **Sada ZZF2L.** Stávající F2L nestačí: zhruba dvě třetiny hlavních algoritmů
+   základní sady používají F, B, široké tahy nebo otočení kostky. Zdroj je
+   tabulka „ZZF2L Cases“, na kterou tutoriál odkazuje (autor ji dodal jako
+   xlsx): **čtyři listy, FR / FL / BR / BL, po 83 případech** — poslední slot
+   (20), hrana ve slotu (9), roh ve slotu (9), oba dílky ve slotech (45). Ke
+   každému jeden až tři algoritmy a zvlášť sloupec řešení, která využijí
+   jiný volný slot (včetně keyhole). **Případ je v tabulce obrázek, ne text**,
+   takže který případ algoritmus řeší, řekne kostka, ne buňka — jako u listů
+   Rouxu. Pár řádků tabulky samo sahá na F nebo S; projdou, jen když hrany
+   nechají dobré. Co je potřeba rozhodnout, až na sadu dojde: jeden slot se
+   zrcadlením, nebo všechny čtyři (přední a zadní slot se v ZZ řeší jinak,
+   protože se kostka neotáčí), a kolik z 83 případů ukázat — zdroj sám říká,
+   že případy s oběma dílky ve slotech se až na pár neučí, vybere se jiný pár.
+6. **Později.** Drill EOCrossu chce vlastní solver a jinou techniku než cross:
+   stavů je 24 milionů (2¹¹ orientací × 11 880 rozmístění čtyř hran) proti
+   necelým 200 tisícům, tabulka vzdáleností se do telefonu nevejde. ZBLL (493
+   případů) je samostatný projekt; zdroj na ni jen odkazuje do cizích tabulek.
+
+**Zdroj a licence.** Repo je MIT (© 2023 crystalcuber) a obsahuje jen 34
+algoritmů poslední vrstvy; řešení F2L a ZBLL jsou v cizích tabulkách. Web
+blokuje AI crawlery a jeho podmínky zakazují použít obsah k trénování nebo
+vývoji generativních modelů. To se tu neděje, ale je to důvod navíc psát texty
+vlastní, zdroj uvést v O aplikaci a autorům dát o aplikaci vědět.
+
 **Zbytek fáze — nápad z 2026-09-24, předřazený smart cube.** Zapsaný rozbor, ne
 rozhodnutí:
 **obsah (fáze metod, algoritmy) se bude brát ze zdrojů, které dodá autor** —
@@ -1457,8 +1581,8 @@ jsou, jen je žádná obrazovka neukáže.
    metodu: OLL/PLL sdílí CFOP a ZZ (dnes je to `AlgSet.methodId`, tedy změna modelu
    s migrací). Sady po jedné, každou ověřit spuštěním jako OLL/PLL — zhruba den na
    sadu podle kvality zdrojů:
-   - **ZZ:** fáze EOLine/EOCross → F2L → LL; OLL/PLL převzít, nově COLL (42),
-     ZBLL (493) je samostatný projekt
+   - **ZZ:** rozhodnuto jinak, viz „ZZ — rozhodnuto 2026-10-12“ výš (EOCross,
+     bez COLL, seznam sad na metodu mimo databázi)
    - **Roux:** fáze FB → SB → CMLL → LSE (jestli LSE dělit na EOLR + 4c, rozhodnou
      zdroje); nově CMLL (42), případně EOLR. LSE (jen M a U) by chtělo nový druh
      obrázku, CMLL stačí pohled shora
@@ -1467,7 +1591,7 @@ jsou, jen je žádná obrazovka neukáže.
 4. **Drilly intuitivních fází** (EOLine, první blok Rouxu) až nakonec — každý chce
    vlastní solver jako cross drill a první blok i jiný pohled na kostku (zleva).
 
-Průvodce pro začátečníky je CFOP a Roux (viz výše); pro další metody se
+Průvodce je pro CFOP, Roux i ZZ (viz výše); pro další metody se
 rozhodne, až na ně dojde.
 
 ### Fáze 8 — Smart cube (později)

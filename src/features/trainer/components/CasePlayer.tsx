@@ -25,7 +25,9 @@ import {
  * being built, or the last layer's corners without its edges. Roux's steps
  * each have their own: the left block, both blocks, the corners' yellow, the
  * top and bottom colours of the last six edges, and the two side edges among
- * them.
+ * them. ZZ's first steps show the edges and the centres: on a cube that turns,
+ * an edge going good is its colours changing places, and that needs the
+ * colours.
  */
 export type PlayerStickering =
   | 'full'
@@ -41,7 +43,8 @@ export type PlayerStickering =
   | 'cornerOrientation'
   | 'lseOrientation'
   | 'sideEdges'
-  | 'eolr';
+  | 'eolr'
+  | 'allEdges';
 
 interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
@@ -222,6 +225,8 @@ function maskFor(stickering: PlayerStickering, standing: string): Promise<Sticke
         if (orbit !== 'EDGES') return 'ignored';
         return home.has('L') || home.has('R') || facelet === 0 ? 'regular' : 'ignored';
       });
+    case 'allEdges':
+      return maskByHome(shown, ({ orbit }) => (orbit === 'CORNERS' ? 'ignored' : 'regular'));
     case 'sideEdges':
       // Everything but the four edges of the middle slice.
       return maskByHome(shown, ({ orbit, home }) =>

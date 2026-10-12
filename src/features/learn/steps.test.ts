@@ -11,11 +11,14 @@ import { describe, expect, it } from 'vitest';
 import { PACKS } from '../../db/seed/packs';
 import { formatAlg, parseAlg } from '../../domain/cube/notation';
 import { FACELETS, isSolved, applyAlg, type CubeState } from '../../domain/cube/state';
+import { badEdgeCount, isBadEdge } from '../../domain/cube/edge-orientation';
 import { isSolvedAsShown } from '../../domain/cube/views';
 import {
   GUIDES,
   LEARN_STEPS,
   ROUX_STEPS,
+  ZZ_STEPS,
+  figureState,
   holdState,
   situationPicture,
   wayOut,
@@ -124,10 +127,12 @@ describe('the guide', () => {
     },
   );
 
-  it.each(['corner-orientation', 'roux-corner-orientation'])(
+  it.each(['corner-orientation', 'roux-corner-orientation', 'zz-corner-orientation'])(
     '%s draws the two situations the corners have to be held in',
     (id) => {
-      const step = [...LEARN_STEPS, ...ROUX_STEPS].find((candidate) => candidate.id === id);
+      const step = Object.values(GUIDES)
+        .flat()
+        .find((candidate) => candidate.id === id);
       const [two, none] = step?.holds ?? [];
       if (!two || !none) throw new Error('the face step lost its pictures');
 
@@ -430,5 +435,322 @@ describe('the Roux guide', () => {
     const top = ['0,1,1', '-1,1,0', '1,1,0', '0,1,-1'];
     expect(top.filter(badAt)).toEqual(['0,1,1', '-1,1,0', '1,1,0']);
     expect(['0,-1,1', '0,-1,-1'].filter(badAt)).toEqual(['0,-1,1']);
+  });
+});
+
+describe('the ZZ guide', () => {
+  const step = (id: string): LearnStep => {
+    const found = ZZ_STEPS.find((candidate) => candidate.id === id);
+    if (!found) throw new Error(`no step ${id}`);
+    return found;
+  };
+
+  /** A step's pictures, each with the cube as drawn and as its own moves leave it. */
+  const pictures = (id: string) => {
+    const entry = step(id);
+    const { standing } = situationPicture(entry);
+    return entry.situations.map((situation) => {
+      const before = holdState(situation, standing);
+      return { situation, before, after: applyAlg(before, movesOf(situation.alg)) };
+    });
+  };
+
+  const picture = (id: string, index: number) => {
+    const drawn = pictures(id)[index];
+    if (!drawn) throw new Error(`${id} lost picture ${index}`);
+    return drawn;
+  };
+
+  const centreOf = (state: CubeState, face: string) =>
+    state[FACELETS.findIndex((sticker) => sticker.face === face && sticker.row === 1 && sticker.column === 1)];
+
+  /** Where the bad edges are, as places on the cube. */
+  const badPlaces = (state: CubeState): string[] =>
+    [...cubies]
+      .filter(([, indices]) => indices.length === 2 && indices.some((index) => isBadEdge(state, index)))
+      .map(([position]) => position);
+
+  const isOnFront = (position: string): boolean => position.split(',')[2] === '1';
+
+  it('has seven steps, each with something to say', () => {
+    expect(ZZ_STEPS).toHaveLength(7);
+    for (const entry of ZZ_STEPS) {
+      expect(entry.title).not.toBe('');
+      expect(entry.points.length).toBeGreaterThan(0);
+    }
+  });
+
+  it.each(
+    ZZ_STEPS.flatMap((entry) =>
+      entry.situations.map((situation) => [entry.id, entry, situation] as const),
+    ),
+  )('%s: the situation is undone by its moves and what the step does next', (_id, entry, situation) => {
+    const { standing } = situationPicture(entry);
+    const state = holdState(situation, standing);
+    const stood = holdState({ alg: '', text: '' }, standing);
+    expect(state).not.toEqual(stood);
+    expect(applyAlg(state, movesOf(wayOut(situation)))).toEqual(stood);
+  });
+
+  it('holds the cube yellow up and blue in front, and never turns it round', () => {
+    for (const entry of ZZ_STEPS.slice(0, 4)) {
+      // Every picture of the step: its example, its situations, what it builds.
+      const standings = [
+        ...(entry.figures ?? []).map((figure) => figure.picture.standing),
+        ...(entry.situations.length > 0 ? [situationPicture(entry).standing] : []),
+        ...(entry.goal ? [entry.goal.picture.standing] : []),
+      ];
+      expect(standings.length).toBeGreaterThan(0);
+      for (const standing of standings) {
+        const stood = holdState({ alg: '', text: '' }, standing);
+        expect([centreOf(stood, 'U'), centreOf(stood, 'F')]).toEqual(['U', 'B']);
+      }
+      for (const situation of entry.situations) {
+        for (const move of movesOf(wayOut(situation))) {
+          expect(['x', 'y', 'z', 'M', 'E', 'S']).not.toContain(move.family);
+        }
+      }
+    }
+  });
+
+  it('gives an example to count on, and the same cube with the answer', () => {
+    const [question, answer] = step('zz-bad-edges').figures ?? [];
+    if (!question || !answer) throw new Error('the first step lost its example');
+
+    expect(figureState(question)).toEqual(figureState(answer));
+    expect(question.picture.stickering).toBe('allEdges');
+    expect(answer.picture.stickering).toBe('badEdges');
+    // The moves are printed for a cube in the hand: under the question only.
+    expect([question.isSetupShown, answer.isSetupShown]).toEqual([true, false]);
+
+    // What the caption says the answer is, and that every layer has some.
+    const bad = badPlaces(figureState(question));
+    expect(bad).toHaveLength(6);
+    expect(answer.caption).toMatch(/^(Six|Šest) /);
+    expect(new Set(bad.map((position) => position.split(',')[1]))).toEqual(new Set(['1', '0', '-1']));
+  });
+
+  /**
+   * Turning the edges good. Each card says how many are bad, how many of them
+   * are on the front, and what the turn leaves: the picture has to be that
+   * count, and the moves have to leave what the card promises.
+   */
+  it.each([
+    ['four on the front', 0, 4, 4, 0],
+    ['three on the front and one to carry there', 1, 4, 3, 0],
+    ['two, one of them on the front', 2, 2, 1, 4],
+    ['six, three of them on the front', 3, 6, 3, 4],
+  ] as const)('draws %s, and leaves what it says', (_label, index, bad, onFront, left) => {
+    const drawn = picture('zz-edges-good', index);
+
+    expect(badPlaces(drawn.before)).toHaveLength(bad);
+    expect(badPlaces(drawn.before).filter(isOnFront)).toHaveLength(onFront);
+    expect(badEdgeCount(drawn.after)).toBe(left);
+  });
+
+  it('carries the fourth edge down from the top right, as its card says', () => {
+    const drawn = picture('zz-edges-good', 1);
+
+    expect(badPlaces(drawn.before).filter((position) => !isOnFront(position))).toEqual(['1,1,0']);
+    expect(drawn.situation.alg).toBe("R' F");
+  });
+
+  it('turns edges over with the front face only, a quarter at a time', () => {
+    for (const situation of step('zz-edges-good').situations) {
+      const quarters = movesOf(wayOut(situation)).filter(
+        (move) => (move.family === 'F' || move.family === 'B') && move.amount !== 2,
+      );
+      expect(quarters.every((move) => move.family === 'F')).toBe(true);
+      expect(quarters.length).toBeGreaterThan(0);
+    }
+  });
+
+  /**
+   * The cross with every edge good: white on top faces up, white in the
+   * middle layer faces the front, and nothing the cards do makes an edge bad.
+   */
+  it.each([
+    ['on top, facing up', 0, 'U', 2],
+    ['in the middle layer, facing the reader', 1, 'F', 1],
+  ] as const)('draws the white edge %s', (_label, index, face, row) => {
+    const drawn = picture('zz-cross', index);
+    const white = FACELETS.flatMap((sticker, at) =>
+      drawn.before[at] === 'D' && sizeOf(at) === 2 && sticker.position[1] !== -1 ? [sticker] : [],
+    );
+
+    expect(white).toHaveLength(1);
+    expect([white[0]?.face, white[0]?.row]).toEqual([face, row]);
+    expect(badEdgeCount(drawn.before)).toBe(0);
+    for (const move of movesOf(drawn.situation.alg)) {
+      expect((move.family === 'F' || move.family === 'B') && move.amount !== 2).toBe(false);
+    }
+  });
+
+  describe('the pairs', () => {
+    type Vector = readonly [number, number, number];
+    interface Piece {
+      at: Vector;
+      /** The colour the piece shows on top, when it is in the top layer. */
+      top: string | undefined;
+      /** The face its white sticker is on, for the corner. */
+      whiteOn: string | undefined;
+      /** The colour it shows on each face it touches. */
+      on: ReadonlyMap<string, string>;
+    }
+
+    /** The piece wearing exactly these colours. */
+    const find = (state: CubeState, colours: readonly (string | undefined)[]): Piece => {
+      const wanted = [...colours].sort().join('');
+      for (const [position, indices] of cubies) {
+        if (indices.map((index) => state[index]).sort().join('') !== wanted) continue;
+        const on = new Map(indices.map((index) => [FACELETS[index]?.face ?? '', state[index] ?? '']));
+        const [x = 0, y = 0, z = 0] = position.split(',').map(Number);
+        return {
+          at: [x, y, z],
+          top: on.get('U'),
+          whiteOn: [...on].find(([, colour]) => colour === 'D')?.[0],
+          on,
+        };
+      }
+      throw new Error(`no piece ${wanted}`);
+    };
+
+    /** The pair of the front right slot, by the centres it sits between. */
+    const pair = (state: CubeState) => ({
+      corner: find(state, ['D', centreOf(state, 'F'), centreOf(state, 'R')]),
+      edge: find(state, [centreOf(state, 'F'), centreOf(state, 'R')]),
+    });
+
+    const isOnTop = (piece: Piece): boolean => piece.at[1] === 1;
+    const isTouching = (state: CubeState): boolean => {
+      const { corner, edge } = pair(state);
+      return (
+        isOnTop(corner) &&
+        isOnTop(edge) &&
+        Math.abs(corner.at[0] - edge.at[0]) + Math.abs(corner.at[2] - edge.at[2]) === 1
+      );
+    };
+
+    /** Where the two pieces are and how the corner is turned: a shape, up to a turn of the top. */
+    const shape = (state: CubeState): string => {
+      const { corner, edge } = pair(state);
+      return `${corner.at}|${corner.whiteOn}|${edge.at}|${edge.top}`;
+    };
+    const turned = (state: CubeState): Set<string> =>
+      new Set(['', 'U', "U'", 'U2'].map((turn) => shape(applyAlg(state, turn === '' ? [] : movesOf(turn)))));
+
+    const drawn = (index: number) => picture('zz-pairs', index);
+    const joined = () => turned(drawn(0).before);
+    const split = () => turned(drawn(1).before);
+
+    it('turns nothing but the right side and the top', () => {
+      for (const situation of step('zz-pairs').situations) {
+        for (const move of movesOf(wayOut(situation))) expect(['R', 'U']).toContain(move.family);
+      }
+    });
+
+    it('keeps the cross, the other three slots and every edge good, in every picture', () => {
+      const stood = holdState({ alg: '', text: '' }, situationPicture(step('zz-pairs')).standing);
+      const slot = new Set(['1,-1,1', '1,0,1']);
+
+      for (const { before, after } of pictures('zz-pairs')) {
+        for (const state of [before, after]) {
+          expect(badEdgeCount(state)).toBe(0);
+          for (const [position, indices] of cubies) {
+            if (position.split(',')[1] === '1' || slot.has(position)) continue;
+            for (const index of indices) expect(state[index], position).toBe(stood[index]);
+          }
+        }
+      }
+    });
+
+    it('draws the joined pair side by side and off the right, and puts it in', () => {
+      const { corner, edge } = pair(drawn(0).before);
+
+      expect([corner.at, edge.at]).toEqual([[-1, 1, 1], [0, 1, 1]]);
+      expect(corner.top).toBe(edge.top);
+    });
+
+    it('draws the split pair with the corner over its slot and the edge across the top', () => {
+      const { corner, edge } = pair(drawn(1).before);
+
+      expect([corner.at, edge.at]).toEqual([[1, 1, 1], [0, 1, -1]]);
+      expect(isTouching(drawn(1).before)).toBe(false);
+    });
+
+    it('brings a piece up out of its slot without sending the other down', () => {
+      const before = pair(drawn(2).before);
+      const after = pair(drawn(2).after);
+
+      expect(isOnTop(before.corner)).toBe(false);
+      expect(isOnTop(before.edge)).toBe(true);
+      expect([isOnTop(after.corner), isOnTop(after.edge)]).toEqual([true, true]);
+    });
+
+    it('parts two pieces that touch without being joined', () => {
+      expect(pair(drawn(3).before).corner.at).toEqual([1, 1, 1]);
+      expect(isTouching(drawn(3).before)).toBe(true);
+      expect(joined().has(shape(drawn(3).before))).toBe(false);
+
+      expect(isTouching(drawn(3).after)).toBe(false);
+      expect([isOnTop(pair(drawn(3).after).corner), isOnTop(pair(drawn(3).after).edge)]).toEqual([
+        true,
+        true,
+      ]);
+    });
+
+    it('joins a pair whose corner has white on top, from the edge over its own centre', () => {
+      const { corner, edge } = pair(drawn(4).before);
+
+      expect(corner.top).toBe('D');
+      expect(edge.at).toEqual([1, 1, 0]);
+      expect(edge.on.get('R')).toBe(centreOf(drawn(4).before, 'R'));
+      expect(isTouching(drawn(4).before)).toBe(false);
+      expect(joined().has(shape(drawn(4).after))).toBe(true);
+    });
+
+    it('joins a pair showing one colour on top, from the corner at the back right', () => {
+      const { corner, edge } = pair(drawn(5).before);
+
+      expect(corner.at).toEqual([1, 1, -1]);
+      expect(corner.top).toBe(edge.top);
+      expect(isTouching(drawn(5).before)).toBe(false);
+      expect(joined().has(shape(drawn(5).after))).toBe(true);
+    });
+
+    it('splits a pair showing two colours on top, from the same corner', () => {
+      const { corner, edge } = pair(drawn(6).before);
+
+      expect(corner.at).toEqual([1, 1, -1]);
+      expect(corner.top).not.toBe(edge.top);
+      expect(corner.top).not.toBe('D');
+      expect(split().has(shape(drawn(6).before))).toBe(false);
+      expect(split().has(shape(drawn(6).after))).toBe(true);
+    });
+
+    it('shows every edge of the first two layers with a front or back colour on top', () => {
+      // What makes "the colour on top of the edge" one thing to look for.
+      for (const { before } of pictures('zz-pairs')) {
+        const { edge } = pair(before);
+        if (!isOnTop(edge)) continue;
+        expect([centreOf(before, 'F'), centreOf(before, 'B')]).toContain(edge.top);
+      }
+    });
+  });
+
+  it('ends on the last three steps of the first guide, its cross already there', () => {
+    expect(ZZ_STEPS.slice(4).map((entry) => [entry.setId, entry.group])).toEqual(
+      LEARN_STEPS.slice(4).map((entry) => [entry.setId, entry.group]),
+    );
+    // The step the edges did at the very start is the one left out.
+    expect(ZZ_STEPS.map((entry) => entry.group)).not.toContain('1 / Edges');
+
+    for (const hold of step('zz-corner-orientation').holds) {
+      const state = holdState(hold);
+      const topEdges = FACELETS.flatMap((sticker, index) =>
+        sticker.face === 'U' && sizeOf(index) === 2 ? [state[index]] : [],
+      );
+      expect(topEdges).toEqual(['U', 'U', 'U', 'U']);
+    }
   });
 });
