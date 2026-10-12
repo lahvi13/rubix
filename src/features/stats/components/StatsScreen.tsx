@@ -241,32 +241,35 @@ export function StatsScreen() {
             </div>
           ) : null}
           <p className="history__summary">
-            {/* Only a session can be switched; over all of them the name would
-                lead into a picker that changes nothing on this screen. */}
-            {isAllSessions ? null : (
-              <span className="summary__session">
-                {strings.sessions.label}
-                <button
-                  type="button"
-                  className="session-switch"
-                  title={strings.sessions.switchSession}
-                  onClick={() => setPickerOpen(true)}
-                >
-                  {session?.name}
-                </button>
-              </span>
-            )}
+            {/* In every scope, as on the timer and in the history. Across
+                sessions the name used to be left out, because switching
+                changed nothing there; now those scopes read the method of the
+                session in use, and switching it is how the other method's
+                numbers are reached. */}
+            <span className="summary__session">
+              {strings.sessions.label}
+              <button
+                type="button"
+                className="session-switch"
+                title={strings.sessions.switchSession}
+                onClick={() => setPickerOpen(true)}
+              >
+                {session?.name}
+              </button>
+            </span>
             <span>
-              {isAllSessions ? null : '· '}
-              {stats.availableCount > stats.solveCount
-                ? strings.stats.solvesOf(stats.solveCount, stats.availableCount)
-                : strings.stats.solveCount(stats.solveCount)}
-              {tag === null ? null : ` · ${strings.stats.withTag(tag.name)}`}
-              {/* Only where it changes the answer: with every session in one
-                  method there is nobody to tell the numbers apart from. */}
-              {stats.otherMethodsLeftOut && methodName !== null
-                ? ` · ${strings.stats.methodOnly(methodName)}`
-                : null}
+              <span aria-hidden="true">· </span>
+              <span>
+                {stats.availableCount > stats.solveCount
+                  ? strings.stats.solvesOf(stats.solveCount, stats.availableCount)
+                  : strings.stats.solveCount(stats.solveCount)}
+                {tag === null ? null : ` · ${strings.stats.withTag(tag.name)}`}
+                {/* Only where it changes the answer: with every session in one
+                    method there is nobody to tell the numbers apart from. */}
+                {stats.otherMethodsLeftOut && methodName !== null
+                  ? ` · ${strings.stats.methodOnly(methodName)}`
+                  : null}
+              </span>
             </span>
           </p>
         </div>

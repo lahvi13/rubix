@@ -8,7 +8,7 @@ import { strings } from '../../../lib/strings';
 import { reportError } from '../../../lib/errors';
 import { InstallNudge } from '../../about';
 import { SolveDetailSheet } from '../../history';
-import { SessionPicker, useActiveSession } from '../../sessions';
+import { SessionPicker, useActiveSession, useMethodLabel } from '../../sessions';
 import { PhaseBar, PhaseRun, usePhases, useVoiceShadow, VoiceShadowNote } from '../../splits';
 import { MiniStats } from '../../stats';
 import { useRecentSolves } from '../hooks/use-recent-solves';
@@ -107,6 +107,7 @@ export function TimerScreen() {
   // Set on the stats screen; 0 there means no goal.
   const [goalSetting] = useSetting('stats.goalMs');
   const methodPhases = usePhases(session?.methodId ?? null);
+  const methodLabel = useMethodLabel(session);
 
   // Empty means the plain timer. The phases come from the session's method,
   // never from a list in the code (SPEC 3.6).
@@ -489,7 +490,7 @@ export function TimerScreen() {
             )}
           </h2>
           <InstallNudge />
-          <MiniStats solves={sessionSolves} />
+          <MiniStats solves={sessionSolves} methodName={methodLabel} />
           <SolveList
             solves={solves}
             total={total}

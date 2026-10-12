@@ -167,6 +167,15 @@ session; kdo si chce jednou složit jinak, má na to druhou session. Z toho:
 - **PB single se vede pro každou metodu zvlášť**, napříč všemi jejími session
   včetně archivovaných. První Roux pod minutu je rekord, ať CFOP dělá cokoli —
   na timeru, v historii, v detailu i ve statistikách (`getMethodPbSolve`)
+- **jméno session s přepínačem je ve statistikách ve všech rozsazích.** Dřív
+  jen u „Tato session“ — napříč session přepnutí nic neměnilo. Teď se jím
+  dojde k číslům druhé metody, a bez něj by se k nim ze statistik nedalo dostat
+- **timer metodu jmenuje**, jakmile jsou session v užívání ve víc metodách
+  (`useMethodLabel`, stejné pravidlo jako u řádků ve výběru session): session
+  se nemusí jmenovat po metodě, a ta rozhoduje, co je rekord. Stojí na konci
+  řádku s ao5 a ao12, pod přepínači inspekce a fází — z náhledů vybráno před
+  vlastním řádkem pod přepínačem Fáze, který panel zvětšil. Je tam i v session
+  bez jediného složení: po založení se na metodu ptá člověk nejspíš
 
 - current / best ao5, ao12, ao50, ao100
 - PB single, PB každého okna

@@ -600,6 +600,15 @@
   color: var(--muted);
 }
 
+/* The method, at the far end of the row and as quiet as the labels: it says
+   what the numbers beside it are about, and is not one of them. When the
+   averages are too long to share the row it drops under them, still at the
+   far end. */
+.mini-stats__item--method {
+  margin-inline-start: auto;
+  color: var(--muted);
+}
+
 .mini-stats__item dd {
   margin: 0;
 }

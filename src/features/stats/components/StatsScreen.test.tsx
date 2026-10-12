@@ -415,6 +415,29 @@ describe('StatsScreen', () => {
       expect(screen.queryByText(/only$/)).not.toBeInTheDocument();
     });
 
+    it('switches session from any scope, which is how the other method is reached', async () => {
+      await seedSolve(sessionId, 20_000);
+      await seedSolve(sessionId, 22_000);
+      const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
+      await seedSolve(blocks.id, 60_000);
+      const user = userEvent.setup();
+
+      render(<StatsScreen />);
+      await screen.findByText(/^1 solve · Roux only$/);
+
+      // Across sessions, and the session in use is named and can be changed.
+      expect(screen.getByRole('button', { name: 'All sessions' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await user.click(screen.getByRole('button', { name: 'Blocks' }));
+      const picker = await screen.findByRole('dialog');
+      await user.click(await within(picker).findByRole('button', { name: /^Default/ }));
+
+      expect(await screen.findByText(/^2 solves · CFOP only$/)).toBeInTheDocument();
+      expect((await getActiveSession('333', 'freestyle'))?.id).toBe(sessionId);
+    });
+
     it('keeps a personal best for each method', async () => {
       await seedSolve(sessionId, 15_000);
       const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');

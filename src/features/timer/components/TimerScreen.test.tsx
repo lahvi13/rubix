@@ -3,7 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
 import { setSetting } from '../../../db/repositories/settings-repository';
-import { getOrCreateActiveSession } from '../../../db/repositories/session-repository';
+import {
+  createSession,
+  getOrCreateActiveSession,
+} from '../../../db/repositories/session-repository';
+import { seedPacks } from '../../../db/seed/seed';
 import { addSolve } from '../../../db/repositories/solve-repository';
 import { resetSheetHistory } from '../../../lib/sheet-history';
 import { unpinScramble } from '../../../hooks/use-pinned-scramble';
@@ -83,6 +87,66 @@ describe('TimerScreen', () => {
     expect(await findScramble()).toBeInTheDocument();
     expect(screen.getByRole('timer')).toHaveTextContent('0.00');
     expect(screen.getByText(/no solves yet/i)).toBeInTheDocument();
+  });
+
+  /**
+   * A session need not be named after its method, and the method decides what
+   * a personal best is. It is said once sessions are timed in more than one.
+   */
+  describe('the method of the session', () => {
+    const method = () => screen.queryByText('Method')?.nextElementSibling?.textContent ?? null;
+
+    const seedSolve = (sessionId: string, rawMs: number) =>
+      addSolve({
+        sessionId,
+        puzzle: '333',
+        mode: 'freestyle',
+        scramble: SCRAMBLE,
+        rawMs,
+        penalty: 'none',
+        penaltySource: 'auto',
+        inspectionMs: null,
+        startedAt: Date.now(),
+      });
+
+    beforeEach(async () => {
+      await seedPacks();
+    });
+
+    it('goes unsaid while every session is timed in the same one', async () => {
+      const first = await getOrCreateActiveSession('333', 'freestyle');
+      await seedSolve(first.id, 12_000);
+      await createSession('Evening', '333', 'freestyle');
+
+      render(<TimerScreen />);
+
+      await findScramble();
+      await screen.findByRole('button', { name: 'Evening' });
+      expect(method()).toBeNull();
+    });
+
+    it('is named beside the averages once sessions are timed in more than one', async () => {
+      const first = await getOrCreateActiveSession('333', 'freestyle');
+      await seedSolve(first.id, 12_000);
+      const evening = await createSession('Evening', '333', 'freestyle', 'roux');
+      await seedSolve(evening.id, 61_000);
+
+      render(<TimerScreen />);
+
+      await screen.findByRole('button', { name: 'Evening' });
+      await waitFor(() => expect(method()).toBe('Roux'));
+    });
+
+    it('is named in a session with no solve in it yet', async () => {
+      const first = await getOrCreateActiveSession('333', 'freestyle');
+      await seedSolve(first.id, 12_000);
+      await createSession('Edges first', '333', 'freestyle', 'zz');
+
+      render(<TimerScreen />);
+
+      await screen.findByRole('button', { name: 'Edges first' });
+      await waitFor(() => expect(method()).toBe('ZZ'));
+    });
   });
 
   it('still reacts to the space bar when a button holds focus', async () => {
