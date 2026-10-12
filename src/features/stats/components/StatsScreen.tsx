@@ -11,7 +11,7 @@ import { strings } from '../../../lib/strings';
 import { BackupReminder } from '../../data-transfer';
 import { SolveDetailSheet, useTags } from '../../history';
 import { SessionPicker, useActiveSession } from '../../sessions';
-import { PhaseAverages, usePhases } from '../../splits';
+import { PhaseAverages, useMethodName, usePhases } from '../../splits';
 import { useStatsScope } from '../hooks/use-stats-scope';
 import type { Average, AverageWindow } from '../../../domain/stats/averages';
 import {
@@ -144,9 +144,12 @@ function sessionBestTier(bestMs: number | null, pbMs: number | null): StatTier |
 
 export function StatsScreen() {
   const session = useActiveSession(PUZZLE, MODE);
-  // Every session is timed with the same method today, so the active one's
-  // phases name the columns for all of them.
-  const phases = usePhases(session?.methodId ?? null);
+  // The phases are those of the method being timed in. Across sessions that
+  // is not every solve's method, and the numbers about phases are read from
+  // the solves it is — see useSessionStats.
+  const methodId = session?.methodId ?? null;
+  const phases = usePhases(methodId);
+  const methodName = useMethodName(methodId);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   const [scope, setScope] = useStatsScope();
   const tags = useTags();
@@ -165,6 +168,7 @@ export function StatsScreen() {
     PUZZLE,
     phaseKeys,
     tagId,
+    methodId,
   );
   const isAllSessions = scope !== 'session';
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
@@ -434,7 +438,10 @@ export function StatsScreen() {
                   rows={stats.phaseRows}
                   phases={phases}
                   measuredCount={stats.measuredCount}
-                  solveCount={stats.solveCount}
+                  solveCount={stats.phaseSolveCount}
+                  otherMethodsLeftOut={
+                    stats.phaseSolveCount < stats.solveCount ? methodName : null
+                  }
                   onOpenSolve={setOpenSolveId}
                 />
               </div>
@@ -485,7 +492,6 @@ export function StatsScreen() {
       {openSolveId === null ? null : (
         <SolveDetailSheet
           solveId={openSolveId}
-          phases={phases}
           // Opened from an average, the sheet steps through that average's
           // solves; opened from a best, there is only the one.
           solveIds={windowView?.solves.map((solve) => solve.id) ?? NO_SOLVES}

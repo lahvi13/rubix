@@ -146,6 +146,9 @@ export const en = {
     /** Both counts, because the two differ and the difference is the point. */
     measuredNote: (measured: number, total: number) =>
       `${measured} of ${total} solves were timed by phase; the rest were timed as a whole.`,
+    /** Before the counts, where the solves read were timed in more than one method. */
+    methodNote: (method: string) =>
+      `Only the solves timed in ${method}: another method has phases of its own.`,
     trendAxes: (count: number) =>
       `Along the bottom: the last ${count} phase-timed solves, oldest first.`,
     smoothing: 'Smooth',

@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import type { MethodPhase } from '../../../db/types';
 import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { useSessionRecords } from '../../../hooks/use-session-records';
 import { useRemoveSolves } from '../../../hooks/use-remove-solves';
@@ -19,7 +18,6 @@ import { SolveDetail } from './SolveDetail';
 
 interface SolveDetailSheetProps {
   solveId: string;
-  phases: readonly MethodPhase[];
   /** The solves this one is among, in the order they are shown. */
   solveIds: readonly string[];
   /** Opens another of them — how the sheet steps through the list. */
@@ -34,15 +32,17 @@ interface SolveDetailSheetProps {
  */
 export function SolveDetailSheet({
   solveId,
-  phases,
   solveIds,
   onOpen,
   onClose,
 }: SolveDetailSheetProps) {
-  const { solve, session, edit } = useSolveDetail(solveId);
+  // The phases come with the solve, not from the screen that opened it: the
+  // stats offer solves of every session, and one timed in another method was
+  // split into that method's phases, not the ones on screen.
+  const { solve, session, phases, edit } = useSolveDetail(solveId);
   // Read from the solve's own session, which is not always the one on screen:
   // the stats offer the all-time best, and that may have been set elsewhere.
-  const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
+  const phaseKeys = useMemo(() => (phases ?? []).map((phase) => phase.key), [phases]);
   const { bests, globalPbMs } = useSessionRecords(
     solve?.sessionId ?? null,
     solve?.puzzle ?? '333',
@@ -54,7 +54,7 @@ export function SolveDetailSheet({
   const [isMoving, setMoving] = useState(false);
   const card = useShareCard();
 
-  if (!solve) return null;
+  if (!solve || phases === undefined) return null;
 
   // Counted from the solve on screen rather than the one asked for: the query
   // holds the previous row for a tick after the id changes, and reading the

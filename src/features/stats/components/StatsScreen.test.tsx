@@ -11,6 +11,7 @@ import {
 import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import { addSolve, updateSolve } from '../../../db/repositories/solve-repository';
 import { createTag } from '../../../db/repositories/tag-repository';
+import { seedPacks } from '../../../db/seed/seed';
 import { StatsScreen } from './StatsScreen';
 
 // The charts are dumb by contract and jsdom has no layout for Recharts to
@@ -322,6 +323,117 @@ describe('StatsScreen', () => {
       expect(
         screen.queryByRole('group', { name: 'Only solves with this tag' }),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * Phases belong to a method. Read across sessions, the solves may have been
+   * timed in more than one, and the table is about the one being timed in now.
+   */
+  describe('across sessions timed in different methods', () => {
+    const split = (phase: string, atMs: number) => ({ phase, atMs, source: 'manual' as const });
+
+    async function seedPhased(
+      session: string,
+      rawMs: number,
+      phaseKeys: readonly string[],
+      ends: readonly number[],
+    ) {
+      return addSolve({
+        sessionId: session,
+        puzzle: '333',
+        mode: 'freestyle',
+        scramble: "R U R' U'",
+        rawMs,
+        penalty: 'none',
+        penaltySource: 'auto',
+        inspectionMs: null,
+        startedAt: Date.now(),
+        splits: ends.map((atMs, index) => split(phaseKeys[index] ?? '', atMs)),
+        phaseKeys,
+      });
+    }
+
+    const CFOP = ['cross', 'f2l', 'oll', 'pll'];
+    const ROUX = ['fb', 'sb', 'cmll', 'lse'];
+
+    const phaseTable = async () => {
+      const heading = await screen.findByText(/^Phase averages/);
+      const section = heading.closest('section');
+      if (section === null) throw new Error('the phase table lost its panel');
+      return section;
+    };
+
+    const rowOf = (section: HTMLElement, name: string) =>
+      within(section)
+        .getAllByRole('row')
+        .find((row) => row.querySelector('th')?.textContent === name)?.textContent;
+
+    beforeEach(async () => {
+      await seedPacks();
+    });
+
+    it('reads a method’s phases from the solves timed in it, and says so', async () => {
+      await seedPhased(sessionId, 20_000, CFOP, [2000, 10_000, 14_000]);
+      await seedPhased(sessionId, 22_000, CFOP, [3000, 12_000, 16_000]);
+      const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
+      await seedPhased(blocks.id, 30_000, ROUX, [3000, 8000, 18_000]);
+
+      render(<StatsScreen />);
+
+      const section = await phaseTable();
+      // One Roux solve, out of the one solve timed in Roux — not out of three.
+      expect(within(section).getByText('Phase averages · 1')).toBeInTheDocument();
+      expect(section.textContent).toContain('Only the solves timed in Roux');
+      expect(section.textContent).toContain('1 of 1 solves were timed by phase');
+      // Its four phases, and a total that is theirs: the CFOP solves are in
+      // neither.
+      expect(rowOf(section, 'All')).toBe('All3.005.0010.0012.0030.00');
+      expect(rowOf(section, 'Best')).toBe('Best3.005.0010.0012.0030.00');
+    });
+
+    it('says nothing about other methods where every solve read is this one’s', async () => {
+      await seedPhased(sessionId, 20_000, CFOP, [2000, 10_000, 14_000]);
+      await seedSolve(sessionId, 25_000);
+
+      render(<StatsScreen />);
+
+      const section = await phaseTable();
+      expect(section.textContent).not.toContain('Only the solves timed in');
+      expect(section.textContent).toContain('1 of 2 solves were timed by phase');
+      expect(rowOf(section, 'All')).toBe('All2.008.004.006.0020.00');
+    });
+
+    it('does not read one method’s phase as another’s because they share a name', async () => {
+      // CFOP and ZZ both call a phase F2L. A CFOP solve read by ZZ's phases
+      // would hand its OLL and PLL to ZZ's last layer.
+      await seedPhased(sessionId, 20_000, CFOP, [2000, 10_000, 14_000]);
+      await createSession('Edges first', '333', 'freestyle', 'zz');
+
+      render(<StatsScreen />);
+
+      await screen.findByText('1 solve');
+      expect(screen.queryByText(/^Phase averages/)).not.toBeInTheDocument();
+    });
+
+    it('opens a solve with the phases it was timed in, whatever method is on screen', async () => {
+      await seedPhased(sessionId, 9000, CFOP, [1000, 5000, 7000]);
+      const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
+      await seedPhased(blocks.id, 30_000, ROUX, [3000, 8000, 18_000]);
+      const user = userEvent.setup();
+
+      render(<StatsScreen />);
+      await phaseTable();
+
+      // The all-time best is the CFOP solve; the screen is reading Roux.
+      await user.click(screen.getByRole('button', { name: /PB single/i }));
+
+      const sheet = await screen.findByRole('dialog');
+      await waitFor(() => {
+        expect(sheet.textContent).toContain('Cross');
+      });
+      expect(sheet.textContent).toContain('PLL');
+      expect(sheet.textContent).not.toContain('CMLL');
     });
   });
 

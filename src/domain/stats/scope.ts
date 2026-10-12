@@ -10,6 +10,25 @@ export interface Scoped<T> {
   read: T[];
 }
 
+/**
+ * The solves timed in one method, out of solves that may come from sessions of
+ * several. Phases belong to a method: a table of Roux's four over solves that
+ * were split into CFOP's four has nothing to put in its columns — and where
+ * two methods happen to share a phase's name, as CFOP and ZZ share F2L, it
+ * has the wrong thing to put there.
+ *
+ * A solve whose session is not known is left out with the rest.
+ */
+export function solvesOfMethod<T extends { sessionId: string }>(
+  solves: readonly T[],
+  /** Each session's method, by the session's id. */
+  methodOfSession: ReadonlyMap<string, string>,
+  methodId: string | null,
+): T[] {
+  if (methodId === null) return [];
+  return solves.filter((solve) => methodOfSession.get(solve.sessionId) === methodId);
+}
+
 export function solvesInScope<T extends { tagIds: readonly string[] }>(
   /** Chronological, oldest first. */
   loaded: readonly T[],

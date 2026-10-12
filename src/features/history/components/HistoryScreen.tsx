@@ -258,7 +258,6 @@ export function HistoryScreen() {
       {open ? (
         <SolveDetailSheet
           solveId={open.id}
-          phases={phases}
           solveIds={openable}
           onOpen={setOpenId}
           onClose={() => setOpenId(null)}

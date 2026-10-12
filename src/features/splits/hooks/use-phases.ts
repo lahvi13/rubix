@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { MethodPhase } from '../../../db/types';
-import { getMethodPhases } from '../../../db/repositories/method-repository';
+import { getMethod, getMethodPhases } from '../../../db/repositories/method-repository';
 
 const NONE: MethodPhase[] = [];
 
@@ -15,4 +15,13 @@ export function usePhases(methodId: string | null): MethodPhase[] {
     [methodId],
   );
   return phases ?? NONE;
+}
+
+/** What a method is called, for saying whose phases a table is about. */
+export function useMethodName(methodId: string | null): string | null {
+  const name = useLiveQuery(
+    async () => (methodId === null ? null : ((await getMethod(methodId))?.name ?? null)),
+    [methodId],
+  );
+  return name ?? null;
 }

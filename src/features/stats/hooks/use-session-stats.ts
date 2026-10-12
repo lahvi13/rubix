@@ -6,6 +6,7 @@ import {
   listPuzzleSolvesChronological,
   listSolvesChronological,
 } from '../../../db/repositories/solve-repository';
+import { listSessions } from '../../../db/repositories/session-repository';
 import { getSetting, SETTING_DEFAULTS } from '../../../db/repositories/settings-repository';
 import { finalMs } from '../../../domain/solve/final-time';
 import {
@@ -39,7 +40,7 @@ import {
   type PhaseTrendPoint,
 } from '../../../domain/stats/phases';
 import { recordProgression } from '../../../domain/stats/progression';
-import { solvesInScope } from '../../../domain/stats/scope';
+import { solvesInScope, solvesOfMethod } from '../../../domain/stats/scope';
 import {
   calendarDays,
   dayNumber,
@@ -203,6 +204,12 @@ export interface SessionStats {
   phaseRows: PhaseAverageRow[];
   /** How many of the solves were timed by phase — the sample behind phaseRows. */
   measuredCount: number;
+  /**
+   * How many of the solves were timed in the method the phases belong to:
+   * what measuredCount is out of. Fewer than solveCount when the solves come
+   * from sessions of more than one method.
+   */
+  phaseSolveCount: number;
   /** One point per phase-timed solve — raw lengths plus the rolling mean. */
   phaseTrend: PhaseTrendPoint[];
   /** null while no goal is set. */
@@ -227,6 +234,11 @@ export function useSessionStats(
   phaseKeys: readonly string[] = [],
   /** Only the solves carrying this tag; null for all of them. */
   tagId: string | null = null,
+  /**
+   * The method `phaseKeys` belong to. Solves of sessions timed in another
+   * take no part in anything about phases.
+   */
+  methodId: string | null = null,
 ): SessionStats | null {
   const kind = source?.kind ?? null;
   const sessionId = source?.kind === 'session' ? source.sessionId : null;
@@ -236,15 +248,25 @@ export function useSessionStats(
     return listPuzzleSolvesChronological(puzzle);
   }, [kind, sessionId, puzzle]);
   const globalPb = useLiveQuery(() => getGlobalPbSolve(puzzle), [puzzle]);
+  // Archived ones too: only to say which method a solve was timed in.
+  const sessions = useLiveQuery(() => listSessions(true), []);
   const chartWindow = useLiveQuery(() => getSetting('stats.chartWindow'), []);
   const goalMs = useLiveQuery(() => getSetting('stats.goalMs'), []);
 
   return useMemo(() => {
-    if (loaded === undefined) return null;
+    if (loaded === undefined || sessions === undefined) return null;
     const { pool, read: solves } = solvesInScope(
       loaded,
       tagId,
       kind === 'recent' ? RECENT_SOLVES : null,
+    );
+
+    // Across sessions the solves may have been timed in more than one method,
+    // and a phase means something in one of them only.
+    const phaseSolves = solvesOfMethod(
+      solves,
+      new Map(sessions.map((session) => [session.id, session.methodId])),
+      methodId,
     );
 
     const finals = solves.map(finalMs);
@@ -352,9 +374,10 @@ export function useSessionStats(
       // 'dnf' is not a place on a time axis; both marks simply go unmarked.
       currentAo12Ms: typeof currentAo12 === 'number' ? currentAo12 : null,
       bestAo12Ms: typeof bestAo12 === 'number' ? bestAo12 : null,
-      phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(solves, phaseKeys),
-      measuredCount: measuredSolves(solves).length,
-      phaseTrend: phaseTrend(solves, phaseKeys, window),
+      phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(phaseSolves, phaseKeys),
+      measuredCount: measuredSolves(phaseSolves).length,
+      phaseSolveCount: phaseSolves.length,
+      phaseTrend: phaseTrend(phaseSolves, phaseKeys, window),
       goal:
         goalMs === undefined || goalMs <= 0
           ? null
@@ -390,5 +413,5 @@ export function useSessionStats(
         };
       },
     };
-  }, [loaded, kind, tagId, globalPb, chartWindow, goalMs, phaseKeys]);
+  }, [loaded, sessions, kind, tagId, globalPb, chartWindow, goalMs, phaseKeys, methodId]);
 }

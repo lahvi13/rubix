@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { solvesInScope } from './scope';
+import { solvesInScope, solvesOfMethod } from './scope';
 
 // Oldest first; the id says where each solve stands and what it carries.
 const SOLVES = [
@@ -30,5 +30,33 @@ describe('solvesInScope', () => {
 
   it('is empty over no solves', () => {
     expect(solvesInScope([], 'oh', 100)).toEqual({ pool: [], read: [] });
+  });
+});
+
+describe('solvesOfMethod', () => {
+  const METHODS = new Map([
+    ['morning', 'cfop'],
+    ['evening', 'cfop'],
+    ['blocks', 'roux'],
+  ]);
+  const TIMED = [
+    { id: '1', sessionId: 'morning' },
+    { id: '2', sessionId: 'blocks' },
+    { id: '3', sessionId: 'evening' },
+    { id: '4', sessionId: 'gone' },
+    { id: '5', sessionId: 'blocks' },
+  ];
+
+  it.each<[string, string | null, string[]]>([
+    ['one method across its sessions, in order', 'cfop', ['1', '3']],
+    ['the other method', 'roux', ['2', '5']],
+    ['a method nothing was timed in', 'zz', []],
+    ['no method to read phases by', null, []],
+  ])('%s', (_, methodId, kept) => {
+    expect(ids(solvesOfMethod(TIMED, METHODS, methodId))).toEqual(kept);
+  });
+
+  it('leaves out a solve whose session is not known', () => {
+    expect(ids(solvesOfMethod(TIMED, new Map(), 'cfop'))).toEqual([]);
   });
 });

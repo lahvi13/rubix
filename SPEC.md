@@ -385,7 +385,16 @@ pokusy o rozpoznání s `mode: 'recognition'`. Do hlavních statistik a PB
 ### 3.6 Fázové splity
 
 Splity dělí solve na fáze (u CFOP cross / F2L / OLL / PLL, u Rouxu FB / SB /
-CMLL / LSE, u ZZ EOCross / F2L / LL). Fáze se berou
+CMLL / LSE, u ZZ EOCross / F2L / LL). **Fáze patří metodě, a statistiky fází
+se čtou jen ze složení té metody**: rozsah „Všechny session“ může míchat
+session různých metod, a tabulka fází pak bere sloupce z metody aktivní session
+a řádky jen ze složení session téže metody (`solvesOfMethod`), včetně sloupce
+Celkem a počtu v nadpisu; poznámka pod nadpisem to říká, když se něco
+vynechalo. Do 2026-10-12 se řádky počítaly ze všech složení: sloupce Rouxu
+tak stály na jediném Roux složení, kdežto Celkem a počet na všech CFOP — a
+protože CFOP i ZZ mají fázi s klíčem `f2l`, pod ZZ session by si poslední
+vrstva ZZ vzala OLL a PLL ze složení CFOP. Detail složení si fáze bere z metody
+session, ve které složení leží, ne z obrazovky, která ho otevřela. Fáze se berou
 z `Method.phases` aktivní session, **nikdy z enumu v kódu** — jiná metoda je pak
 data, ne migrace.
 

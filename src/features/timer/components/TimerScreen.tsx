@@ -523,7 +523,6 @@ export function TimerScreen() {
       {openSolveId === null ? null : (
         <SolveDetailSheet
           solveId={openSolveId}
-          phases={methodPhases}
           solveIds={openableSolves}
           onOpen={setOpenSolveId}
           onClose={() => setOpenSolveId(null)}
