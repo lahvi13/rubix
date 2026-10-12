@@ -1,6 +1,7 @@
 # Rubix
 
-An offline speedcubing trainer for the 3×3, from a first solve to a fast average.
+An offline speedcubing trainer for the 3×3, from a first solve to a fast average —
+a timer, a beginner's guide and an algorithm trainer for **CFOP** and **Roux**.
 It runs in the browser and installs as an app on a phone or a computer:
 **[rubix.lahvi.cz](https://rubix.lahvi.cz)**
 
@@ -8,8 +9,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 
 <p align="center">
   <img src="docs/screenshots/timer.webp" width="200" alt="The timer: a scramble, its 3D preview and the clock">
-  <img src="docs/screenshots/learn.webp" width="200" alt="The beginner's guide, step 1: the cross">
-  <img src="docs/screenshots/trainer.webp" width="200" alt="The F2L trainer: every case with its algorithm">
+  <img src="docs/screenshots/learn.webp" width="200" alt="The beginner's guide, for CFOP or Roux, with the notation open">
+  <img src="docs/screenshots/trainer.webp" width="200" alt="The trainer on Roux: CMLL, every case with its algorithm">
   <img src="docs/screenshots/stats.webp" width="200" alt="Statistics: phase averages and the phase trend">
 </p>
 
@@ -40,16 +41,21 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 - Averages follow the csTimer convention, so the numbers match what you are used to.
 
 ### Algorithm trainer
-- PLL, OLL and F2L, plus 2-Look OLL and PLL for the way most people learn them.
-- Every case drawn as a diagram with arrows for where the pieces go; play the
+- **CFOP:** PLL, OLL and F2L — with two further levels of F2L for a pair that
+  starts in the wrong slot — plus 2-Look OLL and PLL for the way most people
+  learn them.
+- **Roux:** the second block's 65 pairs, CMLL — all 42 cases, with 2-Look CMLL
+  on the way there — the eleven cases of edge orientation, and EOLR, which
+  orients the edges and places the side ones in a single algorithm.
+- Every case drawn as a diagram, with arrows for where the pieces go; play the
   algorithm on a 3D cube move by move.
-- Alternative algorithms for a case, your own algorithms, and named triggers
-  (sexy move, sledgehammer…) highlighted inside them.
-- Roux: the second block's 65 pairs, CMLL — all 42 cases, with one-handed
-  algorithms among the alternatives, and 2-Look CMLL on the way there — the
-  eleven cases of edge orientation, and EOLR, which orients the edges and
-  places the side ones in a single algorithm.
-- Drill a chosen set of cases against the clock and see which ones are your slowest.
+- Alternative algorithms for a case — left-handed ones marked as such — your
+  own algorithms, and named triggers (sexy move, sledgehammer…) highlighted
+  inside them.
+- Mark each case as new, learning or known, and see how far through a set you are.
+- Drill a chosen set of cases against the clock, from a real scramble into the
+  case, and see which ones are your slowest; or drill recognition alone, naming
+  the case you are shown. The cross has a drill of its own.
 
 ### Phase splits
 - Time each phase by tapping as you finish it: cross, F2L, OLL and PLL in CFOP,
@@ -83,6 +89,15 @@ There are no accounts and no backend. Everything you record stays in your browse
 storage and leaves the device only when you export it yourself. The one outside
 request is Cloudflare Web Analytics, which counts page views; it knows nothing
 about your solves and nothing waits for it.
+
+## Where the algorithms come from
+
+Most of the CFOP algorithms are from [J Perm](https://jperm.net/), and the
+beginner method follows [badmephisto](http://badmephisto.com). The Roux sets
+come from the sheets of [Kian Mansour](https://sites.google.com/view/kianroux/)
+and the Roux community; the second-block cases those sheets leave out are from
+[SpeedCubeDB](https://speedcubedb.com/). Every algorithm in the app is checked
+by running it on a model of the cube before it ships.
 
 ## Bugs and ideas
 
