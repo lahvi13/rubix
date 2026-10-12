@@ -243,6 +243,55 @@ describe('the bottom-layer stickering', () => {
   });
 });
 
+describe('the edge-orientation stickering of the last six edges', () => {
+  it('flags a bad edge where a good one shows its yellow or white', () => {
+    // The arrow: three bad edges on top and the front one below.
+    const view = netView(after("M' U' M"), 'lseOrientation');
+
+    // Up, row 0 at the back: the back edge is good, the other three are bad.
+    expect(view.up).toEqual(['.', 'U', '.', 'marked', 'U', 'marked', '.', 'marked', '.'].map(dotToNull));
+    // The bad front edges show their yellow and white on the front instead.
+    expect(view.front[1]).not.toBeNull();
+    expect(view.front[7]).not.toBeNull();
+    expect(view.down[1]).toBe('marked');
+    expect(view.down[7]).toBe('D');
+  });
+
+  it('flags nothing once every edge is good, wherever the edges are', () => {
+    const view = netView(after('M2 U M2 U2'), 'lseOrientation');
+
+    expect([...view.up, ...view.down, ...view.front, ...view.right]).not.toContain('marked');
+  });
+
+  it('never flags a centre, though a turned slice puts a side colour on top', () => {
+    const view = netView(after('M'), 'lseOrientation');
+
+    expect(view.up[4]).toBeNull();
+  });
+});
+
+describe('the side-edges stickering', () => {
+  it('shows the two edges that go over the blocks and greys the middle slice', () => {
+    const view = netView(solvedState(), 'sideEdges');
+
+    // Up: the corners, the centre and the left and right edges; the front and
+    // back ones belong to the middle slice.
+    expect(view.up).toEqual(['U', '.', 'U', 'U', 'U', 'U', 'U', '.', 'U'].map(dotToNull));
+    // A side face: the blocks reach across it, and the slice between them
+    // keeps only its centre.
+    expect(view.front).toEqual(['F', '.', 'F', 'F', 'F', 'F', 'F', '.', 'F'].map(dotToNull));
+  });
+
+  it('follows a side edge into the middle slice', () => {
+    // The top turned a quarter: the edge from the left is at the back now,
+    // and the one that took its place is not drawn.
+    const view = netView(after('U'), 'sideEdges');
+
+    expect(view.up[1]).toBe('U');
+    expect(view.up[3]).toBeNull();
+  });
+});
+
 describe('judging Roux corners', () => {
   const turned = (text: string) => {
     const parsed = parseAlg(text);

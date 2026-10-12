@@ -23,8 +23,9 @@ import {
  * edges alone for the first look; or, for the beginner's
  * steps, just the pieces the step is about — the cross, the bottom layer
  * being built, or the last layer's corners without its edges. Roux's steps
- * each have their own: the left block, both blocks, the corners' yellow, and
- * the top and bottom colours of the last six edges.
+ * each have their own: the left block, both blocks, the corners' yellow, the
+ * top and bottom colours of the last six edges, and the two side edges among
+ * them.
  */
 export type PlayerStickering =
   | 'full'
@@ -38,7 +39,8 @@ export type PlayerStickering =
   | 'blocks'
   | 'blocksAndCorners'
   | 'cornerOrientation'
-  | 'lseOrientation';
+  | 'lseOrientation'
+  | 'sideEdges';
 
 interface CasePlayerProps {
   /** How the cube gets into the case: the algorithm, undone. */
@@ -200,5 +202,10 @@ function maskFor(stickering: PlayerStickering, standing: string): Promise<Sticke
         if (orbit === 'CENTERS') return home.has('U') || home.has('D') ? 'regular' : 'ignored';
         return orbit === 'EDGES' && !isBlock(home) && facelet === 0 ? 'regular' : 'ignored';
       });
+    case 'sideEdges':
+      // Everything but the four edges of the middle slice.
+      return maskByHome(shown, ({ orbit, home }) =>
+        orbit === 'EDGES' && !home.has('L') && !home.has('R') ? 'ignored' : 'regular',
+      );
   }
 }

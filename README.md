@@ -57,7 +57,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 
 ### Beginner guide
 - A whole first solve in seven steps, with pictures of how to hold the cube —
-  for CFOP, or for Roux with its blocks built by hand and only two algorithms.
+  for CFOP, or for Roux with its blocks built by feel, only two algorithms and
+  a picture for every way its last edges can lie.
 - Can be hidden once you no longer need it.
 
 ### Sharing

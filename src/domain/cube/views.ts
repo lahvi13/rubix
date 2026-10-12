@@ -62,16 +62,31 @@ export type Stickering =
    * The last six edges as Roux orients them: only the top and bottom colours
    * of those edges, and of the centres they are read against. An edge is good
    * when that colour faces up or down, which is the whole of what this step
-   * looks at.
+   * looks at. A bad edge is flagged where a good one would show that colour —
+   * the step starts by counting the bad ones, and grey is what the rest of
+   * the picture says not to look at.
    */
   | 'lseOrientation'
+  /**
+   * Roux's two side edges on their way home: the blocks, the top corners they
+   * are matched against, every centre, and of the six loose edges only the two
+   * that belong over the blocks. The other four all show yellow or white on
+   * top by then, and the two being looked for would be lost among them.
+   */
+  | 'sideEdges'
   /**
    * No colours at all: the shape of a cube, standing in for one that is not
    * known yet — the scramble still being generated.
    */
   | 'blank';
 
-export type Cell = Face | null;
+/**
+ * A sticker flagged rather than coloured: the place is what matters, and the
+ * colour really there is any of four. Drawn in a colour no cube has.
+ */
+export const MARKED = 'marked';
+
+export type Cell = Face | typeof MARKED | null;
 
 export interface LastLayerView {
   /** U face, row-major; row 0 is the back row, as in every LL diagram. */
@@ -176,6 +191,19 @@ function isLastSixEdge(state: CubeState, index: number): boolean {
   );
 }
 
+/**
+ * One of the two edges that end up over the blocks: the top colour and a
+ * side's colour, read off the side centres like the blocks themselves.
+ */
+function isSideEdge(state: CubeState, index: number): boolean {
+  const colours = siblingsOf(index).map((sibling) => colourAt(state, sibling));
+  if (colours.length !== 2 || !colours.includes('U')) return false;
+  return (
+    colours.includes(colourAt(state, indexOf('L', 1, 1))) ||
+    colours.includes(colourAt(state, indexOf('R', 1, 1)))
+  );
+}
+
 /** A piece is told apart by how many stickers it has: 3, 2 or 1. */
 function pieceSize(index: number): number {
   return siblingsOf(index).length;
@@ -216,9 +244,21 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
         : null;
     case 'cornerOrientation':
       return pieceSize(index) === 3 && colour === 'U' ? 'U' : null;
-    case 'lseOrientation':
-      return (pieceSize(index) === 1 || isLastSixEdge(state, index)) &&
-        (colour === 'U' || colour === 'D')
+    case 'lseOrientation': {
+      const isEdge = pieceSize(index) === 2 && isLastSixEdge(state, index);
+      if (pieceSize(index) !== 1 && !isEdge) return null;
+      if (colour === 'U' || colour === 'D') return colour;
+      // The other sticker of one of the six edges, lying where its top or
+      // bottom colour should be: that edge is a bad one.
+      const face = FACELETS[index]?.face;
+      return isEdge && (face === 'U' || face === 'D') ? MARKED : null;
+    }
+    case 'sideEdges':
+      return pieceSize(index) === 1 ||
+        isBlockPiece(state, index, 'L') ||
+        isBlockPiece(state, index, 'R') ||
+        isTopCorner(state, index) ||
+        isSideEdge(state, index)
         ? colour
         : null;
     case 'blank':

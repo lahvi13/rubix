@@ -1205,14 +1205,44 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
    Roux přechází, chce průvodce číst dřív, než si Roux session založí. Sedm kroků
    jako u CFOP: levý blok, pravý blok, rohy žlutou nahoru (Sune), rohy na místo
    (Jb), orientace hran (šipka a `M' U M`), boční hrany (`M2`), střední vrstva
-   (`U2 M2 U2 M2`, `U2 M' U2 M'`). Struktura podle „ROUX_guide_rev4“, vysvětlení
+   (`U2 M2 U2 M2`, `U2 M U2 M'`). Struktura podle „ROUX_guide_rev4“, vysvětlení
    bloků podle „Beginners guide to 3x3 cube with Roux“, situace podle „Roux
-   Beginner Supplemental Guide“ — 11 obrázků místo 34, zbytek je intuitivní a
-   říká ho text. Bloky a hrany jsou situace (obrázek = složený stav s vysunutými
-   dílky, jako u crossu); levý blok je kreslený i přehrávaný **z levého předního
-   rohu**, každý krok má vlastní zvýraznění (jen levý blok, oba bloky, jen žlutá
-   rohů, jen žlutá a bílá šesti hran). Kostka stojí jako v těch průvodcích:
-   žlutá nahoře, modrá vlevo, červená vpředu (`y'` oproti skinům).
+   Beginner Supplemental Guide“. Pravý blok a hrany jsou situace (obrázek =
+   složený stav s vysunutými dílky, jako u crossu); každý krok má vlastní
+   zvýraznění (jen levý blok, oba bloky, jen žlutá rohů, jen žlutá a bílá šesti
+   hran, jen dvě boční hrany). Kostka stojí jako v těch průvodcích: žlutá
+   nahoře, modrá vlevo, červená vpředu (`y'` oproti skinům).
+
+   **Po autorově prvním složení (2026-10-12) přepsaný.** Levý blok nemá žádné
+   situace — obrázky `F'` a `B` se četly jako dva tahy k naučení; skládá se
+   intuitivně, text říká jen co a v jakém pořadí a krok ukazuje hotový blok
+   (`goal`, kreslený z levého předního rohu). Kroky 5–7 naopak nenechávají nic
+   na zkoušení, protože tam se člověk z CFOP ztratí: každý říká, **co spočítat**,
+   a pro každou odpověď má obrázek s držením a tahy.
+   - **Krok 5**: počet špatných hran (0/2/4/6). Dva nástroje — `M' U M` (přetočí
+     UF, UL, UR a DF; zezadu `M U M'`) a výměna `M' U2 M` (UF ↔ DF, nic
+     nepřetočí). Čtyři špatné → šipka přímo nebo jednou výměnou; dvě → `M' U M`
+     s právě jednou špatnou vzadu; šest → `M' U M` odkudkoli. Špatná hrana
+     je na obrázku **fialová** tam, kde by dobrá měla žlutou nebo bílou
+     (`MARKED` v pohledech, `MARKED_STICKER` ve skinech; platí i pro sadu
+     „Orientace hran“ v trenažéru, je to tentýž obrázek). Šedá všude jinde
+     znamená „nedívej se sem“, a tady se šedé hrany měly počítat. Přehrávaná
+     kostka je dál šedá — její maska patří nálepce, ne tomu, kam míří.
+   - **Krok 6**: kde jsou dvě boční hrany. `M2` a `U` samy **nestačí** — když
+     jsou nahoře vedle sebe nebo jedna dole a druhá nahoře, je potřeba výměna
+     (`M U2 M'` / `M' U2 M`); původní text tvrdil opak a přesně tam se autor
+     zasekl.
+   - **Krok 7**: kolik ze čtyř hran sedí k oběma středům. Žádná → tečky
+     (`U2 M2 U2 M2` s pruhem jedné barvy nahoře), jedna → tři hrany v kruhu
+     (nesedící hrana nahoře, sedící pod ní, `U2 M U2 M'`).
+
+   Všechny tři postupy jsou tak, jak je text říká, **projeté přes každý stav**,
+   ve kterém je lze potkat (32 rozložení špatných hran, 2 880 stavů před krokem
+   6, 24 před krokem 7) na modelu kostky z `domain/cube` — jednorázově, mimo
+   repo. V repu zůstávají testy obrázků (`steps.test.ts`): každý obrázek je
+   to, co jeho popisek tvrdí, a jeho tahy nechají to, co slibuje. Situace, která
+   krok nedokončí, nese `next` — co po ní následuje — aby se kostka kreslila
+   tak, jak ji člověk při skládání potká.
 3. **Trenažér seskupený podle metody + CMLL.** Řada sad má řádek na metodu
    (CFOP · Roux), jakmile jich je víc. **2-Look CMLL** (7 orientací + Jb a Y, podle
    „2-Look CMLL“ PDF) je hotová a průvodce z ní bere Sune a Jb; celá sada je jeho

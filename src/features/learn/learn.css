@@ -126,6 +126,14 @@ li:not(.learn__aside) + .learn__aside {
   margin: 0 0 var(--space-3);
 }
 
+/* A finished block rather than an unfolded cube: one cube, at the size the
+   eye takes a shape in, not the size a card's thumbnail is read at. */
+.learn__goal {
+  display: block;
+  width: 8rem;
+  margin: 0 0 var(--space-3);
+}
+
 .learn__caption {
   margin: 0;
   font-size: var(--text-xs);
@@ -222,6 +230,12 @@ li:not(.learn__aside) + .learn__aside {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
   gap: var(--space-4);
   margin: 0 0 var(--space-5);
+}
+
+/* Under a case and what it is read by, the ways to that case: the same gap as
+   between any two cards, and nothing after the last. */
+.learn__caption + .learn__situations {
+  margin: var(--space-4) 0 0;
 }
 
 /* A cross situation in its sheet: the name is a sentence, not a case name,

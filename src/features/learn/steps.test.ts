@@ -18,6 +18,7 @@ import {
   ROUX_STEPS,
   holdState,
   situationPicture,
+  wayOut,
   type LearnStep,
 } from './steps';
 
@@ -213,6 +214,57 @@ describe('the Roux guide', () => {
   /** Which faces and slices a situation turns, as the step's warning names them. */
   const familiesOf = (alg: string): string[] => movesOf(alg).map((move) => move.family);
 
+  /** The six places an edge can be once both blocks stand. */
+  const SLOT_NAMES = ['UF', 'UL', 'UB', 'UR', 'DF', 'DB'] as const;
+  type Slot = (typeof SLOT_NAMES)[number];
+  const SLOTS: Record<Slot, string> = {
+    UF: '0,1,1',
+    UL: '-1,1,0',
+    UB: '0,1,-1',
+    UR: '1,1,0',
+    DF: '0,-1,1',
+    DB: '0,-1,-1',
+  };
+
+  /** The colours of the piece in a slot, by the face each of them lies on. */
+  const pieceAt = (state: CubeState, slot: Slot) =>
+    (cubies.get(SLOTS[slot]) ?? []).map((index) => [FACELETS[index]?.face, state[index]] as const);
+
+  const centreOf = (state: CubeState, face: string | undefined) =>
+    state[FACELETS.findIndex((sticker) => sticker.face === face && sticker.row === 1 && sticker.column === 1)];
+
+  /** An edge is bad when its top or bottom colour faces sideways. */
+  const badEdges = (state: CubeState): Slot[] =>
+    SLOT_NAMES.filter((slot) =>
+      pieceAt(state, slot).some(
+        ([face, colour]) => (colour === 'U' || colour === 'D') && face !== 'U' && face !== 'D',
+      ),
+    );
+
+  /** Where the two edges that belong over the blocks are. */
+  const sideEdges = (state: CubeState): Slot[] =>
+    SLOT_NAMES.filter((slot) =>
+      pieceAt(state, slot).some(
+        ([, colour]) => colour === centreOf(state, 'L') || colour === centreOf(state, 'R'),
+      ),
+    );
+
+  /** How many of an edge's two colours match the centre they lie beside. */
+  const fit = (state: CubeState, slot: Slot): number =>
+    pieceAt(state, slot).filter(([face, colour]) => colour === centreOf(state, face)).length;
+
+  const isOnTop = (slot: Slot): boolean => slot.startsWith('U');
+
+  /** A step's pictures, each with the cube as drawn and as its moves leave it. */
+  const pictures = (id: string) => {
+    const entry = step(id);
+    const { standing } = situationPicture(entry);
+    return entry.situations.map((situation) => {
+      const before = holdState(situation, standing);
+      return { situation, before, after: applyAlg(before, movesOf(situation.alg)) };
+    });
+  };
+
   it('has seven steps, each with something to say', () => {
     expect(ROUX_STEPS).toHaveLength(7);
     for (const entry of ROUX_STEPS) {
@@ -226,21 +278,21 @@ describe('the Roux guide', () => {
       entry.situations.map((situation) => [entry.id, entry, situation] as const),
     ),
   )(
-    '%s: the situation is undone by its moves',
+    '%s: the situation is undone by its moves and what the step does next',
     (_id, entry, situation) => {
       const picture = situationPicture(entry);
       const state = holdState(situation, picture.standing);
-      expect(isSolvedAsShown(state, picture.stickering)).toBe(false);
       const stood = holdState({ alg: '', text: '' }, picture.standing);
-      expect(applyAlg(state, movesOf(situation.alg))).toEqual(stood);
+      expect(state).not.toEqual(stood);
+      expect(applyAlg(state, movesOf(wayOut(situation)))).toEqual(stood);
     },
   );
 
-  it('builds the left block without turning L or D', () => {
-    for (const situation of step('roux-first-block').situations) {
-      expect(familiesOf(situation.alg)).not.toContain('L');
-      expect(familiesOf(situation.alg)).not.toContain('D');
-    }
+  it('teaches the left block by its finished picture, not by moves to learn', () => {
+    const block = step('roux-first-block');
+
+    expect(block.situations).toHaveLength(0);
+    expect(block.goal?.picture.stickering).toBe('leftBlock');
   });
 
   it('builds the right block with U, R, r and M only', () => {
@@ -251,10 +303,89 @@ describe('the Roux guide', () => {
     }
   });
 
-  it.each(['roux-side-edges', 'roux-middle-slice'])('%s turns nothing but M and U', (id) => {
-    for (const situation of step(id).situations) {
-      for (const family of familiesOf(situation.alg)) expect(['M', 'U']).toContain(family);
-    }
+  it.each(['roux-edge-orientation', 'roux-side-edges', 'roux-middle-slice'])(
+    '%s turns nothing but M and U',
+    (id) => {
+      for (const situation of step(id).situations) {
+        for (const family of familiesOf(wayOut(situation))) expect(['M', 'U']).toContain(family);
+      }
+    },
+  );
+
+  /**
+   * The ways to the arrow. Each card says how many edges are bad and where,
+   * and what its moves leave: the picture has to be that count, and the moves
+   * have to leave what the card promises.
+   */
+  it.each([
+    ['four on top', 0, ['UF', 'UL', 'UB', 'UR'], [3, 1]],
+    ['two on top and two below', 1, ['UL', 'UB', 'DF', 'DB'], [3, 1]],
+    ['two bad, one of them at the back', 2, ['UL', 'UB'], [3, 1]],
+    ['all six', 3, ['UF', 'UL', 'UB', 'UR', 'DF', 'DB'], [1, 1]],
+  ] as const)('draws %s, and leaves what it says', (_label, index, bad, [top, bottom]) => {
+    const drawn = pictures('roux-edge-orientation')[index];
+    if (!drawn) throw new Error('edge orientation lost a picture');
+
+    expect(badEdges(drawn.before)).toEqual(bad);
+    const left = badEdges(drawn.after);
+    expect([left.filter(isOnTop).length, left.filter((slot) => !isOnTop(slot)).length]).toEqual([
+      top,
+      bottom,
+    ]);
+  });
+
+  it('swaps a good edge to the front of the top only where the card says one is', () => {
+    // The swap is the same three moves on both cards; what differs is which
+    // edge has to be at the front before it.
+    const [fourOnTop, twoAndTwo] = pictures('roux-edge-orientation');
+    if (!fourOnTop || !twoAndTwo) throw new Error('edge orientation lost a picture');
+
+    expect(badEdges(fourOnTop.before)).toContain('UF');
+    expect(badEdges(twoAndTwo.before)).not.toContain('UF');
+    expect(badEdges(twoAndTwo.before)).toContain('DF');
+  });
+
+  /**
+   * The side edges: the step's one algorithm, from both at the bottom, and
+   * then a picture for every other place the two can be. None of the moves
+   * may turn an edge over — the step before has just finished doing that —
+   * and every other picture has to end where the first one starts.
+   */
+  it.each([
+    ['both at the bottom', 0, ['DF', 'DB'], ['UL', 'UR']],
+    ['facing each other on top', 1, ['UF', 'UB'], ['DF', 'DB']],
+    ['one at the bottom front, one at the top back', 2, ['UB', 'DF'], ['DF', 'DB']],
+    ['side by side on top, front and right', 3, ['UF', 'UR'], ['DF', 'DB']],
+  ] as const)('draws the side edges %s', (_label, index, from, to) => {
+    const drawn = pictures('roux-side-edges')[index];
+    if (!drawn) throw new Error('the side edges lost a picture');
+
+    expect(sideEdges(drawn.before)).toEqual(from);
+    expect(sideEdges(drawn.after)).toEqual(to);
+    expect(badEdges(drawn.before)).toHaveLength(0);
+    expect(badEdges(drawn.after)).toHaveLength(0);
+  });
+
+  it('draws the dots held as the step says: a stripe on top, no edge fitting', () => {
+    const drawn = pictures('roux-middle-slice')[0];
+    if (!drawn) throw new Error('the middle slice lost a picture');
+    const top = (slot: Slot) => pieceAt(drawn.before, slot).find(([face]) => face === 'U')?.[1];
+
+    expect(top('UF')).toBe(centreOf(drawn.before, 'U'));
+    expect(top('UB')).toBe(centreOf(drawn.before, 'U'));
+    expect(SLOT_NAMES.filter((slot) => fit(drawn.before, slot) === 2)).toEqual(['UL', 'UR']);
+  });
+
+  it('draws the three edges held as the step says: the misfit over the one that fits', () => {
+    const drawn = pictures('roux-middle-slice')[1];
+    if (!drawn) throw new Error('the middle slice lost a picture');
+
+    expect(fit(drawn.before, 'UF')).toBe(0);
+    expect(fit(drawn.before, 'DF')).toBe(2);
+    // One edge of the slice fits and one fits nothing: that is how the step
+    // tells the reader to find them.
+    const slice = (['UF', 'UB', 'DF', 'DB'] as const).map((slot) => fit(drawn.before, slot));
+    expect(slice.toSorted()).toEqual([0, 1, 1, 2]);
   });
 
   /** The case a step opens on, out of its pack. */

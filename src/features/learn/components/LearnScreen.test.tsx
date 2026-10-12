@@ -210,13 +210,18 @@ describe('LearnScreen', () => {
     await settled();
 
     expect(screen.getByRole('button', { name: 'Roux' })).toHaveAttribute('aria-pressed', 'true');
-    // Two pairs for each block, Sune and Jb, the arrow, the side edges, and
-    // the two ways the middle slice can be left.
+    // No moves for the left block, two pairs for the right one, Sune and Jb,
+    // the arrow and the four ways to it, the four places the side edges can
+    // be, and the two ways the middle slice can be left.
     await waitFor(() =>
       expect(sections().map((section) => caseButtons(section).length)).toEqual([
-        2, 2, 1, 1, 1, 1, 2,
+        0, 2, 1, 1, 5, 4, 2,
       ]),
     );
+    // The left block is shown finished instead.
+    const [leftBlock] = sections();
+    if (!leftBlock) throw new Error('the guide lost its first step');
+    expect(within(leftBlock).getByRole('figure')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: strings.learn.rouxSourceLink })).toHaveAttribute(
       'href',
       'https://sites.google.com/view/kianroux/',

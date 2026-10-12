@@ -485,20 +485,34 @@ export const en = {
        and credit, and its seven steps. */
     method: 'Method',
     rouxIntro:
-      "Seven steps of Roux: two blocks built by hand, the top corners with two algorithms, then the last six edges with nothing but M and U. The pictures have yellow on top, white on the bottom and the first block's blue on the left. The Notation button explains letters like M or r.",
+      "Roux is a step up from the CFOP guide beside it: fewer algorithms, more working things out yourself. Seven steps: a block on each side, the top corners with two algorithms, then the last six edges with nothing but M and U. The pictures have yellow on top, white on the bottom and the first block's blue on the left. The Notation button explains letters like M or r.",
     rouxSource: 'The steps follow the Roux guides by Kian Mansour and the Roux community, at',
     rouxSourceLink: "Kian's Roux site",
     rouxHideHint:
       'Once you can solve without reading, get faster: learn all of 2-Look CMLL for steps 3 and 4, and later full CMLL, which does both in one — they are in the trainer. Then take this guide out of the menu; Settings puts it back.',
+    rouxBlockCaption: 'The finished left block, seen from the front left.',
     rouxSituations: {
-      frontPair: 'Pair at the front: the front face drops it onto the block.',
-      backPair: 'Pair at the back: the back face drops it onto the block.',
       pairInFront: 'Pair at the front, corner on the left: lift the slot, put the pair in, bring it back.',
       pairColourUp: 'Pair at the back with green on top: roll it over, then in.',
-      arrow: 'The arrow: three coloured edges on top, its point over the fourth at the bottom front.',
-      sideEdgesDown: 'Both side edges at the bottom: turn the top, M2, turn it back.',
-      twoSwaps: 'Two pairs swapped, top and bottom.',
-      threeCycle: 'Three edges going round.',
+      arrow: 'The arrow: three bad edges on top, its point over the fourth at the bottom front.',
+      fourOnTop:
+        'Four bad on top: swap the front one for the good edge under it. Three are left — an arrow.',
+      twoAndTwo:
+        'Two on top, two below: turn a good top edge to the front and swap it for the bad one under it.',
+      twoBad:
+        'Two bad: turn the top until exactly one of them is at the back, top or bottom. This makes four.',
+      sixBad: 'All six bad: run it from anywhere, and two are left.',
+      sideEdgesDown:
+        "Both at the bottom, facing each other: corners of the back edge's colour over the front one, M2, then turn the top home.",
+      sideTopOpposite:
+        'Both on top, facing each other: turn them front and back, and M2 sends both down. Then the first algorithm.',
+      sideOneDown:
+        'One at the bottom front: turn the other to the top back, and this drops it down. Then the first algorithm.',
+      sideTopAdjacent:
+        'Both on top, side by side: turn them to the front and the right. This sends both down. Then the first algorithm.',
+      dots: 'Dots: a stripe of one colour across the top, and at the front a centre between two edges of another colour.',
+      threeCycle:
+        'Three edges going round: at the top front the edge that matches neither centre, under it the one that fits.',
     },
     rouxHolds: {
       headlightsLeft:
@@ -508,12 +522,12 @@ export const en = {
       firstBlock: {
         title: 'Left block',
         points: [
-          'Blue centre on the left, white down. On the left goes a 1×2×3 block: the blue-white edge at the bottom, and a corner-edge pair in front of it and behind it.',
+          'Blue centre on the left, white down. On the left goes a 1×2×3 block: the blue-white edge at the bottom, and a corner-edge pair in front of it and behind it — the picture shows it finished.',
+          'No algorithm builds a block: it is done by feel. The rest of the cube is still free, so any face may turn — only look after what of the block already stands.',
           'First put the blue-white edge under the blue centre, white facing down.',
-          "For each pair, bring its edge to the bottom front and its corner into the top layer without white on top, then join them with M' — or M2 when the colours do not meet.",
-          "Turn the pair to the left with the top and drop it onto the block: F' at the front, B at the back.",
+          "Then the two pairs: bring a pair's edge to the bottom front and its corner into the top layer without white on top, and join them with M' — or M2 when the colours do not meet. Turn the pair to the left with the top and set it down beside the edge, the back pair first.",
         ],
-        warning: 'do not turn L or D now — they would take apart what already stands.',
+        tip: 'know F2L from CFOP? It is the same corner-edge pair, only without turning the whole cube: blue stays on the left, and what a rotation would have done, the middle slice (M) does.',
       },
       secondBlock: {
         title: 'Right block',
@@ -540,24 +554,30 @@ export const en = {
       edgeOrientation: {
         title: 'Edges up or down',
         points: [
-          'Six edges are left: four on top, and two at the bottom front and back. An edge is good when its yellow or white faces up or down.',
-          "Make the arrow: three bad edges on top and one at the bottom. M, M' and U get you there — try it out.",
-          "Point the arrow at the bad edge below, then M', U, M — and every edge is good.",
+          'Six edges are left: four on top, and two at the bottom front and back. First turn M until the centre on top is yellow or white.',
+          'An edge is good when its yellow or white faces up or down, and bad when it faces sideways. Count the bad ones: there is always an even number — none, two, four or six. In the pictures a bad edge is purple on top.',
+          "Four bad edges make the arrow: three on top and one below. Turn the top until the arrow's point — the middle one of the three — is over the bad edge below, and M' U M turns them all good.",
+          'No arrow? Find your count in the pictures under it: each says how to hold the cube and what to turn, and leads to the arrow.',
         ],
-        tip: 'there is always an even number of bad edges: two, four or six.',
+        tip: "M' U M turns over four edges at once — front, left and right on top, and the front one below. With the bad edge at the bottom back, do it from the back: point to the back, then M U M'.",
       },
       sideEdges: {
         title: 'Side edges',
         points: [
-          'Get the yellow-blue and yellow-green edges to the bottom, one at the front and one at the back, with M2 and U.',
-          'Turn the top so the corners over the front edge are the colour of the back one, then M2, and turn the top back: the left and right sides are done.',
+          'The yellow-blue and yellow-green edges belong on top of the blocks. They go in from below: both have to be at the bottom facing each other, one at the front and one at the back.',
+          'Then look at the colour of the front one. Turn the top until the two corners above it show the other colour — green corners over the blue edge. M2 lifts both edges to their corners, and a turn of the top makes the sides whole: that is the first picture.',
+          "Not both at the bottom? The other pictures get them there from anywhere else — and then it is the first one's turn. None of those moves turns an edge over.",
         ],
+        tip: "one at the bottom back and the other on top? The same from the other side: turn the top one to the front, then M' U2 M.",
       },
       middleSlice: {
         title: 'Middle slice',
         points: [
-          'Only the middle slice is left. Turn nothing but M and U2 now.',
-          "Two pairs swapped: U2 M2 U2 M2. Three edges going round: U2 M' U2 M' — or the other way, U2 M U2 M.",
+          'Only the middle slice is left: four edges and the centres. Turn nothing but M and U2 now.',
+          'An edge fits when both its colours match the centres beside it. Count how many of the four fit.',
+          'All four: only M is left to turn.',
+          'None — dots: turn M until the stripe across the top is one colour, then U2 M2 U2 M2. No such stripe to be had? Run it once anyway, and there will be.',
+          "One — three edges going round: beside the edge that fits is one that matches neither of its centres. Turn M until that one is on top with the fitting edge straight under it, then U2 M U2 M' at the front, or U2 M' U2 M at the back.",
           'Last, turn M until the centres are home: the cube is solved.',
         ],
       },

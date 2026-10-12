@@ -55,6 +55,16 @@ interface CubeSkinDefinition extends Omit<CubeSkin, 'muted' | 'outline' | 'arrow
   pale: string;
 }
 
+/**
+ * A sticker a picture flags instead of colouring (`MARKED` in the cube's
+ * views): Roux's bad edges, which are counted before anything is turned.
+ * One violet for every skin, since it must not pass for a face of any of
+ * them. Measured in OKLab against each skin's six faces, its grey and its
+ * plastic, in both themes and at both side shades: the nearest is the classic
+ * blue at 0.148 — about as far apart as red and orange already are (0.157).
+ */
+export const MARKED_STICKER = '#b04fd8';
+
 /** Slate rather than black on a light page, for every skin that does not exist to be stark. */
 const PLASTIC = { dark: '#0f1115', light: '#2e3441' } as const;
 

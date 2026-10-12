@@ -12,6 +12,7 @@ import { stateKey, type CubeState } from '../domain/cube/state';
 import {
   isometricView,
   lastLayerView,
+  MARKED,
   netView,
   permutationArrows,
   type Cell,
@@ -19,7 +20,7 @@ import {
   type PieceArrow,
   type Stickering,
 } from '../domain/cube/views';
-import { SIDE_SHADE, type CubeSkin } from '../lib/cube-skins';
+import { MARKED_STICKER, SIDE_SHADE, type CubeSkin } from '../lib/cube-skins';
 
 /** `isometricLeft` looks from the front-left corner, at Roux's first block. */
 export type DiagramView = 'lastLayer' | 'isometric' | 'isometricLeft' | 'net';
@@ -127,7 +128,8 @@ function polygon(points: string, fill: string, stroke: string, strokeWidth: numb
 }
 
 function colourOf(cell: Cell, skin: CubeSkin): string {
-  return cell === null ? skin.muted : skin.faces[cell];
+  if (cell === null) return skin.muted;
+  return cell === MARKED ? MARKED_STICKER : skin.faces[cell];
 }
 
 /** Sides of the cube are drawn darker, so the three faces stay apart. */

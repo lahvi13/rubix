@@ -449,20 +449,33 @@ export const cs: Strings = {
     },
     method: 'Metoda',
     rouxIntro:
-      'Sedm kroků Rouxu: dva bloky postavené rukama, rohy nahoře dvěma algoritmy a nakonec posledních šest hran jen tahy M a U. Obrázky mají žlutou nahoře, bílou dole a modrou prvního bloku vlevo. Tlačítko Notace vysvětlí písmena jako M nebo r.',
+      'Roux je o něco pokročilejší metoda než CFOP vedle: méně algoritmů, víc vlastního přemýšlení. Sedm kroků: blok na každé straně, rohy nahoře dvěma algoritmy a nakonec posledních šest hran jen tahy M a U. Obrázky mají žlutou nahoře, bílou dole a modrou prvního bloku vlevo. Tlačítko Notace vysvětlí písmena jako M nebo r.',
     rouxSource: 'Kroky vycházejí z průvodců Rouxu od Kiana Mansoura a komunity Rouxu, na',
     rouxSourceLink: 'Kianově webu o Rouxu',
     rouxHideHint:
       'Až budeš skládat bez čtení, zrychli: na kroky 3 a 4 se nauč celé 2-Look CMLL a později plné CMLL, které je udělá najednou – obojí najdeš v trenažéru. Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
+    rouxBlockCaption: 'Hotový levý blok při pohledu zleva zepředu.',
     rouxSituations: {
-      frontPair: 'Pár vpředu: přední stěnou ho sklop na blok.',
-      backPair: 'Pár vzadu: zadní stěnou ho sklop na blok.',
       pairInFront: 'Pár vpředu, roh vlevo: zvedni slot, vlož pár a vrať ho.',
       pairColourUp: 'Pár vzadu se zelenou nahoře: překlop ho a vlož.',
-      arrow: 'Šipka: tři barevné hrany nahoře, hrot nad čtvrtou dole vpředu.',
-      sideEdgesDown: 'Obě boční hrany dole: otoč vrškem, M2 a vrškem zpět.',
-      twoSwaps: 'Dvě dvojice prohozené, nahoře i dole.',
-      threeCycle: 'Tři hrany v kruhu.',
+      arrow: 'Šipka: tři špatné hrany nahoře, hrot nad čtvrtou dole vpředu.',
+      fourOnTop: 'Čtyři špatné nahoře: přední vyměň za dobrou pod ní. Zbudou tři – šipka.',
+      twoAndTwo:
+        'Dvě nahoře, dvě dole: dobrou horní natoč dopředu a vyměň ji za špatnou pod ní.',
+      twoBad:
+        'Dvě špatné: otoč vrškem, ať je vzadu právě jedna z nich – nahoře, nebo dole. Tohle z nich udělá čtyři.',
+      sixBad: 'Všech šest špatných: spusť to odkudkoli a zbudou dvě.',
+      sideEdgesDown:
+        'Obě dole proti sobě: nad přední natoč rohy v barvě té zadní, M2 a vrškem dorovnej.',
+      sideTopOpposite:
+        'Obě nahoře proti sobě: natoč je dopředu a dozadu a M2 pošle obě dolů. Pak první algoritmus.',
+      sideOneDown:
+        'Jedna dole vpředu: druhou natoč nahoře dozadu a tohle ji spustí dolů. Pak první algoritmus.',
+      sideTopAdjacent:
+        'Obě nahoře vedle sebe: natoč je dopředu a doprava. Tohle pošle dolů obě. Pak první algoritmus.',
+      dots: 'Tečky: nahoře pruh jedné barvy, vpředu střed mezi dvěma hranami jiné barvy.',
+      threeCycle:
+        'Tři hrany v kruhu: vpředu nahoře hrana, která nesedí k žádnému středu, pod ní ta, která sedí.',
     },
     rouxHolds: {
       headlightsLeft:
@@ -472,12 +485,12 @@ export const cs: Strings = {
       firstBlock: {
         title: 'Levý blok',
         points: [
-          'Modrý střed vlevo, bílá dolů. Vlevo postavíš blok 1×2×3: bílo-modrou hranu dole a před ní a za ní pár rohu s hranou.',
+          'Modrý střed vlevo, bílá dolů. Vlevo postavíš blok 1×2×3: bílo-modrou hranu dole a před ní i za ní pár rohu s hranou – hotový je na obrázku.',
+          'Na blok není žádný algoritmus, skládá se intuitivně. Zbytek kostky je zatím volný, takže smíš otáčet čímkoli – hlídej jen to, co už z bloku stojí.',
           'Nejdřív dej bílo-modrou hranu pod modrý střed, bílou dolů.',
-          "Každý pár: hranu dej dopředu dolů, roh do horní vrstvy tak, aby bílá nebyla nahoře, a spoj je tahem M' – nebo M2, když barvy nesedí.",
-          "Pár otoč vrškem doleva a sklop ho na blok: vpředu F', vzadu B.",
+          "Pak dva páry: hranu páru dej dopředu dolů, roh do horní vrstvy tak, aby bílá nebyla nahoře, a spoj je tahem M' – nebo M2, když barvy nesedí. Pár otoč vrškem doleva a polož ho vedle hrany, nejdřív ten zadní.",
         ],
-        warning: 'teď neotáčej L ani D – rozbil bys, co už stojí.',
+        tip: 'znáš F2L z CFOP? Je to stejný pár rohu s hranou, jen bez otáčení celé kostky: modrá zůstává vlevo a co by udělalo otočení, udělá střední vrstva (M).',
       },
       secondBlock: {
         title: 'Pravý blok',
@@ -504,25 +517,31 @@ export const cs: Strings = {
       edgeOrientation: {
         title: 'Hrany nahoru nebo dolů',
         points: [
-          'Zbývá šest hran: čtyři nahoře a dvě dole vpředu a vzadu. Hrana je dobrá, když její žlutá nebo bílá míří nahoru nebo dolů.',
-          "Udělej šipku: tři špatné hrany nahoře a jednu dole. Dostaneš se k ní tahy M, M' a U – zkoušej.",
-          "Hrot šipky dej nad špatnou hranu dole, pak M', U, M – a všechny hrany jsou dobré.",
+          'Zbývá šest hran: čtyři nahoře a dvě dole, vpředu a vzadu. Nejdřív otoč M, ať je nahoře žlutý nebo bílý střed.',
+          'Hrana je dobrá, když její žlutá nebo bílá míří nahoru nebo dolů, a špatná, když míří do strany. Spočítej špatné: vždycky jich je sudý počet – žádná, dvě, čtyři, nebo šest. Na obrázcích je špatná hrana nahoře fialová.',
+          "Čtyři špatné dávají šipku: tři nahoře a jedna dole. Otoč vrškem, ať je hrot šipky – prostřední z těch tří – nad špatnou hranou dole, a M' U M udělá ze všech dobré.",
+          'Nemáš šipku? Najdi svůj počet na obrázcích pod ní: každý říká, jak kostku držet a čím otočit, a dovede tě k šipce.',
         ],
-        tip: 'špatných hran je vždycky sudý počet: dvě, čtyři nebo šest.',
+        tip: "M' U M přetočí čtyři hrany najednou – přední, levou a pravou nahoře a přední dole. Když je špatná hrana dole vzadu, udělej to zezadu: hrot dozadu a M U M'.",
       },
       sideEdges: {
         title: 'Boční hrany',
         points: [
-          'Žluto-modrou a žluto-zelenou hranu dostaň dolů, jednu dopředu a druhou dozadu, tahy M2 a U.',
-          'Otoč vrškem, aby rohy nad přední hranou měly barvu té zadní, pak M2 a vrškem zpět: levá i pravá strana jsou hotové.',
+          'Žluto-modrá a žluto-zelená hrana patří nahoru nad bloky. Vkládají se zdola: obě musí být dole proti sobě, jedna vpředu a druhá vzadu.',
+          'Pak se podívej na barvu té přední. Otoč vrškem, ať mají dva rohy nad ní tu druhou barvu – nad modrou hranou zelené rohy. M2 zvedne obě hrany k jejich rohům a vrškem dorovnáš boky: to je první obrázek.',
+          'Nejsou obě dole? Další obrázky je tam dostanou z každé jiné pozice – a pak přijde na řadu ten první. Žádný z těch tahů hranu nepřetočí.',
         ],
+        tip: "jedna dole vzadu a druhá nahoře? Totéž z druhé strany: horní natoč dopředu a M' U2 M.",
       },
       middleSlice: {
         title: 'Střední vrstva',
         points: [
-          'Zbývá jen střední vrstva. Teď otáčej jen M a U2.',
-          "Dvě prohozené dvojice: U2 M2 U2 M2. Tři hrany v kruhu: U2 M' U2 M' – nebo opačně U2 M U2 M.",
-          'Nakonec otoč M, ať jsou středy doma: kostka je složená.',
+          'Zbývá jen střední vrstva: čtyři hrany a středy. Teď otáčej jen M a U2.',
+          'Hrana sedí, když obě její barvy souhlasí se středy vedle ní. Spočítej, kolik ze čtyř hran sedí.',
+          'Všechny čtyři: zbývá jen dotočit M.',
+          'Žádná – tečky: otoč M, ať je nahoře pruh jedné barvy, a pak U2 M2 U2 M2. Pruh udělat nejde? Spusť to jednou i tak a půjde.',
+          "Jedna – tři hrany v kruhu: vedle hrany, která sedí, je jedna, která nesedí k žádnému ze svých středů. Otoč M, ať je nahoře a ta sedící přímo pod ní, a pak vpředu U2 M U2 M', vzadu U2 M' U2 M.",
+          'Nakonec dotoč M, ať jsou středy doma: kostka je složená.',
         ],
       },
     },

@@ -10,7 +10,7 @@ import { useTap } from '../../../hooks/use-tap';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
 import { AlgText, CasePlayer } from '../../trainer';
-import { holdState, type LearnSituation, type SituationPicture } from '../steps';
+import { holdState, wayOut, type LearnSituation, type SituationPicture } from '../steps';
 
 interface SituationSheetProps {
   situation: LearnSituation;
@@ -35,6 +35,10 @@ export function SituationSheet({
 }: SituationSheetProps) {
   const parsed = parseAlg(situation.alg);
   const moves = parsed.ok ? parsed.moves : [];
+  // The cube starts where the picture has it, which may be further from the
+  // end of the step than these moves reach.
+  const wholeWay = parseAlg(wayOut(situation));
+  const setup = wholeWay.ok ? formatAlg(invertAlg(wholeWay.moves)) : '';
   const playback = usePlayback(situation.alg);
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const isPlaying = playback.status !== 'idle';
@@ -61,7 +65,7 @@ export function SituationSheet({
           <CasePlayer
             // The standing goes first, as the trainer puts a set's rotation:
             // the picture and the cube that replaces it are held the same way.
-            setupAlg={`${drawing.standing} ${formatAlg(invertAlg(moves))}`.trim()}
+            setupAlg={`${drawing.standing} ${setup}`.trim()}
             alg={formatAlg(moves)}
             stickering={drawing.playerStickering}
             standing={drawing.standing}

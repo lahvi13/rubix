@@ -4,7 +4,6 @@ import { CROSS_SET_ID } from '../../../domain/alg/sets';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { parseAlg } from '../../../domain/cube/notation';
-import { solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CubeSkin } from '../../../lib/cube-skins';
@@ -26,6 +25,7 @@ import {
   GUIDES,
   holdState,
   situationPicture,
+  wayOut,
   type LearnSituation,
   type LearnStep,
   type SituationPicture,
@@ -245,11 +245,26 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
   const picture = situationPicture(step);
 
   // The cross has no case of its own in any set; what it needs is a picture
-  // of the thing being made, and of where its pieces start. Roux's blocks
-  // and its last edges are taught the same way, from situations alone.
+  // of the thing being made, and of where its pieces start. Roux's second
+  // block and its last edges are taught the same way, from situations alone.
   const isCross = step.setId === CROSS_SET_ID;
   const hasCases = step.setId !== null && !isCross;
   const isLoading = groups === undefined || (step.advanced !== null && advancedGroups === undefined);
+
+  const situations =
+    step.situations.length === 0 ? null : (
+      <div className="learn__situations">
+        {step.situations.map((situation) => (
+          <Situation
+            key={wayOut(situation)}
+            situation={situation}
+            picture={picture}
+            skin={skin}
+            triggers={triggers}
+          />
+        ))}
+      </div>
+    );
 
   return (
     <section id={id} className="learn__step">
@@ -279,36 +294,26 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
         </ul>
       ) : null}
 
-      {step.situations.length === 0 ? null : (
-        <div className="learn__situations">
-          {step.situations.map((situation) => (
-            <Situation
-              key={situation.alg}
-              situation={situation}
-              picture={picture}
-              skin={skin}
-              triggers={triggers}
-            />
-          ))}
-        </div>
-      )}
+      {/* A step with a case of its own opens on that case, and its situations
+          are the ways to it: they go under it, further down. */}
+      {hasCases ? null : situations}
 
       {/* The goal last: what the moves above add up to. */}
-      {isCross ? (
+      {step.goal === undefined ? null : (
         <figure className="learn__figure">
           <CubeDiagram
-            className="learn__net"
-            state={solvedState()}
-            view="net"
-            stickering="cross"
+            className={step.goal.picture.view === 'net' ? 'learn__net' : 'learn__goal'}
+            state={holdState({ alg: '', text: '' }, step.goal.picture.standing)}
+            view={step.goal.picture.view}
+            stickering={step.goal.picture.stickering}
             skin={skin}
             label={null}
           />
           {isExplained ? (
-            <figcaption className="learn__caption">{strings.learn.crossCaption}</figcaption>
+            <figcaption className="learn__caption">{step.goal.caption}</figcaption>
           ) : null}
         </figure>
-      ) : null}
+      )}
 
       {!hasCases ? null : isLoading ? (
         <p className="learn__caption">{strings.learn.loading}</p>
@@ -358,6 +363,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
                   ))}
                 </div>
               )}
+              {situations}
             </>
           )}
 

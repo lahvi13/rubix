@@ -33,6 +33,12 @@ export interface LearnHold {
 export interface LearnSituation {
   alg: string;
   text: string;
+  /**
+   * What the step goes on to do once `alg` is done, where `alg` only gets the
+   * cube as far as the next picture. Never shown: it is there so the cube is
+   * drawn as it is met in a solve, a few turns short of the step's end.
+   */
+  next?: string;
 }
 
 /**
@@ -54,6 +60,12 @@ const CROSS_PICTURE: SituationPicture = {
   playerStickering: 'cross',
   standing: '',
 };
+
+/** What a step builds, drawn finished: the thing its moves add up to. */
+export interface LearnGoal {
+  picture: SituationPicture;
+  caption: string;
+}
 
 export interface LearnStep {
   id: string;
@@ -78,6 +90,8 @@ export interface LearnStep {
   situations: readonly LearnSituation[];
   /** How those situations are drawn; the cross's way when left out. */
   picture?: SituationPicture;
+  /** The finished thing, for a step that builds something a sentence cannot show. */
+  goal?: LearnGoal;
   /**
    * The corner every picture of the opening algorithm frames: the one its
    * text says where to put. Not on the quicker cases, which hold no rule.
@@ -116,6 +130,12 @@ export const LEARN_STEPS: readonly LearnStep[] = [
       { alg: 'F2', text: strings.learn.crossCases.whiteUp },
       { alg: "U' R' F R", text: strings.learn.crossCases.whiteFront },
     ],
+    // The whole cube unfolded: a cross is right when every edge matches the
+    // side it stands under, and no single corner shows all four.
+    goal: {
+      picture: { view: 'net', stickering: 'cross', playerStickering: 'cross', standing: '' },
+      caption: strings.learn.crossCaption,
+    },
     markedCorner: null,
     advanced: null,
     ...strings.learn.steps.cross,
@@ -217,6 +237,21 @@ const BLOCKS_PICTURE: SituationPicture = {
   standing: ROUX_STANDING,
 };
 
+/** The six edges as edge orientation reads them, like the arrow's own case. */
+const EDGE_FLIP_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'lseOrientation',
+  playerStickering: 'lseOrientation',
+  standing: ROUX_STANDING,
+};
+
+const SIDE_EDGES_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'sideEdges',
+  playerStickering: 'sideEdges',
+  standing: ROUX_STANDING,
+};
+
 const LAST_EDGES_PICTURE: SituationPicture = {
   view: 'isometric',
   stickering: 'full',
@@ -224,14 +259,24 @@ const LAST_EDGES_PICTURE: SituationPicture = {
   standing: ROUX_STANDING,
 };
 
+/** Turns over the three front edges on top and the front one below. */
+const EDGE_FLIP = "M' U M";
+/** The top front edge for the bottom front one, neither turned over. */
+const FRONT_SWAP = "M' U2 M";
+const BACK_SWAP = "M U2 M'";
+
 const JB_PERM = "R U R' F' R U R' U' R' F R2 U' R' U'";
 
 /**
- * Roux in seven steps, the way a first solve goes: two blocks built by hand,
+ * Roux in seven steps, the way a first solve goes: two blocks built by feel,
  * the corners with the two algorithms every Roux guide starts on, and the last
- * six edges with nothing but M and U. The blocks and the edges are taught
- * from pictures, like the cross; the corners are cases out of 2-Look CMLL,
- * which is also where the quicker way through them lives.
+ * six edges with nothing but M and U. The corners are cases out of 2-Look
+ * CMLL, which is also where the quicker way through them lives.
+ *
+ * The last three steps are where somebody coming from CFOP gets lost, so they
+ * leave nothing to trial and error: each says what to count, and has a picture
+ * for every answer with the hold and the moves. Every one of those routes was
+ * run over all the states it can be met in before it was written down.
  */
 export const ROUX_STEPS: readonly LearnStep[] = [
   {
@@ -241,11 +286,10 @@ export const ROUX_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: null,
     holds: [],
-    situations: [
-      { alg: "F'", text: strings.learn.rouxSituations.frontPair },
-      { alg: 'B', text: strings.learn.rouxSituations.backPair },
-    ],
-    picture: LEFT_BLOCK_PICTURE,
+    // No situations: the block is built by feel, and two pictures of a pair
+    // dropping in read as the two moves to learn.
+    situations: [],
+    goal: { picture: LEFT_BLOCK_PICTURE, caption: strings.learn.rouxBlockCaption },
     markedCorner: null,
     advanced: null,
     ...strings.learn.rouxSteps.firstBlock,
@@ -300,10 +344,34 @@ export const ROUX_STEPS: readonly LearnStep[] = [
     caseIds: ['roux-eo-arrow'],
     keyText: strings.learn.rouxSituations.arrow,
     holds: [],
-    situations: [],
+    // The ways to the arrow, by how many edges are bad. Two tools do all of
+    // it: the arrow's own three moves, and a swap that turns nothing over.
+    situations: [
+      {
+        alg: FRONT_SWAP,
+        next: `U2 ${EDGE_FLIP}`,
+        text: strings.learn.rouxSituations.fourOnTop,
+      },
+      {
+        alg: FRONT_SWAP,
+        next: "U' M U M'",
+        text: strings.learn.rouxSituations.twoAndTwo,
+      },
+      {
+        alg: EDGE_FLIP,
+        next: `U2 ${EDGE_FLIP}`,
+        text: strings.learn.rouxSituations.twoBad,
+      },
+      {
+        alg: EDGE_FLIP,
+        next: `U ${EDGE_FLIP} U2 M U M'`,
+        text: strings.learn.rouxSituations.sixBad,
+      },
+    ],
+    picture: EDGE_FLIP_PICTURE,
     markedCorner: null,
-    // Every case of edge orientation, for somebody who wants it without the
-    // trial and error of making the arrow first.
+    // Every case of edge orientation with an algorithm of its own, for
+    // somebody who wants it in one go rather than by way of the arrow.
     advanced: { setId: ROUX_EO_SET_ID, group: null },
     ...strings.learn.rouxSteps.edgeOrientation,
   },
@@ -314,8 +382,21 @@ export const ROUX_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: null,
     holds: [],
-    situations: [{ alg: "U M2 U'", text: strings.learn.rouxSituations.sideEdgesDown }],
-    picture: LAST_EDGES_PICTURE,
+    // The step's one algorithm first: both edges at the bottom, facing each
+    // other. Then every other place the two can be, each with the whole way
+    // into that position — not a hop to the next picture, which leaves the
+    // reader stitching three cards together with a cube in both hands.
+    situations: [
+      { alg: "U M2 U'", text: strings.learn.rouxSituations.sideEdgesDown },
+      { alg: 'M2', next: "U M2 U'", text: strings.learn.rouxSituations.sideTopOpposite },
+      { alg: BACK_SWAP, next: 'U M2 U', text: strings.learn.rouxSituations.sideOneDown },
+      {
+        alg: `M2 U ${FRONT_SWAP}`,
+        next: "U2 M2 U'",
+        text: strings.learn.rouxSituations.sideTopAdjacent,
+      },
+    ],
+    picture: SIDE_EDGES_PICTURE,
     markedCorner: null,
     advanced: null,
     ...strings.learn.rouxSteps.sideEdges,
@@ -328,8 +409,8 @@ export const ROUX_STEPS: readonly LearnStep[] = [
     keyText: null,
     holds: [],
     situations: [
-      { alg: 'U2 M2 U2 M2', text: strings.learn.rouxSituations.twoSwaps },
-      { alg: "U2 M' U2 M'", text: strings.learn.rouxSituations.threeCycle },
+      { alg: 'U2 M2 U2 M2', text: strings.learn.rouxSituations.dots },
+      { alg: "U2 M U2 M'", text: strings.learn.rouxSituations.threeCycle },
     ],
     picture: LAST_EDGES_PICTURE,
     markedCorner: null,
@@ -349,10 +430,15 @@ export function situationPicture(step: LearnStep): SituationPicture {
   return step.picture ?? CROSS_PICTURE;
 }
 
+/** Everything between a picture and the end of its step: the moves shown, then what follows. */
+export function wayOut(hold: LearnHold | LearnSituation): string {
+  return 'next' in hold && hold.next !== undefined ? `${hold.alg} ${hold.next}` : hold.alg;
+}
+
 /** The cube as the reader meets it: stood as the step holds it, then the way out undone. */
-export function holdState(hold: LearnHold, standing = ''): CubeState {
+export function holdState(hold: LearnHold | LearnSituation, standing = ''): CubeState {
   const turn = parseAlg(standing);
   const stood = turn.ok ? applyAlg(solvedState(), turn.moves) : solvedState();
-  const way = parseAlg(hold.alg);
+  const way = parseAlg(wayOut(hold));
   return way.ok ? applyAlg(stood, invertAlg(way.moves)) : stood;
 }
