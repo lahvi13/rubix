@@ -493,6 +493,8 @@ const HOME_CELL = new Map<string, number>([
   ['FRU', 8],
 ]);
 
+const SIDES_AND_POLES: readonly Face[] = ['U', 'D', 'L', 'R', 'F', 'B'];
+
 /** The top-layer cubie sitting in each cell of the grid. */
 const CELL_CUBIE: readonly (readonly [number, string])[] = [
   [0, '-1,1,-1'],
@@ -527,13 +529,26 @@ export function permutationArrows(
           : null;
   if (wanted === null) return [];
 
+  // Home is where the cube's own sides say it is. A set may be drawn turned
+  // about its vertical axis — Roux's are, to put blue on the left — and a
+  // piece is then at home beside other centres than on the cube as written:
+  // read against that one, every corner of a turned cube looked out of place.
+  // The left centre says which way round the cube is; nothing in a last-layer
+  // algorithm, nor a turn of the middle slice, moves it.
+  const left = colourAt(state, indexOf('L', 1, 1));
+  const frame =
+    SOLVED_TURNED.find((reference) => colourAt(reference, indexOf('L', 1, 1)) === left) ?? SOLVED;
+  const asWritten = new Map<Face, Face>(
+    SIDES_AND_POLES.map((face) => [colourAt(frame, indexOf(face, 1, 1)), face]),
+  );
+
   const moves = new Map<number, number>();
   for (const [cell, cubie] of CELL_CUBIE) {
     const stickers = STICKERS_BY_CUBIE.get(cubie) ?? [];
     if (wanted !== 0 && stickers.length !== wanted) continue;
 
     const colours = stickers
-      .map((index) => colourAt(state, index))
+      .map((index) => asWritten.get(colourAt(state, index)) ?? colourAt(state, index))
       .sort()
       .join('');
     const home = HOME_CELL.get(colours);

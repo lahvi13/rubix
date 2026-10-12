@@ -1396,7 +1396,20 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
     byl správně, proto to bylo vidět až při přehrávání — a jen v prohlížeči.
 14. **Zdroje v O aplikaci:** vedle J Perm jsou tam Kianovy listy (sady Rouxu) a
     SpeedCubeDB (doplněné případy druhého bloku).
-15. **Později:** drill prvního bloku spíš ne (viz
+15. **Sady rohů stojí jako zbytek Rouxu, a 3D kostka má bloky.** CMLL i 2-Look
+    CMLL se kreslily, jak je kostka zapsaná (zelená vpředu, červená vlevo),
+    takže krok 4 průvodce říkal „vlevo nad modrým blokem“ a obrázek měl vlevo
+    červené headlights. Teď stojí `y'` jako SB, EO i EOLR: modrá vlevo, červená
+    vpředu (`ROUX_ORIENTATION`). Šipky u prohození se kvůli tomu čtou proti
+    středům kostky, jak leží, ne proti kostce, jak je zapsaná — jinak na
+    otočené kostce vyšla místo jedné výměny změť tří.
+
+    Přehrávaná kostka u 2-Look CMLL, EO a EOLR ukazuje i **oba bloky** (a u hran
+    i hotové rohy): co stojí, podle toho se čte, co se hýbe, a čtyři žluté
+    nálepky na šedé kostce neříkaly, jak je držená. Statický obrázek zůstává
+    úsporný — na šedé je fialová špatná hrana vidět nejlíp. Je to vědomá výjimka
+    z pravidla, že kostka v pohybu ukazuje totéž co obrázek.
+16. **Později:** drill prvního bloku spíš ne (viz
    rozhovor 2026-10-12): chtěl by vlastní solver a řešení prvního bloku se
    netrénuje na čas z náhodné pozice, ale plánováním při inspekci.
 

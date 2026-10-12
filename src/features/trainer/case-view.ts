@@ -47,6 +47,14 @@ export interface Diagram {
 export const F2L_ORIENTATION = "y'";
 
 /**
+ * Roux, held the way its guides hold it: the first block's blue on the left,
+ * the second block's green on the right, red in front. Every Roux set is drawn
+ * this way, the corners included — the guide says "over the blue block", and a
+ * picture with red on the left was showing another cube.
+ */
+export const ROUX_ORIENTATION = "y'";
+
+/**
  * How each set is best looked at. Two-look sets differ per step: the first
  * look at OLL is about edges only, and the first look at PLL is about where
  * the corners go — showing everything would hide the one thing being read.
@@ -85,8 +93,10 @@ export function diagramFor(setId: string, group: string): Diagram {
     return {
       view: 'lastLayer',
       stickering: isOrientation ? 'cornerOrientation' : 'corners',
-      playerStickering: isOrientation ? 'cornerOrientation' : 'lastLayerCorners',
-      orientation: '',
+      // The moving cube keeps its blocks: they are what the corners are put
+      // against, and they are standing by the time the corners come up.
+      playerStickering: isOrientation ? 'cornerOrientation' : 'blocksAndCorners',
+      orientation: ROUX_ORIENTATION,
     };
   }
   // A CMLL case is the four corners read against the two blocks: their side
@@ -96,7 +106,7 @@ export function diagramFor(setId: string, group: string): Diagram {
       view: 'lastLayer',
       stickering: 'blocksAndCorners',
       playerStickering: 'blocksAndCorners',
-      orientation: '',
+      orientation: ROUX_ORIENTATION,
     };
   }
   // A pair of the second block, as the guide draws that step: both blocks in

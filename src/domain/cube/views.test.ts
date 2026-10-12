@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseAlg, type Move } from './notation';
+import { invertAlg, parseAlg, type Move } from './notation';
 import { applyAlg, solvedState } from './state';
 import { isSolvedAsShown, isometricView, lastLayerView, netView, permutationArrows } from './views';
 
@@ -10,6 +10,8 @@ function alg(text: string): Move[] {
 }
 
 const after = (text: string) => applyAlg(solvedState(), alg(text));
+
+const inverseOf = (move: Move): Move => invertAlg([move])[0] ?? move;
 
 /** Reads a picture written as a string, where a dot is a grey sticker. */
 const dotToNull = (cell: string) => (cell === '.' ? null : cell);
@@ -240,6 +242,24 @@ describe('the bottom-layer stickering', () => {
 
     expect(view.up.filter((sticker) => sticker !== null)).toHaveLength(2);
     expect(view.front[5]).toBeNull();
+  });
+});
+
+describe('permutation arrows on a cube drawn turned', () => {
+  it('point the same way whichever side is in front', () => {
+    // Roux's corner sets are drawn a quarter turn round, blue on the left. The
+    // same two corners are swapped; before the arrows were read against the
+    // cube's own centres they came out as a tangle of three.
+    const jb = "R U R' F' R U R' U' R' F R2 U' R' U'";
+    const undone = (turn: string) =>
+      applyAlg(solvedState(), [...alg(turn), ...alg(jb).reverse().map(inverseOf)]);
+
+    const straight = permutationArrows(undone(''), 'corners');
+    expect(straight).toHaveLength(1);
+    expect(straight[0]?.isSwap).toBe(true);
+    for (const turn of ['y', 'y2', "y'"]) {
+      expect(permutationArrows(undone(turn), 'corners'), turn).toEqual(straight);
+    }
   });
 });
 

@@ -168,6 +168,9 @@ function maskFor(stickering: PlayerStickering, standing: string): Promise<Sticke
   const isBlock = (home: ReadonlySet<ShownFace>) =>
     (home.has('L') || home.has('R')) && !home.has('U');
   const isLeftBlock = (home: ReadonlySet<ShownFace>) => home.has('L') && !home.has('U');
+  /** Done before the last six edges are touched: both blocks and the top corners. */
+  const isBuilt = (orbit: string, home: ReadonlySet<ShownFace>) =>
+    isBlock(home) || (orbit === 'CORNERS' && home.has('U'));
 
   switch (stickering) {
     case 'full':
@@ -194,20 +197,29 @@ function maskFor(stickering: PlayerStickering, standing: string): Promise<Sticke
       );
     case 'cornerOrientation':
       // A piece's first sticker is the one that faces up or down when it is
-      // home: for a top corner, its yellow.
+      // home: for a top corner, its yellow. The blocks stand in colour round
+      // it, as they do on the cube in the hand: a cube that turns is read by
+      // what holds still, and four yellow stickers on grey say nothing about
+      // which way it is held.
       return maskByHome(shown, ({ orbit, home, facelet }) =>
-        orbit === 'CORNERS' && home.has('U') && facelet === 0 ? 'regular' : 'ignored',
+        isBlock(home) || (orbit === 'CORNERS' && home.has('U') && facelet === 0)
+          ? 'regular'
+          : 'ignored',
       );
     case 'lseOrientation':
+      // The blocks and the corners are finished by now and shown that way;
+      // of the six edges, only the colour that says which way each is turned.
       return maskByHome(shown, ({ orbit, home, facelet }) => {
+        if (isBuilt(orbit, home)) return 'regular';
         if (orbit === 'CENTERS') return home.has('U') || home.has('D') ? 'regular' : 'ignored';
-        return orbit === 'EDGES' && !isBlock(home) && facelet === 0 ? 'regular' : 'ignored';
+        return orbit === 'EDGES' && facelet === 0 ? 'regular' : 'ignored';
       });
     case 'eolr':
       // Edge orientation's mask with the two side edges left in their colours.
       return maskByHome(shown, ({ orbit, home, facelet }) => {
+        if (isBuilt(orbit, home)) return 'regular';
         if (orbit === 'CENTERS') return home.has('U') || home.has('D') ? 'regular' : 'ignored';
-        if (orbit !== 'EDGES' || isBlock(home)) return 'ignored';
+        if (orbit !== 'EDGES') return 'ignored';
         return home.has('L') || home.has('R') || facelet === 0 ? 'regular' : 'ignored';
       });
     case 'sideEdges':

@@ -362,7 +362,9 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
                     <figure key={hold.alg} className="learn__hold">
                       <CubeDiagram
                         className="learn__hold-diagram"
-                        state={holdState(hold)}
+                        // Stood like the case above it, or the same cube would
+                        // wear other colours two pictures down.
+                        state={holdState(hold, diagram.orientation)}
                         view={diagram.view}
                         stickering={diagram.stickering}
                         skin={skin}
