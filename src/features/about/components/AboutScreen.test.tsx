@@ -33,6 +33,19 @@ describe('AboutScreen', () => {
     expect(url.searchParams.get('version')).toBe(__APP_VERSION__);
   });
 
+  it('credits the sources of the Roux sets', () => {
+    render(<AboutScreen />);
+
+    expect(screen.getByRole('link', { name: 'sites.google.com/view/kianroux' })).toHaveAttribute(
+      'href',
+      'https://sites.google.com/view/kianroux/',
+    );
+    expect(screen.getByRole('link', { name: 'speedcubedb.com' })).toHaveAttribute(
+      'href',
+      'https://speedcubedb.com/',
+    );
+  });
+
   it('credits J Perm for the algorithms', () => {
     render(<AboutScreen />);
 
