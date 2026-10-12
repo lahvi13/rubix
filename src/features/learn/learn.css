@@ -166,6 +166,23 @@ li:not(.learn__aside) + .learn__aside {
   margin-bottom: var(--space-2);
 }
 
+/* The sets that come after the guide, each abbreviation said in full: a list
+   at the caption's size, the abbreviation in the text's own colour so the
+   eye finds the one it met in the trainer. */
+.learn__sets {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+  padding-left: 1.1em;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.learn__sets strong {
+  color: var(--text);
+}
+
 .learn__credit {
   max-width: var(--page-width);
   margin: 0 auto;

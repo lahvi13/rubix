@@ -1336,7 +1336,26 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
    nadpis řádku, ne popisek), sady Rouxu se jmenují zkratkami jako sady CFOP —
    **SB · CMLL · EO · EOLR**. „Orientace hran“ a „Druhý blok“ se na řádek
    telefonu s dalšími sadami nevešly. Případy druhého bloku jsou „SB 12“.
-9. **Později:** drill prvního bloku spíš ne (viz
+9. **Případ Rouxu začíná se středy na místě.** Drill dostane scramble od
+   řešiče, který umí jen otáčky stěn — a ty středy nikdy nepohnou. Případ, jehož
+   výchozí pozice má pootočenou střední vrstvu (algoritmus pozpátku s lichým
+   nebo polovičním součtem M), se tak naskramblovat nedá a drill ukázal náhradní
+   text: algoritmus pozpátku, tedy odpověď. Zjištěno až zkouškou v prohlížeči
+   (2026-10-12) u 25 případů SB, většiny EOLR a šesti případů EO, které tak
+   chodily od 1.23.0; jednotkové testy to nevidí, řešič v nich neběží. Takový
+   případ má vlastní `setup`: nejdřív otočka střední vrstvy, pak algoritmus
+   pozpátku — bloky i tvar špatných hran jsou stejné, středy doma. Test sad to
+   teď vyžaduje u každého případu každé sady.
+10. **Levoruký algoritmus se pozná.** Vestavěná alternativa, která točí levou
+    stranou a pravou vůbec, má na kartě případu „vestavěný · levou rukou“ místo
+    „jinak“ (`domain/alg/hand.ts`). Čte se z tahů, neukládá se: OH list dává
+    ke každému případu algoritmus pro každou ruku a zrcadlové vložení v F2L je
+    totéž. Pravoruké OH algoritmy označené nejsou — pravou rukou je i hlavní.
+11. **Průvodce končí seznamem sad** se zkratkami řečenými jednou celé (SB, CMLL,
+    EO, EOLR a ke kterému kroku patří) a čtyřmi fázemi, po kterých timer Roux
+    měří (FB · SB · CMLL · LSE, každá s kroky, které pokrývá) — zkratky na řádku
+    trenažéru ani fáze timeru jinak nikde vysvětlené nejsou.
+12. **Později:** drill prvního bloku spíš ne (viz
    rozhovor 2026-10-12): chtěl by vlastní solver a řešení prvního bloku se
    netrénuje na čas z náhodné pozice, ale plánováním při inspekci.
 

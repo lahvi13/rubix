@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { CubeDiagram, type DiagramView } from '../../../components/CubeDiagram';
+import { isLeftHanded } from '../../../domain/alg/hand';
 import { packAlgKind, type PackAlgKind } from '../../../domain/alg/sets';
 import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { Sheet, type SheetPaging } from '../../../components/Sheet';
@@ -33,6 +34,14 @@ const PACK_LABELS: Record<PackAlgKind, string> = {
   // it, not something it would do in a solve.
   orient: strings.trainer.packAlgOther,
 };
+
+/** Why a built-in algorithm is offered, with the hand it is for where that is the reason. */
+function packLabelOf(algorithmId: string, moves: string): string {
+  const kind = packAlgKind(algorithmId);
+  if (kind !== 'other' && kind !== 'orient') return PACK_LABELS[kind];
+  const parsed = parseAlg(moves);
+  return parsed.ok && isLeftHanded(parsed.moves) ? strings.trainer.packAlgLeft : PACK_LABELS[kind];
+}
 
 /** A case's place in a set: which one, and under which heading. */
 export interface CaseInSet {
@@ -262,7 +271,7 @@ export function CaseDetail({
                 }
               >
                 {algorithm.source === 'pack'
-                  ? PACK_LABELS[packAlgKind(algorithm.id)]
+                  ? packLabelOf(algorithm.id, algorithm.moves)
                   : strings.trainer.ownAlg}
               </span>
               <button

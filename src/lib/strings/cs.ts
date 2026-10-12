@@ -452,8 +452,17 @@ export const cs: Strings = {
       'Roux je o něco pokročilejší metoda než CFOP vedle: méně algoritmů, víc vlastního přemýšlení. Sedm kroků: blok na každé straně, rohy nahoře dvěma algoritmy a nakonec posledních šest hran jen tahy M a U. Obrázky mají žlutou nahoře, bílou dole a modrou prvního bloku vlevo. Tlačítko Notace vysvětlí písmena jako M nebo r.',
     rouxSource: 'Kroky vycházejí z průvodců Rouxu od Kiana Mansoura a komunity Rouxu, na',
     rouxSourceLink: 'Kianově webu o Rouxu',
-    rouxHideHint:
-      'Až budeš skládat bez čtení, zrychli: na kroky 3 a 4 se nauč celé 2-Look CMLL a později plné CMLL, které je udělá najednou – obojí najdeš v trenažéru. Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
+    rouxNext: {
+      lead: 'Až budeš skládat bez čtení, zrychlí tě sady v trenažéru. Jmenují se zkratkami, pod kterými je potkáš všude:',
+      sets: [
+        { name: 'SB', text: 'second block, druhý blok: 47 míst, kde pár může být, každé s vlastním algoritmem. Ke kroku 2.' },
+        { name: 'CMLL', text: 'corners of the last layer, rohy poslední vrstvy: kroky 3 a 4 jedním algoritmem. 2-Look CMLL je mezistupeň na dva.' },
+        { name: 'EO', text: 'edge orientation, orientace hran: každý tvar špatných hran rovnou, bez cesty přes šipku. Ke kroku 5.' },
+        { name: 'EOLR', text: 'EO a k tomu levá a pravá hrana: kroky 5 a 6 jedním algoritmem.' },
+      ],
+      more: 'V session založené jako Roux měří timer čtyři fáze (tlačítko Fáze): FB – first block, první blok, krok 1; SB – druhý blok, krok 2; CMLL – rohy, kroky 3 a 4; LSE – last six edges, posledních šest hran, kroky 5 až 7.',
+      hide: 'Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
+    },
     rouxBlockCaption: 'Hotový levý blok při pohledu zleva zepředu.',
     rouxSituations: {
       pairInFront: 'Pár vpředu, roh vlevo: zvedni slot, vlož pár a vrať ho.',
@@ -564,6 +573,7 @@ export const cs: Strings = {
     packAlg: 'vestavěný',
     packAlgGrip: 'vestavěný · s otočením',
     packAlgOther: 'vestavěný · jinak',
+    packAlgLeft: 'vestavěný · levou rukou',
     packAlgSlot: 'vestavěný · rozbije jiný slot',
     markOwn: 'tvůj vlastní algoritmus',
     markCostsSlot: 'rozbije jiný slot',

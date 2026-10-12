@@ -137,11 +137,22 @@ export function LearnScreen() {
           />
           {strings.learn.hide}
         </label>
-        {isExplained ? (
-          <p className="learn__caption learn__caption--left">
-            {isRoux ? strings.learn.rouxHideHint : strings.learn.hideHint}
-          </p>
-        ) : null}
+        {!isExplained ? null : isRoux ? (
+          <>
+            <p className="learn__caption learn__caption--left">{strings.learn.rouxNext.lead}</p>
+            <ul className="learn__sets">
+              {strings.learn.rouxNext.sets.map((set) => (
+                <li key={set.name}>
+                  <strong>{set.name}</strong> — {set.text}
+                </li>
+              ))}
+            </ul>
+            <p className="learn__caption">{strings.learn.rouxNext.more}</p>
+            <p className="learn__caption learn__caption--left">{strings.learn.rouxNext.hide}</p>
+          </>
+        ) : (
+          <p className="learn__caption learn__caption--left">{strings.learn.hideHint}</p>
+        )}
       </div>
 
       <p className="learn__credit">

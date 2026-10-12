@@ -488,8 +488,19 @@ export const en = {
       "Roux is a step up from the CFOP guide beside it: fewer algorithms, more working things out yourself. Seven steps: a block on each side, the top corners with two algorithms, then the last six edges with nothing but M and U. The pictures have yellow on top, white on the bottom and the first block's blue on the left. The Notation button explains letters like M or r.",
     rouxSource: 'The steps follow the Roux guides by Kian Mansour and the Roux community, at',
     rouxSourceLink: "Kian's Roux site",
-    rouxHideHint:
-      'Once you can solve without reading, get faster: learn all of 2-Look CMLL for steps 3 and 4, and later full CMLL, which does both in one — they are in the trainer. Then take this guide out of the menu; Settings puts it back.',
+    /* What comes after the guide: the trainer's sets, under the abbreviations
+       they go by there and everywhere else, each said once in full. */
+    rouxNext: {
+      lead: 'Once you can solve without reading, the sets in the trainer make each step quicker. They go by the abbreviations you will meet everywhere:',
+      sets: [
+        { name: 'SB', text: 'second block: the 47 places a pair can be in, each with an algorithm of its own. For step 2.' },
+        { name: 'CMLL', text: 'corners of the last layer: steps 3 and 4 in one algorithm. 2-Look CMLL is the half-way stage, in two.' },
+        { name: 'EO', text: 'edge orientation: every shape of bad edges solved outright, without going by way of the arrow. For step 5.' },
+        { name: 'EOLR', text: 'EO and the left and right edges: steps 5 and 6 in one algorithm.' },
+      ],
+      more: 'In a session made as Roux the timer splits a solve into four phases (the Phase button): FB — first block, step 1; SB — second block, step 2; CMLL — the corners, steps 3 and 4; LSE — the last six edges, steps 5 to 7.',
+      hide: 'After that, take this guide out of the menu; Settings puts it back.',
+    },
     rouxBlockCaption: 'The finished left block, seen from the front left.',
     rouxSituations: {
       pairInFront: 'Pair at the front, corner on the left: lift the slot, put the pair in, bring it back.',
@@ -604,6 +615,9 @@ export const en = {
     packAlg: 'built in',
     packAlgGrip: 'built in · turned',
     packAlgOther: 'built in · another way',
+    /* Another way too, but the reason it is on offer is the hand: a reader
+       who turns with the right one can pass it by without trying it. */
+    packAlgLeft: 'built in · left-handed',
     /* Said as a cost rather than a warning: it is a real solution, often the
        shortest one, and it is only wrong if the slot it breaks was built. */
     packAlgSlot: 'built in · breaks another slot',
