@@ -352,16 +352,18 @@ describe('the Roux guide', () => {
   });
 
   /**
-   * The side edges: the step's one algorithm, from both at the bottom, and
-   * then a picture for every other place the two can be. None of the moves
-   * may turn an edge over — the step before has just finished doing that —
-   * and every other picture has to end where the first one starts.
+   * The side edges: the step's one algorithm, from both at the bottom with
+   * either colour in front, and then a picture for every other place the two
+   * can be. None of the moves may turn an edge over — the step before has
+   * just finished doing that — and every other picture has to end where the
+   * first two start.
    */
   it.each([
     ['both at the bottom', 0, ['DF', 'DB'], ['UL', 'UR']],
-    ['facing each other on top', 1, ['UF', 'UB'], ['DF', 'DB']],
-    ['one at the bottom front, one at the top back', 2, ['UB', 'DF'], ['DF', 'DB']],
-    ['side by side on top, front and right', 3, ['UF', 'UR'], ['DF', 'DB']],
+    ['both at the bottom, the other one in front', 1, ['DF', 'DB'], ['UL', 'UR']],
+    ['facing each other on top', 2, ['UF', 'UB'], ['DF', 'DB']],
+    ['one at the bottom front, one at the top back', 3, ['UB', 'DF'], ['DF', 'DB']],
+    ['side by side on top, front and right', 4, ['UF', 'UR'], ['DF', 'DB']],
   ] as const)('draws the side edges %s', (_label, index, from, to) => {
     const drawn = pictures('roux-side-edges')[index];
     if (!drawn) throw new Error('the side edges lost a picture');
@@ -370,6 +372,27 @@ describe('the Roux guide', () => {
     expect(sideEdges(drawn.after)).toEqual(to);
     expect(badEdges(drawn.before)).toHaveLength(0);
     expect(badEdges(drawn.after)).toHaveLength(0);
+  });
+
+  it('draws the first algorithm once for each colour in front, the top turned opposite ways', () => {
+    const [blue, green] = pictures('roux-side-edges');
+    if (!blue || !green) throw new Error('the side edges lost a picture');
+    const front = (state: CubeState) => pieceAt(state, 'DF').find(([face]) => face === 'F')?.[1];
+
+    expect(front(blue.before)).toBe(centreOf(blue.before, 'L'));
+    expect(front(green.before)).toBe(centreOf(green.before, 'R'));
+    // The cards say which corners to bring over the edge; that is a turn to
+    // name only if both pictures start with the corners over their blocks.
+    // Read off the sides: M2 has the front and back centres swapped.
+    for (const { before } of [blue, green]) {
+      for (const face of ['L', 'R']) {
+        const corners = FACELETS.flatMap((sticker, index) =>
+          sticker.face === face && sticker.row === 0 && sticker.column !== 1 ? [before[index]] : [],
+        );
+        expect(corners).toEqual([centreOf(before, face), centreOf(before, face)]);
+      }
+    }
+    expect([blue.situation.alg, green.situation.alg]).toEqual(["U M2 U'", "U' M2 U"]);
   });
 
   it('draws the dots held as the step says: a stripe on top, no edge fitting', () => {

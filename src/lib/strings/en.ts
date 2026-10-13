@@ -516,7 +516,9 @@ export const en = {
         'Two bad: turn the top until exactly one of them is at the back, top or bottom. This makes four.',
       sixBad: 'All six bad: run it from anywhere, and two are left.',
       sideEdgesDown:
-        "Both at the bottom, facing each other: corners of the back edge's colour over the front one, M2, then turn the top home.",
+        'Both at the bottom, facing each other, blue in front: turn the green corners over it, M2, then turn the top home.',
+      sideEdgesDownMirror:
+        'The same with green in front: the blue corners go over it, so the top turns the other way.',
       sideTopOpposite:
         'Both on top, facing each other: turn them front and back, and M2 sends both down. Then the first algorithm.',
       sideOneDown:
@@ -578,8 +580,8 @@ export const en = {
         title: 'Side edges',
         points: [
           'The yellow-blue and yellow-green edges belong on top of the blocks. They go in from below: both have to be at the bottom facing each other, one at the front and one at the back.',
-          'Then look at the colour of the front one. Turn the top until the two corners above it show the other colour — green corners over the blue edge. M2 lifts both edges to their corners, and a turn of the top makes the sides whole: that is the first picture.',
-          "Not both at the bottom? The other pictures get them there from anywhere else — and then it is the first one's turn. None of those moves turns an edge over.",
+          'Then look at the colour of the front one. Turn the top until the two corners above it show the other colour — green corners over the blue edge. M2 lifts both edges to their corners, and a turn of the top makes the sides whole: those are the first two pictures, one for each colour.',
+          "Not both at the bottom? The other pictures get them there from anywhere else — and then it is the turn of one of the first two. None of those moves turns an edge over.",
         ],
         tip: "one at the bottom back and the other on top? The same from the other side: turn the top one to the front, then M' U2 M.",
       },

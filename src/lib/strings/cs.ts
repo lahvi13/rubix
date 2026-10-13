@@ -476,7 +476,9 @@ export const cs: Strings = {
         'Dvě špatné: otoč vrškem, ať je vzadu právě jedna z nich – nahoře, nebo dole. Tohle z nich udělá čtyři.',
       sixBad: 'Všech šest špatných: spusť to odkudkoli a zbudou dvě.',
       sideEdgesDown:
-        'Obě dole proti sobě: nad přední natoč rohy v barvě té zadní, M2 a vrškem dorovnej.',
+        'Obě dole proti sobě, modrá vpředu: natoč nad ni zelené rohy, M2 a vrškem dorovnej.',
+      sideEdgesDownMirror:
+        'Totéž se zelenou vpředu: nad ni patří modré rohy, takže vrškem na druhou stranu.',
       sideTopOpposite:
         'Obě nahoře proti sobě: natoč je dopředu a dozadu a M2 pošle obě dolů. Pak první algoritmus.',
       sideOneDown:
@@ -538,8 +540,8 @@ export const cs: Strings = {
         title: 'Boční hrany',
         points: [
           'Žluto-modrá a žluto-zelená hrana patří nahoru nad bloky. Vkládají se zdola: obě musí být dole proti sobě, jedna vpředu a druhá vzadu.',
-          'Pak se podívej na barvu té přední. Otoč vrškem, ať mají dva rohy nad ní tu druhou barvu – nad modrou hranou zelené rohy. M2 zvedne obě hrany k jejich rohům a vrškem dorovnáš boky: to je první obrázek.',
-          'Nejsou obě dole? Další obrázky je tam dostanou z každé jiné pozice – a pak přijde na řadu ten první. Žádný z těch tahů hranu nepřetočí.',
+          'Pak se podívej na barvu té přední. Otoč vrškem, ať mají dva rohy nad ní tu druhou barvu – nad modrou hranou zelené rohy. M2 zvedne obě hrany k jejich rohům a vrškem dorovnáš boky: to jsou první dva obrázky, pro každou barvu jeden.',
+          'Nejsou obě dole? Další obrázky je tam dostanou z každé jiné pozice – a pak přijde na řadu jeden z prvních dvou. Žádný z těch tahů hranu nepřetočí.',
         ],
         tip: "jedna dole vzadu a druhá nahoře? Totéž z druhé strany: horní natoč dopředu a M' U2 M.",
       },

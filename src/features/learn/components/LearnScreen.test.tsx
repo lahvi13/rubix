@@ -230,10 +230,11 @@ describe('LearnScreen', () => {
     expect(screen.getByRole('button', { name: 'Roux' })).toHaveAttribute('aria-pressed', 'true');
     // No moves for the left block, two pairs for the right one, Sune and Jb,
     // the arrow and the four ways to it, the four places the side edges can
-    // be, and the two ways the middle slice can be left.
+    // be with the first drawn for both colours, and the two ways the middle
+    // slice can be left.
     await waitFor(() =>
       expect(sections().map((section) => caseButtons(section).length)).toEqual([
-        0, 2, 1, 1, 5, 4, 2,
+        0, 2, 1, 1, 5, 5, 2,
       ]),
     );
     // The left block is shown finished instead.

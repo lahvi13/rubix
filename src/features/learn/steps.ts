@@ -432,11 +432,14 @@ export const ROUX_STEPS: readonly LearnStep[] = [
     keyText: null,
     holds: [],
     // The step's one algorithm first: both edges at the bottom, facing each
-    // other. Then every other place the two can be, each with the whole way
+    // other. Drawn twice, once for each colour in front, because the top
+    // turns the other way and one picture alone reads as three fixed moves.
+    // Then every other place the two can be, each with the whole way
     // into that position — not a hop to the next picture, which leaves the
     // reader stitching three cards together with a cube in both hands.
     situations: [
       { alg: "U M2 U'", text: strings.learn.rouxSituations.sideEdgesDown },
+      { alg: "U' M2 U", text: strings.learn.rouxSituations.sideEdgesDownMirror },
       { alg: 'M2', next: "U M2 U'", text: strings.learn.rouxSituations.sideTopOpposite },
       { alg: BACK_SWAP, next: 'U M2 U', text: strings.learn.rouxSituations.sideOneDown },
       {
