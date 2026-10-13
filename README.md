@@ -1,7 +1,8 @@
 # Rubix
 
 An offline speedcubing trainer for the 3×3, from a first solve to a fast average —
-a timer, a beginner's guide and an algorithm trainer for **CFOP** and **Roux**.
+a timer, a beginner's guide and an algorithm trainer for **CFOP** and **Roux**,
+and a guide and phase timing for **ZZ**.
 It runs in the browser and installs as an app on a phone or a computer:
 **[rubix.lahvi.cz](https://rubix.lahvi.cz)**
 
@@ -30,8 +31,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 ### History and sessions
 - Every solve with its scramble, penalty, tags, note and star; fix a mistyped
   time or a penalty later.
-- Separate sessions for different practice, each timed in CFOP or Roux, archived
-  when you are done with them.
+- Separate sessions for different practice, each timed in CFOP, Roux or ZZ,
+  archived when you are done with them.
 - Deleting a solve can be undone for a few seconds.
 
 ### Statistics
@@ -39,6 +40,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
   standard deviation, DNF and +2 rate.
 - A histogram of times, and a trend of the rolling ao12 against the slower ao50.
 - Averages follow the csTimer convention, so the numbers match what you are used to.
+- With sessions in more than one method, the statistics across sessions read
+  one method at a time, and each method keeps its own personal best.
 
 ### Algorithm trainer
 - **CFOP:** PLL, OLL and F2L — with two further levels of F2L for a pair that
@@ -59,7 +62,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 
 ### Phase splits
 - Time each phase by tapping as you finish it: cross, F2L, OLL and PLL in CFOP,
-  the two blocks, CMLL and the last six edges in Roux.
+  the two blocks, CMLL and the last six edges in Roux, EOCross, F2L and the
+  last layer in ZZ.
 - See your average and best time for every phase, how your current ao12 divides
   between them, and how they change over time.
 
@@ -67,6 +71,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 - A whole first solve in seven steps, with pictures of how to hold the cube —
   for CFOP, or for Roux with its blocks built by feel, only two algorithms and
   a picture for every way its last edges can lie.
+- A guide to ZZ for a cube you can already solve: how to tell a bad edge from
+  a good one, how to turn them all good, and the cross and pairs that follow.
 - Can be hidden once you no longer need it.
 
 ### Sharing
@@ -96,8 +102,10 @@ Most of the CFOP algorithms are from [J Perm](https://jperm.net/), and the
 beginner method follows [badmephisto](http://badmephisto.com). The Roux sets
 come from the sheets of [Kian Mansour](https://sites.google.com/view/kianroux/)
 and the Roux community; the second-block cases those sheets leave out are from
-[SpeedCubeDB](https://speedcubedb.com/). Every algorithm in the app is checked
-by running it on a model of the cube before it ships.
+[SpeedCubeDB](https://speedcubedb.com/). The ZZ guide follows the tutorial by
+crystalcuber and the [ZZMethod.com](https://www.zzmethod.com/) team. Every
+algorithm in the app is checked by running it on a model of the cube before it
+ships.
 
 ## Bugs and ideas
 
