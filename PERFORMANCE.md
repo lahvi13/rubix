@@ -3,8 +3,8 @@
 Everything the timer and the stats screen show is recomputed from the stored
 solves on every write (rule 3 in CLAUDE.md: nothing derived is stored). That is
 instant with a few hundred solves. This file records how it behaves with
-thousands — a csTimer import can bring that many in one go — what was done
-about it, and what is still open.
+thousands — a csTimer import can bring that many in one go — and what was
+done about it.
 
 ## How it was measured (2026-09-14)
 
@@ -71,19 +71,47 @@ some tens of milliseconds, which is why 10 000 can open faster than 5 000.
    The seed for that run was written straight into IndexedDB from the page
    (one `readwrite` transaction on `solves`, rows shaped as `Solve` in
    `db/types.ts`, two thirds with four phases), followed by a reload.
+7. **Live query results are shared, not copied** (2026-10-13, `cache:
+   'immutable'` in `db/schema.ts`). Dexie deep-cloned every live query result
+   for whoever asked; now the cached rows are frozen and handed out as they
+   are. Measured as above, a fresh profile for each run, four stops each; the
+   script time is the browser's own counter over the stop and the 3.5 s after:
+
+   | | 5 000 before | 5 000 after | 10 000 before | 10 000 after |
+   |---|---|---|---|---|
+   | Timer, longest block after a stop | 0–68 ms | none over 50 ms | 95–142 ms | 54–84 ms |
+   | Timer, script time per stop | 156–169 ms | 113–196 ms | 261–292 ms | 177–214 ms |
+   | Stats, opening | 580 ms (934) | 569 ms (896) | 605 ms (1 372) | 577 ms (1 259) |
+   | Stats, switch to This session | 195 ms (680) | 246 ms (806) | 276 ms (1 076) | 293 ms (1 089) |
+   | Stats, switch to All sessions | 246 ms (875) | 215 ms (853) | 402 ms (1 319) | 374 ms (1 207) |
+
+   It had been expected to be the biggest single gain, and is not. It helps
+   the timer, which rereads the same session after every solve: a quarter to
+   a third of the script time at 10 000 (the 196 ms at 5 000 is the first stop
+   of the run; the three after it were 113–144). The stats screen spends its
+   time computing, not copying, and its numbers are inside what one run
+   differs from the next by.
+
+   The price is a rule (CLAUDE.md, "Co se nikdy nedělá"): nothing read from
+   the database is changed in place. The audit before switching it on found
+   five repository reads that sorted their result in place — the sets, the
+   methods, the tags, the triggers, a case's algorithms. Three failed the
+   tests at once; the other two did not, because a list of one sorts without
+   writing anything, and would have thrown in the app with two tags or two
+   algorithms. The freeze is one level deep, so a row's own lists are shared
+   unfrozen; the tests now freeze every read all the way down
+   (`test/setup.ts`), which is what catches the next one.
 
 ## What is still open
 
-What remains at 10 000 is mostly Dexie's own per-query work: every live query
-result is deep-cloned for its subscriber, and every row an index query returns
-has its primary key recorded so the query knows when to re-run. One way to
-cut it further, not done yet:
+Nothing is queued. What remains at 10 000 is the stats screen's own work —
+about 480 ms of opening it is Recharts being loaded and parsed, the rest is
+computing over every solve — and Dexie recording the primary key of every row
+an index query returns, so that the query knows when to run again.
 
-1. **Dexie's `cache: 'immutable'`.** Results would be frozen and shared instead
-   of cloned per subscriber — probably the biggest single gain. It is also a
-   change for the whole app: any code that mutates a query result or sorts one
-   in place would start throwing, including in paths the tests do not reach.
-   Only with an audit of every repository read first.
+One thing seen and not measured: the read behind "All sessions" sorts every
+solve of the puzzle by date in JavaScript (`sortBy`), for want of an index
+that orders by date across sessions.
 
-Worth re-measuring before it: with ordinary numbers of solves (hundreds to
-a low few thousand) the current state is comfortably fast.
+With ordinary numbers of solves (hundreds to a low few thousand) all of it
+is comfortably fast.

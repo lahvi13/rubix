@@ -38,7 +38,14 @@ export class RubixDB extends Dexie {
   tombstones!: Table<Tombstone, string>;
 
   constructor(name: string = DB_NAME) {
-    super(name);
+    // What a live query reads is handed out as it is cached — frozen, and
+    // shared by everything that asked — instead of copied for each. After a
+    // solve the timer rereads the session, and with thousands of solves the
+    // copying was a quarter to a third of that work (PERFORMANCE.md). The
+    // price is a rule: nothing read from the database is changed in place, a
+    // sort included. The freeze is one level deep, so a row's own lists are
+    // shared unfrozen; the tests freeze those too (test/setup.ts).
+    super(name, { cache: 'immutable' });
     this.version(1).stores({
       solves:
         'id, sessionId, caseId, createdAt, updatedAt, starred, *tagIds, ' +

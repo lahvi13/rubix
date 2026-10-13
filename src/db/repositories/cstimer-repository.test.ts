@@ -52,7 +52,7 @@ describe('csTimer import', () => {
       ),
     );
 
-    const sessions = (await db.sessions.toArray()).sort((a, b) => a.createdAt - b.createdAt);
+    const sessions = [...(await db.sessions.toArray())].sort((a, b) => a.createdAt - b.createdAt);
     expect(sessions.map((session) => [session.name, session.puzzle])).toEqual([
       ['Evening', '333'],
       ['2x2 warm up', '222'],

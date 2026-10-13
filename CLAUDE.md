@@ -171,6 +171,13 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
     to jsou vědomé non-goals, ne opomenutí.
 12. **Nekomentovat samozřejmosti.** Komentář vysvětluje *proč* (např. proč je práh
     detekce adaptivní), ne *co* řádek dělá.
+13. **Neměnit na místě nic, co se přečetlo z databáze.** Výsledek živého dotazu
+    je sdílený a zmrazený (`cache: 'immutable'` v `db/schema.ts`), ne kopie:
+    `rows.sort()` shodí obrazovku, `[...rows].sort()` ne. Zmrazená je jen první
+    úroveň — vlastní pole řádku (splity, tagy) jsou sdílená nezmrazená, takže
+    změna v nich by byla tichá a u všech, kdo se ptali. Testy proto mrazí
+    každé čtení do hloubky (`test/setup.ts`); seznam o jedné položce se ale
+    seřadí bez zápisu, takže test s jedním řádkem řazení na místě nechytí.
 
 ## Poznámky k vývoji
 
@@ -222,13 +229,13 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   npm run preview` a projít reálný scénář (dobře posloužil headless Chrome přes CDP).
   Chyby v hranicích worker / chunking / service worker jednotkové testy z principu nechytí.
 - **výkon s tisíci solvů je změřený** (5 000 a 10 000, CPU 4× zpomalené):
-  [PERFORMANCE.md](PERFORMANCE.md) — postup měření, výsledky, co se opravilo a
-  dva otevřené kroky (jeden dotaz na solvy session na timeru; Dexie
-  `cache: 'immutable'` jen po auditu). Výpočet, který projde všechny solvy,
+  [PERFORMANCE.md](PERFORMANCE.md) — postup měření, výsledky a co se opravilo;
+  ve frontě nic není. Výpočet, který projde všechny solvy,
   se po každém solvu pouští znovu: nové statistiky změřit se 5 000 solvy, ne
-  s padesáti. Živý dotaz platí za každý vrácený řádek (klonování + sledování
-  klíče), takže ho neptat na víc řádků, než potřebuje, a kurzor (`each`,
-  `anyOf`) přes velkou tabulku nahradit indexem.
+  s padesáti. Živý dotaz platí za každý vrácený řádek (sledování klíče;
+  kopírování od 2026-10-13 ne, viz bod 13 výš), takže ho neptat na víc řádků,
+  než potřebuje, a kurzor (`each`, `anyOf`) přes velkou tabulku nahradit
+  indexem.
 - **iOS se odsud ověřit nedá.** Co je na iPhonu potřeba proklikat ručně, proč je
   statusbar nastavený tak, jak je, a co Safari se smazáním dat zaručit nejde:
   [IOS-CHECKLIST.md](IOS-CHECKLIST.md). Je tam i verzová podlaha appky (iOS 17.5

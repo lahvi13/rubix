@@ -27,7 +27,7 @@ export function isPackTrigger(id: string): boolean {
  */
 export async function listTriggers(): Promise<Trigger[]> {
   const triggers = await db.triggers.toArray();
-  return triggers.sort((a, b) => {
+  return [...triggers].sort((a, b) => {
     const byLength = b.moves.split(/\s+/).length - a.moves.split(/\s+/).length;
     return byLength !== 0 ? byLength : a.name.localeCompare(b.name);
   });

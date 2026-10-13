@@ -14,7 +14,7 @@ export async function getMethod(id: string): Promise<Method | undefined> {
 /** Every method a session can be timed in, in the order they were seeded. */
 export async function listMethods(): Promise<Method[]> {
   const methods = await db.methods.toArray();
-  return methods.sort((a, b) => a.createdAt - b.createdAt || a.name.localeCompare(b.name));
+  return [...methods].sort((a, b) => a.createdAt - b.createdAt || a.name.localeCompare(b.name));
 }
 
 /** Phase keys in method order — the order splits are assigned in. */

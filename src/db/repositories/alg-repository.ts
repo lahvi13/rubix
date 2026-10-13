@@ -30,7 +30,7 @@ export async function listSets(): Promise<AlgSet[]> {
     const index = SET_ORDER.indexOf(set.id);
     return index === -1 ? SET_ORDER.length : index;
   };
-  return sets.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  return [...sets].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 }
 
 export async function getSet(id: string): Promise<AlgSet | undefined> {
@@ -98,7 +98,7 @@ export async function markCaseLearning(caseId: string): Promise<void> {
 export async function listAlgorithms(caseId: string): Promise<Algorithm[]> {
   const algorithms = await db.algorithms.where('caseId').equals(caseId).toArray();
   // Pack first, then the user's own in the order they were added.
-  return algorithms.sort((a, b) => {
+  return [...algorithms].sort((a, b) => {
     if (a.source !== b.source) return a.source === 'pack' ? -1 : 1;
     return a.createdAt - b.createdAt;
   });

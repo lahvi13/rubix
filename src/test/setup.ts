@@ -14,6 +14,8 @@ afterEach(cleanup);
 configure({ asyncUtilTimeout: 3000 });
 // Repository tests run against a real IndexedDB implementation in memory.
 import 'fake-indexeddb/auto';
+// After the line above, not before it: Dexie takes hold of indexedDB as it loads.
+import Dexie, { type DBCore, type DBCoreTransaction } from 'dexie';
 
 // jsdom has no crypto.randomUUID; the ids only need to be unique, not secure.
 if (!('randomUUID' in crypto)) {
@@ -34,3 +36,57 @@ if (typeof window.matchMedia !== 'function') {
     }),
   });
 }
+
+/**
+ * What the database hands a reader is never changed in place: a live query's
+ * result is the cached one, shared by everything that asked for it (`cache:
+ * 'immutable'` in db/schema.ts). Dexie freezes the list and each row, which
+ * turns a sort in place into an error — but only on a list of two or more,
+ * and a row's own lists (a solve's splits, its tags) are shared unfrozen, so
+ * a change there would be quiet and everybody's.
+ *
+ * Under test every read is frozen all the way down, live or not, so that the
+ * mistake fails here and loudly whatever the data happens to be. Writes are
+ * left alone: a transaction that changes rows may change what it read.
+ */
+function freezeDeep(value: unknown): void {
+  if (value === null || typeof value !== 'object' || Object.isFrozen(value)) return;
+  // A typed array with anything in it cannot be frozen, and nothing here stores one.
+  if (ArrayBuffer.isView(value) || value instanceof ArrayBuffer) return;
+  Object.freeze(value);
+  for (const inner of Object.values(value)) freezeDeep(inner);
+}
+
+const isReadOnly = (trans: DBCoreTransaction): boolean =>
+  'mode' in trans && trans.mode === 'readonly';
+
+Dexie.addons.push((database) => {
+  database.use({
+    stack: 'dbcore',
+    name: 'frozen-reads',
+    create: (core: DBCore): DBCore => ({
+      ...core,
+      table: (name) => {
+        const table = core.table(name);
+        return {
+          ...table,
+          get: (request) =>
+            table.get(request).then((row: unknown) => {
+              if (isReadOnly(request.trans)) freezeDeep(row);
+              return row;
+            }),
+          getMany: (request) =>
+            table.getMany(request).then((rows) => {
+              if (isReadOnly(request.trans)) freezeDeep(rows);
+              return rows;
+            }),
+          query: (request) =>
+            table.query(request).then((response) => {
+              if (isReadOnly(request.trans)) freezeDeep(response.result);
+              return response;
+            }),
+        };
+      },
+    }),
+  });
+});

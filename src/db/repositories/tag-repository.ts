@@ -15,7 +15,7 @@ export const TAG_COLORS = [
 
 export async function listTags(): Promise<Tag[]> {
   const tags = await db.tags.toArray();
-  return tags.sort((a, b) => a.name.localeCompare(b.name));
+  return [...tags].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function createTag(name: string): Promise<Tag> {
