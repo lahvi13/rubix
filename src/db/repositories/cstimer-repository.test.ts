@@ -59,6 +59,35 @@ describe('csTimer import', () => {
     ]);
   });
 
+  it("times another cube's session in that cube's method, and leaves csTimer's phases behind", async () => {
+    await importFile(
+      exportFile(
+        {
+          session1: [record([0, 12_000, 10_000, 8000, 2000], 1_788_509_385)],
+          session2: [record([0, 4000, 3000, 2000, 1000], 1_788_509_400)],
+        },
+        {
+          1: { name: 'Evening', opt: {}, rank: 1 },
+          2: { name: '2x2 warm up', opt: { scrType: '222so' }, rank: 2 },
+        },
+      ),
+    );
+
+    const sessions = await db.sessions.toArray();
+    const pocket = sessions.find((session) => session.puzzle === '222');
+    expect(sessions.find((session) => session.puzzle === '333')?.methodId).toBe('cfop');
+    expect(pocket?.methodId).toBe('222');
+
+    // Four phases are CFOP's four on the 3×3 and nothing on a cube without any.
+    const solves = await db.solves.toArray();
+    expect(solves.find((solve) => solve.puzzle === '333')?.splits).toHaveLength(3);
+    expect(solves.find((solve) => solve.puzzle === '222')).toMatchObject({
+      sessionId: pocket?.id,
+      rawMs: 4000,
+      splits: [],
+    });
+  });
+
   it('never makes an imported session the active one', async () => {
     const active = await getOrCreateActiveSession('333', 'freestyle');
     await importFile(exportFile({ session1: [record([0, 12_340], 1_788_509_385)] }));

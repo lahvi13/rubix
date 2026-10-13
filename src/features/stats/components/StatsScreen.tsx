@@ -5,6 +5,8 @@ import {
   type PhaseTrendMode,
   type StatsScope,
 } from '../../../db/repositories/settings-repository';
+import { useGoalMs } from '../../../hooks/use-goal';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useSetting } from '../../../hooks/use-setting';
 import { formatAverage, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -25,7 +27,6 @@ import { GoalSection } from './GoalSection';
 import { RecordsSection } from './RecordsSection';
 import { SectionNav, type NavSection } from './SectionNav';
 
-const PUZZLE = '333';
 const MODE = 'freestyle';
 /** Opened at a number rather than at a place in a list, so nothing to step. */
 const NO_SOLVES: readonly string[] = [];
@@ -143,7 +144,8 @@ function sessionBestTier(bestMs: number | null, pbMs: number | null): StatTier |
 }
 
 export function StatsScreen() {
-  const session = useActiveSession(PUZZLE, MODE);
+  const [puzzle] = usePuzzle();
+  const session = useActiveSession(puzzle, MODE);
   // Named on what is shared from here, by the rule the timer goes by.
   const methodLabel = useMethodLabel(session);
   // The method being timed in names the phases, and across sessions it is
@@ -166,14 +168,14 @@ export function StatsScreen() {
       : scope === 'session'
         ? { kind: 'session', sessionId: session?.id ?? null }
         : { kind: scope },
-    PUZZLE,
+    puzzle,
     phaseKeys,
     tagId,
   );
   const isAllSessions = scope !== 'session';
   const [trendMode, setTrendMode] = useSetting('stats.phaseTrendMode');
   const [isSmoothed, setSmoothed] = useSetting('stats.phaseTrendSmoothed');
-  const [, setGoalMs] = useSetting('stats.goalMs');
+  const [, setGoalMs] = useGoalMs(puzzle);
   const [isByDay, setByDay] = useSetting('stats.trendByDay');
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
@@ -510,6 +512,7 @@ export function StatsScreen() {
       {windowView === null || openSolveId !== null ? null : (
         <AverageSheet
           view={windowView}
+          puzzle={puzzle}
           methodName={methodLabel}
           onOpenSolve={setOpenSolveId}
           onClose={() => setOpenWindow(null)}

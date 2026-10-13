@@ -40,11 +40,20 @@
 
 .app__header {
   display: flex;
+  /* From the top, not centred: with a screen's controls on a second line the
+     cube's switch stays level with the name rather than between the two. */
+  align-items: flex-start;
+  gap: var(--space-6);
+}
+
+.app__heading {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
   /* A screen's own controls beside its name go onto a line of their own
      rather than off the edge, on a narrow phone with large text. */
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2) var(--space-6);
 }
 
@@ -63,6 +72,39 @@
   flex: 0 0 auto;
   padding-inline: var(--space-4);
   min-height: 2.25rem;
+}
+
+/* The cube the app is on. No taller than the drill's tabs beside it: the
+   header's height is what every screen under it is laid out against. */
+.puzzle-switch {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.25rem;
+  margin-block: calc((2.5rem - 2.25rem) / 2);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+/* The row above it holds nothing but the close button, so the heading takes
+   back the gap that row would otherwise leave under itself. */
+.puzzle-sheet__title {
+  margin: calc(var(--space-5) * -1) 0 0;
+  font-size: var(--text-xl);
+}
+
+/* As many to a row as fit: two today, and the next cube is one more cell. */
+.puzzle-sheet__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: var(--space-4);
+}
+
+.puzzle-sheet__list button {
+  min-height: 3rem;
+  font-size: var(--text-xl);
 }
 
 .app__menu-toggle {

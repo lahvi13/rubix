@@ -8,6 +8,7 @@
  * ever learns the shape that exists today.
  */
 
+import { repairedSessionRow } from '../../../domain/puzzle/puzzles';
 import { EXPORT_FORMAT_VERSION } from '../../../domain/transfer/types';
 
 type RawFile = Record<string, unknown>;
@@ -16,6 +17,7 @@ const UPGRADES: Record<number, (file: RawFile) => RawFile> = {
   1: fillMissingFields,
   2: fillCaseProgress,
   3: (file) => file,
+  4: repairSessionMethods,
 };
 
 /**
@@ -60,6 +62,23 @@ function fillCaseProgress(file: RawFile): RawFile {
  * refuses such a file as one from a newer version, which it is, rather than
  * as a damaged one.
  */
+
+/**
+ * 4 -> 5: a session belongs to a method of its own cube (DB v9). Until the
+ * app could be switched to another cube, a 2×2 session out of a csTimer
+ * import was written as timed in CFOP, and a backup from then says so still.
+ */
+function repairSessionMethods(file: RawFile): RawFile {
+  const data = file.data;
+  if (!isRecord(data) || !Array.isArray(data.sessions)) return file;
+  return {
+    ...file,
+    data: {
+      ...data,
+      sessions: data.sessions.map((row: unknown) => (isRecord(row) ? repairedSessionRow(row) : row)),
+    },
+  };
+}
 
 function fillEach(rows: unknown, field: string, value: unknown): unknown {
   if (!Array.isArray(rows)) return rows;

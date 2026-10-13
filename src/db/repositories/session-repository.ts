@@ -1,10 +1,12 @@
 import { db } from '../schema';
 import type { Puzzle, Session, Solve, SolveMode } from '../types';
+import { defaultMethodFor } from '../../domain/puzzle/puzzles';
 import { now } from '../../lib/clock';
 import { strings } from '../../lib/strings';
 import { createId } from '../../lib/uuid';
 
-export const DEFAULT_METHOD_ID = 'cfop';
+/** The 3×3's. Another cube's sessions start in `defaultMethodFor` theirs. */
+export const DEFAULT_METHOD_ID = defaultMethodFor('333');
 const DEFAULT_SESSION_NAME = strings.sessions.defaultName;
 
 /** A deleted session and everything that was timed into it. */
@@ -86,7 +88,7 @@ export async function createSession(
   name: string,
   puzzle: Puzzle,
   mode: SolveMode,
-  methodId: string = DEFAULT_METHOD_ID,
+  methodId: string = defaultMethodFor(puzzle),
 ): Promise<Session> {
   return db.transaction('rw', db.sessions, async () => {
     const session = buildSession(name, puzzle, mode, methodId);
@@ -187,7 +189,7 @@ function buildSession(
   name: string,
   puzzle: Puzzle,
   mode: SolveMode,
-  methodId: string = DEFAULT_METHOD_ID,
+  methodId: string = defaultMethodFor(puzzle),
 ): Session {
   const timestamp = now();
   return {

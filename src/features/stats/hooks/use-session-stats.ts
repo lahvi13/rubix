@@ -1,13 +1,18 @@
 import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { Penalty, Puzzle } from '../../../db/types';
+import type { Penalty } from '../../../db/types';
 import {
   getMethodPbSolve,
   listPuzzleSolvesChronological,
   listSolvesChronological,
 } from '../../../db/repositories/solve-repository';
 import { listSessions } from '../../../db/repositories/session-repository';
-import { getSetting, SETTING_DEFAULTS } from '../../../db/repositories/settings-repository';
+import {
+  getSetting,
+  GOAL_SETTING,
+  SETTING_DEFAULTS,
+} from '../../../db/repositories/settings-repository';
+import type { SupportedPuzzle } from '../../../domain/puzzle/puzzles';
 import { finalMs } from '../../../domain/solve/final-time';
 import {
   AVERAGE_WINDOWS,
@@ -231,7 +236,7 @@ export interface SessionStats {
 export function useSessionStats(
   /** null while it is not yet known whose solves to read. */
   source: StatsSource | null,
-  puzzle: Puzzle,
+  puzzle: SupportedPuzzle,
   phaseKeys: readonly string[] = [],
   /** Only the solves carrying this tag; null for all of them. */
   tagId: string | null = null,
@@ -264,7 +269,7 @@ export function useSessionStats(
     [puzzle, methodId],
   );
   const chartWindow = useLiveQuery(() => getSetting('stats.chartWindow'), []);
-  const goalMs = useLiveQuery(() => getSetting('stats.goalMs'), []);
+  const goalMs = useLiveQuery(() => getSetting(GOAL_SETTING[puzzle]), [puzzle]);
 
   return useMemo(() => {
     if (loaded === undefined || sessions === undefined || methodId === undefined) return null;

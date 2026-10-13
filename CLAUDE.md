@@ -50,6 +50,7 @@ src/
     cube/         # vlastní model kostky: notace, stav (54 nálepek), pohledy na případ
     alg/          # triggery (rozpad algoritmu na pojmenované úseky), katalog vestavěných sad
     transfer/     # formát exportu, validace importu, plán merge/replace
+    puzzle/       # které kostky jde zvolit, výchozí metoda každé z nich
     audio/        # detektor hlasu (běží v AudioWorkletu) a párování hlasu s ťuknutím
   features/
     timer/  history/  stats/  trainer/  splits/  data-transfer/  settings/
@@ -240,6 +241,13 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   statusbar nastavený tak, jak je, a co Safari se smazáním dat zaručit nejde:
   [IOS-CHECKLIST.md](IOS-CHECKLIST.md). Je tam i verzová podlaha appky (iOS 17.5
   kvůli `light-dark()`) — vědomá, ne opomenutí.
+- **kostku nedrží žádná obrazovka sama.** Která je zvolená, říká `usePuzzle()`
+  (`ui.puzzle`, přepínač v hlavičce); `const PUZZLE = '333'` do obrazovky
+  nepatří. Kostky, na které jde přepnout, jsou v `domain/puzzle/puzzles.ts` —
+  typ `Puzzle` je širší schválně, import z csTimeru si pyraminx nechá jako
+  pyraminx. Co je pro každou kostku jiné (cíl, název pro twisty), je tabulka
+  `Record<SupportedPuzzle, …>`, aby nová kostka shodila build tam, kde chybí.
+  Trenažér a dril zatím 3×3 natvrdo mají — na jiné kostce se nevykreslí.
 - **hlavní zařízení je telefon.** UI se ověřuje v šířce 412 px (CDP
   `Emulation.setDeviceMetricsOverride`, `mobile: true`) — desktop je až druhý.
   Řádek s několika ovládacími prvky vedle sebe se tam smrskne na nulu, takže

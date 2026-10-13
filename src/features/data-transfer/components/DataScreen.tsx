@@ -407,7 +407,7 @@ function CsTimerPreview({ state }: { state: Extract<CsTimerState, { status: 'pre
             {plan.sessions.map((session) => (
               <tr key={`${session.name}-${session.puzzle}`}>
                 <th scope="row">{session.name}</th>
-                <td>{strings.cstimer.puzzles[session.puzzle]}</td>
+                <td>{strings.puzzle.names[session.puzzle]}</td>
                 <td>{session.solves.length}</td>
               </tr>
             ))}

@@ -8,6 +8,7 @@ import {
   getActiveSession,
   getOrCreateActiveSession,
 } from '../../../db/repositories/session-repository';
+import { setSetting } from '../../../db/repositories/settings-repository';
 import { SessionPicker } from './SessionPicker';
 
 describe('SessionPicker', () => {
@@ -55,6 +56,59 @@ describe('SessionPicker', () => {
     });
     expect(onClose).toHaveBeenCalled();
   });
+  describe('another cube', () => {
+    beforeEach(async () => {
+      await getOrCreateActiveSession('333', 'freestyle');
+      await createSession('Pocket', '222', 'freestyle');
+    });
+
+    it("lists the sessions of the cube the app is on, and not another cube's", async () => {
+      render(<SessionPicker onClose={vi.fn()} />);
+
+      expect(await screen.findByRole('button', { name: /Default/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Pocket/ })).toBeNull();
+    });
+
+    it('follows the app to the other cube', async () => {
+      await setSetting('ui.puzzle', '222');
+
+      render(<SessionPicker onClose={vi.fn()} />);
+
+      expect(await screen.findByRole('button', { name: /Pocket/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Default/ })).toBeNull();
+    });
+
+    it('lists the cube it is asked about, whichever the app is on', async () => {
+      await createSession('Pocket two', '222', 'freestyle');
+
+      render(<SessionPicker puzzle="222" onPick={vi.fn()} onClose={vi.fn()} />);
+
+      // A destination: the active one of that cube is the source, so not offered.
+      expect(await screen.findByRole('button', { name: /Pocket/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Pocket two/ })).toBeNull();
+      expect(screen.queryByRole('button', { name: /Default/ })).toBeNull();
+    });
+
+    it('makes a new session one of that cube, timed in its method', async () => {
+      await setSetting('ui.puzzle', '222');
+      const user = userEvent.setup();
+
+      render(<SessionPicker onClose={vi.fn()} />);
+      await screen.findByRole('button', { name: /Pocket/ });
+      await user.type(screen.getByLabelText('New session name'), 'Ortega');
+      await user.click(screen.getByRole('button', { name: 'Create' }));
+
+      await waitFor(async () => {
+        expect(await getActiveSession('222', 'freestyle')).toMatchObject({
+          name: 'Ortega',
+          methodId: '222',
+        });
+      });
+      // The 3×3 goes on timing into the session it was in.
+      expect((await getActiveSession('333', 'freestyle'))?.name).toBe('Default');
+    });
+  });
+
   describe('method', () => {
     beforeEach(async () => {
       const phases = [{ key: 'a', label: 'A', order: 0 }];

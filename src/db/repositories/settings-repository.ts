@@ -1,6 +1,7 @@
 import { liveQuery } from 'dexie';
 import { db } from '../schema';
 import type { Flag } from '../types';
+import type { SupportedPuzzle } from '../../domain/puzzle/puzzles';
 import { now } from '../../lib/clock';
 import type { CaseLayout, ClockFace, Font, Size, Theme } from '../../lib/appearance';
 import type { RunningDisplay } from '../../lib/format';
@@ -70,6 +71,13 @@ export interface SettingValues {
    * visit made them switch it over each time.
    */
   'ui.learnMethod': string;
+  /**
+   * Device-local: which cube the app is switched to, as a `Puzzle`. A string
+   * here because what is stored may come from a version that knows more cubes
+   * than this one; `usePuzzle` reads it. It says what is in the reader's hands
+   * at this screen, which a backup restored on another one knows nothing of.
+   */
+  'ui.puzzle': string;
   /**
    * Device-local: the nudge to put the app on an iPhone's home screen was
    * waved away here. Another device is another Safari, with its own week.
@@ -152,8 +160,13 @@ export interface SettingValues {
    * Replaces 'stats.allSessions', which could only say two of the three.
    */
   'stats.scope': StatsScope;
-  /** The time the reader is chasing — "sub 1:30" is 90000. 0 means none set. */
+  /**
+   * The time the reader is chasing on the 3×3 — "sub 1:30" is 90000. 0 means
+   * none set. The 3×3's alone, as it always was: see GOAL_SETTING.
+   */
   'stats.goalMs': number;
+  /** The same for the 2×2. */
+  'stats.goalMs.222': number;
   /**
    * Read the trend by the calendar — one point per day practised — rather
    * than solve by solve. Months of progress are a question about days.
@@ -226,6 +239,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.showLearn': true,
   'ui.learnExplanations': true,
   'ui.learnMethod': '',
+  'ui.puzzle': '333',
   'ui.installNudgeDismissed': false,
   'trainer.twoLookDefault': true,
   'trainer.showAlgs': true,
@@ -241,6 +255,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'stats.phaseTrendSmoothed': false,
   'stats.scope': 'all',
   'stats.goalMs': 0,
+  'stats.goalMs.222': 0,
   'stats.trendByDay': false,
   'stats.tagId': '',
   'data.lastExportAt': 0,
@@ -253,6 +268,16 @@ export const SETTING_DEFAULTS: SettingValues = {
 
 export type SettingKey = keyof SettingValues;
 
+/**
+ * Where each cube's goal is kept. One key apiece: a time worth chasing on the
+ * 3×3 is beaten by every 2×2 solve there is, and the timer would say so after
+ * each of them.
+ */
+export const GOAL_SETTING = {
+  '333': 'stats.goalMs',
+  '222': 'stats.goalMs.222',
+} as const satisfies Record<SupportedPuzzle, SettingKey>;
+
 const DEVICE_LOCAL_PREFIXES = [
   'audio.',
   'timer.haptics',
@@ -260,6 +285,7 @@ const DEVICE_LOCAL_PREFIXES = [
   'ui.textSize',
   'ui.clockSize',
   'ui.caseLayout',
+  'ui.puzzle',
   'ui.installNudge',
   'data.',
 ];

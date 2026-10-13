@@ -1,6 +1,7 @@
 import { db } from '../schema';
 import type { AlgCase, AlgSet, Algorithm, CaseProgress, Method, Trigger } from '../types';
 import { formatAlg, invertAlg, parseAlg } from '../../domain/cube/notation';
+import { defaultMethodFor } from '../../domain/puzzle/puzzles';
 import { now } from '../../lib/clock';
 import {
   CROSS_PACK,
@@ -371,7 +372,21 @@ const ZZ: MethodDefinition = {
   ],
 };
 
-const METHODS: readonly MethodDefinition[] = [CFOP, ROUX, ZZ];
+/**
+ * What a 2×2 session is timed in. No phases: the solve is over in a few
+ * seconds, and a tap inside it would cost more than it measured. One method
+ * for the cube rather than one per way of solving it — without phases a
+ * method changes nothing about how a session is timed, and a personal best
+ * that started over at Ortega would not be one.
+ */
+const TWO_BY_TWO: MethodDefinition = {
+  id: defaultMethodFor('222'),
+  name: '2×2',
+  puzzle: '222',
+  phases: [],
+};
+
+const METHODS: readonly MethodDefinition[] = [CFOP, ROUX, ZZ, TWO_BY_TWO];
 
 function buildMethod(definition: MethodDefinition, existing: Method | undefined): Method {
   return {

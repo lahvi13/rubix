@@ -24,6 +24,15 @@ describe('session repository', () => {
     expect((await db.sessions.get(roux.id))?.methodId).toBe('roux');
   });
 
+  it("times another cube's session in that cube's own method, which has no phases", async () => {
+    expect((await createSession('Pocket', '222', 'freestyle')).methodId).toBe('222');
+    expect((await getOrCreateActiveSession('222', 'freestyle')).methodId).toBe('222');
+    // The first session of a cube, made by the timer rather than by hand.
+    await Promise.all(db.tables.map((table) => table.clear()));
+    expect((await getOrCreateActiveSession('222', 'freestyle')).methodId).toBe('222');
+    expect((await getOrCreateActiveSession('333', 'freestyle')).methodId).toBe('cfop');
+  });
+
   it('creates the default session once and reuses it afterwards', async () => {
     const first = await getOrCreateActiveSession('333', 'freestyle');
     const second = await getOrCreateActiveSession('333', 'freestyle');

@@ -7,7 +7,9 @@
  * the same page whatever scramble is in the link, and never sees one.
  */
 
+import type { Puzzle } from '../../db/types';
 import { formatAlg, formatMove, parseAlg } from '../cube/notation';
+import { DEFAULT_PUZZLE, SUPPORTED_PUZZLES } from '../puzzle/puzzles';
 
 export interface SharedScrambles {
   /**
@@ -20,6 +22,11 @@ export interface SharedScrambles {
    * Null when there is none: the single was a DNF.
    */
   targetMs: number | null;
+  /**
+   * The cube they are for; the 3×3 when not said, in the link as here. A link
+   * from before there was another cube is a 3×3 link, and still reads as one.
+   */
+  puzzle?: Puzzle;
 }
 
 /** A single, an ao5, an ao12. Longer windows make a link nobody would tap. */
@@ -35,12 +42,15 @@ const MAX_TARGET_MS = 24 * 60 * 60 * 1000;
  * anybody deciding whether to tap it. The spelling is alg.cubing.net's. Each
  * scramble is a `scramble` parameter of its own, in order.
  *
- * Null when any scramble is not one the app can read back, or when there are
- * more or fewer of them than an average the app keeps.
+ * Null when any scramble is not one the app can read back, when there are
+ * more or fewer of them than an average the app keeps, or when they are for a
+ * puzzle no timer here could be switched to.
  */
 export function shareLinkFor(origin: string, shared: SharedScrambles): string | null {
   if (!SHAREABLE_COUNTS.includes(shared.scrambles.length)) return null;
-  const params: string[] = [];
+  const puzzle = shared.puzzle ?? DEFAULT_PUZZLE;
+  if (!SUPPORTED_PUZZLES.some((supported) => supported === puzzle)) return null;
+  const params: string[] = puzzle === DEFAULT_PUZZLE ? [] : [`puzzle=${puzzle}`];
   for (const scramble of shared.scrambles) {
     const parsed = parseAlg(scramble);
     if (!parsed.ok || parsed.moves.length === 0 || parsed.moves.length > MAX_MOVES) return null;
@@ -55,11 +65,17 @@ export function shareLinkFor(origin: string, shared: SharedScrambles): string | 
  * link came from outside, so nothing in it is taken on trust: one scramble
  * that does not parse spoils the set, and a target that is not a whole,
  * sensible number of milliseconds is dropped while the scrambles are kept.
+ * A puzzle this version cannot be switched to spoils it too: its scrambles on
+ * the 3×3's timer would be timed as something they are not.
  */
 export function readShareLink(hash: string): SharedScrambles | null {
   const match = /^#\/?timer\?(.*)$/.exec(hash);
   if (match === null) return null;
   const params = new URLSearchParams(match[1]);
+
+  const named = params.get('puzzle') ?? DEFAULT_PUZZLE;
+  const puzzle = SUPPORTED_PUZZLES.find((supported) => supported === named);
+  if (puzzle === undefined) return null;
 
   const texts = params.getAll('scramble');
   if (!SHAREABLE_COUNTS.includes(texts.length)) return null;
@@ -78,5 +94,6 @@ export function readShareLink(hash: string): SharedScrambles | null {
   return {
     scrambles,
     targetMs: targetMs !== null && targetMs > 0 && targetMs <= MAX_TARGET_MS ? targetMs : null,
+    ...(puzzle === DEFAULT_PUZZLE ? {} : { puzzle }),
   };
 }

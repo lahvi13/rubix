@@ -4,6 +4,7 @@ import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { useBackToClose } from '../../../hooks/use-back-to-close';
 import { useMoveSolves } from '../../../hooks/use-move-solves';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { now } from '../../../lib/clock';
 import { dayKey, formatClock, formatDay, formatResult } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
@@ -16,16 +17,16 @@ import { DayPicker } from './DayPicker';
 import { SolveDetailSheet } from './SolveDetailSheet';
 import { TagPanel } from './TagPanel';
 
-const PUZZLE = '333';
 const MODE = 'freestyle';
 const PENALTY_FILTERS: Penalty[] = ['plus2', 'dnf'];
 
 export function HistoryScreen() {
-  const session = useActiveSession(PUZZLE, MODE);
+  const [puzzle] = usePuzzle();
+  const session = useActiveSession(puzzle, MODE);
   const methodName = useMethodLabel(session);
   const phases = usePhases(session?.methodId ?? null);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
-  const history = useHistory(session?.id ?? null, PUZZLE, phaseKeys, session?.methodId ?? null);
+  const history = useHistory(session?.id ?? null, puzzle, phaseKeys, session?.methodId ?? null);
   const tags = useTags();
   const days = useSolveDays(session?.id ?? null);
   const at = now();

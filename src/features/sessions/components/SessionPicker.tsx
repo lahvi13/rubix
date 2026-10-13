@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
 import { Sheet } from '../../../components/Sheet';
+import type { Puzzle } from '../../../db/types';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { formatDate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { useRemoveSession } from '../hooks/use-remove-session';
 import { useSessions } from '../hooks/use-sessions';
 
-const PUZZLE = '333';
 const MODE = 'freestyle';
 
 interface SessionPickerProps {
@@ -19,6 +20,12 @@ interface SessionPickerProps {
   onPick?: (sessionId: string, name: string) => void;
   /** What the choice is for. The sheet has no idea, so the caller says. */
   title?: string;
+  /**
+   * Whose sessions are listed: the cube the app is on, unless the choice is
+   * about something of another one — a solve can only move to a session of
+   * the cube it was timed on.
+   */
+  puzzle?: Puzzle;
 }
 
 /**
@@ -28,7 +35,9 @@ interface SessionPickerProps {
  * one being timed into. Anything that changes which session that is closes the
  * sheet: the answer to why it was opened is on the screen underneath.
  */
-export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
+export function SessionPicker({ onClose, onPick, title, puzzle: asked }: SessionPickerProps) {
+  const [current] = usePuzzle();
+  const puzzle = asked ?? current;
   const isChoosing = onPick !== undefined;
   const [includeArchived, setIncludeArchived] = useState(false);
   const {
@@ -39,7 +48,7 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
     rename,
     activate,
     setArchived,
-  } = useSessions(isChoosing ? false : includeArchived);
+  } = useSessions(puzzle, isChoosing ? false : includeArchived);
   const [newName, setNewName] = useState('');
   // A new session is timed like the one in use unless told otherwise: someone
   // starting their third Roux session should not have to say Roux again.
@@ -66,7 +75,7 @@ export function SessionPicker({ onClose, onPick, title }: SessionPickerProps) {
     const name = newName.trim();
     if (name === '') return;
     setNewName('');
-    await create(name, PUZZLE, MODE, newMethodId);
+    await create(name, puzzle, MODE, newMethodId);
     onClose();
   };
 

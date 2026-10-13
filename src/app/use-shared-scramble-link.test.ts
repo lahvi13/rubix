@@ -1,5 +1,7 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { db } from '../db/schema';
+import { getSetting } from '../db/repositories/settings-repository';
 import { unpinScramble, usePinnedScramble } from '../hooks/use-pinned-scramble';
 import { useSharedScrambleLink } from './use-shared-scramble-link';
 
@@ -11,9 +13,10 @@ function openApp() {
 }
 
 describe('useSharedScrambleLink', () => {
-  afterEach(() => {
+  afterEach(async () => {
     unpinScramble();
     window.history.replaceState(null, '', '#/');
+    await db.settings.clear();
   });
 
   it('puts the scramble from the link on the timer, with its time to beat', () => {
@@ -40,5 +43,21 @@ describe('useSharedScrambleLink', () => {
 
     expect(result.current).toBeNull();
     expect(window.location.hash).toBe('#/stats');
+  });
+
+  it('switches the app to the cube the scramble is for', async () => {
+    window.history.replaceState(null, '', '#/timer?puzzle=222&scramble=R_U-_F2');
+    const { result } = openApp();
+
+    expect(result.current?.scramble).toBe("R U' F2");
+    await waitFor(async () => expect(await getSetting('ui.puzzle')).toBe('222'));
+  });
+
+  it('switches back to the 3×3 for a link that names no cube', async () => {
+    await db.settings.put({ key: 'ui.puzzle', value: '222', deviceLocal: 1, updatedAt: 1 });
+    window.history.replaceState(null, '', '#/timer?scramble=R');
+    openApp();
+
+    await waitFor(async () => expect(await getSetting('ui.puzzle')).toBe('333'));
   });
 });

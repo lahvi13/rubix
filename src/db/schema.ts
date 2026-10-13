@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import { installWriteWatchdog, reportError } from '../lib/errors';
 import { now } from '../lib/clock';
+import { repairedMethodFor } from '../domain/puzzle/puzzles';
 import { strings } from '../lib/strings';
 import type {
   AlgCase,
@@ -138,6 +139,25 @@ export class RubixDB extends Dexie {
         'id, sessionId, caseId, createdAt, updatedAt, starred, *tagIds, ' +
         '[sessionId+createdAt], [caseId+createdAt], [mode+puzzle], [puzzle+mode+penalty], ' +
         '[puzzle+mode+penalty+rawMs], [mode+updatedAt], [sessionId+penalty+rawMs]',
+    });
+
+    // v9 comes with the switch between cubes. Until it, every session was
+    // written as timed in CFOP — a 2×2 session out of a csTimer import
+    // included, which nothing showed. Shown, it would offer CFOP's phases and
+    // keep a personal best apart from the 2×2 sessions made from now on. Those
+    // sessions move to their own cube's method; nobody chose the old one.
+    // `updatedAt` moves too, so that a merge with an older backup keeps this.
+    this.version(9).upgrade((tx) => {
+      const updatedAt = now();
+      return tx
+        .table<Session>('sessions')
+        .toCollection()
+        .modify((session) => {
+          const methodId = repairedMethodFor(session.puzzle, session.methodId);
+          if (methodId === session.methodId) return;
+          session.methodId = methodId;
+          session.updatedAt = updatedAt;
+        });
     });
   }
 }

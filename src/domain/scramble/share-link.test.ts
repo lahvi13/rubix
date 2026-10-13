@@ -24,6 +24,17 @@ describe('shareLinkFor', () => {
     ['no link when one of five does not parse', { scrambles: [...FIVE.slice(0, 4), 'Q'], targetMs: 1000 }, null],
     ['no link for a count that is no average', { scrambles: FIVE.slice(0, 3), targetMs: 1000 }, null],
     ['no link for no scrambles', { scrambles: [], targetMs: 1000 }, null],
+    [
+      'the 3×3 without naming it, as every link before the 2×2 was',
+      { scrambles: ["R U'"], targetMs: null, puzzle: '333' },
+      `${ORIGIN}/#/timer?scramble=R_U-`,
+    ],
+    [
+      'the 2×2 by name',
+      { scrambles: ["R U' F2"], targetMs: 3210, puzzle: '222' },
+      `${ORIGIN}/#/timer?puzzle=222&scramble=R_U-_F2&beat=3210`,
+    ],
+    ['no link for a puzzle with no timer', { scrambles: ["R U'"], targetMs: null, puzzle: 'pyram' }, null],
   ])('writes %s', (_name, shared, link) => {
     expect(shareLinkFor(ORIGIN, shared)).toBe(link);
   });
@@ -32,6 +43,13 @@ describe('shareLinkFor', () => {
 describe('readShareLink', () => {
   it.each<[string, string, SharedScrambles | null]>([
     ['its own links', '#/timer?scramble=R_U_R-_F2&beat=14370', { scrambles: ["R U R' F2"], targetMs: 14370 }],
+    [
+      'a 2×2 link, as a 2×2 one',
+      '#/timer?puzzle=222&scramble=R_U-_F2&beat=3210',
+      { scrambles: ["R U' F2"], targetMs: 3210, puzzle: '222' },
+    ],
+    ['the 3×3 named outright', '#/timer?puzzle=333&scramble=R', { scrambles: ['R'], targetMs: null }],
+    ['nothing from a puzzle it has no timer for', '#/timer?puzzle=444&scramble=R', null],
     ['one without a time', '#/timer?scramble=R_U-', { scrambles: ["R U'"], targetMs: null }],
     ['spaces and primes escaped', '#/timer?scramble=R+U%27+F2', { scrambles: ["R U' F2"], targetMs: null }],
     ['a hash without the slash', '#timer?scramble=R', { scrambles: ['R'], targetMs: null }],

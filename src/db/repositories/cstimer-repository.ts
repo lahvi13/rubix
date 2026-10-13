@@ -6,10 +6,10 @@ import {
   type CsTimerSolve,
   type PlannedSession,
 } from '../../domain/transfer/cstimer';
+import { defaultMethodFor } from '../../domain/puzzle/puzzles';
 import { normaliseSplits } from '../../domain/solve/splits';
 import { now } from '../../lib/clock';
 import { createId } from '../../lib/uuid';
-import { DEFAULT_METHOD_ID } from './session-repository';
 
 /**
  * Bringing a csTimer export in. Two rules decide the shape of this file:
@@ -93,7 +93,7 @@ function buildSession(planned: PlannedSession): Session {
     name: planned.name,
     puzzle: planned.puzzle,
     mode: 'freestyle',
-    methodId: DEFAULT_METHOD_ID,
+    methodId: defaultMethodFor(planned.puzzle),
     isArchived: 0,
     // Importing must not move the user off the session they are timing into.
     isActive: 0,
@@ -107,7 +107,8 @@ function buildSolve(
   session: Session,
   phaseKeys: readonly string[],
 ): Solve {
-  const splits = splitsOf(imported, phaseKeys);
+  // The keys are the 3×3 method's; see planCsTimerImport.
+  const splits = splitsOf(imported, session.puzzle === '333' ? phaseKeys : []);
 
   return {
     id: createId(),

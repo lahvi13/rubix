@@ -75,4 +75,32 @@ describe('upgradeImportFormat', () => {
 
     expect(upgraded).toEqual({ format: EXPORT_FORMAT, formatVersion: EXPORT_FORMAT_VERSION, data });
   });
+
+  it("moves another cube's sessions out of CFOP in a format 4 file", () => {
+    const upgraded = upgradeImportFormat({
+      format: EXPORT_FORMAT,
+      formatVersion: 4,
+      data: {
+        sessions: [
+          { id: 'a', puzzle: '333', methodId: 'cfop' },
+          { id: 'b', puzzle: '222', methodId: 'cfop' },
+          { id: 'c', puzzle: '333', methodId: 'roux' },
+          7,
+        ],
+      },
+    });
+
+    expect(upgraded).toEqual({
+      format: EXPORT_FORMAT,
+      formatVersion: EXPORT_FORMAT_VERSION,
+      data: {
+        sessions: [
+          { id: 'a', puzzle: '333', methodId: 'cfop' },
+          { id: 'b', puzzle: '222', methodId: '222' },
+          { id: 'c', puzzle: '333', methodId: 'roux' },
+          7,
+        ],
+      },
+    });
+  });
 });

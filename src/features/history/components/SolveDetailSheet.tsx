@@ -91,6 +91,8 @@ export function SolveDetailSheet({
     return (
       <SessionPicker
         title={strings.history.moveTitle}
+        // The solve's own cube, which the stats can show beside another's.
+        puzzle={solve.puzzle}
         onPick={(sessionId, name) => {
           void moveSolves([solve.id], sessionId, name);
           onClose();
@@ -142,7 +144,11 @@ export function SolveDetailSheet({
         // The scramble goes along as a link to open it on a timer — the one
         // that can be solved again here can be solved again anywhere.
         const link = canSolveAgain
-          ? shareLinkFor(window.location.origin, { scrambles: [scramble], targetMs: resultMs })
+          ? shareLinkFor(window.location.origin, {
+              scrambles: [scramble],
+              targetMs: resultMs,
+              puzzle: solve.puzzle,
+            })
           : null;
         const message =
           link === null

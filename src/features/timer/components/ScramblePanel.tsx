@@ -3,6 +3,7 @@ import { CubeDiagram } from '../../../components/CubeDiagram';
 import { CloseIcon } from '../../../components/Icons';
 import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { parseAlg } from '../../../domain/cube/notation';
+import { TWISTY_PUZZLE, type SupportedPuzzle } from '../../../domain/puzzle/puzzles';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import {
@@ -22,6 +23,8 @@ import { strings } from '../../../lib/strings';
 import type { TwistyPlayerElement } from '../../../types/twisty';
 
 interface ScramblePanelProps {
+  /** The cube the scramble is for. */
+  puzzle: SupportedPuzzle;
   scramble: string | null;
   error: string | null;
   onRetry: () => void;
@@ -47,6 +50,7 @@ interface ScramblePanelProps {
  * scramble and hands the picture back once it has been played to the end.
  */
 export const ScramblePanel = memo(function ScramblePanel({
+  puzzle,
   scramble,
   error,
   onRetry,
@@ -56,7 +60,9 @@ export const ScramblePanel = memo(function ScramblePanel({
   onUnpin,
 }: ScramblePanelProps) {
   const [mode] = useSetting('ui.twistyMode');
-  const [isPreviewShown] = useSetting('timer.showScramblePreview');
+  const [isPreviewWanted] = useSetting('timer.showScramblePreview');
+  // The app's own model is a 3×3; another cube's scramble is its moves alone.
+  const isPreviewShown = isPreviewWanted && puzzle === '333';
   const skin = useCubeSkin();
   // Tied to the scramble: a new one means a new cube to look at, not the
   // previous animation still running.
@@ -94,7 +100,7 @@ export const ScramblePanel = memo(function ScramblePanel({
       ) : (
         <>
           {scramble === null ? (
-            <ScramblePlaceholder />
+            <ScramblePlaceholder puzzle={puzzle} />
           ) : (
             /* The scramble itself is what is tapped to change it: a pencil
                beside it would be one more control on the one screen that must
@@ -148,6 +154,7 @@ export const ScramblePanel = memo(function ScramblePanel({
             <div className="scramble__stage" {...tap}>
               {isWatching ? (
                 <SpatialPreview
+                  puzzle={puzzle}
                   scramble={scramble}
                   request={playback.request}
                   onMove={setPlayingMove}
@@ -201,8 +208,11 @@ function ScrambleMoves({
   );
 }
 
-/** A scramble's worth of moves: 3×3 random-state scrambles run 19 to 21. */
-const PLACEHOLDER_MOVES = Array.from({ length: 20 }, () => 'R2 ');
+/**
+ * A scramble's worth of moves: 3×3 random-state scrambles run 19 to 21, the
+ * 2×2's eleven.
+ */
+const PLACEHOLDER_LENGTH: Readonly<Record<SupportedPuzzle, number>> = { '333': 20, '222': 11 };
 
 /**
  * What stands in while the first scramble is generated: the words, over an
@@ -210,12 +220,12 @@ const PLACEHOLDER_MOVES = Array.from({ length: 20 }, () => 'R2 ');
  * that the scramble then grew out of pushed the clock and the list down the
  * screen a second into every visit — the largest layout shift the app had.
  */
-function ScramblePlaceholder() {
+function ScramblePlaceholder({ puzzle }: { puzzle: SupportedPuzzle }) {
   return (
     <div className="scramble__placeholder">
       <p className="scramble__text scramble__moves" aria-hidden="true">
-        {PLACEHOLDER_MOVES.map((move, index) => (
-          <span key={index}>{move}</span>
+        {Array.from({ length: PLACEHOLDER_LENGTH[puzzle] }, (_, index) => (
+          <span key={index}>R2 </span>
         ))}
       </p>
       <p className="scramble__text scramble__loading">{strings.scramble.loading}</p>
@@ -237,12 +247,14 @@ function stateAfter(scramble: string) {
  * this brings the whole of cubing/twisty with it.
  */
 function SpatialPreview({
+  puzzle,
   scramble,
   request,
   onMove,
   onStopped,
   placeholder,
 }: {
+  puzzle: SupportedPuzzle;
   scramble: string;
   request: PlaybackRequest;
   onMove: (index: number | null) => void;
@@ -276,7 +288,7 @@ function SpatialPreview({
       <twisty-player
         ref={player}
         className="scramble__player"
-        puzzle="3x3x3"
+        puzzle={TWISTY_PUZZLE[puzzle]}
         alg={scramble}
         experimental-setup-anchor="start"
         visualization="3D"

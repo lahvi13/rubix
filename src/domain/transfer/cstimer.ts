@@ -151,6 +151,9 @@ export function planCsTimerImport(
     let duplicates = 0;
     let withPhases = 0;
     let phasesDropped = 0;
+    // The phases are the 3×3 method's. Another cube's session is timed in a
+    // method without any, so whatever csTimer split it into stays behind.
+    const kept = session.puzzle === '333' ? phaseCount : null;
 
     for (const solve of session.solves) {
       const key = csTimerSolveKey(solve.rawMs, solve.startedAt);
@@ -160,7 +163,7 @@ export function planCsTimerImport(
       }
       seen.add(key);
       solves.push(solve);
-      if (solve.phaseCount === phaseCount) withPhases += 1;
+      if (solve.phaseCount === kept) withPhases += 1;
       else if (solve.phaseCount > 1) phasesDropped += 1;
     }
 

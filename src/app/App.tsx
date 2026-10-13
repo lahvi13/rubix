@@ -13,11 +13,13 @@ import { useCubeSkin } from '../hooks/use-cube-skin';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
 import { useBackToClose } from '../hooks/use-back-to-close';
 import { useKeyCapture } from '../hooks/use-key-capture';
+import { usePuzzle } from '../hooks/use-puzzle';
 import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute, type Route } from './router';
 import { MoreSheet } from './MoreSheet';
+import { PuzzleSheet, PuzzleSwitch } from './PuzzleSwitch';
 import { TabBar } from './TabBar';
 import { isTab, tabRoutes } from './tab-routes';
 import { useBarScroll } from './use-bar-scroll';
@@ -29,6 +31,18 @@ import { UpdatePrompt } from './UpdatePrompt';
 
 /** Where the menu's groups begin, after the first. */
 const RULE_BEFORE: ReadonlySet<Route> = new Set<Route>(['history', 'settings', 'about']);
+
+/** The screens that are about a cube. Settings, data and the app itself are not. */
+const PUZZLE_ROUTES: ReadonlySet<Route> = new Set<Route>([
+  'timer',
+  'learn',
+  'trainer',
+  'drill',
+  'history',
+  'stats',
+]);
+
+const LEARNING_ROUTES: ReadonlySet<Route> = new Set<Route>(['learn', 'trainer', 'drill']);
 
 export function App() {
   const route = useRoute();
@@ -46,6 +60,8 @@ export function App() {
   const tabs = tabRoutes(showLearn);
   const beyondBar = menu.filter((target) => !isTab(target, tabs));
   const [isMoreOpen, setMoreOpen] = useState(false);
+  const [puzzle, setPuzzle] = usePuzzle();
+  const [isPuzzleOpen, setPuzzleOpen] = useState(false);
   const isBarShown = useBarScroll(route);
   // Applied here because this is the one component that is always mounted.
   useAppearance();
@@ -71,11 +87,19 @@ export function App() {
           <span aria-hidden="true">☰</span>
         </button>
 
-        <h1 className="app__title">
-          {strings.appName}
-          <span className="app__route">{strings.nav[route]}</span>
-        </h1>
-        <div className="app__header-slot" ref={setHeaderSlot} />
+        {/* The name and a screen's own controls share what the cube's switch
+            leaves; when the controls do not fit beside the name they go under
+            it, and the switch keeps its corner either way. */}
+        <div className="app__heading">
+          <h1 className="app__title">
+            <span className="app__name">{strings.appName}</span>
+            <span className="app__route">{strings.nav[route]}</span>
+          </h1>
+          <div className="app__header-slot" ref={setHeaderSlot} />
+        </div>
+        {PUZZLE_ROUTES.has(route) ? (
+          <PuzzleSwitch puzzle={puzzle} onOpen={() => setPuzzleOpen(true)} />
+        ) : null}
 
         {isMenuOpen ? (
           <>
@@ -119,12 +143,26 @@ export function App() {
             the first load pays for everything in it. The service worker has
             the chunks cached, so the blank moment is a frame, not a wait. */}
         <Suspense fallback={null}>
-        {route === 'timer' ? <TimerScreen /> : null}
-        {route === 'learn' ? <LearnScreen /> : null}
-        {route === 'history' ? <HistoryScreen /> : null}
-        {route === 'stats' ? <StatsScreen /> : null}
-        {route === 'trainer' ? <TrainerScreen /> : null}
-        {route === 'drill' ? <DrillScreen /> : null}
+        {/* Keyed by the cube: another cube's timer is another timer, and the
+            time left under the clock or the solves ticked in the history
+            belong to the one before. */}
+        {route === 'timer' ? <TimerScreen key={puzzle} /> : null}
+        {route === 'history' ? <HistoryScreen key={puzzle} /> : null}
+        {route === 'stats' ? <StatsScreen key={puzzle} /> : null}
+        {/* The guide, the sets and the drills are the 3×3's so far. Said on
+            the screen rather than taken off the bar: tabs that come and go
+            with the cube would move the ones that stay. */}
+        {!LEARNING_ROUTES.has(route) ? null : puzzle !== '333' ? (
+          <main className="screen screen--scroll">
+            <p className="solves__empty">{strings.puzzle.nothingYet(strings.puzzle.names[puzzle])}</p>
+          </main>
+        ) : (
+          <>
+            {route === 'learn' ? <LearnScreen /> : null}
+            {route === 'trainer' ? <TrainerScreen /> : null}
+            {route === 'drill' ? <DrillScreen /> : null}
+          </>
+        )}
         {route === 'settings' ? <SettingsScreen /> : null}
         {route === 'data' ? <DataScreen /> : null}
         {route === 'about' ? <AboutScreen /> : null}
@@ -146,6 +184,11 @@ export function App() {
           faces={skin.faces}
           onClose={() => setMoreOpen(false)}
         />
+      ) : null}
+      {/* Out here rather than in the header beside its button: the header is a
+          layer of its own, and a sheet inside it would lie under the tab bar. */}
+      {isPuzzleOpen ? (
+        <PuzzleSheet puzzle={puzzle} onPick={setPuzzle} onClose={() => setPuzzleOpen(false)} />
       ) : null}
 
       <ErrorBanner />

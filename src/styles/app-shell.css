@@ -55,12 +55,37 @@
   pointer-events: auto;
 }
 
+/*
+ * "Rubix" and the screen's name, on one line — and the screen's name alone
+ * when the line is too short for both, which it is on a phone with large text
+ * once the cube's switch and the drill's tabs want the same row. The app's
+ * name is the one that can go: a name cut off halfway reads as a fault, and
+ * which screen this is cannot be left out.
+ *
+ * Done by wrapping rather than by measuring. The line is laid out from the
+ * right with the screen's name first, so what does not fit — the app's name —
+ * wraps to a second line, and the box is one line tall and clipped. Clipped
+ * rather than hidden: a box that scrolls has no smallest width, and the
+ * screen's name is what this one must never be narrower than.
+ */
 .app__title {
+  flex: 1 1 0;
   display: flex;
+  flex-flow: row-reverse wrap;
+  justify-content: flex-end;
   align-items: baseline;
+  /* The row gap is wider than the padding, so the wrapped line starts
+     outside the clip instead of showing its top edge inside it. */
   gap: var(--space-4);
-  margin: 0;
-  margin-inline-end: auto;
+  box-sizing: content-box;
+  height: 1lh;
+  /* Room for the accents on a capital, which stand above the line. */
+  padding-block: var(--space-2);
+  overflow: clip;
+  /* A line as tall as the buttons beside it, so one row is one height
+     whatever it holds. */
+  margin: calc((2.5rem - 1lh) / 2 - var(--space-2)) 0;
+  white-space: nowrap;
   font-size: var(--text-xl);
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -70,6 +95,8 @@
 
 /* The screen name, now that the tabs no longer say where you are. */
 .app__route {
+  /* First in the line's order, so it is the one that stays; see above. */
+  order: -1;
   color: var(--text);
 }
 

@@ -7,6 +7,8 @@ import {
 } from '../../../db/repositories/cstimer-repository';
 import { getMethodPhases } from '../../../db/repositories/method-repository';
 import { DEFAULT_METHOD_ID, activateSession } from '../../../db/repositories/session-repository';
+import { SUPPORTED_PUZZLES, supportedPuzzle } from '../../../domain/puzzle/puzzles';
+import { switchPuzzle } from '../../../hooks/use-puzzle';
 import {
   parseCsTimerCsv,
   parseCsTimerJson,
@@ -44,8 +46,8 @@ export interface CsTimerOutcome {
   imported: number;
   skipped: SkippedRow[];
   /**
-   * The imported sessions the timer can be switched to. Only 3×3: the timer
-   * times nothing else, and an import never switches by itself — somebody
+   * The imported sessions the timer can be switched to: those of a cube the
+   * app can be switched to. An import never switches by itself — somebody
    * part-way through a session must not find their next solve elsewhere.
    */
   sessions: CsTimerImported['sessions'];
@@ -123,7 +125,9 @@ export function useCsTimerImport(): CsTimerImportView {
       setOutcome({
         imported: imported.written,
         skipped: plan.skipped,
-        sessions: imported.sessions.filter((session) => session.puzzle === '333'),
+        sessions: imported.sessions.filter((session) =>
+          SUPPORTED_PUZZLES.some((supported) => supported === session.puzzle),
+        ),
         switchedTo: null,
       });
     } catch (cause) {
@@ -135,6 +139,9 @@ export function useCsTimerImport(): CsTimerImportView {
   const switchTo = async (sessionId: string): Promise<void> => {
     try {
       await activateSession(sessionId);
+      // Its cube too, or the timer would go on showing the other one's session.
+      const puzzle = outcome?.sessions.find((session) => session.id === sessionId)?.puzzle;
+      if (puzzle !== undefined) switchPuzzle(supportedPuzzle(puzzle));
       setOutcome((current) => (current === null ? null : { ...current, switchedTo: sessionId }));
     } catch (cause) {
       reportError(strings.cstimer.failed, cause);

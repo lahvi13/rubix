@@ -73,6 +73,35 @@ describe('schema upgrades', () => {
     await Dexie.delete(name);
   });
 
+  it("moves another cube's sessions out of CFOP when v9 lets the app switch cubes", async () => {
+    const name = 'rubix-upgrade-v9';
+    const v8 = new Dexie(name);
+    v8.version(8).stores({
+      sessions: 'id, puzzle, mode, updatedAt, [puzzle+mode+isActive], [mode+isArchived]',
+    });
+    await v8.table('sessions').bulkAdd([
+      { id: 'cube', puzzle: '333', mode: 'freestyle', methodId: 'cfop', updatedAt: 1 },
+      { id: 'blocks', puzzle: '333', mode: 'freestyle', methodId: 'roux', updatedAt: 1 },
+      { id: 'pocket', puzzle: '222', mode: 'freestyle', methodId: 'cfop', updatedAt: 1 },
+      { id: 'pyramid', puzzle: 'pyram', mode: 'freestyle', methodId: 'cfop', updatedAt: 1 },
+    ]);
+    v8.close();
+
+    const upgraded = new RubixDB(name);
+    const sessions = await upgraded.sessions.toArray();
+    expect(Object.fromEntries(sessions.map((session) => [session.id, session.methodId]))).toEqual({
+      cube: 'cfop',
+      blocks: 'roux',
+      pocket: '222',
+      pyramid: 'pyram',
+    });
+    // Only the rows that changed count as changed.
+    expect(sessions.find((session) => session.id === 'cube')?.updatedAt).toBe(1);
+    expect(sessions.find((session) => session.id === 'pocket')?.updatedAt).toBeGreaterThan(1);
+    upgraded.close();
+    await Dexie.delete(name);
+  });
+
   it('starts every case stored before v6 as new', async () => {
     const name = 'rubix-upgrade-v6';
     const v5 = new Dexie(name);

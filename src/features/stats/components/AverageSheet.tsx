@@ -1,5 +1,6 @@
 import { Sheet } from '../../../components/Sheet';
 import { useShareCard } from '../../../hooks/use-share-card';
+import type { SupportedPuzzle } from '../../../domain/puzzle/puzzles';
 import { shareLinkFor } from '../../../domain/scramble/share-link';
 import { averageCard, averageCardFilename } from '../average-card';
 import { formatAverage, formatDate, formatMs, formatResult } from '../../../lib/format';
@@ -8,6 +9,8 @@ import type { AverageWindowView } from '../hooks/use-session-stats';
 
 interface AverageSheetProps {
   view: AverageWindowView;
+  /** The cube the solves were timed on, for the link that shares their scrambles. */
+  puzzle: SupportedPuzzle;
   /** The method the averages are read in, named where it needs saying — see `useMethodLabel`. */
   methodName?: string | null;
   onOpenSolve: (id: string) => void;
@@ -19,7 +22,13 @@ interface AverageSheetProps {
  * the way csTimer writes it, and the quickest way to see why an ao5 is not
  * simply the mean of the five times on it.
  */
-export function AverageSheet({ view, methodName = null, onOpenSolve, onClose }: AverageSheetProps) {
+export function AverageSheet({
+  view,
+  puzzle,
+  methodName = null,
+  onOpenSolve,
+  onClose,
+}: AverageSheetProps) {
   const title = strings.stats.windowTitle(view.at, view.n);
   const card = useShareCard();
   const first = view.solves[0]?.createdAt;
@@ -75,6 +84,7 @@ export function AverageSheet({ view, methodName = null, onOpenSolve, onClose }: 
             const link = shareLinkFor(window.location.origin, {
               scrambles: view.solves.map((solve) => solve.scramble),
               targetMs: average,
+              puzzle,
             });
             const message =
               link === null

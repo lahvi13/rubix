@@ -22,7 +22,9 @@ import {
   usePinnedScramble,
 } from '../../../hooks/use-pinned-scramble';
 import { useBackToClose } from '../../../hooks/use-back-to-close';
+import { useGoalMs } from '../../../hooks/use-goal';
 import { usePull } from '../../../hooks/use-pull';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useRecordsOf } from '../../../hooks/use-session-records';
 import { useSessionSolves } from '../../../hooks/use-session-solves';
 import { useSetting } from '../../../hooks/use-setting';
@@ -32,7 +34,6 @@ import { ScrambleSheet } from './ScrambleSheet';
 import { SolveList } from './SolveList';
 import { TimerDisplay, type TimerNote } from '../../../components/TimerDisplay';
 
-const PUZZLE = '333';
 const MODE = 'freestyle';
 const EMPTY_PHASES: never[] = [];
 
@@ -93,8 +94,9 @@ function noteFor(note: ResultNote, phases: readonly MethodPhase[]): TimerNote {
 }
 
 export function TimerScreen() {
-  const session = useActiveSession(PUZZLE, MODE);
-  const scramble = useScramble(PUZZLE);
+  const [puzzle] = usePuzzle();
+  const session = useActiveSession(puzzle, MODE);
+  const scramble = useScramble(puzzle);
   const pinned = usePinnedScramble();
   // What the next attempt is timed on: one put here by hand or taken from the
   // history, or else the generated one, which waits underneath until then.
@@ -105,7 +107,7 @@ export function TimerScreen() {
   const [splitMode, setSplitMode] = useSetting('timer.splitMode');
   const [runningDisplay] = useSetting('timer.runningDisplay');
   // Set on the stats screen; 0 there means no goal.
-  const [goalSetting] = useSetting('stats.goalMs');
+  const [goalSetting] = useGoalMs(puzzle);
   const methodPhases = usePhases(session?.methodId ?? null);
   const methodLabel = useMethodLabel(session);
 
@@ -188,7 +190,7 @@ export function TimerScreen() {
       saveSolve(
         {
           sessionId: session.id,
-          puzzle: PUZZLE,
+          puzzle,
           mode: MODE,
           // A missing scramble must not cost the user the time itself.
           scramble: current ?? '',
@@ -208,7 +210,7 @@ export function TimerScreen() {
         },
       );
     },
-    [session, scramble, current, wasPinned, scrambleSource, challenge, phaseKeys, saveSolve],
+    [session, puzzle, scramble, current, wasPinned, scrambleSource, challenge, phaseKeys, saveSolve],
   );
 
   const timer = useTimer(handleComplete, { phases: phaseKeys });
@@ -238,7 +240,7 @@ export function TimerScreen() {
   // Read once for both the records and the numbers under the list — see
   // useSessionSolves for why not twice.
   const sessionSolves = useSessionSolves(session?.id ?? null);
-  const records = useRecordsOf(sessionSolves, PUZZLE, listedPhaseKeys, session?.methodId ?? null);
+  const records = useRecordsOf(sessionSolves, puzzle, listedPhaseKeys, session?.methodId ?? null);
   const showBrowsing = isBrowsing && status === 'idle';
   const { panel: sheetPanel, slot: sheetSlot, isSheet } = useSheetMotion(
     showBrowsing,
@@ -339,6 +341,7 @@ export function TimerScreen() {
           only out of sight: nothing covered should take a Tab or be read out. */}
       <div className="scramble-slot" inert={showBrowsing}>
         <ScramblePanel
+          puzzle={puzzle}
           scramble={current}
           error={pinned === null ? scramble.error : null}
           onRetry={scramble.next}

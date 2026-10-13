@@ -19,9 +19,9 @@ Původně to byl osobní nástroj pro autora a pár známých; z veřejného pro
   návštěvy, proto timer na iOS po pár solvech vyzve k přidání na plochu; připomínka
   zálohy hlídá zbytek
 - **zpětná vazba** jde přes mail na obrazovce About (předmět nese verzi a commit)
-- **jen 3×3.** Další disciplína se přidává až na výslovnou poptávku;
-  datový model (`puzzle`) s ní počítá. Návrh, jak na 2×2 a další metody, je
-  ve fázi 7
+- **3×3 a 2×2.** Kostka se přepíná tlačítkem v hlavičce a jde za ní celá
+  aplikace (fáze 7, „2×2 — rozhodnuto 2026-10-13“). Další disciplína se přidává
+  až na výslovnou poptávku; datový model (`puzzle`) s ní počítá
 - **anglicky a česky.** Jazyk je volba zařízení (`localStorage`, přepínač v Nastavení),
   ne součást dat: uložené solvy, session ani export žádný jazyk nenesou a soubor
   zálohy je mezi jazyky přenosný. Další jazyk znamená další soubor v `src/lib/strings/`
@@ -1070,7 +1070,7 @@ ani `isCustom: 1`.
 ```jsonc
 {
   "format": "rubix-export",
-  "formatVersion": 3,
+  "formatVersion": 5,
   "exportedAt": 1756684800000,
   "appVersion": "0.4.0",
   "dbVersion": 1,
@@ -1086,7 +1086,7 @@ ani `isCustom: 1`.
 Import validuje `formatVersion` a odmítne novější, než umí. Migrace starších
 formátů žije v `src/db/migrations/import/`. Verze 2 přibyla s `scrambleSource`
 (DB v5); upgrade z 1 doplní chybějící `scrambleSource` i `label` u případů,
-který DB v3 přidala bez změny formátu — zálohy z doby před ním jinak nešly obnovit. Verze 3 přibyla s `progress` u případů (DB v6); upgrade z 2 ho doplní jako `'new'`. Verze 4 přibyla se `scrambleSource: 'shared'`; upgrade z 3 soubor nemění, číslo se zvedlo, aby starší aplikace takový soubor odmítla jako novější, ne jako poškozený.
+který DB v3 přidala bez změny formátu — zálohy z doby před ním jinak nešly obnovit. Verze 3 přibyla s `progress` u případů (DB v6); upgrade z 2 ho doplní jako `'new'`. Verze 4 přibyla se `scrambleSource: 'shared'`; upgrade z 3 soubor nemění, číslo se zvedlo, aby starší aplikace takový soubor odmítla jako novější, ne jako poškozený. Verze 5 přibyla s přepínáním kostek (DB v9): session patří metodě vlastní kostky, takže upgrade ze 4 přepíše sessionům jiných kostek než 3×3 metodu `cfop` na metodu jejich kostky — do té doby se tak zapisovala každá session, i 2×2 z importu csTimeru.
 
 ## 5. Obrazovky
 
@@ -1235,6 +1235,46 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
 → *Použitelné jako: analýza slabé fáze.*
 
 ### Fáze 7 — Další metody a další kostky (Roux je hotový, ZZ se staví, zbytek je návrh)
+
+**2×2 — rozhodnuto 2026-10-13, staví se v tomto pořadí:**
+
+Autor 2×2 skládá po vrstvách a chce se doučit Ortegu; obsah se bere od J Perma.
+
+- **Kostka se přepíná na jednom místě: tlačítkem v pravém rohu hlavičky** vedle
+  názvu obrazovky. Ukazuje zvolenou kostku a otevírá seznam jako sheet, takže
+  další kostka je jen další řádek. Je na obrazovkách, které se kostky týkají
+  (timer, průvodce, trenažér, dril, historie, statistiky), a během solvu na něj
+  nejde ťuknout. Zamítnuto: Nastavení (kostka je to, co má člověk zrovna v ruce,
+  ne věc nastavená jednou) a přepínač ve výběru session, ve Více nebo jako řádek
+  v průvodci.
+- **Volba je jedna pro celou aplikaci** (`ui.puzzle`, jen pro tohle zařízení).
+  Timer, historie a statistiky ukazují sessiony zvolené kostky; aktivní session
+  se vede pro každou kostku zvlášť, takže přepnutí zpátky vrátí tam, kde člověk
+  skončil. Cíl ve statistikách má každá kostka svůj (`stats.goalMs`,
+  `stats.goalMs.222`). Sdílený odkaz na scramble nese kostku (`puzzle=222`,
+  bez parametru je to 3×3) a aplikaci na ni přepne.
+- **Průvodce jde za kostkou**, není to čtvrté tlačítko vedle CFOP / Roux / ZZ.
+  Na 2×2 má řádek metod dva průvodce: **po vrstvách** a **Ortega**.
+- **Bez fází.** Solve trvá pár vteřin. 2×2 session se měří v jediné seedované
+  metodě `222` s prázdným seznamem fází — jedna na kostku, ne jedna na způsob
+  skládání: bez fází metoda na měření nic nemění a PB, který by s Ortegou začal
+  od nuly, by PB nebyl. Kdo chce srovnat po vrstvách s Ortegou, založí si dvě
+  sessiony.
+- **Hlavička na telefonu.** Tlačítko drží roh vždycky; název obrazovky a její
+  vlastní ovládání (záložky drilu) se dělí o zbytek řádku. Když se vedle sebe
+  nevejdou, ustoupí slovo „Rubix“ — a teprve pak jdou záložky pod název.
+
+Pořadí:
+
+1. **Přepínač a timer, historie, statistiky pro 2×2** — hotovo. Scramble je
+   zatím jen text; průvodce, trenažér a dril na 2×2 říkají, že pro ni zatím nic
+   nemají. DB v9 a formát exportu 5 přesouvají starší 2×2 sessiony z `cfop`.
+2. **Kreslení 2×2** z rohů stávajícího modelu: náhled scramblu a diagramy případů.
+3. **Průvodce** (po vrstvách → Ortega) a sady **OLL 7 + PBL 5** v trenažéru,
+   ověřené spuštěním jako ostatní sady.
+4. **Dril a 3D přehrávání** v barvách 3×3 (jde to, viz průzkum PG3D).
+
+CLL a EG se neplánují, dokud Ortega nepůjde z ruky.
 
 **Roux — rozhodnuto 2026-10-09, staví se v tomto pořadí:**
 
@@ -1653,21 +1693,21 @@ průměry fází a jejich barvy (přidělené podle pořadí, ne jména) snesou 
 počet fází. Model kostky zná slice (`M`), wide (`r`) tahy i rotace. Scramble pro
 2×2 a další disciplíny umí cubing.js stejně jako pro 3×3.
 
-**Co je dnes natvrdo 3×3 CFOP:** `const PUZZLE = '333'` na sedmi obrazovkách
-(timer, historie, statistiky, výběr session, drilly), nová session dostává
-`methodId: 'cfop'`, trenažér (pořadí a úrovně sad, `diagramFor`, ověřování sad
-v `packs.test.ts`), cross drill s vlastním solverem a průvodce pro začátečníky.
-Import z csTimeru už dnes natáhne i 2×2, 4×4, pyraminx… sessiony — v databázi
-jsou, jen je žádná obrazovka neukáže.
+**Co je dnes natvrdo 3×3:** trenažér (pořadí a úrovně sad, `diagramFor`,
+ověřování sad v `packs.test.ts`), oba drilly (`const PUZZLE = '333'`), cross
+drill s vlastním solverem, průvodce pro začátečníky a kreslení kostky. Timer,
+historie, statistiky a výběr session jdou od 2026-10-13 za zvolenou kostkou
+(viz „2×2 — rozhodnuto“ výš) a nová session dostává metodu své kostky.
+Import z csTimeru natáhne i 4×4, pyraminx… sessiony — v databázi jsou, jen je
+žádná obrazovka neukáže, dokud jejich kostka nepřibude do přepínače.
 
 **Postup, každý krok použitelný sám o sobě:**
 
-1. **Volba disciplíny a metody** (nejdřív kostka, pak metoda, která k ní patří;
-   dělat obojí najednou, ať se nastavení nepředělává dvakrát). Výchozí metoda
-   v Nastavení, nové sessiony ji převezmou; **existující session si metodu
-   nechává** — její splity patří k fázím, pod kterými byly změřeny. Timer,
-   historie a statistiky pro zvolenou disciplínu fungují samy; jiné kostky než 3×3
-   mají zatím jen textový scramble. Rozsah zhruba jedno sezení.
+1. **Volba disciplíny a metody** — hotovo 2026-10-13, jinak než tu stálo:
+   kostka se volí v hlavičce, ne v Nastavení, a metoda zůstává u formuláře nové
+   session (viz „2×2 — rozhodnuto“ výš). **Existující session si metodu
+   nechává** — její splity patří k fázím, pod kterými byly změřeny. Jiné kostky
+   než 3×3 mají zatím jen textový scramble.
 2. **Náhled scramblu 2×2 ve vlastním skinu.** 2×2 se chová jako rohy 3×3 (R na 2×2
    udělá s rohy totéž co R na 3×3), takže stačí stávající model a kreslit jen
    rohové nálepky — rozvin a pohled od rohu v mřížce 2×2. Háček: 3D animaci 2×2

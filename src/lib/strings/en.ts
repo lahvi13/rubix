@@ -208,6 +208,27 @@ export const en = {
     more: 'More',
     screens: 'Screens',
   },
+  puzzle: {
+    /** Over the list the header's button opens. */
+    title: 'Cube',
+    /** The button itself, read out: it shows only the cube's name. */
+    switch: (name: string) => `Cube: ${name}. Switch cube`,
+    /** By WCA name. Wider than the switch: a csTimer import names them all. */
+    names: {
+      '333': '3×3',
+      '222': '2×2',
+      '444': '4×4',
+      '555': '5×5',
+      pyram: 'Pyraminx',
+      skewb: 'Skewb',
+      sq1: 'Square-1',
+      clock: 'Clock',
+      minx: 'Megaminx',
+    },
+    /** On the guide, the trainer and the drill of a cube that has none yet. */
+    nothingYet: (name: string) =>
+      `Nothing for the ${name} here yet. The timer, the history and the stats already work for it.`,
+  },
   stats: {
     empty: 'No solves in this session yet.',
     emptyAll: 'No solves yet.',
@@ -1101,18 +1122,6 @@ export const en = {
       `Imported ${count} ${count === 1 ? 'solve' : 'solves'} from csTimer.`,
     whereToFind:
       'Imported sessions are behind the session name at the top of the timer, the history and the stats — pick one there to see its solves.',
-    /** The puzzle a csTimer session was timed on, by its WCA name. */
-    puzzles: {
-      '333': '3×3',
-      '222': '2×2',
-      '444': '4×4',
-      '555': '5×5',
-      pyram: 'Pyraminx',
-      skewb: 'Skewb',
-      sq1: 'Square-1',
-      clock: 'Clock',
-      minx: 'Megaminx',
-    },
     switchTo: (name: string) => `Switch to “${name}”`,
     switchedTo: (name: string) => `The timer, history and stats now show “${name}”.`,
     skippedTitle: 'Rows that were skipped',

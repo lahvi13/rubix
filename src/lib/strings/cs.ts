@@ -189,6 +189,23 @@ export const cs: Strings = {
     more: 'Více',
     screens: 'Obrazovky',
   },
+  puzzle: {
+    title: 'Kostka',
+    switch: (name: string) => `Kostka: ${name}. Přepnout kostku`,
+    names: {
+      '333': '3×3',
+      '222': '2×2',
+      '444': '4×4',
+      '555': '5×5',
+      pyram: 'Pyraminx',
+      skewb: 'Skewb',
+      sq1: 'Square-1',
+      clock: 'Clock',
+      minx: 'Megaminx',
+    },
+    nothingYet: (name: string) =>
+      `Pro ${name} tu zatím nic není. Timer, historie a statistiky už pro ni fungují.`,
+  },
   stats: {
     empty: 'V této session zatím nejsou žádná složení.',
     emptyAll: 'Zatím žádná složení.',
@@ -1019,17 +1036,6 @@ export const cs: Strings = {
       `${count} složení ${plural(count, 'importováno', 'importována', 'importováno')} z csTimeru.`,
     whereToFind:
       'Importované session najdeš pod názvem session nahoře na timeru, v historii a ve statistikách — vyber si tam některou a uvidíš její složení.',
-    puzzles: {
-      '333': '3×3',
-      '222': '2×2',
-      '444': '4×4',
-      '555': '5×5',
-      pyram: 'Pyraminx',
-      skewb: 'Skewb',
-      sq1: 'Square-1',
-      clock: 'Clock',
-      minx: 'Megaminx',
-    },
     switchTo: (name: string) => `Přepnout na „${name}“`,
     switchedTo: (name: string) => `Timer, historie i statistiky teď ukazují „${name}“.`,
     skippedTitle: 'Přeskočené řádky',
