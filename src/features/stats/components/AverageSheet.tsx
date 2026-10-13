@@ -8,6 +8,8 @@ import type { AverageWindowView } from '../hooks/use-session-stats';
 
 interface AverageSheetProps {
   view: AverageWindowView;
+  /** The method the averages are read in, named where it needs saying — see `useMethodLabel`. */
+  methodName?: string | null;
   onOpenSolve: (id: string) => void;
   onClose: () => void;
 }
@@ -17,7 +19,7 @@ interface AverageSheetProps {
  * the way csTimer writes it, and the quickest way to see why an ao5 is not
  * simply the mean of the five times on it.
  */
-export function AverageSheet({ view, onOpenSolve, onClose }: AverageSheetProps) {
+export function AverageSheet({ view, methodName = null, onOpenSolve, onClose }: AverageSheetProps) {
   const title = strings.stats.windowTitle(view.at, view.n);
   const card = useShareCard();
   const first = view.solves[0]?.createdAt;
@@ -81,7 +83,7 @@ export function AverageSheet({ view, onOpenSolve, onClose }: AverageSheetProps) 
                     strings.timer.challengeAverage(view.n, formatMs(average)),
                     link,
                   );
-            card.share(averageCard(view), averageCardFilename(view), message);
+            card.share(averageCard(view, methodName), averageCardFilename(view), message);
           }}
         >
           {card.isBusy ? strings.share.busy : strings.share.action}

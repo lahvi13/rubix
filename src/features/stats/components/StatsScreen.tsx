@@ -10,7 +10,7 @@ import { formatAverage, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { BackupReminder } from '../../data-transfer';
 import { SolveDetailSheet, useTags } from '../../history';
-import { SessionPicker, useActiveSession } from '../../sessions';
+import { SessionPicker, useActiveSession, useMethodLabel } from '../../sessions';
 import { PhaseAverages, useMethodName, usePhases } from '../../splits';
 import { useStatsScope } from '../hooks/use-stats-scope';
 import type { Average, AverageWindow } from '../../../domain/stats/averages';
@@ -144,6 +144,8 @@ function sessionBestTier(bestMs: number | null, pbMs: number | null): StatTier |
 
 export function StatsScreen() {
   const session = useActiveSession(PUZZLE, MODE);
+  // Named on what is shared from here, by the rule the timer goes by.
+  const methodLabel = useMethodLabel(session);
   // The method being timed in names the phases, and across sessions it is
   // also whose solves are read — see useSessionStats.
   const methodId = session?.methodId ?? null;
@@ -508,6 +510,7 @@ export function StatsScreen() {
       {windowView === null || openSolveId !== null ? null : (
         <AverageSheet
           view={windowView}
+          methodName={methodLabel}
           onOpenSolve={setOpenSolveId}
           onClose={() => setOpenWindow(null)}
         />

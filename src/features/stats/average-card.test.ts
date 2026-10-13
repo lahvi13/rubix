@@ -30,6 +30,13 @@ describe('averageCard', () => {
     expect(card.kicker).toBe('Best ao5');
   });
 
+  it('names the method up top where it is handed one', () => {
+    const solves = [row(12_000)];
+
+    expect(averageCard(view(solves), 'Roux').kicker).toBe('Best ao5 · Roux');
+    expect(averageCard(view(solves), null).kicker).toBe('Best ao5');
+  });
+
   it('writes a trimmed DNF the way csTimer does', () => {
     const card = averageCard(view([row(null, true), row(12_000)]));
     expect(card.detail).toBe('(DNF) 12.00');

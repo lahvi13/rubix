@@ -6,9 +6,11 @@ import type { AverageWindowView } from './hooks/use-session-stats';
 /**
  * An average as a picture, written the way cubers post one: the number, then
  * every time behind it with the trimmed ones in brackets — which is what makes
- * an ao5 checkable rather than just claimed.
+ * an ao5 checkable rather than just claimed. The method goes up top where the
+ * sender times in more than one, as on a single's picture: the averages are
+ * read one method at a time, and the picture travels without the app.
  */
-export function averageCard(view: AverageWindowView): ShareCard {
+export function averageCard(view: AverageWindowView, methodName: string | null = null): ShareCard {
   const first = view.solves[0]?.createdAt;
   const last = view.solves[view.solves.length - 1]?.createdAt;
   const dates =
@@ -19,7 +21,9 @@ export function averageCard(view: AverageWindowView): ShareCard {
         : `${formatDate(first)} – ${formatDate(last)}`;
 
   return {
-    kicker: strings.stats.windowTitle(view.at, view.n),
+    kicker: [strings.stats.windowTitle(view.at, view.n), methodName]
+      .filter((part) => part !== null)
+      .join(' · '),
     headline: formatAverage(view.average),
     badge: null,
     detail: view.solves
