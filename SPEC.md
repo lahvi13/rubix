@@ -1485,11 +1485,17 @@ Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
      nahoru nebo dolů, v prostřední vrstvě ta vpředu nebo vzadu — dvanáct
      „vnitřních“ míst (`isInnerPlace`). Žlutá nebo bílá tam znamená dobrou
      hranu, červená nebo oranžová špatnou, a u modré nebo zelené rozhodne
-     druhá nálepka té hrany: se žlutou nebo bílou je špatná. Každá odpověď je
-     **obrázek** (`rules`): kostka z rohu, ze kterého se drží, pokaždé s týmiž
-     šesti místy v dané dvojici barev (`readsPole`, `readsSide`, `readsFront`
-     — poslední i s druhou nálepkou). Text pojem kotví v tom, co čtenář zná z
-     CFOP (hrana poslední vrstvy bez žluté nahoře), a říká počítat po vrstvách.
+     druhá nálepka té hrany: se žlutou nebo bílou je špatná. Každá ze tří barev
+     je **obrázek s verdiktem a důvodem vedle** (`rules`), kostka z rohu, ze
+     kterého se drží: `readsPole`, `readsSide` a `readsFront` — ten kreslí jen
+     tři hrany, které jsou z toho rohu vidět celé, s druhou nálepkou žlutou
+     nebo bílou. První popisek navíc říká, **kam se dívat, po stěnách** (U a D
+     všechny čtyři hrany, F a B dvě vedle středu, R a L nic): obrázek ukáže tři
+     stěny ze šesti. Text říká, že barvy mají role podle středů a co na těch
+     místech má složená kostka, pojem kotví v tom, co čtenář zná z CFOP (hrana
+     poslední vrstvy bez žluté nahoře), a říká počítat po vrstvách. Proč
+     zrovna těch dvanáct míst, je v tipu: R, L, U a D z nich nálepku neodnesou
+     ani na ně nepřinesou, jen čtvrtotáčka F nebo B (hlídá test).
      Pod obrázky **příklad na vyzkoušení** (`figures`), třikrát tatáž
      rozvinutá kostka: s hranami a středy v barvách (`allEdges`) a sedmi tahy,
      kterými ji čtenář udělá ze složené; jen s tím, co se na ní čte
@@ -1503,14 +1509,22 @@ Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
      dvě sady míst, kde barva být nesmí (červená a oranžová na vnitřních
      místech, žlutá a bílá na ostatních) — logicky totéž co dnes, jenže každou
      hranu bylo potřeba porovnat s oběma obrázky, a autor se přes krok s
-     kostkou v ruce dostal jen stěží (2026-10-13). Obrázek pravidla zůstává i
+     kostkou v ruce dostal jen stěží (2026-10-13). Třetí měla tři obrázky s
+     holým verdiktem („žlutá nebo bílá: dobrá“) a autor se hned zeptal proč a
+     proti čemu se to porovnává — odtud důvod u každého verdiktu a stěny v
+     prvním popisku. Mezikrok s pěti obrázky (zvlášť složená kostka jako
+     měřítko, modrá se zelenou nadvakrát) autor zkrátil sám: když to říkají
+     popisky, stačí tři. Obrázek pravidla zůstává i
      se sbalenými vysvětlivkami — jeho věta je pravidlo, ne komentář
-   - **Oprava hran** — cíl napřed: čtyři špatné vpředu a `F`. Pak **jak je tam
-     dovézt**: každé místo vpředu má svou stěnu (horní U, pravé R, spodní D,
-     levé L), která jím otočí a ostatních tří se nedotkne, takže špatnou hranu
-     doveze stěna, na které leží (`R' F`). Má-li ta stěna vpředu špatnou už
-     teď, „odsuň, dovez, vrať“ (`R' U R F`); hranu vzadu, na kterou nestačí
-     ani to, přehodí `B2` (v tipu). Počty mají obrázek, kde nejsou čtyři: dvě →
+   - **Oprava hran** — cíl napřed: čtyři špatné na přední stěně a `F`. Pak
+     **jak je tam dostat**: špatná hrana mimo přední stěnu leží na U, R, D
+     nebo L, a tou stěnou se otočí dopředu — vystřídá jednu hranu přední
+     stěny, ostatní tři se nehnou (`R' F`). Vystřídala-li by jinou špatnou,
+     jde to na tři tahy: stěnou, na které leží, na jinou stěnu, tou dopředu, a
+     první stěnu zpátky (`R' U R F`); hranu vzadu, na kterou nestačí ani to,
+     přesune `B2` (v tipu). Text jmenuje stěny písmeny a říká „na přední
+     stěnu“: první znění s obraty „místo má svou stěnu“ a „odsuň, dovez, vrať“
+     autor vrátil jako těžkopádné — dovézt kam? Počty mají obrázek, kde nejsou čtyři: dvě →
      jedna vpředu se třemi dobrými, otáčka udělá čtyři; šest → tři vpředu s
      jednou dobrou, zbudou čtyři. Osm a dvanáct jsou čtyři a čtyři, deset jako
      šest. Špatná hrana je fialová **celá**, obě nálepky: z rohu kostky je

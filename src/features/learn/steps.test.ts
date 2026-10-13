@@ -539,12 +539,20 @@ describe('the ZZ guide', () => {
     }
   });
 
-  it('draws the three answers one sticker of an edge can give, a kind of colour to a picture', () => {
+  it('draws the three kinds of colour an edge can be read by, each with its verdict', () => {
     const rules = step('zz-bad-edges').rules ?? [];
 
     expect(rules.map((rule) => rule.stickering)).toEqual(['readsPole', 'readsSide', 'readsFront']);
     // From the corner the cube is held at, where top, front and side all show.
     expect(rules.map((rule) => rule.view)).toEqual(['isometric', 'isometric', 'isometric']);
+    // Every picture says good or bad in so many words, and which faces to
+    // look on — a picture shows three of the six, and with the explanations
+    // folded away each line stands alone. The first also rules out the sides.
+    for (const rule of rules) {
+      expect(rule.text).toMatch(/: (good|bad|dobrá|špatná)\./);
+      for (const face of ['U', 'D', 'F', 'B']) expect(rule.text).toMatch(new RegExp(`\\b${face}\\b`));
+    }
+    for (const face of ['R', 'L']) expect(rules[0]?.text).toContain(`(${face})`);
     // The step is a rule and a cube to try it on: nothing in it is turned.
     expect(allSituations(step('zz-bad-edges'))).toHaveLength(0);
   });

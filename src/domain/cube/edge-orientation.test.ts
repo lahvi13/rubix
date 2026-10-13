@@ -7,7 +7,7 @@ import {
   partnerOf,
 } from './edge-orientation';
 import { parseAlg } from './notation';
-import { FACELETS, applyAlg, solvedState } from './state';
+import { FACELETS, applyAlg, movePermutation, solvedState } from './state';
 
 function after(text: string) {
   const parsed = parseAlg(text);
@@ -152,6 +152,32 @@ describe('reading an edge by one sticker', () => {
       }
       expect(read).toBe(12);
     }
+  });
+
+  // Why those twelve places: the turns that turn no edge over keep them to
+  // themselves, and a quarter turn of the front or back does not.
+  it.each(['R', "R'", 'L', "L'", 'U', "U'", 'D', "D'", 'F2', 'B2'])(
+    '%s carries no sticker into the places an edge is read in, nor out of them',
+    (turn) => {
+      const parsed = parseAlg(turn);
+      if (!parsed.ok) throw new Error(turn);
+      for (const move of parsed.moves) {
+        for (const [to, from] of movePermutation(move).entries()) {
+          expect(isInnerPlace(to)).toBe(isInnerPlace(from));
+        }
+      }
+    },
+  );
+
+  it.each(['F', "F'", 'B', "B'"])('%s carries four stickers in and four out', (turn) => {
+    const parsed = parseAlg(turn);
+    if (!parsed.ok) throw new Error(turn);
+    const [move] = parsed.moves;
+    if (!move) throw new Error(turn);
+    const carried = [...movePermutation(move).entries()];
+
+    expect(carried.filter(([to, from]) => isInnerPlace(to) && !isInnerPlace(from))).toHaveLength(4);
+    expect(carried.filter(([to, from]) => !isInnerPlace(to) && isInnerPlace(from))).toHaveLength(4);
   });
 
   it('has no second sticker to ask about on a corner or a centre', () => {

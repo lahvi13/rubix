@@ -537,10 +537,12 @@ export const ZZ_STEPS: readonly LearnStep[] = [
     keyText: null,
     holds: [],
     situations: [],
-    // One sticker to an edge, and the three answers its colour can give: the
-    // same six places in every picture, so where to look is learnt by the
-    // third. The first version drew two sets of places a colour must not be
-    // in, and every edge had to be held against both.
+    // One sticker to an edge, and the three kinds of colour it can show: a
+    // picture each, with the reason beside the verdict — a verdict alone left
+    // the reader asking good against what. The first says where to look, by
+    // face, since a picture shows three of the six. The first version drew
+    // two sets of places a colour must not be in, and every edge had to be
+    // held against both.
     rules: [
       {
         view: 'isometric',

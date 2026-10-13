@@ -571,10 +571,12 @@ export const cs: Strings = {
       hide: 'Pak tohoto průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
     },
     zzRules: {
-      readsPole: 'Žlutá nebo bílá: dobrá.',
-      readsSide: 'Červená nebo oranžová: špatná.',
+      readsPole:
+        'Na každé hraně se čte jedna nálepka. Na horní (U) a spodní (D) stěně jsou to všechny čtyři hrany, na přední (F) a zadní (B) jen dvě – vlevo a vpravo od středu, na pravé (R) a levé (L) žádná. Je tam žlutá nebo bílá: dobrá. Na ta místa patří – hrana je otočená správně, i když ještě neleží na svém místě.',
+      readsSide:
+        'Červená nebo oranžová na týchž místech – na U a D, vedle středu na F a B: špatná. Na ta místa nepatří nikdy, takže hrana je přetočená.',
       readsFront:
-        'Modrá nebo zelená: rozhodne druhá nálepka té hrany. Žlutá nebo bílá na ní znamená špatnou, cokoli jiného dobrou.',
+        'Modrá nebo zelená na týchž místech – na U a D, vedle středu na F a B: rozhodne druhá nálepka té hrany, na sousední stěně. Je žlutá nebo bílá: špatná. Na čtené místo patřila ona. Je červená nebo oranžová: dobrá.',
     },
     zzFigures: {
       tryIt:
@@ -584,14 +586,14 @@ export const cs: Strings = {
       answer: 'Šest – ty fialové: dvě nahoře, dvě v prostřední vrstvě a dvě dole.',
     },
     zzSituations: {
-      fourOnFront: 'Čtyři špatné vpředu: jedna otáčka a všechny jsou dobré.',
+      fourOnFront: 'Čtyři špatné hrany na přední stěně: F a všechny čtyři jsou dobré.',
       gather:
-        "Tři vpředu, čtvrtá nahoře vpravo: leží na pravé stěně a ta má vpředu volno. R' ji sveze dolů. Pak otáčka.",
+        "Tři vpředu, čtvrtá nahoře vpravo. Leží na pravé stěně a vpředu vpravo je dobrá hrana: R' otočí tu špatnou dopředu. Pak F.",
       aside:
-        "Tři vpředu, čtvrtá vzadu vpravo, ale pravá stěna má vpředu plno: R' ji zvedne, U doveze dopředu a R vrátí, co odjelo. Pak otáčka.",
+        "Tři vpředu, čtvrtá vzadu vpravo. Vpředu vpravo už špatná je, takže na tři tahy: R' zvedne hranu nahoru, U ji otočí dopředu, R vrátí pravou stěnu. Pak F.",
       twoBad:
-        'Dvě špatné: jedna vpředu se třemi dobrými, druhá kdekoli jinde. Otáčka z nich udělá čtyři.',
-      sixBad: 'Šest špatných: tři vpředu s jednou dobrou. Po otáčce zbudou čtyři.',
+        'Dvě špatné: na přední stěnu dej jen jednu z nich, ke třem dobrým. F udělá ze dvou čtyři špatné a pokračuješ jako se čtyřmi.',
+      sixBad: 'Šest špatných: na přední stěnu dej tři, k jedné dobré. Po F zbudou čtyři.',
       crossTop: 'Bílá nahoře, nad středem své druhé barvy: půlotáčka tou stěnou.',
       crossMiddle: 'Bílá míří na tebe v prostřední vrstvě: spodek stranou, hranu dolů, spodek zpátky.',
       joined: 'Spojený a mimo stěnu slotu: zvedni slot, natoč pár nad něj a vrať ho.',
@@ -617,22 +619,23 @@ export const cs: Strings = {
         points: [
           'Žlutý střed nahoru, modrý dopředu – a tak kostka zůstane, dokud nejsou hotové první dvě vrstvy.',
           'Hrana je buď dobrá, nebo špatná – přetočená, jako hrana poslední vrstvy bez žluté nahoře. ZZ je spočítá všech dvanáct, než udělá cokoli jiného.',
-          'Na každé hraně čti jednu nálepku: nahoře a dole tu, která míří nahoru nebo dolů, v prostřední vrstvě tu vpředu nebo vzadu.',
-          'Její barva dá jednu ze tří odpovědí – jsou na obrázcích.',
-          'Počítej po vrstvách: čtyři hrany nahoře, čtyři uprostřed, čtyři dole. Špatných vyjde vždycky sudý počet. Zkus si to na kostce pod obrázky.',
+          'Barvy mají role podle středů: žlutá a bílá patří nahoru a dolů, modrá a zelená dopředu a dozadu, červená a oranžová do stran.',
+          'Na každé hraně čti jednu nálepku: nahoře a dole tu, která míří nahoru nebo dolů, v prostřední vrstvě tu vpředu nebo vzadu. Složená kostka má na těch místech jen žlutou a bílou a v prostřední vrstvě modrou a zelenou – červenou a oranžovou nikdy.',
+          'Hrana je dobrá, když je tam ta z jejích dvou barev, která tam patří: žlutá nebo bílá, a když je hrana nemá, modrá nebo zelená. Tři obrázky jsou všechno, co tam můžeš vidět.',
+          'Počítej po vrstvách: čtyři hrany nahoře, čtyři uprostřed, čtyři dole. Špatných vyjde vždycky sudý počet; je-li jich víc než dobrých, počítej ty dobré. Zkus si to na kostce pod obrázky.',
         ],
-        tip: 'je špatných víc než dobrých? Počítej ty dobré.',
+        tip: 'proč zrovna tahle místa? Tahy R, L, U a D z nich žádnou nálepku neodnesou a žádnou na ně nepřinesou – to umí jen čtvrtotáčka F nebo B. Špatná hrana se proto bez ní domů nedostane, a dobrá ji nepotřebuje.',
       },
       edgesGood: {
         title: 'Oprava hran',
         points: [
-          'Hrany přetočí jen čtvrtotáčka přední nebo zadní stěny – všechny čtyři na té stěně najednou, špatné na dobré a dobré na špatné. Každý jiný tah je jen přenáší: R, L, U, D a půlotáčky F2 a B2.',
-          'Čtyři špatné na přední stěně a F: všechny čtyři jsou dobré. To je celý krok – zbytek je, jak je tam dostat.',
-          'Každé místo vpředu má svou stěnu: horní U, pravé R, spodní D, levé L. Otoč jí a přijede tam jiná hrana, ostatní tři místa vpředu se nehnou. Špatnou hranu tedy doveze stěna, na které leží.',
-          'Má ta stěna vpředu už špatnou? Odsuň, dovez, vrať: otoč jí, ať hrana přejde na jinou stěnu, tou ji dovez dopředu a první stěnu vrať. Je to třetí obrázek.',
-          'Nejsou špatné čtyři? Dvě a šest mají svůj obrázek. Osm a dvanáct jsou čtyři a čtyři, deset jako šest.',
+          'Hranu přetočí jen čtvrtotáčka přední (F) nebo zadní (B) stěny – všechny čtyři hrany té stěny najednou, špatné na dobré a dobré na špatné. Ostatní tahy (R, L, U, D, F2, B2) hrany jen přesouvají.',
+          'Cíl: čtyři špatné hrany na přední stěně. Pak F a všechny čtyři jsou dobré.',
+          'Špatná hrana, která na přední stěně není, leží na horní (U), pravé (R), spodní (D) nebo levé (L) – někdy na dvou z nich. Otoč tou stěnou, až bude hrana vpředu. Vystřídá tam jednu hranu přední stěny; ostatní tři se nehnou.',
+          "Vystřídala by jinou špatnou hranu? Pak to chce tři tahy: stěnou, na které hrana leží, ji přesuň na jinou stěnu, tou ji otoč dopředu a první stěnu vrať zpátky. Na třetím obrázku je to R' U R.",
+          'Špatných hran může být i jiný počet než čtyři. Dvě a šest ukazují poslední dva obrázky. Osm nebo dvanáct opravuj po čtyřech. Deset začni jako šest: tři na přední stěnu k jedné dobré, po F jich zbude osm.',
         ],
-        tip: 'začni stěnou, na které už je špatných nejvíc – co obrázky dělají vpředu, funguje i vzadu s B. Hrana vzadu, která nejde dovézt ani takhle? B2 ji přehodí na druhou stranu.',
+        tip: 'totéž jde vzadu s B – začni tou z obou stěn, na které je špatných víc. Zbyla vzadu špatná hrana, která nejde dopředu ani na tři tahy? B2 ji přesune na druhou stranu.',
       },
       cross: {
         title: 'Cross',

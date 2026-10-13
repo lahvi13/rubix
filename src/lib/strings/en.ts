@@ -614,10 +614,12 @@ export const en = {
     },
     /* The two rules of the first step, each beside the cube that draws it. */
     zzRules: {
-      readsPole: 'Yellow or white: good.',
-      readsSide: 'Red or orange: bad.',
+      readsPole:
+        'One sticker of each edge is read. On the top (U) and bottom (D) faces that is all four edges; on the front (F) and back (B), only the two either side of the centre; on the right (R) and left (L), none. Yellow or white there: good. It belongs in those places — the edge is the right way round, even if it is not in its own place yet.',
+      readsSide:
+        'Red or orange in the same places — on U and D, beside the centre on F and B: bad. It never belongs in those places, so the edge is turned over.',
       readsFront:
-        "Blue or green: the edge's other sticker decides. Yellow or white there means bad; anything else, good.",
+        'Blue or green in the same places — on U and D, beside the centre on F and B: the other sticker of that edge decides, on the next face over. Yellow or white there: bad. It is the one that belonged in the place read. Red or orange there: good.',
     },
     zzFigures: {
       tryIt:
@@ -627,14 +629,14 @@ export const en = {
       answer: 'Six — the purple ones: two on top, two in the middle layer and two at the bottom.',
     },
     zzSituations: {
-      fourOnFront: 'Four bad on the front: one turn, and all four are good.',
+      fourOnFront: 'Four bad edges on the front face: F, and all four are good.',
       gather:
-        "Three on the front, the fourth on top at the right: it lies on the right side, and that side's place in front is free. R' carries it down. Then the turn.",
+        "Three on the front, the fourth on top at the right. It lies on the right face, and the front right edge is a good one: R' turns the bad edge to the front. Then F.",
       aside:
-        "Three on the front, the fourth at the back right, but the right side's place in front is taken: R' lifts it, U brings it to the front, R puts back what left. Then the turn.",
+        "Three on the front, the fourth at the back right. The front right edge is bad already, so three turns: R' lifts the edge to the top, U turns it to the front, R puts the right face back. Then F.",
       twoBad:
-        'Two bad: one on the front with three good edges, the other anywhere else. The turn makes four.',
-      sixBad: 'Six bad: three on the front with one good edge. The turn leaves four.',
+        'Two bad: put only one of them on the front face, with three good edges. F makes four bad out of the two, and on you go as with four.',
+      sixBad: 'Six bad: put three on the front face, with one good edge. After F, four are left.',
       crossTop: 'White on top, over the centre of its other colour: a half turn of that side.',
       crossMiddle: 'White facing you in the middle layer: bottom aside, the edge down, bottom back.',
       joined: "Joined, and off the slot's side: lift the slot, bring the pair over it, put it back.",
@@ -663,22 +665,23 @@ export const en = {
         points: [
           'Yellow centre on top, blue in front — and the cube stays that way round until the first two layers are done.',
           'An edge is either good or bad — turned over, like a last-layer edge with no yellow on top. ZZ counts all twelve before anything else.',
-          'Read one sticker of each edge: on top and at the bottom, the one facing up or down; in the middle layer, the one at the front or the back.',
-          'Its colour gives one of three answers — the pictures.',
-          'Count layer by layer: four edges on top, four in the middle, four at the bottom. The bad ones always come to an even number. Try it on the cube under the pictures.',
+          'The colours take their roles from the centres: yellow and white belong up and down, blue and green to the front and back, red and orange to the sides.',
+          'Read one sticker of each edge: on top and at the bottom, the one facing up or down; in the middle layer, the one at the front or the back. A solved cube has only yellow and white in those places and, in the middle layer, blue and green — never red or orange.',
+          'An edge is good when the one of its two colours that belongs there is there: yellow or white, or blue or green on an edge with neither. The three pictures are everything you can find there.',
+          'Count layer by layer: four edges on top, four in the middle, four at the bottom. The bad ones always come to an even number; when they outnumber the good, count the good ones. Try it on the cube under the pictures.',
         ],
-        tip: 'more bad than good? Count the good ones instead.',
+        tip: 'why these places? R, L, U and D never carry a sticker out of them or into them — only a quarter turn of F or B does. So a bad edge cannot get home without one, and a good edge never needs it.',
       },
       edgesGood: {
         title: 'Edges good',
         points: [
-          'Only a quarter turn of the front or back face turns edges over — all four on that face at once, bad to good and good to bad. Every other turn only carries them about: R, L, U, D, and the half turns F2 and B2.',
-          'Four bad edges on the front, then F: all four are good. That is the whole step; the rest is getting them there.',
-          'Each place on the front has a face of its own: U for the top one, R for the right, D for the bottom, L for the left. Turn it and another edge arrives there, while the other three places stay put. So a bad edge is brought to the front by the face it lies on.',
-          'That face already has a bad edge in front? Aside, across, back: turn it so the edge passes onto another face, bring it to the front with that one, and turn the first face back. The third picture.',
-          'Not four bad? Two and six have a picture each. Eight and twelve are four at a time; ten goes like six.',
+          'Only a quarter turn of the front (F) or back (B) face turns an edge over — all four edges of that face at once, bad to good and good to bad. Every other turn (R, L, U, D, F2, B2) only moves edges about.',
+          'The aim: four bad edges on the front face. Then F, and all four are good.',
+          'A bad edge that is not on the front face lies on the top (U), right (R), bottom (D) or left (L) one — sometimes on two of them. Turn that face until the edge is at the front. It takes the place of one edge of the front face; the other three stay where they are.',
+          "It would take the place of another bad edge? Then it takes three turns: with the face the edge lies on, move it onto another face; with that one, turn it to the front; then turn the first face back. In the third picture that is R' U R.",
+          'There can be another number of bad edges than four. Two and six are the last two pictures. Eight or twelve: turn them good four at a time. Ten starts like six: three on the front face with one good edge, and after F eight are left.',
         ],
-        tip: 'start with the face that already has the most bad edges on it — everything the pictures do at the front works at the back, with B. An edge at the back that will not come even so? B2 carries it across to the other side.',
+        tip: 'the same works at the back, with B — start with whichever of the two faces has more bad edges. A bad edge left at the back that will not come to the front even in three turns? B2 moves it to the other side.',
       },
       cross: {
         title: 'Cross',

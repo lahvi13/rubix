@@ -266,9 +266,9 @@ describe('LearnScreen', () => {
         0, 5, 2, 2, 1, 1, 1,
       ]),
     );
-    // The three answers as pictures, then the cube to count on, what is read
-    // off it and the same cube with the answer, the moves that make it
-    // printed once.
+    // The three kinds of colour to find as pictures, then the cube to count
+    // on, what is read off it and the same cube with the answer, the moves
+    // that make it printed once.
     const [badEdges, , , pairs] = sections();
     if (!badEdges || !pairs) throw new Error('the guide lost a step');
     expect(within(badEdges).getAllByRole('figure')).toHaveLength(6);

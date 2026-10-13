@@ -351,17 +351,18 @@ describe("the stickerings of ZZ's first steps", () => {
     expect(view.right).toEqual(['.', '.', '.', '.', 'R', '.', '.', '.', '.'].map(dotToNull));
   });
 
-  it('draws them in a front or back colour with the other sticker beside each', () => {
+  it('draws a front or back colour with the other sticker of the edge beside it', () => {
     const view = isometricView(solvedState(), 'readsFront');
 
-    expect(view.top).toEqual(['.', 'B', '.', 'B', 'U', 'F', '.', 'F', '.'].map(dotToNull));
-    // The other stickers: above and below the centre in front, and all four
-    // edges of the side, in a top or bottom colour.
-    expect(view.front).toEqual(['.', 'U', '.', 'B', 'F', 'F', '.', 'D', '.'].map(dotToNull));
-    expect(view.right).toEqual(['.', 'U', '.', 'U', 'R', 'D', '.', 'D', '.'].map(dotToNull));
+    // Only the three edges with both stickers in sight: top front, top
+    // right, front right. The sticker read, then the other one in a top or
+    // bottom colour — the bad edge.
+    expect(view.top).toEqual(['.', '.', '.', '.', 'U', 'B', '.', 'F', '.'].map(dotToNull));
+    expect(view.front).toEqual(['.', 'U', '.', '.', 'F', 'F', '.', '.', '.'].map(dotToNull));
+    expect(view.right).toEqual(['.', 'U', '.', 'D', 'R', '.', '.', '.', '.'].map(dotToNull));
   });
 
-  it('reads the same twelve places in all three pictures, whatever the cube', () => {
+  it('reads the same twelve places in both pictures that settle an edge at a glance', () => {
     const state = after("F' L' D U2 L B' D");
     const cells = (stickering: 'readsPole' | 'readsSide' | 'readsFront') => {
       const view = netView(state, stickering);
@@ -369,17 +370,16 @@ describe("the stickerings of ZZ's first steps", () => {
     };
     const pole = cells('readsPole');
     const side = cells('readsSide');
-    const front = cells('readsFront');
     // On a face of nine, the edges are the odd cells.
     const isEdge = (at: number) => (at % 9) % 2 === 1;
 
     for (const at of pole.keys()) {
-      if (!isEdge(at)) continue;
-      expect(side[at] !== null).toBe(pole[at] !== null);
-      // The third picture has every edge whole: the second sticker decides.
-      expect(front[at]).not.toBeNull();
+      if (isEdge(at)) expect(side[at] !== null).toBe(pole[at] !== null);
     }
     expect(pole.filter((cell, at) => isEdge(at) && cell !== null)).toHaveLength(12);
+    // Where the second sticker decides, an edge is drawn whole or not at
+    // all: three edges, two stickers each.
+    expect(cells('readsFront').filter((cell, at) => isEdge(at) && cell !== null)).toHaveLength(6);
   });
 
   it('leaves on a cube only what the rules read off it', () => {

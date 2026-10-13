@@ -325,14 +325,21 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
   }
 }
 
+/** The faces seen from the corner the cube is held at. */
+const isInSight = (index: number): boolean => {
+  const face = FACELETS[index]?.face;
+  return face === 'U' || face === 'F' || face === 'R';
+};
+
 /**
- * What a rule's picture shows in this place. The inner places wear the kind
- * of colour the rule is about; the others stay empty, but for the rule that
- * needs the second sticker, where they wear a top or bottom colour. The two
- * colours of a kind take turns from place to place, so that a picture shows
- * both — one on the right half of the cube and the other on the left, the
- * places in between by whether they are towards the front; on the second
- * sticker, the top colour on the upper half and the bottom on the lower.
+ * What a rule's picture shows in this place. For a colour that settles the
+ * edge at a glance, every inner place wears it and nothing else is drawn. For
+ * a front or back colour, which the other sticker settles, an edge is drawn
+ * whole or not at all — so only the three with both stickers in sight from
+ * the corner the cube is held at: a second sticker whose first is round the
+ * back says nothing. The second sticker wears a top or bottom colour, the
+ * one that makes the edge a bad one. The two colours of a kind take turns
+ * from place to place, so that a picture shows both.
  */
 function read(
   state: CubeState,
@@ -344,14 +351,15 @@ function read(
 
   const [x, y, z] = place.position;
   const centre = (face: Face): Face => colourAt(state, indexOf(face, 1, 1));
-  if (!isInnerPlace(index)) {
-    if (stickering !== 'readsFront') return null;
-    return centre(y > 0 || (y === 0 && z > 0) ? 'U' : 'D');
+
+  if (stickering === 'readsFront') {
+    if (!isInSight(index) || !isInSight(partnerOf(index))) return null;
+    return centre(isInnerPlace(index) ? (z > 0 ? 'F' : 'B') : y > 0 ? 'U' : 'D');
   }
+
+  if (!isInnerPlace(index)) return null;
   const isNear = x > 0 || (x === 0 && z > 0);
-  if (stickering === 'readsPole') return centre(isNear ? 'U' : 'D');
-  if (stickering === 'readsSide') return centre(isNear ? 'R' : 'L');
-  return centre(isNear ? 'F' : 'B');
+  return centre(stickering === 'readsPole' ? (isNear ? 'U' : 'D') : isNear ? 'R' : 'L');
 }
 
 const SOLVED = solvedState();
