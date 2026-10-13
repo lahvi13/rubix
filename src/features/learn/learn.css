@@ -263,6 +263,11 @@ li:not(.learn__aside) + .learn__aside {
   text-align: left;
 }
 
+/* A card that opens nothing does not light up as one that does. */
+.learn__case--still:hover {
+  border-color: transparent;
+}
+
 .learn__case-row {
   display: flex;
   align-items: center;

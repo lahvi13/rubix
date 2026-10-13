@@ -13,8 +13,8 @@ import { useCubeSkin } from '../hooks/use-cube-skin';
 import { useDatabaseGeneration } from '../hooks/use-database-health';
 import { useBackToClose } from '../hooks/use-back-to-close';
 import { useKeyCapture } from '../hooks/use-key-capture';
+import { useShowLearn } from '../hooks/use-guide-settings';
 import { usePuzzle } from '../hooks/use-puzzle';
-import { useSetting } from '../hooks/use-setting';
 import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute, type Route } from './router';
@@ -42,7 +42,8 @@ const PUZZLE_ROUTES: ReadonlySet<Route> = new Set<Route>([
   'stats',
 ]);
 
-const LEARNING_ROUTES: ReadonlySet<Route> = new Set<Route>(['learn', 'trainer', 'drill']);
+/** The screens that are the 3×3's alone so far: its sets and its drills. */
+const CUBE_ONLY_ROUTES: ReadonlySet<Route> = new Set<Route>(['trainer', 'drill']);
 
 export function App() {
   const route = useRoute();
@@ -53,15 +54,16 @@ export function App() {
   // A screen that lived through a lost connection holds dead live queries; the
   // key mounts it again once the database is back.
   const generation = useDatabaseGeneration();
-  const [showLearn] = useSetting('ui.showLearn');
+  const [isMoreOpen, setMoreOpen] = useState(false);
+  const [puzzle, setPuzzle] = usePuzzle();
+  const [isPuzzleOpen, setPuzzleOpen] = useState(false);
+  // The cube's own: somebody past the 3×3's guide is a beginner on the 2×2.
+  const [showLearn] = useShowLearn(puzzle);
   // Hidden from the menu, not switched off: a bookmark on #/learn is somebody
   // who wants the guide, and hiding it is about a shorter menu, not a lock.
   const menu = ROUTES.filter((target) => target !== 'learn' || showLearn);
   const tabs = tabRoutes(showLearn);
   const beyondBar = menu.filter((target) => !isTab(target, tabs));
-  const [isMoreOpen, setMoreOpen] = useState(false);
-  const [puzzle, setPuzzle] = usePuzzle();
-  const [isPuzzleOpen, setPuzzleOpen] = useState(false);
   const isBarShown = useBarScroll(route);
   // Applied here because this is the one component that is always mounted.
   useAppearance();
@@ -149,16 +151,17 @@ export function App() {
         {route === 'timer' ? <TimerScreen key={puzzle} /> : null}
         {route === 'history' ? <HistoryScreen key={puzzle} /> : null}
         {route === 'stats' ? <StatsScreen key={puzzle} /> : null}
-        {/* The guide, the sets and the drills are the 3×3's so far. Said on
-            the screen rather than taken off the bar: tabs that come and go
-            with the cube would move the ones that stay. */}
-        {!LEARNING_ROUTES.has(route) ? null : puzzle !== '333' ? (
+        {/* Keyed like the rest: the step being read is the cube's own guide's. */}
+        {route === 'learn' ? <LearnScreen key={puzzle} /> : null}
+        {/* The sets and the drills are the 3×3's so far. Said on the screen
+            rather than taken off the bar: tabs that come and go with the cube
+            would move the ones that stay. */}
+        {!CUBE_ONLY_ROUTES.has(route) ? null : puzzle !== '333' ? (
           <main className="screen screen--scroll">
             <p className="solves__empty">{strings.puzzle.nothingYet(strings.puzzle.names[puzzle])}</p>
           </main>
         ) : (
           <>
-            {route === 'learn' ? <LearnScreen /> : null}
             {route === 'trainer' ? <TrainerScreen /> : null}
             {route === 'drill' ? <DrillScreen /> : null}
           </>

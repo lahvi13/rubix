@@ -204,7 +204,7 @@ export const cs: Strings = {
       minx: 'Megaminx',
     },
     nothingYet: (name: string) =>
-      `Pro ${name} tu zatím nic není. Timer, historie a statistiky už pro ni fungují.`,
+      `Pro ${name} tu zatím nic není. Průvodce, timer, historie a statistiky už pro ni jsou.`,
   },
   stats: {
     empty: 'V této session zatím nejsou žádná složení.',
@@ -680,6 +680,66 @@ export const cs: Strings = {
           'Před každým spuštěním natoč kostku podle obrázků – podle toho, kolik rohů už má žlutou nahoře.',
         ],
       },
+    },
+    guideNames: {
+      '222-layers': 'Po vrstvách',
+    },
+    pocket: {
+      intro:
+        "Tři kroky od zamíchané kostky 2×2 ke složené. Nazpaměť stačí dvě věci: čtyři tahy a jeden krátký algoritmus. Na obrázcích je bílá dole a žlutá nahoře. Co znamenají písmena jako R nebo U', ukáže tlačítko Notace.",
+      source: 'Metoda a její tři kroky jsou z návodu na 2×2 pro začátečníky na',
+      sourceLink: 'jperm.net',
+      hideHint:
+        'Až budeš skládat bez čtení, odeber průvodce z menu; v Nastavení ho vrátíš zpět.',
+      steps: {
+        whiteLayer: {
+          title: 'Bílá vrstva',
+          points: [
+            "Skoro celou kostku složí čtyři tahy: R U R' U'. Opakuj je, dokud je ruce neumí samy – po šesti opakováních je kostka zase tam, kde byla.",
+            'Vyber si kterýkoli bílý dílek a drž kostku tak, aby jeho bílá mířila dolů. Ten dílek je hotový a odteď zůstává dole.',
+            'Najdi další bílý dílek v horní vrstvě. Má-li s hotovým společnou ještě jinou barvu než bílou, patří vedle něj na tu stranu. Nemá-li žádnou, patří naproti němu.',
+            'Otáčej vrškem (U), dokud dílek nestojí přímo nad svým místem, a chyť kostku tak, aby to místo bylo vpředu vpravo. Pak opakuj čtyři tahy, dokud není dole bílou dolů – kolikrát, říkají obrázky.',
+          ],
+          tip: 'bílý dílek je dole, ale na špatném místě nebo otočený? Dej ho dopředu vpravo a udělej čtyři tahy jednou: vyjede nahoru.',
+        },
+        place: {
+          title: 'Žluté dílky na místa',
+          points: [
+            'Bílá zůstává dole. Každý žlutý dílek teď půjde do svého rohu; kam míří jeho žlutá, je zatím jedno.',
+            'Dílek je na svém místě, když jsou jeho dvě další barvy stejné jako dvě barvy spodního dílku pod ním – dva obrázky.',
+            'Otáčej vrškem (U), dokud není na místě aspoň jeden dílek, a spočítej je. Všechny čtyři: krok je hotový.',
+            'Jeden: dej ho dopředu vpravo. Dva vedle sebe: otoč vrškem dál, až bude na místě jen jeden, a dej dopředu vpravo ten. Dva naproti sobě: dej dopředu vpravo kterýkoli z nich.',
+            'Udělej algoritmus a spočítej je znovu. Ještě ne čtyři? Projdi krok ještě jednou.',
+          ],
+          tip: 'algoritmus jde po rukou. Vršek pravou rukou a pravá strana nahoru, vršek levou rukou a levá strana nahoru. Pak obojí znovu, jen strany jdou dolů.',
+        },
+        turn: {
+          title: 'Žlutá dolů',
+          points: [
+            'Otoč celou kostku vzhůru nohama: bílá nahoře, žluté dílky dole.',
+            'Podívej se na spodní dílek vpředu vpravo. Míří žlutou dolů: je hotový. Jinak opakuj čtyři tahy, dokud jeho žlutá nemíří dolů – dvakrát nebo čtyřikrát, jak je na obrázcích.',
+            'Potom otoč jen spodní vrstvou (D), ať je vpředu vpravo další nehotový dílek, a udělej totéž.',
+            'S posledním dílkem se vršek složí zpátky sám. Může zbýt už jen pootočit spodkem.',
+          ],
+          warning:
+            'bílá vrstva se cestou rozpadne a tak to má být. Neopravuj ji a neotáčej celou kostkou, jen spodní vrstvou – a čtyři tahy vždycky dodělej všechny, i když dílek vypadá hotový už po třech.',
+          tip: 'zbyl jeden otočený dílek a všechno ostatní je složené? To otáčením vyřešit nejde: kostka byla špatně sestavená a jeden roh je potřeba vyndat a vrátit správně.',
+        },
+      },
+      situations: {
+        whiteRight: 'Bílá míří doprava: jednou',
+        whiteUp: 'Bílá míří nahoru: třikrát',
+        whiteFront: 'Bílá míří dopředu: pětkrát',
+        oneInPlace: 'Jeden dílek na místě, vpředu vpravo',
+        yellowRight: 'Žlutá míří doprava: dvakrát',
+        yellowFront: 'Žlutá míří dopředu: čtyřikrát',
+      },
+      figures: {
+        inPlace:
+          'Dílek vpředu vpravo je na svém místě: má stejné dvě barvy jako dílek pod ním, i když jeho žlutá míří dopředu.',
+        notInPlace: 'Tenhle není: jedna z jeho barev na dílku pod ním chybí.',
+      },
+      goal: 'Bílá vrstva hotová: boky sedí dokola.',
     },
   },
   trainer: {

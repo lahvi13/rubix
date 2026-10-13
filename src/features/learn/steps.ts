@@ -11,6 +11,7 @@ import {
 import { invertAlg, parseAlg } from '../../domain/cube/notation';
 import { applyAlg, solvedState, type CubeState } from '../../domain/cube/state';
 import type { Stickering } from '../../domain/cube/views';
+import type { SupportedPuzzle } from '../../domain/puzzle/puzzles';
 import { strings } from '../../lib/strings';
 import type { PlayerStickering } from '../trainer';
 
@@ -39,6 +40,12 @@ export interface LearnSituation {
    * drawn as it is met in a solve, a few turns short of the step's end.
    */
   next?: string;
+  /**
+   * What the card prints instead of `alg`, where `alg` is one short sequence
+   * run several times and the card's own line says how many: the sequence
+   * once reads at a glance, five of it in a column is a wall.
+   */
+  shown?: string;
 }
 
 /**
@@ -668,11 +675,146 @@ export const ZZ_STEPS: readonly LearnStep[] = [
   { ...EDGE_PERMUTATION_STEP, id: 'zz-edge-permutation' },
 ];
 
-/** A guide per method, by the method's id. */
+/** The four moves J Perm's 2×2 method is made of. */
+export const FOUR_MOVES = "R U R' U'";
+
+function fourMoves(times: number): string {
+  return Array.from({ length: times }, () => FOUR_MOVES).join(' ');
+}
+
+/**
+ * Three of the top's four pieces round in a ring, the one at the front right
+ * left where it is — the one algorithm of the method's second step.
+ */
+export const PLACE_PIECES = "U R U' L' U R' U' L";
+
+/** Turns the two pieces on the right of the top where they stand, and nothing else. */
+const TURNED_IN_PLACE = "R U2 R' U' R U' R' L' U2 L U L' U L";
+/** Swaps those same two, each keeping its yellow on top. */
+const SWAPPED = "R U R' U' R' F R2 U' R' U' R U R' F'";
+
+/** The white pieces in colour wherever they are; the yellow ones do not matter yet. */
+const WHITE_LAYER_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'bottomLayer',
+  playerStickering: 'bottomLayer',
+  standing: '',
+};
+
+const WHOLE_CUBE_PICTURE: SituationPicture = {
+  view: 'isometric',
+  stickering: 'full',
+  playerStickering: 'full',
+  standing: '',
+};
+
+/** The cube turned over for the last step: white on top, the same side in front. */
+const TURNED_OVER_PICTURE: SituationPicture = { ...WHOLE_CUBE_PICTURE, standing: 'z2' };
+
+/**
+ * The 2×2 for a first solve, as J Perm teaches it (jperm.net/2x2): a layer
+ * with four moves, the top's pieces to their places with one algorithm, and
+ * the same four moves again to turn them. The numbers on the cards — how many
+ * rounds of the four moves from which way the sticker faces — were read off
+ * the model, and the tests run every step as it is worded over every state it
+ * can be met in.
+ *
+ * The cube is the model's corners, so every picture is drawn with `order: 2`
+ * (`PUZZLE_GUIDES` says which cube a guide is for).
+ */
+export const POCKET_STEPS: readonly LearnStep[] = [
+  {
+    id: 'pocket-white-layer',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [
+      { alg: fourMoves(1), text: strings.learn.pocket.situations.whiteRight },
+      { alg: fourMoves(3), shown: FOUR_MOVES, text: strings.learn.pocket.situations.whiteUp },
+      { alg: fourMoves(5), shown: FOUR_MOVES, text: strings.learn.pocket.situations.whiteFront },
+    ],
+    picture: WHITE_LAYER_PICTURE,
+    goal: { picture: WHITE_LAYER_PICTURE, caption: strings.learn.pocket.goal },
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.pocket.steps.whiteLayer,
+  },
+  {
+    id: 'pocket-place',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    // The rule drawn twice, at the corner the cube is looked at from: a piece
+    // that is home though turned, and one that is not.
+    figures: [
+      {
+        picture: WHOLE_CUBE_PICTURE,
+        setup: TURNED_IN_PLACE,
+        caption: strings.learn.pocket.figures.inPlace,
+        isSetupShown: false,
+      },
+      {
+        picture: WHOLE_CUBE_PICTURE,
+        setup: SWAPPED,
+        caption: strings.learn.pocket.figures.notInPlace,
+        isSetupShown: false,
+      },
+    ],
+    situations: [{ alg: PLACE_PIECES, text: strings.learn.pocket.situations.oneInPlace }],
+    picture: WHOLE_CUBE_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.pocket.steps.place,
+  },
+  {
+    id: 'pocket-turn',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    // Each drawn as the first piece of the step is met: one more piece still
+    // to turn after it, so the white layer on top is whole — it only comes
+    // apart once the four moves have started.
+    situations: [
+      {
+        alg: fourMoves(2),
+        next: `D ${fourMoves(4)} D'`,
+        shown: FOUR_MOVES,
+        text: strings.learn.pocket.situations.yellowRight,
+      },
+      {
+        alg: fourMoves(4),
+        next: `D ${fourMoves(2)} D'`,
+        shown: FOUR_MOVES,
+        text: strings.learn.pocket.situations.yellowFront,
+      },
+    ],
+    picture: TURNED_OVER_PICTURE,
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.pocket.steps.turn,
+  },
+];
+
+export const POCKET_LAYERS_GUIDE_ID = '222-layers';
+
+/** A guide per method, by the method's id — or by an id of its own where it is no method. */
 export const GUIDES: Readonly<Record<string, readonly LearnStep[]>> = {
   cfop: LEARN_STEPS,
   roux: ROUX_STEPS,
   zz: ZZ_STEPS,
+  [POCKET_LAYERS_GUIDE_ID]: POCKET_STEPS,
+};
+
+/** The guides of each cube, in the order their switch offers them. */
+export const PUZZLE_GUIDES: Readonly<Record<SupportedPuzzle, readonly string[]>> = {
+  '333': ['cfop', 'roux', 'zz'],
+  '222': [POCKET_LAYERS_GUIDE_ID],
 };
 
 /** Every situation of a step, the ones behind its button included. */

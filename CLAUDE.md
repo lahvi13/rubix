@@ -248,6 +248,10 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   pyraminx. Co je pro každou kostku jiné (cíl, název pro twisty), je tabulka
   `Record<SupportedPuzzle, …>`, aby nová kostka shodila build tam, kde chybí.
   Trenažér a dril zatím 3×3 natvrdo mají — na jiné kostce se nevykreslí.
+- **průvodce patří kostce.** Které průvodce která kostka má, říká
+  `PUZZLE_GUIDES` (`features/learn/steps.ts`); nový průvodce se zapíše tam i do
+  `GUIDES`, jinak ho test nepustí. Průvodce, který není metodou session, má
+  jméno ve `strings.learn.guideNames`.
 - **2×2 nemá vlastní model.** Stav je pořád 54 nálepek 3×3 a 2×2 jsou jeho
   rohy; `CubeDiagram` ji nakreslí s `order={2}` (z `CUBE_ORDER[puzzle]`).
   Algoritmus pro 2×2 se tedy ověřuje na stejném modelu jako každý jiný — hrany

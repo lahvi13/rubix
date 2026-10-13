@@ -225,9 +225,9 @@ export const en = {
       clock: 'Clock',
       minx: 'Megaminx',
     },
-    /** On the guide, the trainer and the drill of a cube that has none yet. */
+    /** On the trainer and the drill of a cube that has none yet. */
     nothingYet: (name: string) =>
-      `Nothing for the ${name} here yet. The timer, the history and the stats already work for it.`,
+      `Nothing for the ${name} here yet. Its guide, the timer, the history and the stats are ready.`,
   },
   stats: {
     empty: 'No solves in this session yet.',
@@ -730,6 +730,68 @@ export const en = {
           'Before each go, hold the cube as the pictures show — by how many corners already have yellow on top.',
         ],
       },
+    },
+    /** The guides that are not a method a session is timed in, by their id. */
+    guideNames: {
+      '222-layers': 'Layer by layer',
+    },
+    /** The 2×2's first guide: J Perm's beginner method, in his three steps. */
+    pocket: {
+      intro:
+        "Three steps from a scrambled 2×2 to a solved one, with two things to learn by heart: four moves and one short algorithm. The pictures have white on the bottom and yellow on top. The Notation button explains letters like R or U'.",
+      source: 'The method and its three steps are those of the beginner 2×2 tutorial at',
+      sourceLink: 'jperm.net',
+      hideHint:
+        'Once you can solve without reading, take this guide out of the menu; Settings puts it back.',
+      steps: {
+        whiteLayer: {
+          title: 'White layer',
+          points: [
+            "Four moves do nearly all of this cube: R U R' U'. Repeat them until your hands know them — six times over and the cube is back where it started.",
+            'Pick any white piece and hold the cube with its white facing down. That piece is solved, and it stays on the bottom from now on.',
+            'Find another white piece in the top layer. If it shares a colour with the solved one, apart from white, it goes beside it on that side. If it shares none, it goes across from it.',
+            'Turn the top (U) until the piece is right over its place, and hold the cube with that place at the front right. Then repeat the four moves until the piece is in, white down — the pictures say how many times.',
+          ],
+          tip: 'a white piece at the bottom, but in the wrong place or turned? Hold it at the front right and do the four moves once: it comes up to the top.',
+        },
+        place: {
+          title: 'Yellow pieces to their places',
+          points: [
+            'Keep white on the bottom. Each yellow piece now goes to its own corner; which way its yellow faces does not matter yet.',
+            'A piece is in its place when its two other colours are the two colours of the bottom piece under it — the two pictures.',
+            'Turn the top (U) until at least one piece is in its place, and count them. All four: the step is done.',
+            'One: hold it at the front right. Two side by side: turn the top again until only one is in its place, and hold that one at the front right. Two across from each other: hold either of them at the front right.',
+            'Do the algorithm and count again. Not four yet? Go through the step once more.',
+          ],
+          tip: 'the algorithm goes by hands. The top with the right hand, then the right side up; the top with the left hand, then the left side up. Then both again, with the sides coming down.',
+        },
+        turn: {
+          title: 'Yellow down',
+          points: [
+            'Turn the whole cube over: white on top, the yellow pieces on the bottom.',
+            'Look at the bottom piece at the front right. Yellow facing down: it is done. Otherwise repeat the four moves until its yellow faces down — twice or four times, as in the pictures.',
+            'Then turn only the bottom layer (D) to bring the next piece that is not done to the front right, and do the same.',
+            'With the last piece the top comes back together by itself. A turn of the bottom may be all that is left.',
+          ],
+          warning:
+            'the white layer falls apart on the way, and that is as it should be. Do not repair it and do not turn the whole cube, only the bottom layer — and always finish all four moves, even when the piece looks done after three.',
+          tip: 'one piece left turned with everything else solved? No turning solves that: the cube was put together wrong, and one corner has to be taken out and put back the right way round.',
+        },
+      },
+      situations: {
+        whiteRight: 'White faces right: once',
+        whiteUp: 'White faces up: three times',
+        whiteFront: 'White faces front: five times',
+        oneInPlace: 'One piece in its place, at the front right',
+        yellowRight: 'Yellow faces right: twice',
+        yellowFront: 'Yellow faces front: four times',
+      },
+      figures: {
+        inPlace:
+          'The piece at the front right is in its place: the same two colours as the piece under it, though its yellow faces the front.',
+        notInPlace: 'This one is not: one of its colours is not on the piece under it.',
+      },
+      goal: 'The white layer done: its sides match all the way round.',
     },
   },
   trainer: {

@@ -18,6 +18,8 @@ import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
 import { LANGUAGES, currentLanguage, storeLanguage, type Language } from '../../../lib/language';
 import { RUNNING_DISPLAYS, type RunningDisplay } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
+import { useShowLearn } from '../../../hooks/use-guide-settings';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useSetting } from '../../../hooks/use-setting';
 import { useResolvedTheme } from '../../../hooks/use-appearance';
 import { VoiceShadowSection } from '../../splits';
@@ -89,7 +91,9 @@ export function SettingsScreen() {
   const [skinId, setSkinId] = useSetting('ui.cubeSkin');
   const [twistyMode, setTwistyMode] = useSetting('ui.twistyMode');
   const [caseLayout, setCaseLayout] = useSetting('ui.caseLayout');
-  const [showLearn, setShowLearn] = useSetting('ui.showLearn');
+  // The guide of the cube the app is on; each cube has its own switch.
+  const [puzzle] = usePuzzle();
+  const [showLearn, setShowLearn] = useShowLearn(puzzle);
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
   const [isPreviewShown, setPreviewShown] = useSetting('timer.showScramblePreview');

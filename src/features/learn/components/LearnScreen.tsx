@@ -4,7 +4,11 @@ import { CROSS_SET_ID } from '../../../domain/alg/sets';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { parseAlg } from '../../../domain/cube/notation';
+import type { CubeOrder } from '../../../domain/cube/views';
+import { CUBE_ORDER } from '../../../domain/puzzle/puzzles';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
+import { useLastGuide, useShowLearn } from '../../../hooks/use-guide-settings';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { packLabel, strings } from '../../../lib/strings';
@@ -23,6 +27,8 @@ import { useCurrentStep } from '../../../hooks/use-current-step';
 import { useActiveMethodId, useMethodList } from '../hooks/use-guide-method';
 import {
   GUIDES,
+  POCKET_LAYERS_GUIDE_ID,
+  PUZZLE_GUIDES,
   figureState,
   holdState,
   situationPicture,
@@ -34,8 +40,8 @@ import {
 import { SituationSheet } from './SituationSheet';
 
 const anchorOf = (step: LearnStep) => `learn-${step.id}`;
-const GUIDE_IDS = Object.keys(GUIDES);
-const FALLBACK_METHOD = 'cfop';
+/** What a guide that is no method is called; a method's guide goes by the method's name. */
+const GUIDE_NAMES: Readonly<Record<string, string>> = strings.learn.guideNames;
 
 /** What a guide says round its steps: how it opens, where it comes from, what follows it. */
 interface GuideCopy {
@@ -44,15 +50,18 @@ interface GuideCopy {
   sourceLink: string;
   href: string;
   /**
-   * The trainer's sets for the method and the phases its sessions are timed
-   * in; null for the first guide, whose next step is the method beside it.
+   * What comes after the guide: the trainer's sets for the method and the
+   * phases its sessions are timed in — or, for a cube's first guide, a line
+   * on where to go once it is known by heart.
    */
-  next: {
-    lead: string;
-    sets: readonly { name: string; text: string }[];
-    more: string;
-    hide: string;
-  } | null;
+  next:
+    | {
+        lead: string;
+        sets: readonly { name: string; text: string }[];
+        more: string;
+        hide: string;
+      }
+    | string;
 }
 
 const CFOP_COPY: GuideCopy = {
@@ -60,7 +69,7 @@ const CFOP_COPY: GuideCopy = {
   source: strings.learn.source,
   sourceLink: strings.learn.sourceLink,
   href: 'http://badmephisto.com',
-  next: null,
+  next: strings.learn.hideHint,
 };
 
 const GUIDE_COPY: Readonly<Record<string, GuideCopy>> = {
@@ -78,6 +87,13 @@ const GUIDE_COPY: Readonly<Record<string, GuideCopy>> = {
     sourceLink: strings.learn.zzSourceLink,
     href: 'https://www.zzmethod.com/',
     next: strings.learn.zzNext,
+  },
+  [POCKET_LAYERS_GUIDE_ID]: {
+    intro: strings.learn.pocket.intro,
+    source: strings.learn.pocket.source,
+    sourceLink: strings.learn.pocket.sourceLink,
+    href: 'https://jperm.net/2x2',
+    next: strings.learn.pocket.hideHint,
   },
 };
 
@@ -105,7 +121,13 @@ export function LearnScreen() {
   const { definitions } = useTriggers();
   const [openCase, setOpenCase] = useState<OpenCase | null>(null);
   const [showNotation, setShowNotation] = useState(false);
-  const [showLearn, setShowLearn] = useSetting('ui.showLearn');
+  // The guide is the cube's: its guides, its pictures, and its own switch for
+  // whether it is on the menu at all.
+  const [puzzle] = usePuzzle();
+  const order = CUBE_ORDER[puzzle];
+  const guideIds = PUZZLE_GUIDES[puzzle];
+  const fallback = guideIds[0] ?? '';
+  const [showLearn, setShowLearn] = useShowLearn(puzzle);
   const [isExplained, setExplained] = useSetting('ui.learnExplanations');
   // The guide read last. Until one has been picked, the one for the method
   // being timed in: somebody who made a Roux session wants Roux explained.
@@ -113,27 +135,31 @@ export function LearnScreen() {
   // it is timed, and the page kept going back to the one already known.
   const activeMethodId = useActiveMethodId();
   const methods = useMethodList();
-  const [lastMethodId, setLastMethodId] = useSetting('ui.learnMethod');
-  const wanted = lastMethodId !== '' ? lastMethodId : (activeMethodId ?? FALLBACK_METHOD);
-  const methodId = Object.hasOwn(GUIDES, wanted) ? wanted : FALLBACK_METHOD;
+  const [lastMethodId, setLastMethodId] = useLastGuide(puzzle);
+  const wanted = lastMethodId !== '' ? lastMethodId : (activeMethodId ?? fallback);
+  const methodId = guideIds.includes(wanted) ? wanted : fallback;
   const copy = GUIDE_COPY[methodId] ?? CFOP_COPY;
-  const nameOf = (id: string) => methods?.find((method) => method.id === id)?.name ?? id;
+  const nameOf = (id: string) =>
+    methods?.find((method) => method.id === id)?.name ?? GUIDE_NAMES[id] ?? id;
 
   return (
     <main className="screen screen--scroll learn">
-      <div className="learn__methods" role="group" aria-label={strings.learn.method}>
-        {GUIDE_IDS.map((id) => (
-          <button
-            key={id}
-            type="button"
-            className={id === methodId ? 'is-active' : ''}
-            aria-pressed={id === methodId}
-            onClick={() => setLastMethodId(id)}
-          >
-            {nameOf(id)}
-          </button>
-        ))}
-      </div>
+      {/* A choice of one is no choice: the row comes with the second guide. */}
+      {guideIds.length < 2 ? null : (
+        <div className="learn__methods" role="group" aria-label={strings.learn.method}>
+          {guideIds.map((id) => (
+            <button
+              key={id}
+              type="button"
+              className={id === methodId ? 'is-active' : ''}
+              aria-pressed={id === methodId}
+              onClick={() => setLastMethodId(id)}
+            >
+              {nameOf(id)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {isExplained ? (
         <p className="learn__intro">{copy.intro}</p>
@@ -158,7 +184,7 @@ export function LearnScreen() {
         </button>
       </div>
 
-      {showNotation ? <NotationReference skin={skin} /> : null}
+      {showNotation ? <NotationReference skin={skin} order={order} /> : null}
 
       {/* Keyed by the method: the other guide is a different page, and the
           step being read is worked out afresh for it. */}
@@ -167,6 +193,7 @@ export function LearnScreen() {
         steps={GUIDES[methodId] ?? []}
         isExplained={isExplained}
         skin={skin}
+        order={order}
         triggers={definitions}
         onOpen={(id, setId, group) => setOpenCase({ id, setId, group })}
       />
@@ -182,8 +209,8 @@ export function LearnScreen() {
           />
           {strings.learn.hide}
         </label>
-        {!isExplained ? null : copy.next === null ? (
-          <p className="learn__caption learn__caption--left">{strings.learn.hideHint}</p>
+        {!isExplained ? null : typeof copy.next === 'string' ? (
+          <p className="learn__caption learn__caption--left">{copy.next}</p>
         ) : (
           <>
             <p className="learn__caption learn__caption--left">{copy.next.lead}</p>
@@ -224,12 +251,13 @@ interface GuideStepsProps {
   steps: readonly LearnStep[];
   isExplained: boolean;
   skin: CubeSkin;
+  order: CubeOrder;
   triggers: readonly TriggerDefinition[];
   onOpen: (caseId: string, setId: string, group: string) => void;
 }
 
 /** One method's steps, with the row of numbers that jumps between them. */
-function GuideSteps({ steps, isExplained, skin, triggers, onOpen }: GuideStepsProps) {
+function GuideSteps({ steps, isExplained, skin, order, triggers, onOpen }: GuideStepsProps) {
   const nav = useRef<HTMLElement>(null);
   const [read, jumpTo] = useCurrentStep(steps.map(anchorOf), nav);
   // Above the first step is still the first step: the guide starts at its top.
@@ -262,6 +290,7 @@ function GuideSteps({ steps, isExplained, skin, triggers, onOpen }: GuideStepsPr
           step={step}
           isExplained={isExplained}
           skin={skin}
+          order={order}
           triggers={triggers}
           onOpen={onOpen}
         />
@@ -277,11 +306,22 @@ interface StepSectionProps {
   /** Whether the step says what it is about, or only shows it. */
   isExplained: boolean;
   skin: CubeSkin;
+  /** 2 on the 2×2, whose every picture is the corners of the state drawn. */
+  order: CubeOrder;
   triggers: readonly TriggerDefinition[];
   onOpen: (caseId: string, setId: string, group: string) => void;
 }
 
-function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: StepSectionProps) {
+function StepSection({
+  id,
+  number,
+  step,
+  isExplained,
+  skin,
+  order,
+  triggers,
+  onOpen,
+}: StepSectionProps) {
   const groups = useSetCases(step.setId);
   // Two steps keep their quicker version in another set altogether, so which
   // level is on show decides what is drawn.
@@ -314,6 +354,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
           situation={situation}
           picture={picture}
           skin={skin}
+          order={order}
           triggers={triggers}
         />
       ))}
@@ -362,6 +403,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
                 view={rule.view}
                 stickering={rule.stickering}
                 skin={skin}
+                order={order}
                 label={null}
               />
               <figcaption className="learn__rule-text">{rule.text}</figcaption>
@@ -380,6 +422,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
             view={figure.picture.view}
             stickering={figure.picture.stickering}
             skin={skin}
+            order={order}
             label={null}
           />
           {figure.isSetupShown ? (
@@ -425,6 +468,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
             view={step.goal.picture.view}
             stickering={step.goal.picture.stickering}
             skin={skin}
+            order={order}
             label={null}
           />
           {isExplained ? (
@@ -449,6 +493,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
                 entry={entry}
                 diagram={diagram}
                 skin={skin}
+                order={order}
                 mark={isAdvanced ? null : step.markedCorner}
                 triggers={triggers}
                 onOpen={() => onOpen(entry.algCase.id, setId, group)}
@@ -473,6 +518,7 @@ function StepSection({ id, number, step, isExplained, skin, triggers, onOpen }: 
                         view={diagram.view}
                         stickering={diagram.stickering}
                         skin={skin}
+                        order={order}
                         mark={step.markedCorner}
                         label={null}
                       />
@@ -510,6 +556,7 @@ interface SituationProps {
   situation: LearnSituation;
   picture: SituationPicture;
   skin: CubeSkin;
+  order: CubeOrder;
   triggers: readonly TriggerDefinition[];
 }
 
@@ -518,24 +565,36 @@ interface SituationProps {
  * Roux pair, the last edges: a card like every case on the page, which opens
  * its own sheet to play them.
  */
-function Situation({ situation, picture, skin, triggers }: SituationProps) {
+function Situation({ situation, picture, skin, order, triggers }: SituationProps) {
   const [isOpen, setOpen] = useState(false);
+
+  const card = (
+    <>
+      <span className="case-card__name">{situation.text}</span>
+      <span className="learn__case-row">
+        <CubeDiagram
+          className="learn__case-diagram"
+          state={holdState(situation, picture.standing)}
+          view={picture.view}
+          stickering={picture.stickering}
+          skin={skin}
+          order={order}
+          label={null}
+        />
+        <AlgText moves={movesOf(situation.shown ?? situation.alg)} triggers={triggers} />
+      </span>
+    </>
+  );
+
+  // The cube that plays a situation is cubing.js's 3×3. A 2×2's card is the
+  // picture and the moves and opens nothing: played on that cube it would be
+  // another puzzle in other colours.
+  if (order !== 3) return <div className="case-card learn__case learn__case--still">{card}</div>;
 
   return (
     <>
       <button type="button" className="case-card learn__case" onClick={() => setOpen(true)}>
-        <span className="case-card__name">{situation.text}</span>
-        <span className="learn__case-row">
-          <CubeDiagram
-            className="learn__case-diagram"
-            state={holdState(situation, picture.standing)}
-            view={picture.view}
-            stickering={picture.stickering}
-            skin={skin}
-            label={null}
-          />
-          <AlgText moves={movesOf(situation.alg)} triggers={triggers} />
-        </span>
+        {card}
       </button>
       {isOpen ? (
         <SituationSheet
@@ -572,6 +631,7 @@ interface LearnCaseProps {
   entry: TrainerCase;
   diagram: Diagram;
   skin: CubeSkin;
+  order: CubeOrder;
   mark: MarkedCorner | null;
   triggers: readonly TriggerDefinition[];
   onOpen: () => void;
@@ -582,7 +642,7 @@ interface LearnCaseProps {
  * the moves side by side, readable at arm's length rather than at the size of
  * a thumbnail.
  */
-function LearnCase({ entry, diagram, skin, mark, triggers, onOpen }: LearnCaseProps) {
+function LearnCase({ entry, diagram, skin, order, mark, triggers, onOpen }: LearnCaseProps) {
   const parsed = entry.algorithm ? parseAlg(entry.algorithm.moves) : null;
   const name = packLabel(caseTitle(entry.algCase));
 
@@ -596,6 +656,7 @@ function LearnCase({ entry, diagram, skin, mark, triggers, onOpen }: LearnCasePr
           view={diagram.view}
           stickering={diagram.stickering}
           skin={skin}
+          order={order}
           mark={mark}
           label={null}
         />

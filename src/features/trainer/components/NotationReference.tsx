@@ -1,12 +1,15 @@
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
+import type { CubeOrder } from '../../../domain/cube/views';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { strings } from '../../../lib/strings';
 import { F2L_ORIENTATION } from '../case-view';
 
 interface NotationReferenceProps {
   skin: CubeSkin;
+  /** 2 for the 2×2, which has a face's turns and the cube's, and nothing in between. */
+  order?: CubeOrder;
 }
 
 /**
@@ -25,24 +28,30 @@ const ROWS: readonly (readonly string[])[] = [
   ['D', "D'", 'D2', 'd', "d'", 'E'],
 ];
 
-export function NotationReference({ skin }: NotationReferenceProps) {
+/** A wide turn or a slice: a move of the layer a 2×2 does not have. */
+const needsMiddleLayer = (token: string): boolean => /^[rufldbMES]/.test(token);
+
+export function NotationReference({ skin, order = 3 }: NotationReferenceProps) {
   return (
     <section className="notation">
       <p className="notation__hint">{strings.trainer.notationHint}</p>
       {ROWS.map((row, index) => (
         <div key={index} className="notation__row">
-          {row.map((token) => (
-            <figure key={token} className="notation__item">
-              <CubeDiagram
-                className="notation__diagram"
-                state={stateAfter(token)}
-                view="isometric"
-                skin={skin}
-                label={token}
-              />
-              <figcaption>{wideAlias(token)}</figcaption>
-            </figure>
-          ))}
+          {row
+            .filter((token) => order === 3 || !needsMiddleLayer(token))
+            .map((token) => (
+              <figure key={token} className="notation__item">
+                <CubeDiagram
+                  className="notation__diagram"
+                  state={stateAfter(token)}
+                  view="isometric"
+                  skin={skin}
+                  order={order}
+                  label={token}
+                />
+                <figcaption>{wideAlias(token)}</figcaption>
+              </figure>
+            ))}
         </div>
       ))}
     </section>

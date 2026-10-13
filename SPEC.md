@@ -1254,7 +1254,20 @@ Autor 2×2 skládá po vrstvách a chce se doučit Ortegu; obsah se bere od J Pe
   `stats.goalMs.222`). Sdílený odkaz na scramble nese kostku (`puzzle=222`,
   bez parametru je to 3×3) a aplikaci na ni přepne.
 - **Průvodce jde za kostkou**, není to čtvrté tlačítko vedle CFOP / Roux / ZZ.
-  Na 2×2 má řádek metod dva průvodce: **po vrstvách** a **Ortega**.
+  Na 2×2 má řádek metod dva průvodce: **po vrstvách** a **Ortega**. Každá
+  kostka má vlastní přepínač, jestli je průvodce v menu (`ui.showLearn`,
+  `ui.showLearn.222`), a vlastního naposledy čteného průvodce — kdo má průvodce
+  3×3 dávno schovaného, je na 2×2 zase začátečník.
+- **„Po vrstvách“ je přesně J Permův postup pro začátečníky**
+  (<https://jperm.net/2x2>), ne vrstva a algoritmy z 3×3: bílá vrstva čtyřmi
+  tahy `R U R' U'`, žluté dílky na místa jedním algoritmem
+  (`U R U' L' U R' U' L`), pak kostku otočit a žluté dílky dotočit zase těmi
+  čtyřmi tahy s otáčením spodku. Oba algoritmy má jeho stránka jen jako
+  obrázek; přepis je ověřený spuštěním. Kolikrát se čtyři tahy opakují podle
+  toho, kam míří bílá nebo žlutá, je odečtené z modelu, a každý krok je tak,
+  jak je napsaný, puštěný přes všechny stavy, ve kterých ho jde potkat
+  (`features/learn/pocket-steps.test.ts`): druhý krok přes 648 a algoritmus se
+  v něm nikdy nedělá víc než dvakrát, třetí přes 27.
 - **Bez fází.** Solve trvá pár vteřin. 2×2 session se měří v jediné seedované
   metodě `222` s prázdným seznamem fází — jedna na kostku, ne jedna na způsob
   skládání: bez fází metoda na měření nic nemění a PB, který by s Ortegou začal
@@ -1277,8 +1290,13 @@ Pořadí:
    proti cubing.js (500 náhodných scramblů, stejné rohy na obou). Náhled
    scramblu na timeru a kartička ke sdílení 2×2 kreslí; přehrání scramblu na
    2×2 zatím není — kostka z cubing.js by měla jiné barvy než obrázek.
-3. **Průvodce** (po vrstvách → Ortega) a sady **OLL 7 + PBL 5** v trenažéru,
-   ověřené spuštěním jako ostatní sady.
+3. **Průvodce a sady.** Průvodce **po vrstvách** je hotový: tři kroky, obrázky
+   2×2, česky i anglicky. Situace se na 2×2 neotevírají do sheetu s přehráním
+   — přehrávač je 3×3 z cubing.js — takže karta je obrázek a tahy; kde řádek
+   karty říká „pětkrát“, tisknou se čtyři tahy jednou (`shown`). Zbývá:
+   průvodce **Ortega** a sady **OLL 7 + PBL 5** v trenažéru (data z
+   `jperm.net/lib/2x2oll.js` a `2x2pbl.js`, na modelu už puštěná), ověřené
+   spuštěním jako ostatní sady.
 4. **Dril a 3D přehrávání** v barvách 3×3 (jde to, viz průzkum PG3D).
 
 CLL a EG se neplánují, dokud Ortega nepůjde z ruky.

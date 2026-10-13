@@ -2,11 +2,11 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../../db/schema';
-import { getSetting } from '../../../db/repositories/settings-repository';
+import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
 import { createSession } from '../../../db/repositories/session-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { strings } from '../../../lib/strings';
-import { LEARN_STEPS, ROUX_STEPS, ZZ_STEPS } from '../steps';
+import { LEARN_STEPS, POCKET_STEPS, ROUX_STEPS, ZZ_STEPS } from '../steps';
 import { LearnScreen } from './LearnScreen';
 
 describe('LearnScreen', () => {
@@ -297,5 +297,79 @@ describe('LearnScreen', () => {
       'href',
       'http://badmephisto.com',
     );
+  });
+
+  describe('with the app on the 2×2', () => {
+    beforeEach(async () => {
+      await setSetting('ui.puzzle', '222');
+    });
+
+    it("walks the 2×2's own three steps, with no method to choose between", async () => {
+      render(<LearnScreen />);
+      await screen.findByText(strings.learn.pocket.intro);
+
+      expect(sections().map((section) => section.querySelector('h2')?.textContent)).toEqual(
+        POCKET_STEPS.map((step, index) => `${index + 1}${step.title}`),
+      );
+      expect(screen.queryByRole('group', { name: strings.learn.method })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'CFOP' })).toBeNull();
+    });
+
+    it('draws every picture as a 2×2: four stickers to a face, not nine', async () => {
+      render(<LearnScreen />);
+      await screen.findByText(strings.learn.pocket.intro);
+
+      const pictures = [...document.querySelectorAll<HTMLImageElement>('main img')];
+      expect(pictures.length).toBeGreaterThanOrEqual(9);
+      for (const picture of pictures) {
+        const drawn = decodeURIComponent(picture.src);
+        // Three faces of plastic under four stickers each.
+        expect((drawn.match(/<polygon/g) ?? []).length).toBe(15);
+      }
+    });
+
+    it('shows a situation as a picture and its moves, with nothing to open', async () => {
+      render(<LearnScreen />);
+      await screen.findByText(strings.learn.pocket.intro);
+
+      const [whiteLayer] = sections();
+      if (!whiteLayer) throw new Error('the guide lost its first step');
+      expect(caseButtons(whiteLayer)).toHaveLength(0);
+      expect(within(whiteLayer).getByText(strings.learn.pocket.situations.whiteRight)).toBeInTheDocument();
+      expect(whiteLayer.querySelectorAll('.alg')).toHaveLength(3);
+    });
+
+    it('explains only the letters a 2×2 can turn', async () => {
+      const user = userEvent.setup();
+      render(<LearnScreen />);
+      await screen.findByText(strings.learn.pocket.intro);
+
+      await user.click(screen.getByRole('button', { name: strings.trainer.notation }));
+
+      expect(screen.getByRole('img', { name: "R'" })).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: 'y' })).toBeInTheDocument();
+      expect(screen.queryByRole('img', { name: 'M' })).toBeNull();
+      expect(screen.queryByRole('img', { name: 'r' })).toBeNull();
+    });
+
+    it("takes its own guide out of the menu and leaves the 3×3's where it was", async () => {
+      const user = userEvent.setup();
+      render(<LearnScreen />);
+
+      await user.click(await screen.findByRole('checkbox', { name: strings.learn.hide }));
+
+      await waitFor(async () => {
+        expect(await getSetting('ui.showLearn.222')).toBe(false);
+      });
+      expect(await getSetting('ui.showLearn')).toBe(true);
+    });
+
+    it('says where the method came from', async () => {
+      render(<LearnScreen />);
+
+      expect(
+        await screen.findByRole('link', { name: strings.learn.pocket.sourceLink }),
+      ).toHaveAttribute('href', 'https://jperm.net/2x2');
+    });
   });
 });

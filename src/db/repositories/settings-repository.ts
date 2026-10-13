@@ -58,6 +58,8 @@ export interface SettingValues {
    * one more thing between them and the timer.
    */
   'ui.showLearn': boolean;
+  /** The same for the 2×2's guide: knowing one cube says nothing of the other. */
+  'ui.showLearn.222': boolean;
   /**
    * Whether the guide explains its steps or only shows them. The prose is for
    * the first cube; after that the page is looked up, and the words stand
@@ -71,6 +73,8 @@ export interface SettingValues {
    * visit made them switch it over each time.
    */
   'ui.learnMethod': string;
+  /** The 2×2's guide read last; empty until one has been picked. */
+  'ui.learnMethod.222': string;
   /**
    * Device-local: which cube the app is switched to, as a `Puzzle`. A string
    * here because what is stored may come from a version that knows more cubes
@@ -237,8 +241,10 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.cubeSkin': 'classic',
   'ui.caseLayout': 'small',
   'ui.showLearn': true,
+  'ui.showLearn.222': true,
   'ui.learnExplanations': true,
   'ui.learnMethod': '',
+  'ui.learnMethod.222': '',
   'ui.puzzle': '333',
   'ui.installNudgeDismissed': false,
   'trainer.twoLookDefault': true,
@@ -273,6 +279,17 @@ export type SettingKey = keyof SettingValues;
  * 3×3 is beaten by every 2×2 solve there is, and the timer would say so after
  * each of them.
  */
+/** Whether each cube's guide is on the menu, and which of its guides was read last. */
+export const SHOW_LEARN_SETTING = {
+  '333': 'ui.showLearn',
+  '222': 'ui.showLearn.222',
+} as const satisfies Record<SupportedPuzzle, SettingKey>;
+
+export const LAST_GUIDE_SETTING = {
+  '333': 'ui.learnMethod',
+  '222': 'ui.learnMethod.222',
+} as const satisfies Record<SupportedPuzzle, SettingKey>;
+
 export const GOAL_SETTING = {
   '333': 'stats.goalMs',
   '222': 'stats.goalMs.222',
