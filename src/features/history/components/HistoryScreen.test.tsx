@@ -12,6 +12,7 @@ import {
   listSolvesChronological,
   updateSolve,
 } from '../../../db/repositories/solve-repository';
+import { seedPacks } from '../../../db/seed/seed';
 import { resetSheetHistory } from '../../../lib/sheet-history';
 import { strings } from '../../../lib/strings';
 import { HistoryScreen } from './HistoryScreen';
@@ -43,6 +44,38 @@ describe('HistoryScreen', () => {
     sessionId = (await getOrCreateActiveSession('333', 'freestyle')).id;
     // Picking solves holds a back entry in module state, which outlives a render.
     resetSheetHistory();
+  });
+
+  /**
+   * The stars in the list are the bests of a method. Whose, is said beside the
+   * session's name — by the rule the timer goes by, once sessions are timed
+   * in more than one.
+   */
+  describe('the method of the session', () => {
+    const summary = () => document.querySelector('.history__summary')?.textContent ?? '';
+
+    it('goes unsaid while every session is timed in the same one', async () => {
+      await seedPacks();
+      await createSession('Evening', '333', 'freestyle');
+      await activateSession(sessionId);
+      await seedSolve(sessionId, 12_340);
+
+      render(<HistoryScreen />);
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      expect(summary()).not.toContain('CFOP');
+    });
+
+    it('is named beside the session once sessions are timed in more than one', async () => {
+      await seedPacks();
+      const evening = await createSession('Evening', '333', 'freestyle', 'roux');
+      await seedSolve(evening.id, 61_000);
+
+      render(<HistoryScreen />);
+
+      await screen.findByRole('button', { name: 'Evening' });
+      await waitFor(() => expect(summary()).toContain('· Roux ·'));
+    });
   });
 
   it('opens the session picker from the name of the session being read', async () => {

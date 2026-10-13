@@ -56,6 +56,14 @@ describe('solveCard', () => {
     expect(solveCard(solve({ scrambleSource }), null).kicker).toBe(kicker);
   });
 
+  it.each<[string | null, Solve['scrambleSource'], string]>([
+    [null, 'generated', 'Single'],
+    ['Roux', 'generated', 'Single · Roux'],
+    ['Roux', 'own', 'Single · Roux · Your own scramble'],
+  ])('names the method where it is handed one: %s, %s scramble', (method, scrambleSource, kicker) => {
+    expect(solveCard(solve({ scrambleSource }), null, method).kicker).toBe(kicker);
+  });
+
   it('shows the scramble it was timed on', () => {
     expect(solveCard(solve(), null).detail).toBe("R U R' U' F2");
   });

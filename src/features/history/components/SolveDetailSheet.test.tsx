@@ -56,6 +56,33 @@ describe('SolveDetailSheet', () => {
     expect(sheet.textContent).not.toContain('CMLL');
   });
 
+  describe('the line under the time', () => {
+    const meta = (sheet: HTMLElement) => sheet.querySelector('.detail__meta')?.textContent ?? '';
+
+    it('names the session and leaves the method unsaid while there is only one', async () => {
+      const morning = await getOrCreateActiveSession('333', 'freestyle');
+      const solve = await seedPhased(morning.id, 9000, ['cross', 'f2l', 'oll', 'pll'], [1000, 5000, 7000]);
+
+      render(<SolveDetailSheet solveId={solve.id} solveIds={[]} onOpen={vi.fn()} onClose={vi.fn()} />);
+
+      const sheet = await screen.findByRole('dialog');
+      await waitFor(() => expect(meta(sheet)).toContain(`${morning.name} · `));
+      expect(meta(sheet)).not.toContain('CFOP');
+    });
+
+    it("names the method of the solve's own session once sessions are timed in more than one", async () => {
+      const morning = await getOrCreateActiveSession('333', 'freestyle');
+      const solve = await seedPhased(morning.id, 9000, ['cross', 'f2l', 'oll', 'pll'], [1000, 5000, 7000]);
+      // The session in use is a Roux one; the solve opened is not of it.
+      await createSession('Blocks', '333', 'freestyle', 'roux');
+
+      render(<SolveDetailSheet solveId={solve.id} solveIds={[]} onOpen={vi.fn()} onClose={vi.fn()} />);
+
+      const sheet = await screen.findByRole('dialog');
+      await waitFor(() => expect(meta(sheet)).toContain(`${morning.name} · CFOP · `));
+    });
+  });
+
   it('marks the best of a method, however fast another method has been', async () => {
     const morning = await getOrCreateActiveSession('333', 'freestyle');
     await seedPhased(morning.id, 9000, [], []);

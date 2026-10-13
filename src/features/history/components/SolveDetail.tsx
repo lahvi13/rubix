@@ -25,6 +25,8 @@ interface SolveDetailProps {
   globalPbMs: number | null;
   /** Which session it belongs to — it need not be the one being read. */
   sessionName: string | null;
+  /** That session's method, named where it needs saying — see `useMethodLabel`. */
+  methodName?: string | null;
   /** Given, the scramble can be taken back to the timer and solved again. */
   onSolveAgain?: () => void;
   /** The solve as a picture to post. */
@@ -45,6 +47,7 @@ export function SolveDetail({
   bests,
   globalPbMs,
   sessionName,
+  methodName = null,
   onSolveAgain,
   onShare,
   isSharing,
@@ -134,9 +137,12 @@ export function SolveDetail({
           {/* When and where, under the time it belongs to: paging through a
               day's solves is reading this line, and at the foot of the sheet
               it took a scroll for every one. The session is named because a
-              solve can be opened from the stats, from another session. */}
+              solve can be opened from the stats, from another session — and
+              its method, once there is more than one, because that is whose
+              best the star beside the time is. */}
           <span className="detail__meta">
             {sessionName === null ? '' : `${sessionName} · `}
+            {methodName === null ? '' : `${methodName} · `}
             {formatDateTime(solve.createdAt)}
             {solve.inspectionMs === null
               ? ''

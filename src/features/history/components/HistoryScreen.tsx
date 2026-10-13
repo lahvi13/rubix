@@ -7,7 +7,7 @@ import { useMoveSolves } from '../../../hooks/use-move-solves';
 import { now } from '../../../lib/clock';
 import { dayKey, formatClock, formatDay, formatResult } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import { SessionPicker, useActiveSession } from '../../sessions';
+import { SessionPicker, useActiveSession, useMethodLabel } from '../../sessions';
 import { SolvePhases, usePhases } from '../../splits';
 import { useHistory } from '../hooks/use-history';
 import { useSolveDays } from '../hooks/use-solve-days';
@@ -22,6 +22,7 @@ const PENALTY_FILTERS: Penalty[] = ['plus2', 'dnf'];
 
 export function HistoryScreen() {
   const session = useActiveSession(PUZZLE, MODE);
+  const methodName = useMethodLabel(session);
   const phases = usePhases(session?.methodId ?? null);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   const history = useHistory(session?.id ?? null, PUZZLE, phaseKeys, session?.methodId ?? null);
@@ -174,6 +175,9 @@ export function HistoryScreen() {
             {session?.name ?? ''}
           </button>
         </span>
+        {/* Whose best the stars in the list are: said only once the sessions
+            in use are timed in more than one method, as on the timer. */}
+        {methodName === null ? null : <>· {methodName} </>}
         {/* The whole session, unless a filter is narrowing it — then how much
             of it is left. The number loaded so far is not a count anyone
             asked for: "Load more" at the bottom already says there is more. */}

@@ -12,14 +12,20 @@ export type SolveRecord = 'personal' | 'session' | null;
  * One solve as a picture: the time, the record it holds, the scramble. A
  * scramble the app did not draw is said up top — a time on one somebody
  * chose, or solved before, is not the claim a random one makes, and the
- * picture is what travels without the app around it.
+ * picture is what travels without the app around it. So is the method, where
+ * the sender times in more than one: a best is the best of its method, and a
+ * Roux minute is not a CFOP one.
  */
-export function solveCard(solve: Solve, record: SolveRecord): ShareCard {
+export function solveCard(
+  solve: Solve,
+  record: SolveRecord,
+  methodName: string | null = null,
+): ShareCard {
   const source =
     solve.scrambleSource === 'generated' ? null : strings.scramble.sources[solve.scrambleSource];
 
   return {
-    kicker: source === null ? strings.share.single : `${strings.share.single} · ${source}`,
+    kicker: [strings.share.single, methodName, source].filter((part) => part !== null).join(' · '),
     headline: formatResult(finalMs(solve), solve.penalty),
     badge:
       record === 'personal'

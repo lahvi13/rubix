@@ -11,7 +11,7 @@ import { shareLinkFor } from '../../../domain/scramble/share-link';
 import { formatMs } from '../../../lib/format';
 import { solveCard, solveCardFilename } from '../solve-card';
 import { strings } from '../../../lib/strings';
-import { SessionPicker } from '../../sessions';
+import { SessionPicker, useMethodLabel } from '../../sessions';
 import { useSolveDetail } from '../hooks/use-solve-detail';
 import { useTags } from '../hooks/use-tags';
 import { SolveDetail } from './SolveDetail';
@@ -49,6 +49,7 @@ export function SolveDetailSheet({
     phaseKeys,
     session?.methodId ?? null,
   );
+  const methodName = useMethodLabel(session ?? null);
   const tags = useTags();
   const removeSolves = useRemoveSolves();
   const moveSolves = useMoveSolves();
@@ -118,6 +119,7 @@ export function SolveDetailSheet({
       bests={bests}
       globalPbMs={globalPbMs}
       sessionName={session?.name ?? null}
+      methodName={methodName}
       onSolveAgain={
         canSolveAgain
           ? () => {
@@ -148,7 +150,7 @@ export function SolveDetailSheet({
             : resultMs === null
               ? strings.share.tryScramble(link)
               : strings.share.challenge(formatMs(resultMs), link);
-        card.share(solveCard(solve, record), solveCardFilename(solve), message);
+        card.share(solveCard(solve, record, methodName), solveCardFilename(solve), message);
       }}
       isSharing={card.isBusy}
       onClose={onClose}

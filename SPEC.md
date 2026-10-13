@@ -176,6 +176,14 @@ session; kdo si chce jednou složit jinak, má na to druhou session. Z toho:
   řádku s ao5 a ao12, pod přepínači inspekce a fází — z náhledů vybráno před
   vlastním řádkem pod přepínačem Fáze, který panel zvětšil. Je tam i v session
   bez jediného složení: po založení se na metodu ptá člověk nejspíš
+- **stejným pravidlem ji jmenuje historie, detail solvu a sdílený obrázek**
+  (2026-10-13). V historii vedle jména session („Večerní · Roux · 40
+  složení“): hvězdičky v seznamu jsou rekordy metody, a je potřeba říct
+  které. V detailu v řádku pod časem, podle session **toho solvu** — ze
+  statistik se otevírají i solvy z jiné session. Na obrázku v záhlaví
+  („Single · Roux“): cestuje bez aplikace a rekord je rekordem metody. V
+  řádcích seznamu ne — historie ukazuje jednu session, bylo by to totéž slovo
+  u každého solvu
 
 - current / best ao5, ao12, ao50, ao100
 - PB single, PB každého okna
