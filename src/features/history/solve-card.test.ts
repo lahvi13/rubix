@@ -74,8 +74,16 @@ describe('solveCard', () => {
     expect(solveCard(solve(), null).cube).toEqual(expected);
   });
 
+  it('draws a 2×2 as a 2×2', () => {
+    expect(solveCard(solve(), null).cubeOrder).toBe(3);
+    expect(solveCard(solve({ puzzle: '222' }), null)).toMatchObject({
+      cube: solveCard(solve(), null).cube,
+      cubeOrder: 2,
+    });
+  });
+
   it.each<[string, Partial<Solve>]>([
-    ['another puzzle', { puzzle: '222' }],
+    ['a puzzle the app has no picture of', { puzzle: 'pyram' }],
     ['a scramble that does not read', { scramble: 'R Q' }],
     ['no scramble at all', { scramble: '' }],
   ])('draws no cube for %s', (_name, overrides) => {

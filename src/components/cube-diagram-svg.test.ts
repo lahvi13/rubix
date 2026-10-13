@@ -110,6 +110,66 @@ describe('cube diagrams as text', () => {
     );
   });
 
+  describe('of a 2×2', () => {
+    const skin = defaultSkin('dark');
+    const stickers = (svg: string, colour: string) => svg.split(`fill="${colour}"`).length - 1;
+
+    it.each([
+      // Six faces, each a square of plastic under four stickers.
+      ['net', 30],
+      // Three faces of plastic under four stickers each.
+      ['isometric', 15],
+      // The cross of plastic, the top's four stickers and two on each side.
+      ['lastLayer', 14],
+    ] as const)('draws a %s picture of %i shapes, in the box the 3×3 is drawn in', (view, shapes) => {
+      const pocket = diagramSvg(solvedState(), view, 'full', skin, null, 2);
+      const cube = diagramSvg(solvedState(), view, 'full', skin);
+
+      expect((pocket.match(/<rect|<polygon/g) ?? []).length).toBe(shapes);
+      expect(/viewBox="([^"]+)"/.exec(pocket)?.[1]).toBe(/viewBox="([^"]+)"/.exec(cube)?.[1]);
+    });
+
+    it('shows four stickers a face where the 3×3 shows nine', () => {
+      const pocket = diagramSvg(solvedState(), 'net', 'full', skin, null, 2);
+      const cube = diagramSvg(solvedState(), 'net', 'full', skin);
+
+      for (const colour of Object.values(skin.faces)) {
+        expect(stickers(pocket, colour)).toBe(4);
+        expect(stickers(cube, colour)).toBe(9);
+      }
+    });
+
+    it('is drawn from the corners: an algorithm for edges leaves it solved', () => {
+      const edgesOnly = applyAlg(solvedState(), moves("M2 U M U2 M' U M2"));
+
+      expect(diagramSvg(edgesOnly, 'net', 'full', skin, null, 2)).toBe(
+        diagramSvg(solvedState(), 'net', 'full', skin, null, 2),
+      );
+      expect(diagramSvg(edgesOnly, 'lastLayer', 'full', skin, null, 2)).toBe(
+        diagramSvg(solvedState(), 'lastLayer', 'full', skin, null, 2),
+      );
+      expect(diagramSvg(edgesOnly, 'net', 'full', skin)).not.toBe(
+        diagramSvg(solvedState(), 'net', 'full', skin),
+      );
+    });
+
+    it('points one arrow across the corners a T perm swaps', () => {
+      const arrow = /<polygon[^>]*stroke-miterlimit/g;
+
+      expect((diagramSvg(tPerm, 'lastLayer', 'full', skin, null, 2).match(arrow) ?? []).length).toBe(1);
+      expect((diagramSvg(tPerm, 'lastLayer', 'full', skin).match(arrow) ?? []).length).toBe(2);
+    });
+
+    it('keeps it apart from the 3×3 of the same state in the cache', () => {
+      expect(diagramUrl(tPerm, 'net', 'full', skin, null, 2)).not.toBe(
+        diagramUrl(tPerm, 'net', 'full', skin),
+      );
+      expect(diagramUrl(tPerm, 'net', 'full', skin, null, 2)).toBe(
+        diagramUrl(tPerm, 'net', 'full', skin, null, 2),
+      );
+    });
+  });
+
   it('is a url an <img> can load', () => {
     const url = diagramUrl(tPerm, 'isometric', 'firstTwoLayers', defaultSkin('dark'));
 

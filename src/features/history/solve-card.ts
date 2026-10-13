@@ -1,6 +1,7 @@
 import type { Solve } from '../../db/types';
 import { parseAlg } from '../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../domain/cube/state';
+import { CUBE_ORDER, SUPPORTED_PUZZLES } from '../../domain/puzzle/puzzles';
 import { finalMs } from '../../domain/solve/final-time';
 import { formatDate, formatIsoDate, formatResult } from '../../lib/format';
 import type { ShareCard } from '../../lib/share-card';
@@ -35,15 +36,19 @@ export function solveCard(
           : null,
     detail: solve.scramble,
     date: formatDate(solve.createdAt),
-    cube: scrambledCube(solve),
+    ...scrambledCube(solve),
   };
 }
 
-/** Only a 3×3 is drawn, and only from a scramble that reads — an old import may not. */
-function scrambledCube(solve: Solve) {
-  if (solve.puzzle !== '333') return null;
+/**
+ * Only a cube the app can be switched to is drawn, and only from a scramble
+ * that reads — an old import may not.
+ */
+function scrambledCube(solve: Solve): Pick<ShareCard, 'cube' | 'cubeOrder'> {
+  const puzzle = SUPPORTED_PUZZLES.find((supported) => supported === solve.puzzle);
   const parsed = parseAlg(solve.scramble);
-  return parsed.ok && parsed.moves.length > 0 ? applyAlg(solvedState(), parsed.moves) : null;
+  if (puzzle === undefined || !parsed.ok || parsed.moves.length === 0) return { cube: null };
+  return { cube: applyAlg(solvedState(), parsed.moves), cubeOrder: CUBE_ORDER[puzzle] };
 }
 
 export function solveCardFilename(solve: Solve): string {

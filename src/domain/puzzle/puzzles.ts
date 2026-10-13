@@ -1,4 +1,5 @@
 import type { Puzzle } from '../../db/types';
+import type { CubeOrder } from '../cube/views';
 
 /**
  * The cubes the app can be switched to, in the order the switch lists them.
@@ -47,6 +48,12 @@ export function repairedSessionRow(row: Readonly<Record<string, unknown>>): Reco
   // The method is named after the puzzle; see defaultMethodFor.
   return { ...row, methodId: puzzle };
 }
+
+/** Cubies along an edge, for the app's own pictures of each cube. */
+export const CUBE_ORDER: Readonly<Record<SupportedPuzzle, CubeOrder>> = {
+  '333': 3,
+  '222': 2,
+};
 
 /** How cubing.js names each puzzle, for a player that turns it. */
 export const TWISTY_PUZZLE: Readonly<Record<SupportedPuzzle, string>> = {

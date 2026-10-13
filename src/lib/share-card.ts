@@ -6,6 +6,7 @@
 
 import type { Face } from '../domain/cube/notation';
 import type { CubeState } from '../domain/cube/state';
+import type { CubeOrder } from '../domain/cube/views';
 import { downloadBlob } from './download';
 import { WORDMARK } from './wordmark';
 import { canShareFile, shareFile } from './share';
@@ -27,6 +28,8 @@ export interface ShareCard {
    * cube behind the card, as with an average.
    */
   cube: CubeState | null;
+  /** 2 when that cube is a 2×2, drawn as the corners of the state; a 3×3 when not said. */
+  cubeOrder?: CubeOrder;
 }
 
 export interface CardLook {

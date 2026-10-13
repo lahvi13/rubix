@@ -1266,10 +1266,17 @@ Autor 2×2 skládá po vrstvách a chce se doučit Ortegu; obsah se bere od J Pe
 
 Pořadí:
 
-1. **Přepínač a timer, historie, statistiky pro 2×2** — hotovo. Scramble je
-   zatím jen text; průvodce, trenažér a dril na 2×2 říkají, že pro ni zatím nic
-   nemají. DB v9 a formát exportu 5 přesouvají starší 2×2 sessiony z `cfop`.
-2. **Kreslení 2×2** z rohů stávajícího modelu: náhled scramblu a diagramy případů.
+1. **Přepínač a timer, historie, statistiky pro 2×2** — hotovo. Průvodce,
+   trenažér a dril na 2×2 říkají, že pro ni zatím nic nemají. DB v9 a formát
+   exportu 5 přesouvají starší 2×2 sessiony z `cfop`.
+2. **Kreslení 2×2** — hotovo. Model zůstává 3×3 a 2×2 jsou jeho rohy: obrázek
+   se kreslí s `order: 2`, tedy bez prostředku každé řady a sloupce
+   (`cellsOfOrder` v `domain/cube/views.ts`), ve stejném rámečku jako 3×3.
+   Platí pro rozvin, pohled od rohu i pohled shora; šipky permutace zůstávají
+   jen rohové. Že se 2×2 chová jako rohy 3×3 i při tazích L, D a B, je ověřené
+   proti cubing.js (500 náhodných scramblů, stejné rohy na obou). Náhled
+   scramblu na timeru a kartička ke sdílení 2×2 kreslí; přehrání scramblu na
+   2×2 zatím není — kostka z cubing.js by měla jiné barvy než obrázek.
 3. **Průvodce** (po vrstvách → Ortega) a sady **OLL 7 + PBL 5** v trenažéru,
    ověřené spuštěním jako ostatní sady.
 4. **Dril a 3D přehrávání** v barvách 3×3 (jde to, viz průzkum PG3D).

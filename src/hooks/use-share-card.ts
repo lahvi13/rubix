@@ -24,7 +24,14 @@ export function useShareCard(): ShareCardView {
       const cube =
         card.cube === null
           ? null
-          : diagramImageUrl(card.cube, 'net', 'full', withWhiteTop(skin), NET_WIDTH);
+          : diagramImageUrl(
+              card.cube,
+              'net',
+              'full',
+              withWhiteTop(skin),
+              NET_WIDTH,
+              card.cubeOrder,
+            );
       deliverShareCard(card, { faces: skin.faces, cube }, filename, message)
         .catch((cause: unknown) => reportError(strings.share.failed, cause))
         .finally(() => setBusy(false));

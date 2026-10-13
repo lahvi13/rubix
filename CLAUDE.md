@@ -248,6 +248,10 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   pyraminx. Co je pro každou kostku jiné (cíl, název pro twisty), je tabulka
   `Record<SupportedPuzzle, …>`, aby nová kostka shodila build tam, kde chybí.
   Trenažér a dril zatím 3×3 natvrdo mají — na jiné kostce se nevykreslí.
+- **2×2 nemá vlastní model.** Stav je pořád 54 nálepek 3×3 a 2×2 jsou jeho
+  rohy; `CubeDiagram` ji nakreslí s `order={2}` (z `CUBE_ORDER[puzzle]`).
+  Algoritmus pro 2×2 se tedy ověřuje na stejném modelu jako každý jiný — hrany
+  se při tom hýbou taky, jen je nikdo nekreslí a nesmí se podle nich soudit.
 - **hlavní zařízení je telefon.** UI se ověřuje v šířce 412 px (CDP
   `Emulation.setDeviceMetricsOverride`, `mobile: true`) — desktop je až druhý.
   Řádek s několika ovládacími prvky vedle sebe se tam smrskne na nulu, takže

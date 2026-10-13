@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { CubeState } from '../domain/cube/state';
-import type { Stickering } from '../domain/cube/views';
+import type { CubeOrder, Stickering } from '../domain/cube/views';
 import type { CubeSkin } from '../lib/cube-skins';
 import { diagramUrl, type DiagramView, type MarkedCorner } from './cube-diagram-svg';
 
@@ -13,6 +13,8 @@ interface CubeDiagramProps {
   skin: CubeSkin;
   /** A corner framed for the reader to look at; last-layer pictures only. */
   mark?: MarkedCorner | null;
+  /** 2 for a 2×2, drawn as the corners of the same state. */
+  order?: CubeOrder;
   /**
    * Read out instead of the picture. Pass null where the diagram sits inside
    * something already labelled — a card that names the case underneath does
@@ -45,6 +47,7 @@ export const CubeDiagram = memo(function CubeDiagram({
   stickering = 'full',
   skin,
   mark = null,
+  order = 3,
   label,
   className,
   isEager = false,
@@ -52,7 +55,7 @@ export const CubeDiagram = memo(function CubeDiagram({
   return (
     <img
       className={className}
-      src={diagramUrl(state, view, stickering, skin, mark)}
+      src={diagramUrl(state, view, stickering, skin, mark, order)}
       alt={label ?? ''}
       draggable={false}
       // Fifty-seven pictures arriving at once are fifty-seven decodes; off the

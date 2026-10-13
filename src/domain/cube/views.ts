@@ -639,6 +639,45 @@ export function permutationArrows(
   return arrows;
 }
 
+/** Cubies along an edge of the cube a picture is of. */
+export type CubeOrder = 2 | 3;
+
+/**
+ * A face, or a strip of one, as the cube of this order shows it. The model is
+ * a 3×3 and a 2×2 is its corners: R on one does to the corners exactly what R
+ * does on the other, and neither moves in space unless it is turned whole. So
+ * a 2×2 is drawn by leaving the middle of every row and every column out.
+ */
+export function cellsOfOrder<T>(cells: readonly T[], order: CubeOrder): T[] {
+  if (order === 3) return [...cells];
+  const isGrid = cells.length === 9;
+  return cells.filter((_, index) =>
+    isGrid ? index % 3 !== 1 && Math.floor(index / 3) !== 1 : index !== 1,
+  );
+}
+
+/** A corner's cell on the 3×3's top face, as the cell it is on the 2×2's. */
+const CORNER_CELL = new Map<number, number>([
+  [0, 0],
+  [2, 1],
+  [6, 2],
+  [8, 3],
+]);
+
+/**
+ * The arrows a cube of this order draws, numbered by its own cells. A 2×2 has
+ * no edges, and the model's edges go wherever the moves happen to take them —
+ * an arrow for one would point at a piece that is not there.
+ */
+export function arrowsOfOrder(arrows: readonly PieceArrow[], order: CubeOrder): PieceArrow[] {
+  if (order === 3) return [...arrows];
+  return arrows.flatMap((arrow) => {
+    const from = CORNER_CELL.get(arrow.from);
+    const to = CORNER_CELL.get(arrow.to);
+    return from === undefined || to === undefined ? [] : [{ ...arrow, from, to }];
+  });
+}
+
 export interface NetView {
   up: Cell[];
   left: Cell[];

@@ -10,12 +10,15 @@
 
 import { stateKey, type CubeState } from '../domain/cube/state';
 import {
+  arrowsOfOrder,
+  cellsOfOrder,
   isometricView,
   lastLayerView,
   MARKED,
   netView,
   permutationArrows,
   type Cell,
+  type CubeOrder,
   type IsometricCorner,
   type PieceArrow,
   type Stickering,
@@ -45,15 +48,16 @@ export function diagramUrl(
   stickering: Stickering,
   skin: CubeSkin,
   mark: MarkedCorner | null = null,
+  order: CubeOrder = 3,
 ): string {
   // Everything the theme changes about a skin belongs in the key, or a picture
   // drawn before the theme flipped gets handed back after it.
   const skinKey = `${skin.id}|${skin.muted}|${skin.outline}`;
-  const key = `${skinKey}|${view}|${stickering}|${mark}|${stateKey(state)}`;
+  const key = `${skinKey}|${view}|${stickering}|${mark}|${order}|${stateKey(state)}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
 
-  const drawn = diagramSvg(state, view, stickering, skin, mark);
+  const drawn = diagramSvg(state, view, stickering, skin, mark, order);
   const url = `data:image/svg+xml,${encodeURIComponent(drawn)}`;
   if (cache.size >= CACHE_LIMIT) cache.clear();
   cache.set(key, url);
@@ -72,8 +76,9 @@ export function diagramImageUrl(
   stickering: Stickering,
   skin: CubeSkin,
   width: number,
+  order: CubeOrder = 3,
 ): string {
-  const drawn = diagramSvg(state, view, stickering, skin);
+  const drawn = diagramSvg(state, view, stickering, skin, null, order);
   const [, , boxWidth = 1, boxHeight = 1] =
     /viewBox="([^"]+)"/.exec(drawn)?.[1]?.split(' ').map(Number) ?? [];
   const height = Math.round((width * boxHeight) / boxWidth);
@@ -87,10 +92,21 @@ export function diagramSvg(
   stickering: Stickering,
   skin: CubeSkin,
   mark: MarkedCorner | null = null,
+  /**
+   * 2 draws the same state as a 2×2: the corners of the model, in pictures of
+   * the same size, so a sticker is half as wide again.
+   */
+  order: CubeOrder = 3,
 ): string {
-  if (view === 'lastLayer') return lastLayerSvg(state, stickering, skin, mark);
-  if (view === 'net') return netSvg(state, stickering, skin);
-  return isometricSvg(state, stickering, skin, view === 'isometricLeft' ? 'frontLeft' : 'frontRight');
+  if (view === 'lastLayer') return lastLayerSvg(state, stickering, skin, mark, order);
+  if (view === 'net') return netSvg(state, stickering, skin, order);
+  return isometricSvg(
+    state,
+    stickering,
+    skin,
+    view === 'isometricLeft' ? 'frontLeft' : 'frontRight',
+    order,
+  );
 }
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -156,8 +172,10 @@ function lastLayerSvg(
   stickering: Stickering,
   skin: CubeSkin,
   mark: MarkedCorner | null,
+  order: CubeOrder,
 ): string {
   const view = lastLayerView(state, stickering);
+  const cellSize = (CELL * 3) / order;
 
   // The plastic under the top face and the strips round it, as the cross it
   // makes — the corners of the square are no part of the cube.
@@ -165,13 +183,13 @@ function lastLayerSvg(
     rect(OFFSET, 0, CELL * 3, SIZE, 2, skin.outline, skin, 1) +
     rect(0, OFFSET, SIZE, CELL * 3, 2, skin.outline, skin, 1);
 
-  const top = view.top
+  const top = cellsOfOrder(view.top, order)
     .map((cell, index) =>
       rect(
-        OFFSET + (index % 3) * CELL + INSET,
-        OFFSET + Math.floor(index / 3) * CELL + INSET,
-        CELL - INSET * 2,
-        CELL - INSET * 2,
+        OFFSET + (index % order) * cellSize + INSET,
+        OFFSET + Math.floor(index / order) * cellSize + INSET,
+        cellSize - INSET * 2,
+        cellSize - INSET * 2,
         2,
         colourOf(cell, skin),
         skin,
@@ -181,8 +199,8 @@ function lastLayerSvg(
     .join('');
 
   const strip = (cell: Cell, index: number, at: number, horizontal: boolean): string => {
-    const along = OFFSET + index * CELL + INSET;
-    const length = CELL - INSET * 2;
+    const along = OFFSET + index * cellSize + INSET;
+    const length = cellSize - INSET * 2;
     return rect(
       horizontal ? along : at,
       horizontal ? at : along,
@@ -196,19 +214,19 @@ function lastLayerSvg(
   };
 
   const sides = [
-    view.back.map((cell, index) => strip(cell, index, 0, true)),
-    view.front.map((cell, index) => strip(cell, index, SIZE - STRIP, true)),
-    view.left.map((cell, index) => strip(cell, index, 0, false)),
-    view.right.map((cell, index) => strip(cell, index, SIZE - STRIP, false)),
+    cellsOfOrder(view.back, order).map((cell, index) => strip(cell, index, 0, true)),
+    cellsOfOrder(view.front, order).map((cell, index) => strip(cell, index, SIZE - STRIP, true)),
+    cellsOfOrder(view.left, order).map((cell, index) => strip(cell, index, 0, false)),
+    cellsOfOrder(view.right, order).map((cell, index) => strip(cell, index, SIZE - STRIP, false)),
   ]
     .flat()
     .join('');
 
-  const arrows = permutationArrows(state, stickering)
-    .map((arrow) => arrowSvg(arrow, skin))
+  const arrows = arrowsOfOrder(permutationArrows(state, stickering), order)
+    .map((arrow) => arrowSvg(arrow, skin, order))
     .join('');
 
-  const [under, frame] = mark === null ? ['', ''] : cornerFrameSvg(mark, skin);
+  const [under, frame] = mark === null ? ['', ''] : cornerFrameSvg(mark, skin, cellSize);
 
   return svg(`0 0 ${SIZE} ${SIZE}`, under + plastic + top + sides + arrows + frame);
 }
@@ -226,8 +244,12 @@ const FRAME = { line: 2.4, band: 1.3 } as const;
  * fill the notch — on a light page the notch is the page, a pale chip inside
  * the square.
  */
-function cornerFrameSvg(mark: MarkedCorner, skin: CubeSkin): readonly [string, string] {
-  const side = OFFSET + CELL;
+function cornerFrameSvg(
+  mark: MarkedCorner,
+  skin: CubeSkin,
+  cellSize: number,
+): readonly [string, string] {
+  const side = OFFSET + cellSize;
   // Pulled in off the picture's edges, or the outer half of the line is cut.
   const edge = FRAME.line / 2 + FRAME.band;
   const length = side - edge;
@@ -244,8 +266,12 @@ function cornerFrameSvg(mark: MarkedCorner, skin: CubeSkin): readonly [string, s
 }
 
 /** Centre of a cell of the top-face grid. */
-function cellCentre(cell: number): readonly [number, number] {
-  return [OFFSET + ((cell % 3) + 0.5) * CELL, OFFSET + (Math.floor(cell / 3) + 0.5) * CELL];
+function cellCentre(cell: number, order: CubeOrder): readonly [number, number] {
+  const cellSize = (CELL * 3) / order;
+  return [
+    OFFSET + ((cell % order) + 0.5) * cellSize,
+    OFFSET + (Math.floor(cell / order) + 0.5) * cellSize,
+  ];
 }
 
 /** The arrow's proportions, in the units of the picture — a sticker is 20. */
@@ -266,10 +292,10 @@ const ARROW = {
  * on its end: a triangle wide enough to read has to be stroked to be seen over
  * a yellow sticker, and a stroke round a short triangle is a blob, not a point.
  */
-function arrowSvg(arrow: PieceArrow, skin: CubeSkin): string {
+function arrowSvg(arrow: PieceArrow, skin: CubeSkin, order: CubeOrder): string {
   const { shaftHalf, headLength, headHalf, band } = ARROW;
-  const [fromX, fromY] = cellCentre(arrow.from);
-  const [toX, toY] = cellCentre(arrow.to);
+  const [fromX, fromY] = cellCentre(arrow.from, order);
+  const [toX, toY] = cellCentre(arrow.to, order);
   const length = Math.hypot(toX - fromX, toY - fromY);
   const unitX = (toX - fromX) / length;
   const unitY = (toY - fromY) / length;
@@ -326,8 +352,14 @@ const NET_CELL = 12;
 const NET_FACE = NET_CELL * 3;
 const NET_GAP = 2;
 
-function netSvg(state: CubeState, stickering: Stickering, skin: CubeSkin): string {
+function netSvg(
+  state: CubeState,
+  stickering: Stickering,
+  skin: CubeSkin,
+  order: CubeOrder,
+): string {
   const view = netView(state, stickering);
+  const cellSize = NET_FACE / order;
   const width = NET_FACE * 4 + NET_GAP * 3;
   const height = NET_FACE * 3 + NET_GAP * 2;
 
@@ -353,13 +385,13 @@ function netSvg(state: CubeState, stickering: Stickering, skin: CubeSkin): strin
         skin,
         0.7,
       ) +
-      face.cells
+      cellsOfOrder(face.cells, order)
         .map((cell, index) =>
           rect(
-            face.column * (NET_FACE + NET_GAP) + (index % 3) * NET_CELL + 0.6,
-            face.row * (NET_FACE + NET_GAP) + Math.floor(index / 3) * NET_CELL + 0.6,
-            NET_CELL - 1.2,
-            NET_CELL - 1.2,
+            face.column * (NET_FACE + NET_GAP) + (index % order) * cellSize + 0.6,
+            face.row * (NET_FACE + NET_GAP) + Math.floor(index / order) * cellSize + 0.6,
+            cellSize - 1.2,
+            cellSize - 1.2,
             1.5,
             colourOf(cell, skin),
             skin,
@@ -396,15 +428,18 @@ function isometricSvg(
   stickering: Stickering,
   skin: CubeSkin,
   corner: IsometricCorner,
+  order: CubeOrder,
 ): string {
   const view = isometricView(state, stickering, corner);
   const gap = 0.06;
-  const size = 1 - gap * 2;
+  // The cube is three units across whatever its order; a cubie is what changes.
+  const step = 3 / order;
+  const size = step - gap * 2;
 
   /** Top face: rows run from the back of the cube towards the front. */
   const topCell = (index: number): string => {
-    const u = (index % 3) - 1.5 + gap;
-    const v = Math.floor(index / 3) - 1.5 + gap;
+    const u = (index % order) * step - 1.5 + gap;
+    const v = Math.floor(index / order) * step - 1.5 + gap;
     return [
       point(u, v, 0),
       point(u + size, v, 0),
@@ -415,8 +450,8 @@ function isometricSvg(
 
   /** Front face: across the cube and down it. */
   const frontCell = (index: number): string => {
-    const u = (index % 3) - 1.5 + gap;
-    const w = Math.floor(index / 3) + gap;
+    const u = (index % order) * step - 1.5 + gap;
+    const w = Math.floor(index / order) * step + gap;
     return [
       point(u, 1.5, w),
       point(u + size, 1.5, w),
@@ -427,8 +462,8 @@ function isometricSvg(
 
   /** Right face: its own column 0 is at the front of the cube. */
   const rightCell = (index: number): string => {
-    const v = 1.5 - (index % 3) - 1 + gap;
-    const w = Math.floor(index / 3) + gap;
+    const v = 1.5 - (index % order) * step - step + gap;
+    const w = Math.floor(index / order) * step + gap;
     return [
       point(1.5, v, w),
       point(1.5, v + size, w),
@@ -450,15 +485,15 @@ function isometricSvg(
 
   const body =
     plastic +
-    view.top
+    cellsOfOrder(view.top, order)
       .map((cell, index) => polygon(topCell(index), colourOf(cell, skin), skin.outline, 0.8))
       .join('') +
-    view.front
+    cellsOfOrder(view.front, order)
       .map((cell, index) =>
         polygon(frontCell(index), shade(colourOf(cell, skin), SIDE_SHADE.front), skin.outline, 0.8),
       )
       .join('') +
-    view.right
+    cellsOfOrder(view.right, order)
       .map((cell, index) =>
         polygon(rightCell(index), shade(colourOf(cell, skin), SIDE_SHADE.right), skin.outline, 0.8),
       )
