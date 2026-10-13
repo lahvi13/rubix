@@ -487,6 +487,8 @@ const ALL_EDGES_NET: SituationPicture = {
   standing: ZZ_STANDING,
 };
 
+const EDGE_READING_NET: SituationPicture = { ...ALL_EDGES_NET, stickering: 'edgeReading' };
+
 const BAD_EDGES_NET: SituationPicture = { ...ALL_EDGES_NET, stickering: 'badEdges' };
 
 /**
@@ -535,29 +537,44 @@ export const ZZ_STEPS: readonly LearnStep[] = [
     keyText: null,
     holds: [],
     situations: [],
-    // The two things that give a bad edge away, each a picture of what to
-    // look for and where. As sentences they were a list of nine places.
+    // One sticker to an edge, and the three answers its colour can give: the
+    // same six places in every picture, so where to look is learnt by the
+    // third. The first version drew two sets of places a colour must not be
+    // in, and every edge had to be held against both.
     rules: [
       {
         view: 'isometric',
-        stickering: 'sideColourTells',
+        stickering: 'readsPole',
         standing: ZZ_STANDING,
-        text: strings.learn.zzRules.sideColours,
+        text: strings.learn.zzRules.readsPole,
       },
       {
         view: 'isometric',
-        stickering: 'poleColourTells',
+        stickering: 'readsSide',
         standing: ZZ_STANDING,
-        text: strings.learn.zzRules.poleColours,
+        text: strings.learn.zzRules.readsSide,
+      },
+      {
+        view: 'isometric',
+        stickering: 'readsFront',
+        standing: ZZ_STANDING,
+        text: strings.learn.zzRules.readsFront,
       },
     ],
-    // The same cube twice: once to count on, once with the answer.
+    // The same cube three times: to count on, with only what the rules read
+    // left on it, and with the answer.
     figures: [
       {
         picture: ALL_EDGES_NET,
         setup: BAD_EDGES_EXAMPLE,
         caption: strings.learn.zzFigures.tryIt,
         isSetupShown: true,
+      },
+      {
+        picture: EDGE_READING_NET,
+        setup: BAD_EDGES_EXAMPLE,
+        caption: strings.learn.zzFigures.reading,
+        isSetupShown: false,
       },
       {
         picture: BAD_EDGES_NET,
@@ -577,11 +594,14 @@ export const ZZ_STEPS: readonly LearnStep[] = [
     caseIds: [],
     keyText: null,
     holds: [],
-    // The turn itself, one way of carrying an edge to it, and the two counts
-    // that do not divide by four.
+    // The turn itself, the two ways of carrying an edge to it — by the face
+    // it lies on, and round a place that is taken — and the two counts that
+    // do not divide by four. Run as worded over all 2,048 layouts of bad
+    // edges, with the half turn of the back the tip keeps for the rest.
     situations: [
       { alg: 'F', text: strings.learn.zzSituations.fourOnFront },
       { alg: "R' F", text: strings.learn.zzSituations.gather },
+      { alg: "R' U R F", text: strings.learn.zzSituations.aside },
       { alg: 'F', next: "R' F", text: strings.learn.zzSituations.twoBad },
       { alg: 'F', next: "R' L U2 F", text: strings.learn.zzSituations.sixBad },
     ],

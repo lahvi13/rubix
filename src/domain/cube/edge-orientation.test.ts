@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { badEdgeCount, isBadEdge } from './edge-orientation';
+import {
+  badEdgeCount,
+  isBadEdge,
+  isInnerPlace,
+  isSettledByPartner,
+  partnerOf,
+} from './edge-orientation';
 import { parseAlg } from './notation';
 import { FACELETS, applyAlg, solvedState } from './state';
 
@@ -95,5 +101,65 @@ describe('bad edges, as ZZ counts them', () => {
       });
       expect(isBadEdge(state, index), `sticker ${index}`).toBe(breaksARule);
     }
+  });
+});
+
+/**
+ * The way the guide says to read an edge: one sticker of it, and three
+ * answers by the colour found there. Worded for a person, so it is run here
+ * as worded, on every edge of a few hundred cubes.
+ */
+describe('reading an edge by one sticker', () => {
+  const TURNS = ['U', 'D', 'R', 'L', 'F', 'B'].flatMap((face) => [face, `${face}'`, `${face}2`]);
+
+  /** The same scrambles every run: the generator is seeded. */
+  function scrambles(count: number, length: number): string[] {
+    let seed = 0x2f6e2b1;
+    const next = () => {
+      seed = (seed + 0x6d2b79f5) | 0;
+      let mixed = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      mixed = (mixed + Math.imul(mixed ^ (mixed >>> 7), 61 | mixed)) ^ mixed;
+      return ((mixed ^ (mixed >>> 14)) >>> 0) / 4294967296;
+    };
+    return Array.from({ length: count }, () =>
+      Array.from({ length }, () => TURNS[Math.floor(next() * TURNS.length)] ?? 'U').join(' '),
+    );
+  }
+
+  const centreOf = (state: ReturnType<typeof solvedState>, face: string) =>
+    state[FACELETS.findIndex((sticker) => sticker.face === face && sticker.row === 1 && sticker.column === 1)];
+
+  // Held every way round: the rule is about the cube as it lies.
+  it.each(['', 'y', 'y2', 'x', 'z'])('agrees with the cube on every edge, held %s', (held) => {
+    for (const scramble of scrambles(200, 25)) {
+      const state = after(`${held} ${scramble}`.trim());
+      const isOneOf = (colour: string | undefined, faces: readonly string[]) =>
+        faces.some((face) => centreOf(state, face) === colour);
+
+      let read = 0;
+      for (const index of FACELETS.keys()) {
+        if (!isInnerPlace(index)) continue;
+        read++;
+
+        const colour = state[index];
+        const isUndecided = isOneOf(colour, ['F', 'B']);
+        const isBad = isUndecided
+          ? isOneOf(state[partnerOf(index)], ['U', 'D'])
+          : isOneOf(colour, ['L', 'R']);
+
+        expect(isSettledByPartner(state, index)).toBe(isUndecided);
+        expect(isBadEdge(state, index)).toBe(isBad);
+      }
+      expect(read).toBe(12);
+    }
+  });
+
+  it('has no second sticker to ask about on a corner or a centre', () => {
+    const corner = FACELETS.findIndex((sticker) => sticker.row === 0 && sticker.column === 0);
+    const centre = FACELETS.findIndex((sticker) => sticker.row === 1 && sticker.column === 1);
+
+    expect(partnerOf(corner)).toBe(-1);
+    expect(partnerOf(centre)).toBe(-1);
+    expect(isSettledByPartner(solvedState(), centre)).toBe(false);
   });
 });

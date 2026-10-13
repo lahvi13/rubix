@@ -539,12 +539,12 @@ describe('the ZZ guide', () => {
     }
   });
 
-  it('draws the two rules for spotting a bad edge, one colour pair to a picture', () => {
+  it('draws the three answers one sticker of an edge can give, a kind of colour to a picture', () => {
     const rules = step('zz-bad-edges').rules ?? [];
 
-    expect(rules.map((rule) => rule.stickering)).toEqual(['sideColourTells', 'poleColourTells']);
+    expect(rules.map((rule) => rule.stickering)).toEqual(['readsPole', 'readsSide', 'readsFront']);
     // From the corner the cube is held at, where top, front and side all show.
-    expect(rules.map((rule) => rule.view)).toEqual(['isometric', 'isometric']);
+    expect(rules.map((rule) => rule.view)).toEqual(['isometric', 'isometric', 'isometric']);
     // The step is a rule and a cube to try it on: nothing in it is turned.
     expect(allSituations(step('zz-bad-edges'))).toHaveLength(0);
   });
@@ -557,21 +557,27 @@ describe('the ZZ guide', () => {
     expect(pairs.more?.show).not.toBe(pairs.more?.hide);
   });
 
-  it('gives an example to count on, and the same cube with the answer', () => {
-    const [question, answer] = step('zz-bad-edges').figures ?? [];
-    if (!question || !answer) throw new Error('the first step lost its example');
+  it('gives an example to count on, what is read off it, and the same cube with the answer', () => {
+    const [question, reading, answer] = step('zz-bad-edges').figures ?? [];
+    if (!question || !reading || !answer) throw new Error('the first step lost its example');
 
-    expect(figureState(question)).toEqual(figureState(answer));
+    expect(figureState(reading)).toEqual(figureState(question));
+    expect(figureState(answer)).toEqual(figureState(question));
     expect(question.picture.stickering).toBe('allEdges');
+    expect(reading.picture.stickering).toBe('edgeReading');
     expect(answer.picture.stickering).toBe('badEdges');
     // The moves are printed for a cube in the hand: under the question only.
-    expect([question.isSetupShown, answer.isSetupShown]).toEqual([true, false]);
+    expect([question.isSetupShown, reading.isSetupShown, answer.isSetupShown]).toEqual([
+      true,
+      false,
+      false,
+    ]);
 
-    // What the caption says the answer is, and that every layer has some.
+    // What the caption says the answer is: six, two of them in each layer.
     const bad = badPlaces(figureState(question));
-    expect(bad).toHaveLength(6);
     expect(answer.caption).toMatch(/^(Six|Šest) /);
-    expect(new Set(bad.map((position) => position.split(',')[1]))).toEqual(new Set(['1', '0', '-1']));
+    const inLayer = (layer: string) => bad.filter((position) => position.split(',')[1] === layer);
+    expect([inLayer('1'), inLayer('0'), inLayer('-1')].map((list) => list.length)).toEqual([2, 2, 2]);
   });
 
   /**
@@ -582,8 +588,9 @@ describe('the ZZ guide', () => {
   it.each([
     ['four on the front', 0, 4, 4, 0],
     ['three on the front and one to carry there', 1, 4, 3, 0],
-    ['two, one of them on the front', 2, 2, 1, 4],
-    ['six, three of them on the front', 3, 6, 3, 4],
+    ['three on the front and one behind a place that is taken', 2, 4, 3, 0],
+    ['two, one of them on the front', 3, 2, 1, 4],
+    ['six, three of them on the front', 4, 6, 3, 4],
   ] as const)('draws %s, and leaves what it says', (_label, index, bad, onFront, left) => {
     const drawn = picture('zz-edges-good', index);
 
@@ -597,6 +604,22 @@ describe('the ZZ guide', () => {
 
     expect(badPlaces(drawn.before).filter((position) => !isOnFront(position))).toEqual(['1,1,0']);
     expect(drawn.situation.alg).toBe("R' F");
+  });
+
+  it('goes round a front place that is taken, as its card says', () => {
+    const drawn = picture('zz-edges-good', 2);
+    const frontAfter = (alg: string) =>
+      badPlaces(applyAlg(drawn.before, movesOf(alg))).filter(isOnFront).length;
+
+    expect(drawn.situation.alg).toBe("R' U R F");
+    // The fourth edge at the back right, and the right side's own place in
+    // front holding one of the other three — with the top one free.
+    expect(badPlaces(drawn.before).filter((position) => !isOnFront(position))).toEqual(['1,0,-1']);
+    expect(badPlaces(drawn.before)).toContain('1,0,1');
+    expect(badPlaces(drawn.before)).not.toContain('0,1,1');
+    // Aside, across, back: one leaves the front, the fourth arrives, the
+    // one that left returns.
+    expect([frontAfter("R'"), frontAfter("R' U"), frontAfter("R' U R")]).toEqual([2, 3, 4]);
   });
 
   it('turns edges over with the front face only, a quarter at a time', () => {

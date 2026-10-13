@@ -1480,28 +1480,43 @@ Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
    Roux | ZZ). Zdroj předpokládá, že čtenář už kostku složit umí a čte notaci —
    je to krok od CFOP dál jako Roux, ne první složení. Sedm kroků, stavěných
    jako ty v Rouxu:
-   - **Špatné hrany** — krok bez jediného tahu. Dvě pravidla ze zdroje, každé
-     jako **obrázek toho, co hledat** (`rules`): kostka z rohu, ze kterého se
-     drží, a na ní jen místa, kde daná dvojice barev být nesmí, v těch barvách
-     — červená a oranžová nahoře a vpředu vedle středu (`sideColourTells`),
-     žlutá a bílá na boku a vpředu nad středem a pod ním (`poleColourTells`).
-     Vedle každého jedna věta; spodek, zadek a levou stěnu řekne řádek „čte se
-     jako vršek, předek a pravá“. Pod nimi **příklad na vyzkoušení**
-     (`figures`): rozvinutá kostka s hranami a středy v barvách (rohy šedě,
-     `allEdges`), sedm tahů, kterými ji čtenář udělá ze složené, a tatáž kostka
-     s odpovědí — šest špatných hran fialově (`badEdges`). Krok tak nekončí u
-     „zkus si to“ bez výchozí pozice.
+   - **Špatné hrany** — krok bez jediného tahu. **Jedna nálepka na hranu a tři
+     odpovědi podle její barvy.** Nahoře a dole se čte nálepka, která míří
+     nahoru nebo dolů, v prostřední vrstvě ta vpředu nebo vzadu — dvanáct
+     „vnitřních“ míst (`isInnerPlace`). Žlutá nebo bílá tam znamená dobrou
+     hranu, červená nebo oranžová špatnou, a u modré nebo zelené rozhodne
+     druhá nálepka té hrany: se žlutou nebo bílou je špatná. Každá odpověď je
+     **obrázek** (`rules`): kostka z rohu, ze kterého se drží, pokaždé s týmiž
+     šesti místy v dané dvojici barev (`readsPole`, `readsSide`, `readsFront`
+     — poslední i s druhou nálepkou). Text pojem kotví v tom, co čtenář zná z
+     CFOP (hrana poslední vrstvy bez žluté nahoře), a říká počítat po vrstvách.
+     Pod obrázky **příklad na vyzkoušení** (`figures`), třikrát tatáž
+     rozvinutá kostka: s hranami a středy v barvách (`allEdges`) a sedmi tahy,
+     kterými ji čtenář udělá ze složené; jen s tím, co se na ní čte
+     (`edgeReading` — dvanáct nálepek, u modré a zelené i ta druhá); a s
+     odpovědí, šest špatných fialově (`badEdges`), po dvou v každé vrstvě.
+     Krok tak nekončí u „zkus si to“ bez výchozí pozice.
 
      První verze měla pravidla jako dvě věty s devíti místy („nahoře, dole,
      nebo v prostřední řadě přední či zadní stěny“) a autor ji hned vrátil:
-     moc informací najednou a nedá se to představit. Obrázek pravidla zůstává
-     i se sbalenými vysvětlivkami — jeho věta je pravidlo, ne komentář
-   - **Oprava hran** — podle počtu, obrázek pro každou odpověď: čtyři vpředu a
-     `F`; jak tam hranu donést, aniž se přetočí (`R' F`); dvě → jedna vpředu
-     se třemi dobrými, otáčka udělá čtyři; šest → tři vpředu s jednou dobrou,
-     zbudou čtyři. Osm a dvanáct jsou čtyři a čtyři, deset jako šest. Špatná
-     hrana je fialová **celá**, obě nálepky: z rohu kostky je často vidět jen
-     jedna, a krok je o tom, kde špatné jsou, ne proč
+     moc informací najednou a nedá se to představit. Druhá je kreslila jako
+     dvě sady míst, kde barva být nesmí (červená a oranžová na vnitřních
+     místech, žlutá a bílá na ostatních) — logicky totéž co dnes, jenže každou
+     hranu bylo potřeba porovnat s oběma obrázky, a autor se přes krok s
+     kostkou v ruce dostal jen stěží (2026-10-13). Obrázek pravidla zůstává i
+     se sbalenými vysvětlivkami — jeho věta je pravidlo, ne komentář
+   - **Oprava hran** — cíl napřed: čtyři špatné vpředu a `F`. Pak **jak je tam
+     dovézt**: každé místo vpředu má svou stěnu (horní U, pravé R, spodní D,
+     levé L), která jím otočí a ostatních tří se nedotkne, takže špatnou hranu
+     doveze stěna, na které leží (`R' F`). Má-li ta stěna vpředu špatnou už
+     teď, „odsuň, dovez, vrať“ (`R' U R F`); hranu vzadu, na kterou nestačí
+     ani to, přehodí `B2` (v tipu). Počty mají obrázek, kde nejsou čtyři: dvě →
+     jedna vpředu se třemi dobrými, otáčka udělá čtyři; šest → tři vpředu s
+     jednou dobrou, zbudou čtyři. Osm a dvanáct jsou čtyři a čtyři, deset jako
+     šest. Špatná hrana je fialová **celá**, obě nálepky: z rohu kostky je
+     často vidět jen jedna, a krok je o tom, kde špatné jsou, ne proč.
+     První verze říkala jen „přenes je na přední stěnu“ a jak, nechala na
+     zkoušení — na rozdíl od Rouxu, kde má obrázek každá odpověď
    - **Cross** jen tahy R, L, U, D, `F2` a `B2`. S dobrými hranami míří bílá
      nahoře vždy nahoru a v prostřední vrstvě dopředu nebo dozadu — dva obrázky
      a hotový cross
@@ -1525,7 +1540,13 @@ Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
    dolů nebo do prostřední řady vpředu a vzadu“) se shodují na všech hranách
    20 000 scramblů; hranu přetočí jen čtvrtotáčka F nebo B, vždy všechny čtyři;
    z každého z 2 048 rozložení špatných hran jde potřebný počet donést na
-   jednu stěnu nejvýš pěti tahy. **Postup F2L, jak ho text říká, prošel každý
+   jednu stěnu nejvýš pěti tahy. **Dovážení hran, jak ho text říká** — stěnou,
+   na které hrana leží, jinak odsuň–dovez–vrať, jinak `B2` — prošlo všech
+   2 048 rozložení: vždy skončí, nejvýš 13 tahy, průměrně 7 (úplné, ne
+   nejkratší). Čtení jednou nálepkou hlídá test v repu
+   (`edge-orientation.test.ts`): s `isBadEdge` se shodne na každé hraně 200
+   zamíchaných kostek, každé držené pěti způsoby.
+   **Postup F2L, jak ho text říká, prošel každý
    stav páru** — 192 s otevřenými sloty a 75 u posledního slotu, pro každý ze
    čtyř slotů — bez chyby, nejvýš 18 tahů na pár. V repu zůstávají testy
    obrázků (`steps.test.ts`): každý je to, co jeho popisek tvrdí, jeho tahy
@@ -1543,6 +1564,11 @@ Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
    (<https://cube.rider.biz/zz.php?v=beginner>). Jen tu: jinak učí EOLine a
    F2L z bloků, tedy jinou ZZ, a nemá otevřenou licenci. Texty průvodce jsou
    vlastní, ne překlad žádného z obou.
+   **Kroky 3 až 5 jsou od 2026-10-13 pozastavené.** Autor průvodce prošel s
+   kostkou, metoda mu nesedla a do trenažéru ani drilu ji dávat nechce;
+   průvodce a metoda u session zůstávají. Vrátit se k nim má smysl, jen kdyby
+   ZZ začal skládat — sady, které nikdo neprojde s kostkou v ruce, by šly ven
+   neodzkoušené.
 3. **Drill rozpoznání EO.** Scramble a otázka „kolik hran je špatných?“ — to
    jediné, co je na ZZ doopravdy nové a co se musí stihnout při inspekci.
    Odpověď je spočítaná z modelu kostky. Podoba (počet, nebo ťuknutí na hrany)

@@ -8,7 +8,7 @@
  * it is coming from.
  */
 
-import { isBadEdge, isInnerPlace } from './edge-orientation';
+import { isBadEdge, isInnerPlace, isSettledByPartner, partnerOf } from './edge-orientation';
 import type { Face, Move } from './notation';
 import { FACELETS, movePermutation, solvedState, type CubeState } from './state';
 
@@ -97,14 +97,21 @@ export type Stickering =
    */
   | 'badEdges'
   /**
-   * The two rules a bad edge is spotted by, each drawn as the thing to look
-   * for: the places a left or right colour must not be, wearing those two
-   * colours, and the places a top or bottom colour must not be, wearing those.
-   * Not a position — whatever the cube, the picture is the same, but for the
-   * colours of its centres.
+   * The one sticker each edge is read by, drawn in each of the three kinds of
+   * colour it can show: a top or bottom colour, a left or right one, a front
+   * or back one — and with that last, the other sticker of the edge in the
+   * colour that makes it a bad one. Not a position — whatever the cube, the
+   * picture is the same, but for the colours of its centres.
    */
-  | 'sideColourTells'
-  | 'poleColourTells'
+  | 'readsPole'
+  | 'readsSide'
+  | 'readsFront'
+  /**
+   * What those three rules read off a cube as it lies: the twelve stickers,
+   * one to an edge, and the other sticker wherever the first leaves the edge
+   * undecided. The worked example between a cube and its answer.
+   */
+  | 'edgeReading'
   /**
    * No colours at all: the shape of a cube, standing in for one that is not
    * known yet — the scramble still being generated.
@@ -301,9 +308,13 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
     case 'badEdges':
       if (pieceSize(index) === 1) return colour;
       return isBadEdge(state, index) ? MARKED : null;
-    case 'sideColourTells':
-    case 'poleColourTells':
-      return pieceSize(index) === 1 ? colour : tell(state, index, stickering);
+    case 'readsPole':
+    case 'readsSide':
+    case 'readsFront':
+      return pieceSize(index) === 1 ? colour : read(state, index, stickering);
+    case 'edgeReading':
+      if (pieceSize(index) !== 2) return pieceSize(index) === 1 ? colour : null;
+      return isInnerPlace(index) || isSettledByPartner(state, partnerOf(index)) ? colour : null;
     case 'blank':
       return null;
     case 'firstTwoLayers':
@@ -315,28 +326,32 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
 }
 
 /**
- * What gives a bad edge away in this place: a left or right colour in an
- * inner one, a top or bottom colour in any other. The two colours of a kind
- * take turns from place to place, so that a picture shows both — the left
- * colour on the left half and the right on the right, the top colour on the
- * upper half and the bottom on the lower, and the places in between by
- * whether they are towards the front.
+ * What a rule's picture shows in this place. The inner places wear the kind
+ * of colour the rule is about; the others stay empty, but for the rule that
+ * needs the second sticker, where they wear a top or bottom colour. The two
+ * colours of a kind take turns from place to place, so that a picture shows
+ * both — one on the right half of the cube and the other on the left, the
+ * places in between by whether they are towards the front; on the second
+ * sticker, the top colour on the upper half and the bottom on the lower.
  */
-function tell(
+function read(
   state: CubeState,
   index: number,
-  stickering: 'sideColourTells' | 'poleColourTells',
+  stickering: 'readsPole' | 'readsSide' | 'readsFront',
 ): Cell {
   const place = FACELETS[index];
   if (place === undefined || pieceSize(index) !== 2) return null;
 
   const [x, y, z] = place.position;
-  if (stickering === 'sideColourTells') {
-    if (!isInnerPlace(index)) return null;
-    return colourAt(state, indexOf(x > 0 || (x === 0 && z > 0) ? 'R' : 'L', 1, 1));
+  const centre = (face: Face): Face => colourAt(state, indexOf(face, 1, 1));
+  if (!isInnerPlace(index)) {
+    if (stickering !== 'readsFront') return null;
+    return centre(y > 0 || (y === 0 && z > 0) ? 'U' : 'D');
   }
-  if (isInnerPlace(index)) return null;
-  return colourAt(state, indexOf(y > 0 || (y === 0 && z > 0) ? 'U' : 'D', 1, 1));
+  const isNear = x > 0 || (x === 0 && z > 0);
+  if (stickering === 'readsPole') return centre(isNear ? 'U' : 'D');
+  if (stickering === 'readsSide') return centre(isNear ? 'R' : 'L');
+  return centre(isNear ? 'F' : 'B');
 }
 
 const SOLVED = solvedState();

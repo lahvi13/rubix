@@ -333,41 +333,84 @@ describe("the stickerings of ZZ's first steps", () => {
     expect(cells.filter((cell) => cell !== null)).toHaveLength(6);
   });
 
-  it('draws the places a left or right colour gives a bad edge away, in those two colours', () => {
-    const view = isometricView(solvedState(), 'sideColourTells');
+  it('draws the one sticker each edge is read by, in a top or bottom colour', () => {
+    const view = isometricView(solvedState(), 'readsPole');
 
-    // The top's four edges, the left colour on the left half; the front's two
-    // beside the centre; nothing on the side.
+    // The top's four edges, the top colour on the right half and towards the
+    // front; the front's two beside the centre; nothing on the side.
+    expect(view.top).toEqual(['.', 'D', '.', 'D', 'U', 'U', '.', 'U', '.'].map(dotToNull));
+    expect(view.front).toEqual(['.', '.', '.', 'D', 'F', 'U', '.', '.', '.'].map(dotToNull));
+    expect(view.right).toEqual(['.', '.', '.', '.', 'R', '.', '.', '.', '.'].map(dotToNull));
+  });
+
+  it('draws the same places in a left or right colour', () => {
+    const view = isometricView(solvedState(), 'readsSide');
+
     expect(view.top).toEqual(['.', 'L', '.', 'L', 'U', 'R', '.', 'R', '.'].map(dotToNull));
     expect(view.front).toEqual(['.', '.', '.', 'L', 'F', 'R', '.', '.', '.'].map(dotToNull));
     expect(view.right).toEqual(['.', '.', '.', '.', 'R', '.', '.', '.', '.'].map(dotToNull));
   });
 
-  it('draws the places a top or bottom colour gives one away, in those two colours', () => {
-    const view = isometricView(solvedState(), 'poleColourTells');
+  it('draws them in a front or back colour with the other sticker beside each', () => {
+    const view = isometricView(solvedState(), 'readsFront');
 
-    expect(view.top).toEqual(['.', '.', '.', '.', 'U', '.', '.', '.', '.'].map(dotToNull));
-    // Above and below the centre in front; all four edges of the side.
-    expect(view.front).toEqual(['.', 'U', '.', '.', 'F', '.', '.', 'D', '.'].map(dotToNull));
+    expect(view.top).toEqual(['.', 'B', '.', 'B', 'U', 'F', '.', 'F', '.'].map(dotToNull));
+    // The other stickers: above and below the centre in front, and all four
+    // edges of the side, in a top or bottom colour.
+    expect(view.front).toEqual(['.', 'U', '.', 'B', 'F', 'F', '.', 'D', '.'].map(dotToNull));
     expect(view.right).toEqual(['.', 'U', '.', 'U', 'R', 'D', '.', 'D', '.'].map(dotToNull));
   });
 
-  it('gives every edge sticker to exactly one of the two rules, whatever the cube', () => {
+  it('reads the same twelve places in all three pictures, whatever the cube', () => {
     const state = after("F' L' D U2 L B' D");
-    const cells = (stickering: 'sideColourTells' | 'poleColourTells') => {
+    const cells = (stickering: 'readsPole' | 'readsSide' | 'readsFront') => {
       const view = netView(state, stickering);
       return [view.up, view.left, view.front, view.right, view.back, view.down].flat();
     };
-    const side = cells('sideColourTells');
-    const pole = cells('poleColourTells');
+    const pole = cells('readsPole');
+    const side = cells('readsSide');
+    const front = cells('readsFront');
     // On a face of nine, the edges are the odd cells.
     const isEdge = (at: number) => (at % 9) % 2 === 1;
 
-    for (const at of side.keys()) {
+    for (const at of pole.keys()) {
       if (!isEdge(at)) continue;
-      expect([side[at] !== null, pole[at] !== null].filter(Boolean)).toHaveLength(1);
+      expect(side[at] !== null).toBe(pole[at] !== null);
+      // The third picture has every edge whole: the second sticker decides.
+      expect(front[at]).not.toBeNull();
     }
-    expect(side.filter((cell, at) => isEdge(at) && cell !== null)).toHaveLength(12);
+    expect(pole.filter((cell, at) => isEdge(at) && cell !== null)).toHaveLength(12);
+  });
+
+  it('leaves on a cube only what the rules read off it', () => {
+    const view = netView(solvedState(), 'edgeReading');
+
+    // Top and bottom: all four edges, each settled at a glance.
+    expect(view.up).toEqual(['.', 'U', '.', 'U', 'U', 'U', '.', 'U', '.'].map(dotToNull));
+    expect(view.down).toEqual(['.', 'D', '.', 'D', 'D', 'D', '.', 'D', '.'].map(dotToNull));
+    // Front and back: the two beside the centre. They show a front or back
+    // colour, so the other sticker of each is drawn too, round on the sides.
+    expect(view.front).toEqual(['.', '.', '.', 'F', 'F', 'F', '.', '.', '.'].map(dotToNull));
+    expect(view.back).toEqual(['.', '.', '.', 'B', 'B', 'B', '.', '.', '.'].map(dotToNull));
+    expect(view.right).toEqual(['.', '.', '.', 'R', 'R', 'R', '.', '.', '.'].map(dotToNull));
+    expect(view.left).toEqual(['.', '.', '.', 'L', 'L', 'L', '.', '.', '.'].map(dotToNull));
+  });
+
+  it('draws the second sticker only beside a front or back colour', () => {
+    // The top turned a quarter: its edges still show the top colour, but the
+    // four of the middle layer are where they were.
+    const turned = netView(after('U'), 'edgeReading');
+    expect(turned.front).toEqual(['.', '.', '.', 'F', 'F', 'F', '.', '.', '.'].map(dotToNull));
+
+    // A side turned a quarter: front and back colours come up onto the top
+    // and bottom, and each brings its other sticker into the picture.
+    const view = netView(after('R'), 'edgeReading');
+    const cells = [view.up, view.left, view.front, view.right, view.back, view.down].flat();
+    const isEdge = (at: number) => (at % 9) % 2 === 1;
+    const shown = cells.filter((cell, at) => isEdge(at) && cell !== null);
+
+    expect(shown.filter((cell) => cell === 'F' || cell === 'B')).toHaveLength(4);
+    expect(shown).toHaveLength(12 + 4);
   });
 
   it('draws every edge and centre in colour and leaves the corners out', () => {

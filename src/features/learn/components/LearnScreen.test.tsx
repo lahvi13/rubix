@@ -258,20 +258,21 @@ describe('LearnScreen', () => {
     expect(sections().map((section) => section.querySelector('h2')?.textContent)).toEqual(
       ZZ_STEPS.map((step, index) => `${index + 1}${step.title}`),
     );
-    // Nothing to turn while the bad edges are being counted; four ways to turn
-    // them good, two for the cross, the two shapes a pair goes in from, and
-    // the last layer as the first guide has it.
+    // Nothing to turn while the bad edges are being counted; five pictures of
+    // turning them good, two for the cross, the two shapes a pair goes in
+    // from, and the last layer as the first guide has it.
     await waitFor(() =>
       expect(sections().map((section) => caseButtons(section).length)).toEqual([
-        0, 4, 2, 2, 1, 1, 1,
+        0, 5, 2, 2, 1, 1, 1,
       ]),
     );
-    // The two rules as pictures, then the cube to count on and the same cube
-    // with the answer, the moves that make it printed once.
+    // The three answers as pictures, then the cube to count on, what is read
+    // off it and the same cube with the answer, the moves that make it
+    // printed once.
     const [badEdges, , , pairs] = sections();
     if (!badEdges || !pairs) throw new Error('the guide lost a step');
-    expect(within(badEdges).getAllByRole('figure')).toHaveLength(4);
-    expect(within(badEdges).getByText(strings.learn.zzRules.sideColours)).toBeInTheDocument();
+    expect(within(badEdges).getAllByRole('figure')).toHaveLength(6);
+    expect(within(badEdges).getByText(strings.learn.zzRules.readsSide)).toBeInTheDocument();
     expect(within(badEdges).getByText(strings.learn.zzFigures.answer)).toBeInTheDocument();
     expect(badEdges.querySelectorAll('.alg')).toHaveLength(1);
 
