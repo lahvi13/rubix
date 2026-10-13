@@ -10,7 +10,7 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 
 <p align="center">
   <img src="docs/screenshots/timer.webp" width="200" alt="The timer: a scramble, its 3D preview and the clock">
-  <img src="docs/screenshots/learn.webp" width="200" alt="The beginner's guide, for CFOP or Roux, with the notation open">
+  <img src="docs/screenshots/learn.webp" width="200" alt="The beginner's guide, for CFOP, Roux or ZZ, with the notation open">
   <img src="docs/screenshots/trainer.webp" width="200" alt="The trainer on Roux: CMLL, every case with its algorithm">
   <img src="docs/screenshots/stats.webp" width="200" alt="Statistics: phase averages and the phase trend">
 </p>
