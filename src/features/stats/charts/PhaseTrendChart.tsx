@@ -71,11 +71,11 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
   // light theme's gold would otherwise be invisible on the card it sits on.
   const legend = phases.map((phase, order) =>
     mode === 'separate'
-      ? { label: phase.label, colour: phaseFillColour(order, phases.length) }
+      ? { label: phase.label, colour: phaseFillColour(phases, order) }
       : {
           label: phase.label,
-          colour: phaseFillColour(order, phases.length),
-          edgeColour: phaseColour(order, phases.length),
+          colour: phaseFillColour(phases, order),
+          edgeColour: phaseColour(phases, order),
         },
   );
 
@@ -140,7 +140,7 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
                 <Line
                   key={rawKey(phase.key)}
                   dataKey={rawKey(phase.key)}
-                  stroke={phaseFillColour(order, phases.length)}
+                  stroke={phaseFillColour(phases, order)}
                   strokeWidth={1}
                   strokeOpacity={0.28}
                   dot={false}
@@ -157,7 +157,7 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
                 // The face, as the bands and the bars wear it: a line is a
                 // mark, not text, and the face reads as a line where it could
                 // not as a figure.
-                stroke={phaseFillColour(order, phases.length)}
+                stroke={phaseFillColour(phases, order)}
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -170,8 +170,8 @@ export function PhaseTrendChart({ points, phases, mode, isSmoothed }: PhaseTrend
                 // The band is the face of the cube and its edge is the ink
                 // of the same phase, which is what keeps two light bands apart
                 // where a shared border would otherwise be the only seam.
-                stroke={phaseColour(order, phases.length)}
-                fill={phaseFillColour(order, phases.length)}
+                stroke={phaseColour(phases, order)}
+                fill={phaseFillColour(phases, order)}
                 // Full strength: at 55% the bands went olive against the dark
                 // background while the table beside them stayed bright, and
                 // the two stopped reading as the same phase.
@@ -245,7 +245,7 @@ function tooltipRows(
 
   const rows = phases.map((phase, order) => ({
     label: phase.label,
-    colour: phaseFillColour(order, phases.length),
+    colour: phaseFillColour(phases, order),
     value:
       mode === 'share'
         ? `${Math.round(share(values, order, 'share'))}%`

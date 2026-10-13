@@ -87,7 +87,7 @@ export function PhaseAverages({
                       total ran off a phone. */}
                   <span
                     className="averages-table__phase"
-                    style={{ background: phaseFillColour(index, phases.length) }}
+                    style={{ background: phaseFillColour(phases, index) }}
                     aria-hidden="true"
                   />
                 </th>

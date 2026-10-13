@@ -473,10 +473,15 @@ od kostky.
 **Zobrazení a editace:**
 
 - po dokončeném solvu (a v detailu solvu) **pruh fází**: blok na fázi, široký podle
-  toho, jak dlouho trvala. Barvy se přiřazují **podle pořadí, ne podle jména** —
+  toho, jak dlouho trvala. Barvy se přiřazují **podle pořadí** —
   první fáze bílá (cross), poslední žlutá (poslední vrstva), mezi tím zbylé barvy
   nálepek (`lib/phase-colours.ts`). Metoda, o které aplikace nikdy neslyšela, tak
-  dostane čitelný pruh
+  dostane čitelný pruh. **Dvě fáze mají barvu podle jména** (2026-10-13, z
+  náhledů): první blok Rouxu je **modrý** — je to modrý blok, jako je druhý
+  zelený, a šedá o něm neříkala nic — a EOCross v ZZ **oranžový**: je to cross
+  a k tomu orientace všech hran, pod bílou vypadal jako pomalý cross z CFOP, a
+  oranžovou nezačíná žádná jiná metoda, takže se tři metody poznají podle
+  první barvy. F2L a poslední vrstva ZZ nechávají barvy CFOP, jsou to tytéž věci
 - detail solvu: posun času kterékoliv hranice (edituje se **kumulativní** čas, protože
   ten je uložený a posun jedné hranice má změnit přesně dvě fáze), doplnění chybějící
   fáze (vloží se doprostřed bloku, který dělí), smazání jedné hranice i celé sady.

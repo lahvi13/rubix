@@ -69,7 +69,7 @@ export function SplitEditor({ solve, phases, bestPhases, onChange }: SplitEditor
             <li key={phase.key} className="splits__row">
               <span
                 className="splits__swatch"
-                style={{ background: phaseFillColour(index, phases.length) }}
+                style={{ background: phaseFillColour(phases, index) }}
                 aria-hidden="true"
               />
               <span className="splits__name">

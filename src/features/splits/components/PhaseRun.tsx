@@ -40,7 +40,7 @@ export function PhaseRun({ phases, splitMs, elapsedMs, display }: PhaseRunProps)
           <span
             key={phase.key}
             className={index === current ? 'phase-run__block is-running' : 'phase-run__block'}
-            style={index <= current ? { background: phaseFillColour(index, phases.length) } : undefined}
+            style={index <= current ? { background: phaseFillColour(phases, index) } : undefined}
           />
         ))}
       </div>

@@ -69,18 +69,18 @@ export const PhaseBar = memo(function PhaseBar({
 
   const colourOf = (segment: { phases: string[] }) =>
     segment.phases.length === 1
-      ? phaseColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
+      ? phaseColour(keys, keys.indexOf(segment.phases[0] ?? ''))
       : 'var(--muted)';
   const blockOf = (segment: { phases: string[] }) =>
     segment.phases.length === 1
-      ? phaseFillColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
+      ? phaseFillColour(keys, keys.indexOf(segment.phases[0] ?? ''))
       : 'var(--muted)';
 
   // A block of several phases is grey, and the stylesheet's own lettering
   // already suits it.
   const inkOf = (segment: { phases: string[] }) =>
     segment.phases.length === 1
-      ? phaseInkColour(keys.indexOf(segment.phases[0] ?? ''), keys.length)
+      ? phaseInkColour(keys, keys.indexOf(segment.phases[0] ?? ''))
       : undefined;
 
   return (
