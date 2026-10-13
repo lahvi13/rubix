@@ -382,37 +382,6 @@ describe("the stickerings of ZZ's first steps", () => {
     expect(cells('readsFront').filter((cell, at) => isEdge(at) && cell !== null)).toHaveLength(6);
   });
 
-  it('leaves on a cube only what the rules read off it', () => {
-    const view = netView(solvedState(), 'edgeReading');
-
-    // Top and bottom: all four edges, each settled at a glance.
-    expect(view.up).toEqual(['.', 'U', '.', 'U', 'U', 'U', '.', 'U', '.'].map(dotToNull));
-    expect(view.down).toEqual(['.', 'D', '.', 'D', 'D', 'D', '.', 'D', '.'].map(dotToNull));
-    // Front and back: the two beside the centre. They show a front or back
-    // colour, so the other sticker of each is drawn too, round on the sides.
-    expect(view.front).toEqual(['.', '.', '.', 'F', 'F', 'F', '.', '.', '.'].map(dotToNull));
-    expect(view.back).toEqual(['.', '.', '.', 'B', 'B', 'B', '.', '.', '.'].map(dotToNull));
-    expect(view.right).toEqual(['.', '.', '.', 'R', 'R', 'R', '.', '.', '.'].map(dotToNull));
-    expect(view.left).toEqual(['.', '.', '.', 'L', 'L', 'L', '.', '.', '.'].map(dotToNull));
-  });
-
-  it('draws the second sticker only beside a front or back colour', () => {
-    // The top turned a quarter: its edges still show the top colour, but the
-    // four of the middle layer are where they were.
-    const turned = netView(after('U'), 'edgeReading');
-    expect(turned.front).toEqual(['.', '.', '.', 'F', 'F', 'F', '.', '.', '.'].map(dotToNull));
-
-    // A side turned a quarter: front and back colours come up onto the top
-    // and bottom, and each brings its other sticker into the picture.
-    const view = netView(after('R'), 'edgeReading');
-    const cells = [view.up, view.left, view.front, view.right, view.back, view.down].flat();
-    const isEdge = (at: number) => (at % 9) % 2 === 1;
-    const shown = cells.filter((cell, at) => isEdge(at) && cell !== null);
-
-    expect(shown.filter((cell) => cell === 'F' || cell === 'B')).toHaveLength(4);
-    expect(shown).toHaveLength(12 + 4);
-  });
-
   it('draws every edge and centre in colour and leaves the corners out', () => {
     const view = netView(after("F' L' D U2 L B' D"), 'allEdges');
 

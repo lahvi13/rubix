@@ -487,8 +487,6 @@ const ALL_EDGES_NET: SituationPicture = {
   standing: ZZ_STANDING,
 };
 
-const EDGE_READING_NET: SituationPicture = { ...ALL_EDGES_NET, stickering: 'edgeReading' };
-
 const BAD_EDGES_NET: SituationPicture = { ...ALL_EDGES_NET, stickering: 'badEdges' };
 
 /**
@@ -563,20 +561,16 @@ export const ZZ_STEPS: readonly LearnStep[] = [
         text: strings.learn.zzRules.readsFront,
       },
     ],
-    // The same cube three times: to count on, with only what the rules read
-    // left on it, and with the answer.
+    // The same cube twice: to count on, and with the answer. A third between
+    // them once showed only the stickers read; it was there to explain what
+    // the pictures did not, and with their reasons written out it was one
+    // unfolded cube too many.
     figures: [
       {
         picture: ALL_EDGES_NET,
         setup: BAD_EDGES_EXAMPLE,
         caption: strings.learn.zzFigures.tryIt,
         isSetupShown: true,
-      },
-      {
-        picture: EDGE_READING_NET,
-        setup: BAD_EDGES_EXAMPLE,
-        caption: strings.learn.zzFigures.reading,
-        isSetupShown: false,
       },
       {
         picture: BAD_EDGES_NET,

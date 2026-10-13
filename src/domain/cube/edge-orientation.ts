@@ -59,16 +59,6 @@ export function partnerOf(index: number): number {
   return PARTNER[index] ?? -1;
 }
 
-/**
- * Whether the sticker in an inner place leaves its edge undecided. A top or
- * bottom colour there is a good edge and a left or right one a bad edge, at a
- * glance; a front or back colour is right on an edge with no top or bottom
- * colour and wrong on one that has it, so the other sticker has the say.
- */
-export function isSettledByPartner(state: CubeState, index: number): boolean {
-  return isInnerPlace(index) && isFrontOrBack(homeOf(state, state[index]));
-}
-
 /** Whether the sticker at `index` is on a bad edge. Never true of a corner or a centre. */
 export function isBadEdge(state: CubeState, index: number): boolean {
   const partner = PARTNER[index] ?? -1;

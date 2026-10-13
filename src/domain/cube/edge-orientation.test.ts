@@ -3,7 +3,6 @@ import {
   badEdgeCount,
   isBadEdge,
   isInnerPlace,
-  isSettledByPartner,
   partnerOf,
 } from './edge-orientation';
 import { parseAlg } from './notation';
@@ -147,7 +146,6 @@ describe('reading an edge by one sticker', () => {
           ? isOneOf(state[partnerOf(index)], ['U', 'D'])
           : isOneOf(colour, ['L', 'R']);
 
-        expect(isSettledByPartner(state, index)).toBe(isUndecided);
         expect(isBadEdge(state, index)).toBe(isBad);
       }
       expect(read).toBe(12);
@@ -186,6 +184,5 @@ describe('reading an edge by one sticker', () => {
 
     expect(partnerOf(corner)).toBe(-1);
     expect(partnerOf(centre)).toBe(-1);
-    expect(isSettledByPartner(solvedState(), centre)).toBe(false);
   });
 });

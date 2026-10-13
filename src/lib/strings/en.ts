@@ -624,8 +624,6 @@ export const en = {
     zzFigures: {
       tryIt:
         'Try it: a solved cube, yellow on top and blue in front, and the moves under the picture. How many edges are bad?',
-      reading:
-        'What is read off it: twelve stickers, one to an edge. Beside a blue or a green one, the other sticker shows too.',
       answer: 'Six — the purple ones: two on top, two in the middle layer and two at the bottom.',
     },
     zzSituations: {

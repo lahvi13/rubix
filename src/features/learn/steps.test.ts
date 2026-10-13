@@ -565,21 +565,17 @@ describe('the ZZ guide', () => {
     expect(pairs.more?.show).not.toBe(pairs.more?.hide);
   });
 
-  it('gives an example to count on, what is read off it, and the same cube with the answer', () => {
-    const [question, reading, answer] = step('zz-bad-edges').figures ?? [];
-    if (!question || !reading || !answer) throw new Error('the first step lost its example');
+  it('gives an example to count on, and the same cube with the answer', () => {
+    const figures = step('zz-bad-edges').figures ?? [];
+    const [question, answer] = figures;
+    if (!question || !answer) throw new Error('the first step lost its example');
 
-    expect(figureState(reading)).toEqual(figureState(question));
+    expect(figures).toHaveLength(2);
     expect(figureState(answer)).toEqual(figureState(question));
     expect(question.picture.stickering).toBe('allEdges');
-    expect(reading.picture.stickering).toBe('edgeReading');
     expect(answer.picture.stickering).toBe('badEdges');
     // The moves are printed for a cube in the hand: under the question only.
-    expect([question.isSetupShown, reading.isSetupShown, answer.isSetupShown]).toEqual([
-      true,
-      false,
-      false,
-    ]);
+    expect([question.isSetupShown, answer.isSetupShown]).toEqual([true, false]);
 
     // What the caption says the answer is: six, two of them in each layer.
     const bad = badPlaces(figureState(question));

@@ -8,7 +8,7 @@
  * it is coming from.
  */
 
-import { isBadEdge, isInnerPlace, isSettledByPartner, partnerOf } from './edge-orientation';
+import { isBadEdge, isInnerPlace, partnerOf } from './edge-orientation';
 import type { Face, Move } from './notation';
 import { FACELETS, movePermutation, solvedState, type CubeState } from './state';
 
@@ -106,12 +106,6 @@ export type Stickering =
   | 'readsPole'
   | 'readsSide'
   | 'readsFront'
-  /**
-   * What those three rules read off a cube as it lies: the twelve stickers,
-   * one to an edge, and the other sticker wherever the first leaves the edge
-   * undecided. The worked example between a cube and its answer.
-   */
-  | 'edgeReading'
   /**
    * No colours at all: the shape of a cube, standing in for one that is not
    * known yet — the scramble still being generated.
@@ -312,9 +306,6 @@ function cell(state: CubeState, index: number, stickering: Stickering): Cell {
     case 'readsSide':
     case 'readsFront':
       return pieceSize(index) === 1 ? colour : read(state, index, stickering);
-    case 'edgeReading':
-      if (pieceSize(index) !== 2) return pieceSize(index) === 1 ? colour : null;
-      return isInnerPlace(index) || isSettledByPartner(state, partnerOf(index)) ? colour : null;
     case 'blank':
       return null;
     case 'firstTwoLayers':

@@ -267,11 +267,11 @@ describe('LearnScreen', () => {
       ]),
     );
     // The three kinds of colour to find as pictures, then the cube to count
-    // on, what is read off it and the same cube with the answer, the moves
-    // that make it printed once.
+    // on and the same cube with the answer, the moves that make it printed
+    // once.
     const [badEdges, , , pairs] = sections();
     if (!badEdges || !pairs) throw new Error('the guide lost a step');
-    expect(within(badEdges).getAllByRole('figure')).toHaveLength(6);
+    expect(within(badEdges).getAllByRole('figure')).toHaveLength(5);
     expect(within(badEdges).getByText(strings.learn.zzRules.readsSide)).toBeInTheDocument();
     expect(within(badEdges).getByText(strings.learn.zzFigures.answer)).toBeInTheDocument();
     expect(badEdges.querySelectorAll('.alg')).toHaveLength(1);

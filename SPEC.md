@@ -1509,12 +1509,13 @@ Autor ZZ nikdy neskládal, takže obsah je celý ze zdroje: tutoriál na
      poslední vrstvy bez žluté nahoře), a říká počítat po vrstvách. Proč
      zrovna těch dvanáct míst, je v tipu: R, L, U a D z nich nálepku neodnesou
      ani na ně nepřinesou, jen čtvrtotáčka F nebo B (hlídá test).
-     Pod obrázky **příklad na vyzkoušení** (`figures`), třikrát tatáž
+     Pod obrázky **příklad na vyzkoušení** (`figures`), dvakrát tatáž
      rozvinutá kostka: s hranami a středy v barvách (`allEdges`) a sedmi tahy,
-     kterými ji čtenář udělá ze složené; jen s tím, co se na ní čte
-     (`edgeReading` — dvanáct nálepek, u modré a zelené i ta druhá); a s
-     odpovědí, šest špatných fialově (`badEdges`), po dvou v každé vrstvě.
-     Krok tak nekončí u „zkus si to“ bez výchozí pozice.
+     kterými ji čtenář udělá ze složené, a s odpovědí, šest špatných fialově
+     (`badEdges`), po dvou v každé vrstvě. Krok tak nekončí u „zkus si to“ bez
+     výchozí pozice. Mezi nimi byla chvíli třetí, jen s nálepkami, které se
+     čtou; vysvětlovala, co tehdy neříkaly popisky, a s důvody v nich byla
+     navíc.
 
      První verze měla pravidla jako dvě věty s devíti místy („nahoře, dole,
      nebo v prostřední řadě přední či zadní stěny“) a autor ji hned vrátil:

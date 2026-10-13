@@ -581,8 +581,6 @@ export const cs: Strings = {
     zzFigures: {
       tryIt:
         'Zkus si to: složená kostka, žlutá nahoře a modrá vpředu, a tahy pod obrázkem. Kolik hran je špatných?',
-      reading:
-        'Tohle se na ní čte: dvanáct nálepek, jedna na hranu. U modré a zelené je vidět i ta druhá.',
       answer: 'Šest – ty fialové: dvě nahoře, dvě v prostřední vrstvě a dvě dole.',
     },
     zzSituations: {
