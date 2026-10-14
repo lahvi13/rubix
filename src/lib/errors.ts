@@ -256,12 +256,22 @@ export function watchWrite(run: () => Promise<unknown>, context: string): void {
   );
 }
 
+/**
+ * A browser notice, not a failure: a resize observer's callback changed the
+ * layout it observes, so the browser delivers the rest of the notifications a
+ * frame later. Nothing
+ * is lost and nothing throws; Chrome and Firefox still raise it as an error.
+ * The older wording is Chrome's before version 113.
+ */
+const RESIZE_OBSERVER_LOOP = /^(?:Uncaught )?ResizeObserver loop (?:completed with undelivered notifications|limit exceeded)/;
+
 /** Catches the failures nobody remembered to await. */
 export function installGlobalErrorHandlers(): void {
   window.addEventListener('unhandledrejection', (event) => {
     reportError('unhandled', event.reason);
   });
   window.addEventListener('error', (event) => {
+    if (RESIZE_OBSERVER_LOOP.test(event.message)) return;
     reportError('unhandled', event.message);
   });
 }

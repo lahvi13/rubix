@@ -22,11 +22,12 @@
   padding-inline: var(--space-7);
 }
 
+/* Under the header, not behind it: the header is pinned above every screen,
+   and a banner at the top of the viewport sat under it unread. */
 .error-banner {
   position: fixed;
   inset-inline: 1rem;
-  top: 1rem;
-  top: calc(1rem + env(safe-area-inset-top));
+  top: calc(var(--header-height) + var(--space-2));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -37,7 +38,9 @@
   background: var(--surface);
   color: var(--danger);
   font-size: var(--text-md);
-  z-index: 10;
+  /* Over a screen's own pinned tabs and the running clock, under the menu
+     and the sheets, which cover everything on purpose. */
+  z-index: 41;
 }
 
 .error-banner button {

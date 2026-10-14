@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearError,
   forgetErrors,
+  installGlobalErrorHandlers,
   installWriteWatchdog,
   logQuietly,
   lastError,
@@ -186,5 +187,24 @@ describe('watched writes', () => {
     logQuietly('Save solve', new Error('QuotaExceededError'));
 
     expect(recentErrors().map((error) => error.message)).toEqual(['QuotaExceededError']);
+  });
+});
+
+describe('global handlers', () => {
+  installGlobalErrorHandlers();
+
+  it.each([
+    'ResizeObserver loop completed with undelivered notifications.',
+    'ResizeObserver loop limit exceeded',
+  ])('let the browser notice "%s" pass', (message) => {
+    window.dispatchEvent(new ErrorEvent('error', { message }));
+
+    expect(lastError()).toBeNull();
+  });
+
+  it('still report every other uncaught error', () => {
+    window.dispatchEvent(new ErrorEvent('error', { message: 'TypeError: x is undefined' }));
+
+    expect(lastError()?.message).toBe('TypeError: x is undefined');
   });
 });
