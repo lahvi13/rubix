@@ -42,7 +42,7 @@ export default defineConfig({
         id: '/',
         name: 'Rubix',
         short_name: 'Rubix',
-        description: 'Timer and trainer for the 3×3 cube',
+        description: 'Timer and trainer for the 3×3 and 2×2 cubes',
         lang: 'en',
         theme_color: '#0f1115',
         background_color: '#0f1115',

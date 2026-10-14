@@ -1210,7 +1210,7 @@ export const cs: Strings = {
   },
   about: {
     title: 'Rubix',
-    what: 'Timer a trenažér na kostku 3×3, zaměřený na metodu CFOP. Provede tě krok za krokem prvním složením, nabídne dril případů F2L, OLL a PLL a měří složení po fázích, aby bylo vidět, kde je potřeba zrychlit.',
+    what: 'Timer a trenažér na kostky 3×3 a 2×2. Provede tě krok za krokem prvním složením, nabídne dril případů CFOP, Rouxu i Ortegy a na 3×3 měří složení po fázích, aby bylo vidět, kde je potřeba zrychlit.',
     who: 'Je pro každého, kdo je někde mezi první složenou kostkou a rychlým průměrem. Žádný účet, žádné reklamy, a jakmile ji jednou otevřeš, funguje i bez připojení.',
     share: 'Sdílet aplikaci',
     shared: 'Sdíleno.',
@@ -1236,11 +1236,11 @@ export const cs: Strings = {
     issueLink: 'založit issue',
     source: 'Zdrojový kód je otevřený, pod licencí GPL-3.0:',
     creditsTitle: 'Poděkování',
-    creditAlgs: 'Většina algoritmů pochází od J Perm —',
+    creditAlgs: 'Většina algoritmů i oba průvodci pro 2×2 pocházejí od J Perma —',
     creditRoux: 'Sady pro Roux pocházejí z listů Kiana Mansoura a komunity Rouxu —',
     creditSpeedcubedb: 'Případy druhého bloku, které v nich chybí, jsou ze SpeedCubeDB —',
     creditZz: 'Průvodce ZZ vychází z tutoriálu týmu ZZMethod.com —',
-    creditMethod: 'Metoda pro začátečníky vychází z badmephisto —',
+    creditMethod: 'Metoda pro začátečníky na 3×3 vychází z badmephisto —',
     creditCubing: 'Scramble a 3D kostka jsou cubing.js —',
     creditClaude: 'Vytvořeno společně s Claude Code —',
     creditFonts:
