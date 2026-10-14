@@ -19,7 +19,7 @@ import { useAppearance } from '../hooks/use-appearance';
 import { strings } from '../lib/strings';
 import { ROUTES, navigate, useRoute, type Route } from './router';
 import { MoreSheet } from './MoreSheet';
-import { PuzzleSheet, PuzzleSwitch } from './PuzzleSwitch';
+import { PuzzleMenu, PuzzleSwitch } from './PuzzleSwitch';
 import { TabBar } from './TabBar';
 import { isTab, tabRoutes } from './tab-routes';
 import { useBarScroll } from './use-bar-scroll';
@@ -98,7 +98,16 @@ export function App() {
           <div className="app__header-slot" ref={setHeaderSlot} />
         </div>
         {PUZZLE_ROUTES.has(route) ? (
-          <PuzzleSwitch puzzle={puzzle} onOpen={() => setPuzzleOpen(true)} />
+          <PuzzleSwitch
+            puzzle={puzzle}
+            isOpen={isPuzzleOpen}
+            onToggle={() => setPuzzleOpen((open) => !open)}
+          />
+        ) : null}
+        {/* In the header, like the menu: it drops out of the corner its
+            button is in, and the header stays lit above it. */}
+        {isPuzzleOpen ? (
+          <PuzzleMenu puzzle={puzzle} onPick={setPuzzle} onClose={() => setPuzzleOpen(false)} />
         ) : null}
 
         {isMenuOpen ? (
@@ -174,11 +183,6 @@ export function App() {
           faces={skin.faces}
           onClose={() => setMoreOpen(false)}
         />
-      ) : null}
-      {/* Out here rather than in the header beside its button: the header is a
-          layer of its own, and a sheet inside it would lie under the tab bar. */}
-      {isPuzzleOpen ? (
-        <PuzzleSheet puzzle={puzzle} onPick={setPuzzle} onClose={() => setPuzzleOpen(false)} />
       ) : null}
 
       <ErrorBanner />

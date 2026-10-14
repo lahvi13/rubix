@@ -74,37 +74,69 @@
   min-height: 2.25rem;
 }
 
-/* The cube the app is on. No taller than the drill's tabs beside it: the
-   header's height is what every screen under it is laid out against. */
+/* The cube the app is on, as a face of it. A square no taller than the
+   drill's tabs beside it: the header's height is what every screen under it
+   is laid out against. */
 .puzzle-switch {
   flex: none;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
   min-height: 2.25rem;
   margin-block: calc((2.5rem - 2.25rem) / 2);
-  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
+  padding: 0;
+}
+
+.puzzle-switch__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* The cubes, on a card dropped from the switch's corner. */
+.puzzle-menu {
+  position: fixed;
+  top: calc(var(--header-height) + var(--space-2));
+  /* Under the switch, which keeps to the page's width on a wide screen. */
+  inset-inline-end: max(var(--space-5), env(safe-area-inset-right), (100% - var(--page-width)) / 2);
+  z-index: 9;
+  display: grid;
+  /* As many to a row as fit: two today, and the next cube is one more cell. */
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: var(--space-4);
+  width: min(17rem, calc(100vw - var(--space-5) * 2));
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0.75rem 1.5rem var(--scrim);
+}
+
+.puzzle-menu__cube {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
   font-size: var(--text-lg);
   font-weight: 600;
 }
 
-/* The row above it holds nothing but the close button, so the heading takes
-   back the gap that row would otherwise leave under itself. */
-.puzzle-sheet__title {
-  margin: calc(var(--space-5) * -1) 0 0;
-  font-size: var(--text-xl);
+.puzzle-menu__picture {
+  width: 4.5rem;
+  height: auto;
 }
 
-/* As many to a row as fit: two today, and the next cube is one more cell. */
-.puzzle-sheet__list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
-  gap: var(--space-4);
+@media (prefers-reduced-motion: no-preference) {
+  .puzzle-menu {
+    animation: puzzle-menu-drop var(--motion-fade) var(--motion-ease);
+  }
 }
 
-.puzzle-sheet__list button {
-  min-height: 3rem;
-  font-size: var(--text-xl);
+@keyframes puzzle-menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-4)));
+  }
 }
 
 .app__menu-toggle {

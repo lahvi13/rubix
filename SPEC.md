@@ -1241,8 +1241,12 @@ drillu: drill měří jeden případ, tohle měří jeden solve po fázích.
 Autor 2×2 skládá po vrstvách a chce se doučit Ortegu; obsah se bere od J Perma.
 
 - **Kostka se přepíná na jednom místě: tlačítkem v pravém rohu hlavičky** vedle
-  názvu obrazovky. Ukazuje zvolenou kostku a otevírá seznam jako sheet, takže
-  další kostka je jen další řádek. Je na obrazovkách, které se kostky týkají
+  názvu obrazovky. Ukazuje zvolenou kostku jako její stěnu (mřížka 3×3 nebo
+  2×2), ne jejím jménem — jméno bralo místo nadpisu obrazovky a na telefonu
+  s velkým textem kvůli němu ustupovalo slovo „Rubix“ (od 2026-10-14, na
+  přání autora). Otevírá kartu přímo pod sebou s obrázky kostek ve skinu, ne
+  list zespodu: ruka je v tom rohu už nahoře. Další kostka je jen další
+  dlaždice. Je na obrazovkách, které se kostky týkají
   (timer, průvodce, trenažér, dril, historie, statistiky), a během solvu na něj
   nejde ťuknout. Zamítnuto: Nastavení (kostka je to, co má člověk zrovna v ruce,
   ne věc nastavená jednou) a přepínač ve výběru session, ve Více nebo jako řádek

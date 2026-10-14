@@ -28,30 +28,37 @@ const ROWS: readonly (readonly string[])[] = [
   ['D', "D'", 'D2', 'd', "d'", 'E'],
 ];
 
-/** A wide turn or a slice: a move of the layer a 2×2 does not have. */
-const needsMiddleLayer = (token: string): boolean => /^[rufldbMES]/.test(token);
+/**
+ * The 2×2's: a face's three turns and the opposite face's beside them, and the
+ * three turns of the whole cube. Without wide turns and slices a row of one
+ * face was half empty, and the reference twice as long as it needed to be.
+ */
+const POCKET_ROWS: readonly (readonly string[])[] = [
+  ['R', "R'", 'R2', 'L', "L'", 'L2'],
+  ['U', "U'", 'U2', 'D', "D'", 'D2'],
+  ['F', "F'", 'F2', 'B', "B'", 'B2'],
+  ['x', 'y', 'z'],
+];
 
 export function NotationReference({ skin, order = 3 }: NotationReferenceProps) {
   return (
     <section className="notation">
       <p className="notation__hint">{strings.trainer.notationHint}</p>
-      {ROWS.map((row, index) => (
+      {(order === 3 ? ROWS : POCKET_ROWS).map((row, index) => (
         <div key={index} className="notation__row">
-          {row
-            .filter((token) => order === 3 || !needsMiddleLayer(token))
-            .map((token) => (
-              <figure key={token} className="notation__item">
-                <CubeDiagram
-                  className="notation__diagram"
-                  state={stateAfter(token)}
-                  view="isometric"
-                  skin={skin}
-                  order={order}
-                  label={token}
-                />
-                <figcaption>{wideAlias(token)}</figcaption>
-              </figure>
-            ))}
+          {row.map((token) => (
+            <figure key={token} className="notation__item">
+              <CubeDiagram
+                className="notation__diagram"
+                state={stateAfter(token)}
+                view="isometric"
+                skin={skin}
+                order={order}
+                label={token}
+              />
+              <figcaption>{wideAlias(token)}</figcaption>
+            </figure>
+          ))}
         </div>
       ))}
     </section>
