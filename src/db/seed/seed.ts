@@ -5,10 +5,10 @@ import { defaultMethodFor } from '../../domain/puzzle/puzzles';
 import { now } from '../../lib/clock';
 import {
   CROSS_PACK,
-  PACKS,
   PACK_METHOD_ID,
   PACK_PUZZLE,
   ROUX_METHOD_ID,
+  SEEDED_PACKS,
   ZZ_METHOD_ID,
   type AlgPack,
   type PackCase,
@@ -107,7 +107,7 @@ async function readCurrent(): Promise<CurrentState> {
   ]);
 
   const packed = new Set<string>();
-  for (const pack of [...PACKS, CROSS_PACK]) {
+  for (const pack of [...SEEDED_PACKS, CROSS_PACK]) {
     for (const entry of pack.cases) packed.add(entry.id);
   }
 
@@ -165,7 +165,7 @@ function planSeed(current: CurrentState): SeedChanges {
 
   // Cross rides along with the algorithm sets: it is a set to drill, just not
   // one to read.
-  for (const pack of [...PACKS, CROSS_PACK]) {
+  for (const pack of [...SEEDED_PACKS, CROSS_PACK]) {
     const existingSet = current.algSets.get(pack.set.id);
     const algSet = buildSet(pack, existingSet);
     if (hasChanged(existingSet, algSet)) changes.algSets.push(algSet);
@@ -401,7 +401,7 @@ function buildSet(pack: AlgPack, existing: AlgSet | undefined): AlgSet {
   return {
     id: pack.set.id,
     name: pack.set.name,
-    puzzle: PACK_PUZZLE,
+    puzzle: pack.puzzle ?? PACK_PUZZLE,
     methodId: pack.set.method ?? PACK_METHOD_ID,
     packVersion: pack.packVersion,
     createdAt: existing?.createdAt ?? now(),

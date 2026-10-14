@@ -6,10 +6,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { CROSS_PACK, PACKS } from '../../db/seed/packs';
+import { CROSS_PACK, SEEDED_PACKS } from '../../db/seed/packs';
 import { CS_PACK_NAMES, KEPT_IN_ENGLISH, czechName, packLabel } from './pack-names';
 
-const ALL_PACKS = [...PACKS, CROSS_PACK];
+const ALL_PACKS = [...SEEDED_PACKS, CROSS_PACK];
 
 /** Cases the packs number rather than name: "OLL 21", "F2L 3", "Expert 12". */
 const NUMBERED = /^(F2L|OLL|PLL|Advanced|Expert) \d+$/;

@@ -1290,13 +1290,21 @@ Pořadí:
    proti cubing.js (500 náhodných scramblů, stejné rohy na obou). Náhled
    scramblu na timeru a kartička ke sdílení 2×2 kreslí; přehrání scramblu na
    2×2 zatím není — kostka z cubing.js by měla jiné barvy než obrázek.
-3. **Průvodce a sady.** Průvodce **po vrstvách** je hotový: tři kroky, obrázky
+3. **Průvodce a sady** — hotovo. Průvodce **po vrstvách**: tři kroky, obrázky
    2×2, česky i anglicky. Situace se na 2×2 neotevírají do sheetu s přehráním
    — přehrávač je 3×3 z cubing.js — takže karta je obrázek a tahy; kde řádek
-   karty říká „pětkrát“, tisknou se čtyři tahy jednou (`shown`). Zbývá:
-   průvodce **Ortega** a sady **OLL 7 + PBL 5** v trenažéru (data z
-   `jperm.net/lib/2x2oll.js` a `2x2pbl.js`, na modelu už puštěná), ověřené
-   spuštěním jako ostatní sady.
+   karty říká „pětkrát“, tisknou se čtyři tahy jednou (`shown`). Průvodce
+   **Ortega**: stěna (bez algoritmu, J Perm ji staví citem; obrázek hotové
+   stěny), pak všech 7 případů OLL a 5 PBL ze sad. Sady `pocket-oll` a
+   `pocket-pbl` jsou J Permovy (`jperm.net/lib/2x2oll.js`, `2x2pbl.js`, jména i
+   skupiny), stojí mimo `PACKS` v `POCKET_PACKS` — všechno, co čte `PACKS`, je
+   čte jako 3×3 — a `pocket-packs.test.ts` je pouští jen nad rohy: OLL pokrývá
+   přesně všech 7 možností vršku, u PBL sedí pravidlo, podle kterého je
+   průvodce čte (čtyři pruhy hotovo, jeden sousední, žádný protilehlé).
+   OLL se kreslí shora, PBL rozvinutá — obě vrstvy ze všech stran najednou.
+   Trenažér na 2×2 ukazuje jen tyhle dvě sady; dril a jeho souhrn zatím ne.
+   Naposledy otevřená sada je jedna pro obě kostky — přepnutí ji vrátí na první
+   sadu té druhé.
 4. **Dril a 3D přehrávání** v barvách 3×3 (jde to, viz průzkum PG3D).
 
 CLL a EG se neplánují, dokud Ortega nepůjde z ruky.

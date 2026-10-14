@@ -4,6 +4,8 @@ import {
   BEGINNER_SET_ID,
   CMLL_SET_ID,
   LEVEL_BASE_SETS,
+  POCKET_OLL_SET_ID,
+  POCKET_PBL_SET_ID,
   ROUX_EOLR_SET_ID,
   ROUX_EO_SET_ID,
   ROUX_SB_SET_ID,
@@ -11,7 +13,7 @@ import {
   TWO_LOOK_CMLL_SET_ID,
 } from '../../domain/alg/sets';
 import type { PlayerStickering } from './components/CasePlayer';
-import type { Stickering } from '../../domain/cube/views';
+import type { CubeOrder, Stickering } from '../../domain/cube/views';
 
 export interface Diagram {
   view: DiagramView;
@@ -33,6 +35,8 @@ export interface Diagram {
    * is read from above and shows barely any side colour at all.
    */
   orientation: string;
+  /** 2 for a 2×2 set, drawn as the corners of the case; a 3×3 otherwise. */
+  order: CubeOrder;
 }
 
 /**
@@ -63,6 +67,25 @@ export const ROUX_ORIENTATION = "y'";
  * looks like two different cases depending on where you meet it.
  */
 export function diagramFor(setId: string, group: string): Diagram {
+  // The 2×2's top face as the 3×3's OLL is read: its yellow and nothing else.
+  if (setId === POCKET_OLL_SET_ID) {
+    return {
+      view: 'lastLayer',
+      stickering: 'orientation',
+      playerStickering: 'orientation',
+      orientation: '',
+      order: 2,
+    };
+  }
+  // PBL is read by both layers' sides at once, and no corner of the cube
+  // shows all four of either: the cube unfolded does.
+  if (setId === POCKET_PBL_SET_ID) {
+    return { view: 'net', stickering: 'full', playerStickering: 'full', orientation: '', order: 2 };
+  }
+  return { ...cubeDiagramFor(setId, group), order: 3 };
+}
+
+function cubeDiagramFor(setId: string, group: string): Omit<Diagram, 'order'> {
   // The moving cube shows what the picture does. Except the second look at
   // PLL: its corners are home by then, and their side colours are what the
   // finished side is read by.

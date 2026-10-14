@@ -86,6 +86,7 @@ export function CaseCard({
         view={diagram.view}
         stickering={diagram.stickering}
         skin={skin}
+        order={diagram.order}
         label={null}
       />
       {/* Seen, not read out: a card is named by its case, and a reader going

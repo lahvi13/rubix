@@ -1,0 +1,54 @@
+{
+ "packVersion": 1,
+ "set": {
+  "id": "pocket-oll",
+  "name": "OLL",
+  "method": "222"
+ },
+ "cases": [
+  {
+   "id": "pocket-oll-sune",
+   "name": "Sune",
+   "group": "One yellow on top",
+   "alg": "R U R' U R U2 R'"
+  },
+  {
+   "id": "pocket-oll-antisune",
+   "name": "Anti-Sune",
+   "group": "One yellow on top",
+   "alg": "R U2 R' U' R U' R'"
+  },
+  {
+   "id": "pocket-oll-h",
+   "name": "H",
+   "group": "No yellow on top",
+   "alg": "R2 U2 R U2 R2"
+  },
+  {
+   "id": "pocket-oll-pi",
+   "name": "Pi",
+   "group": "No yellow on top",
+   "alg": "R U2 (R2 U' R2 U' R2) U2 R",
+   "others": ["F R U R' U' R U R' U' F'"]
+  },
+  {
+   "id": "pocket-oll-u",
+   "name": "U",
+   "group": "Two yellow on top",
+   "alg": "F R U R' U' F'"
+  },
+  {
+   "id": "pocket-oll-t",
+   "name": "T",
+   "group": "Two yellow on top",
+   "alg": "R U R' U' R' F R F'"
+  },
+  {
+   "id": "pocket-oll-l",
+   "name": "L",
+   "group": "Two yellow on top",
+   "alg": "F R' F' R U R U' R'",
+   "others": ["F R U' R' U' R U R' F'"]
+  }
+ ]
+}

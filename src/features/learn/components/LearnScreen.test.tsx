@@ -6,7 +6,7 @@ import { getSetting, setSetting } from '../../../db/repositories/settings-reposi
 import { createSession } from '../../../db/repositories/session-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { strings } from '../../../lib/strings';
-import { LEARN_STEPS, POCKET_STEPS, ROUX_STEPS, ZZ_STEPS } from '../steps';
+import { LEARN_STEPS, ORTEGA_STEPS, POCKET_STEPS, ROUX_STEPS, ZZ_STEPS } from '../steps';
 import { LearnScreen } from './LearnScreen';
 
 describe('LearnScreen', () => {
@@ -304,15 +304,47 @@ describe('LearnScreen', () => {
       await setSetting('ui.puzzle', '222');
     });
 
-    it("walks the 2×2's own three steps, with no method to choose between", async () => {
+    it("walks the 2×2's own three steps, and offers its two guides only", async () => {
       render(<LearnScreen />);
       await screen.findByText(strings.learn.pocket.intro);
 
       expect(sections().map((section) => section.querySelector('h2')?.textContent)).toEqual(
         POCKET_STEPS.map((step, index) => `${index + 1}${step.title}`),
       );
-      expect(screen.queryByRole('group', { name: strings.learn.method })).toBeNull();
+      const methods = screen.getByRole('group', { name: strings.learn.method });
+      expect(within(methods).getAllByRole('button').map((button) => button.textContent)).toEqual([
+        strings.learn.guideNames['222-layers'],
+        strings.learn.guideNames['222-ortega'],
+      ]);
       expect(screen.queryByRole('button', { name: 'CFOP' })).toBeNull();
+    });
+
+    it('switches to Ortega: the face, then every case of the two sets, opened without a player', async () => {
+      const user = userEvent.setup();
+      render(<LearnScreen />);
+      await user.click(await screen.findByRole('button', { name: strings.learn.guideNames['222-ortega'] }));
+      await screen.findByText(strings.learn.ortega.intro);
+      await settled();
+
+      expect(sections().map((section) => section.querySelector('h2')?.textContent)).toEqual(
+        ORTEGA_STEPS.map((step, index) => `${index + 1}${step.title}`),
+      );
+      await waitFor(() =>
+        expect(sections().map((section) => caseButtons(section).length)).toEqual([0, 7, 5]),
+      );
+      expect(await getSetting('ui.learnMethod.222')).toBe('222-ortega');
+      expect(await getSetting('ui.learnMethod')).toBe('');
+
+      const [, oll] = sections();
+      if (!oll) throw new Error('the guide lost its OLL');
+      const [sune] = caseButtons(oll);
+      if (!sune) throw new Error('no case to open');
+      await user.click(sune);
+
+      const sheet = await screen.findByRole('dialog');
+      expect(within(sheet).getByRole('heading', { level: 2, name: 'Sune' })).toBeInTheDocument();
+      expect(within(sheet).queryByRole('button', { name: strings.playback.play })).toBeNull();
+      expect(within(sheet).queryByRole('button', { name: strings.playback.step })).toBeNull();
     });
 
     it('draws every picture as a 2×2: four stickers to a face, not nine', async () => {

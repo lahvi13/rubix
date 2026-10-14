@@ -8,11 +8,14 @@
 import { describe, expect, it } from 'vitest';
 import { parseAlg, type Move } from '../../domain/cube/notation';
 import { FACELETS, applyAlg, solvedState, stateKey, type CubeState } from '../../domain/cube/state';
+import { POCKET_PACKS } from '../../db/seed/packs';
 import {
   FOUR_MOVES,
   GUIDES,
   PLACE_PIECES,
+  ORTEGA_STEPS,
   POCKET_LAYERS_GUIDE_ID,
+  POCKET_ORTEGA_GUIDE_ID,
   POCKET_STEPS,
   PUZZLE_GUIDES,
   figureState,
@@ -86,8 +89,9 @@ const stateOf = (stepId: string, at: number): CubeState => {
 
 describe('the 2×2 guide', () => {
   it("is the 2×2's guide, and none of the 3×3's", () => {
-    expect(PUZZLE_GUIDES['222']).toEqual([POCKET_LAYERS_GUIDE_ID]);
+    expect(PUZZLE_GUIDES['222']).toEqual([POCKET_LAYERS_GUIDE_ID, POCKET_ORTEGA_GUIDE_ID]);
     expect(PUZZLE_GUIDES['333']).not.toContain(POCKET_LAYERS_GUIDE_ID);
+    expect(GUIDES[POCKET_ORTEGA_GUIDE_ID]).toBe(ORTEGA_STEPS);
     expect(GUIDES[POCKET_LAYERS_GUIDE_ID]).toBe(POCKET_STEPS);
     // Every guide belongs to exactly one cube.
     expect(Object.values(PUZZLE_GUIDES).flat().sort()).toEqual(Object.keys(GUIDES).sort());
@@ -396,5 +400,33 @@ describe('turning the yellow pieces down', () => {
     const whole = turn(short, "U'");
     expect(facing(whole, FRONT_RIGHT_BOTTOM, 'U')).toBe('D');
     expect(corners(whole)).not.toBe(corners(short));
+  });
+});
+
+describe('the Ortega guide', () => {
+  it('is three steps: the face by feel, then the two sets whole', () => {
+    expect(ORTEGA_STEPS.map((entry) => [entry.id, entry.setId, entry.group])).toEqual([
+      ['ortega-face', null, null],
+      ['ortega-oll', 'pocket-oll', null],
+      ['ortega-pbl', 'pocket-pbl', null],
+    ]);
+    for (const entry of ORTEGA_STEPS) {
+      expect(entry.points.length).toBeGreaterThan(0);
+      if (entry.setId === null) continue;
+      const cases = POCKET_PACKS.find((pack) => pack.set.id === entry.setId)?.cases ?? [];
+      expect(cases.length).toBe(entry.setId === 'pocket-oll' ? 7 : 5);
+    }
+  });
+
+  it('draws the face finished as a face and not a layer', () => {
+    const [figure] = ORTEGA_STEPS[0]?.figures ?? [];
+    if (!figure) throw new Error('the face step lost its picture');
+    const state = figureState(figure);
+
+    const bottomFace = FACELETS.flatMap((sticker, index) =>
+      sticker.face === 'D' && CORNER_STICKERS.includes(index) ? [state[index]] : [],
+    );
+    expect(bottomFace).toEqual(['D', 'D', 'D', 'D']);
+    expect(BOTTOM.every((slot) => isHome(state, slot, SOLVED))).toBe(false);
   });
 });

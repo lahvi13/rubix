@@ -11,6 +11,8 @@ import f2lAdvanced from './f2l-advanced.json';
 import f2lExpert from './f2l-expert.json';
 import oll from './oll.json';
 import pll from './pll.json';
+import pocketOll from './pocket-oll.json';
+import pocketPbl from './pocket-pbl.json';
 import rouxEo from './roux-eo.json';
 import rouxEolr from './roux-eolr.json';
 import rouxSb from './roux-sb.json';
@@ -18,6 +20,7 @@ import twoLookCmll from './two-look-cmll.json';
 import twoLookOll from './two-look-oll.json';
 import twoLookPll from './two-look-pll.json';
 import { CROSS_CASE_ID, CROSS_SET_ID } from '../../domain/alg/sets';
+import type { Puzzle } from '../types';
 
 export interface PackCase {
   id: string;
@@ -64,6 +67,8 @@ export interface AlgPack {
   packVersion: number;
   /** The method the set belongs to; CFOP unless it says otherwise. */
   set: { id: string; name: string; method?: string };
+  /** The puzzle the set is for; the 3×3 unless it says otherwise. */
+  puzzle?: Puzzle;
   cases: PackCase[];
 }
 
@@ -88,6 +93,22 @@ export const PACKS: readonly AlgPack[] = [
   rouxEo,
   rouxEolr,
 ];
+
+/**
+ * The 2×2's sets: Ortega's two, as J Perm has them (jperm.net/lib/2x2oll.js
+ * and 2x2pbl.js). Apart from PACKS, because everything that reads PACKS reads
+ * them as 3×3 cases — whether the layers under the case are whole, which way
+ * the cube is held for recognition — and a 2×2 algorithm run on the model
+ * leaves its edges wherever the moves take them. They are checked by running
+ * them all the same, on the corners alone (packs.test.ts).
+ */
+export const POCKET_PACKS: readonly AlgPack[] = [pocketOll, pocketPbl].map((pack) => ({
+  ...pack,
+  puzzle: '222',
+}));
+
+/** Every set the seed puts in place, whatever puzzle it is for. */
+export const SEEDED_PACKS: readonly AlgPack[] = [...PACKS, ...POCKET_PACKS];
 
 /**
  * The cross is drilled too, and it is not an algorithm set: there is nothing

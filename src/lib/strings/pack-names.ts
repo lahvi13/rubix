@@ -71,6 +71,15 @@ const CS: Record<string, string> = {
   'One': 'Jednička',
   'All six': 'Všech šest',
 
+  // The 2×2's OLL, by how many corners already show yellow on top — J Perm's
+  // grouping — and its PBL by what is wrong with the bottom layer.
+  'One yellow on top': 'Jedna žlutá nahoře',
+  'No yellow on top': 'Žádná žlutá nahoře',
+  'Two yellow on top': 'Dvě žluté nahoře',
+  'Bottom solved': 'Spodek hotový',
+  'Bottom: adjacent swap': 'Spodek: prohozené sousední',
+  'Bottom: diagonal swap': 'Spodek: prohozené protilehlé',
+
   // PLL, grouped by what the case does rather than by its shape.
   'Adjacent corner swap': 'Prohozené sousední rohy',
   'Diagonal corner swap': 'Prohozené protilehlé rohy',
@@ -144,6 +153,13 @@ export const KEPT_IN_ENGLISH: readonly string[] = [
   'Anti-Sune',
   'Bowtie',
   'Headlights',
+  // The 2×2's PBL as J Perm names it: what is swapped on top, and below.
+  'PBL',
+  'Adj U',
+  'Diag U',
+  'Adj/Adj',
+  'Adj/Diag',
+  'Diag/Diag',
   // PLL, named by the letter everybody recognises it by.
   'Aa',
   'Ab',

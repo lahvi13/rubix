@@ -13,6 +13,7 @@ import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../level
 import { useAlgSets, useMethods, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
 import type { AlgSet } from '../../../db/types';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CaseLayout } from '../../../lib/appearance';
 import { useTriggers } from '../hooks/use-triggers';
@@ -35,7 +36,10 @@ const CASE_GRID_CLASS: Record<CaseLayout, string> = {
 };
 
 export function TrainerScreen() {
-  const sets = useAlgSets();
+  // The sets of the cube the app is on, and only those.
+  const [puzzle] = usePuzzle();
+  const allSets = useAlgSets();
+  const sets = allSets?.filter((set) => set.puzzle === puzzle);
   // Two-look sets hang off their full set rather than standing beside it, and
   // the cross is a set only in the sense that it can be drilled — there is no
   // case to look at and no algorithm to read. The beginner set is left out for
@@ -187,17 +191,20 @@ export function TrainerScreen() {
           done to the set stands on the left, what is only looked up on the
           right. */}
       <div className="trainer__actions">
-        {/* The drill opens on whatever is being looked at, two-look included. */}
-        <button
-          type="button"
-          disabled={setId === null}
-          onClick={() => {
-            if (setId !== null) setDrillSetId(setId);
-            navigate('drill');
-          }}
-        >
-          {strings.trainer.drillSet}
-        </button>
+        {/* The drill opens on whatever is being looked at, two-look included.
+            The 3×3's alone so far: its drills are built on a 3×3 that turns. */}
+        {puzzle === '333' ? (
+          <button
+            type="button"
+            disabled={setId === null}
+            onClick={() => {
+              if (setId !== null) setDrillSetId(setId);
+              navigate('drill');
+            }}
+          >
+            {strings.trainer.drillSet}
+          </button>
+        ) : null}
         <span className="trainer__spacer" />
         <button
           type="button"
@@ -215,9 +222,14 @@ export function TrainerScreen() {
         </button>
       </div>
 
-      <SetSummary groups={groups} onOpen={(id, group) => setOpenCase({ id, group })} />
+      {/* What the drill has measured, so nothing on a cube it does not drill yet. */}
+      {puzzle === '333' ? (
+        <SetSummary groups={groups} onOpen={(id, group) => setOpenCase({ id, group })} />
+      ) : null}
 
-      {panel === 'notation' ? <NotationReference skin={skin} /> : null}
+      {panel === 'notation' ? (
+        <NotationReference skin={skin} order={puzzle === '333' ? 3 : 2} />
+      ) : null}
       {panel === 'triggers' ? <TriggerPanel /> : null}
 
       {isLoading ? <p className="data-section__hint">{strings.trainer.loading}</p> : null}

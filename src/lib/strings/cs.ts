@@ -204,7 +204,7 @@ export const cs: Strings = {
       minx: 'Megaminx',
     },
     nothingYet: (name: string) =>
-      `Pro ${name} tu zatím nic není. Průvodce, timer, historie a statistiky už pro ni jsou.`,
+      `Dril pro ${name} tu zatím není. Průvodce, sady v trenažéru, timer i statistiky už pro ni jsou.`,
   },
   stats: {
     empty: 'V této session zatím nejsou žádná složení.',
@@ -683,6 +683,7 @@ export const cs: Strings = {
     },
     guideNames: {
       '222-layers': 'Po vrstvách',
+      '222-ortega': 'Ortega',
     },
     pocket: {
       intro:
@@ -690,7 +691,7 @@ export const cs: Strings = {
       source: 'Metoda a její tři kroky jsou z návodu na 2×2 pro začátečníky na',
       sourceLink: 'jperm.net',
       hideHint:
-        'Až budeš skládat bez čtení, odeber průvodce z menu; v Nastavení ho vrátíš zpět.',
+        'Až budeš skládat bez čtení, rychlejší cesta je Ortega, druhý průvodce nahoře na stránce: stěna místo vrstvy a pak dva z dvanácti algoritmů.',
       steps: {
         whiteLayer: {
           title: 'Bílá vrstva',
@@ -740,6 +741,44 @@ export const cs: Strings = {
         notInPlace: 'Tenhle není: jedna z jeho barev na dílku pod ním chybí.',
       },
       goal: 'Bílá vrstva hotová: boky sedí dokola.',
+    },
+    ortega: {
+      intro:
+        '2×2 tak, jak se skládá rychle: tři kroky a dvanáct algoritmů. Jedna stěna libovolné barvy, protější stěna přes OLL a obě vrstvy naráz přes PBL. Na obrázcích je ta stěna bílá; několik algoritmů znáš z 3×3.',
+      source: 'Metoda, její algoritmy i jejich jména jsou od J Perma na',
+      sourceLink: 'jperm.net',
+      hideHint:
+        'Až budeš mít těch dvanáct v rukou, dalším krokem je CLL a po něm EG. Pak průvodce odeber z menu; v Nastavení ho vrátíš zpět.',
+      steps: {
+        face: {
+          title: 'Jedna stěna',
+          points: [
+            'Slož jednu stěnu v jedné barvě. Boky nemusí sedět – proto je to rychlejší než celá vrstva.',
+            'Čtyři tahy z prvního průvodce dostanou na místo každý dílek, ale kratší je lepší: najdi dva dílky, které už drží u sebe, a přidej k nim další dva.',
+            'Pak tu stěnu drž dole, pro další dva kroky.',
+          ],
+          tip: 'časem se stěna naplánuje během prohlídky, ještě před prvním tahem. Málokdy potřebuje víc než pět nebo šest tahů.',
+        },
+        oll: {
+          title: 'Horní stěna (OLL)',
+          points: [
+            'Otoč horní stěnu na žlutou. Sedm případů, každý má svůj algoritmus.',
+            'Který to je, řeknou žluté nálepky: kolik jich míří nahoru – jedna, žádná, nebo dvě – a kam míří ostatní.',
+            'Otáčej vrškem (U), dokud není žlutá tam, kde ji má obrázek, a udělej algoritmus. Spodní stěna zůstane, jak byla.',
+          ],
+          tip: 'těch sedm jsou rohové případy z dvoukrokového OLL na 3×3 – L se tam jmenuje Bowtie. Algoritmus odtamtud bez širokého tahu funguje i tady.',
+        },
+        pbl: {
+          title: 'Obě vrstvy (PBL)',
+          points: [
+            'Obě stěny jsou hotové, jen dílky v každé vrstvě nejsou na svých místech. Pět případů podle toho, co je špatně ve které vrstvě.',
+            'Dívej se na každou vrstvu zvlášť. Strana, kde jsou obě její nálepky jedné barvy, je pruh. Čtyři pruhy: vrstva je hotová. Jeden: jsou prohozené dva dílky vedle sebe. Žádný: dva naproti sobě.',
+            'Případ vyber podle obou vrstev dohromady. Otáčej vrškem (U) a spodkem (D), dokud nejsou pruhy tam, kde je má obrázek, udělej algoritmus a případně ještě dotoč vršek nebo spodek.',
+          ],
+          tip: 'Adj U a Diag U jsou permutace T a Y z PLL na 3×3. Je špatně jen spodek a vršek je hotový? Otoč kostku vzhůru nohama a je to jeden z těch pěti.',
+        },
+      },
+      faceCaption: 'Stěna hotová: dole celá bílá, boky jakkoli.',
     },
   },
   trainer: {

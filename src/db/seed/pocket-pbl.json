@@ -1,0 +1,41 @@
+{
+ "packVersion": 1,
+ "set": {
+  "id": "pocket-pbl",
+  "name": "PBL",
+  "method": "222"
+ },
+ "cases": [
+  {
+   "id": "pocket-pbl-adj-u",
+   "name": "Adj U",
+   "group": "Bottom solved",
+   "alg": "R U R' U' R' F R2 U' R' U' R U R' F'"
+  },
+  {
+   "id": "pocket-pbl-diag-u",
+   "name": "Diag U",
+   "group": "Bottom solved",
+   "alg": "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+   "others": ["R' U R' F2 R F' U R' F2 R F' R"]
+  },
+  {
+   "id": "pocket-pbl-adj-adj",
+   "name": "Adj/Adj",
+   "group": "Bottom: adjacent swap",
+   "alg": "R2 U' B2 U2 R2 U' R2"
+  },
+  {
+   "id": "pocket-pbl-adj-diag",
+   "name": "Adj/Diag",
+   "group": "Bottom: diagonal swap",
+   "alg": "R U' R F2 R' U R'"
+  },
+  {
+   "id": "pocket-pbl-diag-diag",
+   "name": "Diag/Diag",
+   "group": "Bottom: diagonal swap",
+   "alg": "R2 F2 R2"
+  }
+ ]
+}

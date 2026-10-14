@@ -6,7 +6,7 @@ import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { Sheet, type SheetPaging } from '../../../components/Sheet';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
-import type { Stickering } from '../../../domain/cube/views';
+import type { CubeOrder, Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { caseAlias, caseTitle } from '../../../domain/alg/case-name';
 import type { CubeSkin } from '../../../lib/cube-skins';
@@ -56,6 +56,11 @@ interface CaseDetailProps {
   playerStickering: PlayerStickering;
   /** The whole-cube rotation the set is looked at through; see `case-view`. */
   orientation: string;
+  /**
+   * 2 for a 2×2 case: drawn as the corners, and not played — the cube that
+   * plays is cubing.js's 3×3, and it would be another puzzle in other colours.
+   */
+  order?: CubeOrder;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
   /** The cases this one is among, in the order the set lays them out. */
@@ -71,12 +76,14 @@ export function CaseDetail({
   stickering,
   playerStickering,
   orientation,
+  order = 3,
   skin,
   triggers,
   ordered,
   onOpen,
   onClose,
 }: CaseDetailProps) {
+  const canPlay = order === 3;
   const { algCase, algorithms, active, moves, groups, choose, addVariant, editVariant, removeVariant, rename, setProgress, forgetRecognition } =
     useCaseDetail(caseId);
   // The sheet used to be keyed by case id so that stepping to the next one
@@ -108,7 +115,7 @@ export function CaseDetail({
   const playback = usePlayback(`${caseId} ${formatAlg(moves)}`);
   const isPlaying = playback.status !== 'idle';
   const tap = useTap(playback.toggle);
-  usePlaybackKeys(playback, { isActive: true, withSpace: true });
+  usePlaybackKeys(playback, { isActive: canPlay, withSpace: true });
   const stats = useCaseStat(caseId);
   const recognition = useRecognitionStat(caseId);
   const attempts = useCaseAttempts(caseId);
@@ -173,6 +180,7 @@ export function CaseDetail({
       view={view}
       stickering={stickering}
       skin={skin}
+      order={order}
       label={title}
     />
   );
@@ -192,7 +200,7 @@ export function CaseDetail({
       {/* Playing does not ask about the flat/3D setting: that one is about the
           still picture, and nothing but a turning cube shows what the moves
           do. A tap on the cube plays and pauses it, as the button does. */}
-      <div className="case-detail__stage" {...tap}>
+      <div className="case-detail__stage" {...(canPlay ? tap : {})}>
         {isPlaying ? (
           <CasePlayer
             // Performed exactly as written — the player is stood yellow up
@@ -216,16 +224,18 @@ export function CaseDetail({
         )}
       </div>
 
-      <div className="case-detail__controls">
-        <PlaybackButtons
-          status={playback.status}
-          onToggle={playback.toggle}
-          onStep={playback.step}
-          onBack={playback.back}
-          position={playback.position}
-          placement="row"
-        />
-      </div>
+      {canPlay ? (
+        <div className="case-detail__controls">
+          <PlaybackButtons
+            status={playback.status}
+            onToggle={playback.toggle}
+            onStep={playback.step}
+            onBack={playback.back}
+            position={playback.position}
+            placement="row"
+          />
+        </div>
+      ) : null}
 
       {/* Under the case it is about, where a verdict on it is made: after
           looking at the cube and watching it solved. Three joined steps rather

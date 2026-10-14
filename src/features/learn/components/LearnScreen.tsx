@@ -28,6 +28,7 @@ import { useActiveMethodId, useMethodList } from '../hooks/use-guide-method';
 import {
   GUIDES,
   POCKET_LAYERS_GUIDE_ID,
+  POCKET_ORTEGA_GUIDE_ID,
   PUZZLE_GUIDES,
   figureState,
   holdState,
@@ -94,6 +95,13 @@ const GUIDE_COPY: Readonly<Record<string, GuideCopy>> = {
     sourceLink: strings.learn.pocket.sourceLink,
     href: 'https://jperm.net/2x2',
     next: strings.learn.pocket.hideHint,
+  },
+  [POCKET_ORTEGA_GUIDE_ID]: {
+    intro: strings.learn.ortega.intro,
+    source: strings.learn.ortega.source,
+    sourceLink: strings.learn.ortega.sourceLink,
+    href: 'https://jperm.net/2x2/faster',
+    next: strings.learn.ortega.hideHint,
   },
 };
 

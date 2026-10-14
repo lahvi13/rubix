@@ -55,6 +55,9 @@ describe('alg repository', () => {
       'f2l-expert',
       'oll',
       'pll',
+      // The 2×2's: Ortega's top face and both layers.
+      'pocket-oll',
+      'pocket-pbl',
       'roux-eo',
       'roux-eolr',
       'roux-sb',
@@ -81,6 +84,8 @@ describe('alg repository', () => {
       'cmll',
       'roux-eo',
       'roux-eolr',
+      'pocket-oll',
+      'pocket-pbl',
     ]);
   });
 

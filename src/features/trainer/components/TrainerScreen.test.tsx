@@ -370,4 +370,23 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     expect(await screen.findByRole('img', { name: "R'" })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'M' })).toBeInTheDocument();
   });
+
+  describe('with the app on the 2×2', () => {
+    beforeEach(async () => {
+      await setSetting('ui.puzzle', '222');
+    });
+
+    it("offers the 2×2's two sets and none of the 3×3's, and no drill yet", async () => {
+      render(<TrainerScreen />);
+
+      // The top face first: seven cases, each drawn as a 2×2.
+      expect(await screen.findByText('Sune', undefined, SLOW_RENDER)).toBeInTheDocument();
+      const sets = screen.getAllByRole('button', { name: /^(F2L|OLL|PLL|PBL)$/ });
+      expect(sets.map((button) => button.textContent)).toEqual(['OLL', 'PBL']);
+      expect(screen.queryByRole('button', { name: 'Drill this set' })).toBeNull();
+
+      await userEvent.setup().click(screen.getByRole('button', { name: 'PBL' }));
+      expect(await screen.findByText('Diag/Diag', undefined, SLOW_RENDER)).toBeInTheDocument();
+    });
+  });
 });

@@ -3,6 +3,8 @@ import {
   BEGINNER_GROUPS,
   BEGINNER_SET_ID,
   CROSS_SET_ID,
+  POCKET_OLL_SET_ID,
+  POCKET_PBL_SET_ID,
   ROUX_EO_GROUPS,
   ROUX_EO_SET_ID,
   TWO_LOOK_CMLL_GROUPS,
@@ -802,6 +804,66 @@ export const POCKET_STEPS: readonly LearnStep[] = [
 ];
 
 export const POCKET_LAYERS_GUIDE_ID = '222-layers';
+export const POCKET_ORTEGA_GUIDE_ID = '222-ortega';
+
+/** A face with its sides wrong: the bottom's pieces swapped across, both faces whole. */
+const FACE_NOT_LAYER = 'R2 F2 R2';
+
+/**
+ * Ortega, as J Perm teaches it (jperm.net/2x2/faster): a face, then the
+ * opposite face with one of seven algorithms, then both layers with one of
+ * five. The face is built by feel — J Perm has no algorithm for it — so it is
+ * shown finished; the two sets are cases out of the trainer, each drawn and
+ * opened there as here.
+ */
+export const ORTEGA_STEPS: readonly LearnStep[] = [
+  {
+    id: 'ortega-face',
+    setId: null,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [],
+    // Unfolded, with only the face's colour in it: what makes it a face and
+    // not a layer is the sides, and no corner shows all four.
+    figures: [
+      {
+        picture: { view: 'net', stickering: 'bottomLayer', playerStickering: 'bottomLayer', standing: '' },
+        setup: FACE_NOT_LAYER,
+        caption: strings.learn.ortega.faceCaption,
+        isSetupShown: false,
+      },
+    ],
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.ortega.steps.face,
+  },
+  {
+    id: 'ortega-oll',
+    setId: POCKET_OLL_SET_ID,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [],
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.ortega.steps.oll,
+  },
+  {
+    id: 'ortega-pbl',
+    setId: POCKET_PBL_SET_ID,
+    group: null,
+    caseIds: [],
+    keyText: null,
+    holds: [],
+    situations: [],
+    markedCorner: null,
+    advanced: null,
+    ...strings.learn.ortega.steps.pbl,
+  },
+];
 
 /** A guide per method, by the method's id — or by an id of its own where it is no method. */
 export const GUIDES: Readonly<Record<string, readonly LearnStep[]>> = {
@@ -809,12 +871,13 @@ export const GUIDES: Readonly<Record<string, readonly LearnStep[]>> = {
   roux: ROUX_STEPS,
   zz: ZZ_STEPS,
   [POCKET_LAYERS_GUIDE_ID]: POCKET_STEPS,
+  [POCKET_ORTEGA_GUIDE_ID]: ORTEGA_STEPS,
 };
 
 /** The guides of each cube, in the order their switch offers them. */
 export const PUZZLE_GUIDES: Readonly<Record<SupportedPuzzle, readonly string[]>> = {
   '333': ['cfop', 'roux', 'zz'],
-  '222': [POCKET_LAYERS_GUIDE_ID],
+  '222': [POCKET_LAYERS_GUIDE_ID, POCKET_ORTEGA_GUIDE_ID],
 };
 
 /** Every situation of a step, the ones behind its button included. */

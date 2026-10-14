@@ -225,9 +225,9 @@ export const en = {
       clock: 'Clock',
       minx: 'Megaminx',
     },
-    /** On the trainer and the drill of a cube that has none yet. */
+    /** On the drill of a cube that has none yet. */
     nothingYet: (name: string) =>
-      `Nothing for the ${name} here yet. Its guide, the timer, the history and the stats are ready.`,
+      `No drill for the ${name} yet. Its guide, its sets in the trainer, the timer and the stats are ready.`,
   },
   stats: {
     empty: 'No solves in this session yet.',
@@ -734,6 +734,7 @@ export const en = {
     /** The guides that are not a method a session is timed in, by their id. */
     guideNames: {
       '222-layers': 'Layer by layer',
+      '222-ortega': 'Ortega',
     },
     /** The 2×2's first guide: J Perm's beginner method, in his three steps. */
     pocket: {
@@ -742,7 +743,7 @@ export const en = {
       source: 'The method and its three steps are those of the beginner 2×2 tutorial at',
       sourceLink: 'jperm.net',
       hideHint:
-        'Once you can solve without reading, take this guide out of the menu; Settings puts it back.',
+        'Once you can solve without reading, the quicker way is Ortega, the second guide at the top of this page: a face instead of a layer, then two of twelve algorithms.',
       steps: {
         whiteLayer: {
           title: 'White layer',
@@ -792,6 +793,45 @@ export const en = {
         notInPlace: 'This one is not: one of its colours is not on the piece under it.',
       },
       goal: 'The white layer done: its sides match all the way round.',
+    },
+    /** The 2×2's second guide: Ortega, as J Perm has it. */
+    ortega: {
+      intro:
+        'The 2×2 the way it is done fast: three steps and twelve algorithms. One face of any colour, the opposite face with OLL, and both layers at once with PBL. The pictures have the face in white; several of the algorithms you know from the 3×3 already.',
+      source: 'The method, its algorithms and their names are those of J Perm at',
+      sourceLink: 'jperm.net',
+      hideHint:
+        'With the twelve in your hands, CLL is the next step and EG after it. Take this guide out of the menu then; Settings puts it back.',
+      steps: {
+        face: {
+          title: 'One face',
+          points: [
+            'Make one face in one colour. The sides do not have to match — that is what makes it quicker than a whole layer.',
+            'The four moves from the first guide put any piece in, but shorter is better: find two pieces that already sit together and bring the other two to them.',
+            'Then hold that face on the bottom for the next two steps.',
+          ],
+          tip: 'with practice the face is planned during the inspection, before the first turn. It rarely takes more than five or six moves.',
+        },
+        oll: {
+          title: 'Top face (OLL)',
+          points: [
+            'Turn the top face yellow. Seven cases, each with an algorithm of its own.',
+            'Which one it is, the yellow stickers say: how many face up — one, none or two — and where the others point.',
+            'Turn the top (U) until the yellow is where its picture has it, and run the algorithm. The bottom face stays as it was.',
+          ],
+          tip: "the seven are the corner cases of the 3×3's two-look OLL — L is the one called Bowtie there. An algorithm from there with no wide turn in it works here too.",
+        },
+        pbl: {
+          title: 'Both layers (PBL)',
+          points: [
+            'Both faces are done; only the pieces of each layer are out of place. Five cases, by what is wrong in which layer.',
+            'Look at each layer on its own. A side where both of its stickers are one colour is a bar. Four bars: the layer is solved. One: two pieces side by side are swapped. None: two across from each other.',
+            'Pick the case by the two layers together. Turn the top (U) and the bottom (D) until the bars are where its picture has them, run the algorithm, and give the top or the bottom one more turn if it needs it.',
+          ],
+          tip: 'Adj U and Diag U are the T and Y perms of 3×3 PLL. With the bottom wrong and the top solved, turn the cube over and it is one of the five.',
+        },
+      },
+      faceCaption: 'The face done: white all over the bottom, the sides any way they like.',
     },
   },
   trainer: {

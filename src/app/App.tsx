@@ -42,8 +42,6 @@ const PUZZLE_ROUTES: ReadonlySet<Route> = new Set<Route>([
   'stats',
 ]);
 
-/** The screens that are the 3×3's alone so far: its sets and its drills. */
-const CUBE_ONLY_ROUTES: ReadonlySet<Route> = new Set<Route>(['trainer', 'drill']);
 
 export function App() {
   const route = useRoute();
@@ -153,18 +151,16 @@ export function App() {
         {route === 'stats' ? <StatsScreen key={puzzle} /> : null}
         {/* Keyed like the rest: the step being read is the cube's own guide's. */}
         {route === 'learn' ? <LearnScreen key={puzzle} /> : null}
-        {/* The sets and the drills are the 3×3's so far. Said on the screen
-            rather than taken off the bar: tabs that come and go with the cube
-            would move the ones that stay. */}
-        {!CUBE_ONLY_ROUTES.has(route) ? null : puzzle !== '333' ? (
+        {route === 'trainer' ? <TrainerScreen key={puzzle} /> : null}
+        {/* The drills are the 3×3's so far. Said on the screen rather than
+            taken off the bar: tabs that come and go with the cube would move
+            the ones that stay. */}
+        {route !== 'drill' ? null : puzzle !== '333' ? (
           <main className="screen screen--scroll">
             <p className="solves__empty">{strings.puzzle.nothingYet(strings.puzzle.names[puzzle])}</p>
           </main>
         ) : (
-          <>
-            {route === 'trainer' ? <TrainerScreen /> : null}
-            {route === 'drill' ? <DrillScreen /> : null}
-          </>
+          <DrillScreen />
         )}
         {route === 'settings' ? <SettingsScreen /> : null}
         {route === 'data' ? <DataScreen /> : null}

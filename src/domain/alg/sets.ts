@@ -129,7 +129,13 @@ export const SET_ORDER: readonly string[] = [
   'cmll',
   'roux-eo',
   'roux-eolr',
+  'pocket-oll',
+  'pocket-pbl',
 ];
+
+/** Ortega's two sets for the 2×2: the top face, then both layers at once. */
+export const POCKET_OLL_SET_ID = 'pocket-oll';
+export const POCKET_PBL_SET_ID = 'pocket-pbl';
 
 /**
  * The first two layers the way the beginner's guide teaches them: a corner at
