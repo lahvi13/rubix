@@ -1,8 +1,9 @@
 # Rubix
 
-An offline speedcubing trainer for the 3×3, from a first solve to a fast average —
-a timer, a beginner's guide and an algorithm trainer for **CFOP** and **Roux**,
-and a guide and phase timing for **ZZ**.
+An offline speedcubing trainer for the 3×3 and the 2×2, from a first solve to a
+fast average — a timer, beginner's guides and an algorithm trainer for **CFOP**
+and **Roux** on the 3×3 and **Ortega** on the 2×2, and a guide and phase timing
+for **ZZ**.
 It runs in the browser and installs as an app on a phone or a computer:
 **[rubix.lahvi.cz](https://rubix.lahvi.cz)**
 
@@ -18,6 +19,8 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 ## What it does
 
 ### Timer
+- The 3×3 or the 2×2, switched in the header's corner; everything else — the
+  sessions, the statistics, the guide, the trainer — follows the cube you pick.
 - Hold to start (space bar or anywhere on the screen), tap anything to stop.
 - WCA inspection with a countdown bar and beeps at 8 and 12 seconds; going over
   gives the +2 or DNF on its own.
@@ -31,14 +34,16 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 ### History and sessions
 - Every solve with its scramble, penalty, tags, note and star; fix a mistyped
   time or a penalty later.
-- Separate sessions for different practice, each timed in CFOP, Roux or ZZ,
-  archived when you are done with them.
+- Separate sessions for different practice, each timed in CFOP, Roux or ZZ on
+  the 3×3, archived when you are done with them. Each cube keeps its own
+  sessions, personal bests and goal.
 - Deleting a solve can be undone for a few seconds.
 
 ### Statistics
 - Current and best ao5, ao12, ao50 and ao100, personal bests, mean, median,
   standard deviation, DNF and +2 rate.
-- A histogram of times, and a trend of the rolling ao12 against the slower ao50.
+- A histogram of times, and a trend of the rolling ao12 against the slower ao50,
+  with every single from the second solve on.
 - Averages follow the csTimer convention, so the numbers match what you are used to.
 - With sessions in more than one method, the statistics across sessions read
   one method at a time, and each method keeps its own personal best.
@@ -50,8 +55,9 @@ Free, no account, no ads. Once opened, it works without a connection. English an
 - **Roux:** the second block's 65 pairs, CMLL — all 42 cases, with 2-Look CMLL
   on the way there — the eleven cases of edge orientation, and EOLR, which
   orients the edges and places the side ones in a single algorithm.
+- **2×2:** Ortega's seven OLL cases and five PBL cases.
 - Every case drawn as a diagram, with arrows for where the pieces go; play the
-  algorithm on a 3D cube move by move.
+  algorithm on a 3D cube move by move, in your own colour scheme.
 - Alternative algorithms for a case — left-handed ones marked as such — your
   own algorithms, and named triggers (sexy move, sledgehammer…) highlighted
   inside them.
@@ -60,7 +66,7 @@ Free, no account, no ads. Once opened, it works without a connection. English an
   case, and see which ones are your slowest; or drill recognition alone, naming
   the case you are shown. The cross has a drill of its own.
 
-### Phase splits
+### Phase splits (3×3)
 - Time each phase by tapping as you finish it: cross, F2L, OLL and PLL in CFOP,
   the two blocks, CMLL and the last six edges in Roux, EOCross, F2L and the
   last layer in ZZ.
@@ -73,7 +79,10 @@ Free, no account, no ads. Once opened, it works without a connection. English an
   a picture for every way its last edges can lie.
 - A guide to ZZ for a cube you can already solve: how to tell a bad edge from
   a good one, how to turn them all good, and the cross and pairs that follow.
-- Can be hidden once you no longer need it.
+- The 2×2 layer by layer in three steps, with four moves and one algorithm to
+  learn — and Ortega, the quicker way: a face, then the top and both layers
+  with twelve algorithms.
+- Each cube's guide can be hidden once you no longer need it.
 
 ### Sharing
 - Send a solve or an average as a picture.
@@ -99,7 +108,8 @@ about your solves and nothing waits for it.
 ## Where the algorithms come from
 
 Most of the CFOP algorithms are from [J Perm](https://jperm.net/), and the
-beginner method follows [badmephisto](http://badmephisto.com). The Roux sets
+3×3 beginner method follows [badmephisto](http://badmephisto.com). The 2×2 —
+its beginner method, Ortega and its algorithms — is J Perm's too. The Roux sets
 come from the sheets of [Kian Mansour](https://sites.google.com/view/kianroux/)
 and the Roux community; the second-block cases those sheets leave out are from
 [SpeedCubeDB](https://speedcubedb.com/). The ZZ guide follows the tutorial by
