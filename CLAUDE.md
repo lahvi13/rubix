@@ -247,7 +247,9 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   typ `Puzzle` je širší schválně, import z csTimeru si pyraminx nechá jako
   pyraminx. Co je pro každou kostku jiné (cíl, název pro twisty), je tabulka
   `Record<SupportedPuzzle, …>`, aby nová kostka shodila build tam, kde chybí.
-  Trenažér a dril zatím 3×3 natvrdo mají — na jiné kostce se nevykreslí.
+  Trenažér a dril čtou sady zvolené kostky (`AlgSet.puzzle`); sady 2×2 stojí
+  mimo `PACKS` v `POCKET_PACKS`, protože všechno, co čte `PACKS`, je čte jako
+  3×3.
 - **průvodce patří kostce.** Které průvodce která kostka má, říká
   `PUZZLE_GUIDES` (`features/learn/steps.ts`); nový průvodce se zapíše tam i do
   `GUIDES`, jinak ho test nepustí. Průvodce, který není metodou session, má

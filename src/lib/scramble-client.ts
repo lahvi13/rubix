@@ -56,18 +56,22 @@ export function requestScramble(eventId = '333'): Promise<string> {
 
 /**
  * A scramble that reaches the state `target` leaves a solved cube in, found by
- * cubing's 3×3 solver and handed back inverted. Only face turns come out, so
- * the target must leave the centres where they started (see drillScramble).
+ * cubing's solver for the puzzle and handed back inverted. Only face turns
+ * come out, so on the 3×3 the target must leave the centres where they started
+ * (see drillScramble); a 2×2 has none to leave.
  */
-export function requestCaseScramble(target: string): Promise<string> {
+export function requestCaseScramble(target: string, puzzle: '333' | '222' = '333'): Promise<string> {
   return enqueue(async () => {
-    const [{ search }, { cube3x3x3 }] = await Promise.all([
+    const [{ search }, { cube2x2x2, cube3x3x3 }] = await Promise.all([
       loadCubing(),
       import('cubing/puzzles'),
     ]);
-    const kpuzzle = await cube3x3x3.kpuzzle();
+    const kpuzzle = await (puzzle === '222' ? cube2x2x2 : cube3x3x3).kpuzzle();
     const pattern = kpuzzle.defaultPattern().applyAlg(target);
-    const solution = await search.experimentalSolve3x3x3IgnoringCenters(pattern);
+    const solution =
+      puzzle === '222'
+        ? await search.experimentalSolve2x2x2(pattern)
+        : await search.experimentalSolve3x3x3IgnoringCenters(pattern);
     return solution.invert().toString();
   });
 }

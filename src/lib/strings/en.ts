@@ -225,9 +225,6 @@ export const en = {
       clock: 'Clock',
       minx: 'Megaminx',
     },
-    /** On the drill of a cube that has none yet. */
-    nothingYet: (name: string) =>
-      `No drill for the ${name} yet. Its guide, its sets in the trainer, the timer and the stats are ready.`,
   },
   stats: {
     empty: 'No solves in this session yet.',

@@ -152,16 +152,7 @@ export function App() {
         {/* Keyed like the rest: the step being read is the cube's own guide's. */}
         {route === 'learn' ? <LearnScreen key={puzzle} /> : null}
         {route === 'trainer' ? <TrainerScreen key={puzzle} /> : null}
-        {/* The drills are the 3×3's so far. Said on the screen rather than
-            taken off the bar: tabs that come and go with the cube would move
-            the ones that stay. */}
-        {route !== 'drill' ? null : puzzle !== '333' ? (
-          <main className="screen screen--scroll">
-            <p className="solves__empty">{strings.puzzle.nothingYet(strings.puzzle.names[puzzle])}</p>
-          </main>
-        ) : (
-          <DrillScreen />
-        )}
+        {route === 'drill' ? <DrillScreen key={puzzle} /> : null}
         {route === 'settings' ? <SettingsScreen /> : null}
         {route === 'data' ? <DataScreen /> : null}
         {route === 'about' ? <AboutScreen /> : null}

@@ -30,7 +30,8 @@ import { useSetting } from '../../../hooks/use-setting';
 import { watchWrite } from '../../../lib/errors';
 import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
-import { stateOf, useAlgSets } from '../hooks/use-alg-cases';
+import { stateOf } from '../hooks/use-alg-cases';
+import { useDrillSet } from '../hooks/use-drill-set';
 import { useCaseAttempts } from '../hooks/use-case-attempts';
 import { useDrill, type DrillItem, type DrillView, type StoredAttempt } from '../hooks/use-drill';
 import { useTriggers } from '../hooks/use-triggers';
@@ -57,8 +58,7 @@ interface SolveDrillProps {
  * is half of what is being drilled.
  */
 export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
-  const sets = useAlgSets();
-  const [setId, setSetId] = useSetting('trainer.drillSetId');
+  const { sets, setId, setSetId } = useDrillSet();
   const [selectedIds, setSelectedIds] = useSetting('trainer.drillCaseIds');
   const drill = useDrill(setId, selectedIds);
   const skin = useCubeSkin();
@@ -365,6 +365,7 @@ function Answer({
       view={diagram.view}
       stickering={diagram.stickering}
       skin={skin}
+      order={diagram.order}
       label={title}
     />
   );
@@ -384,6 +385,7 @@ function Answer({
               alg={alg}
               stickering={diagram.playerStickering}
               standing={diagram.orientation}
+              order={diagram.order}
               request={playback.request}
               onMove={setPlayingMove}
               onStopped={playback.stopped}

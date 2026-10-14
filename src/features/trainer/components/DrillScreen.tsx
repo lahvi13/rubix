@@ -1,5 +1,6 @@
 import { CROSS_SET_ID } from '../../../domain/alg/sets';
 import { useSetting } from '../../../hooks/use-setting';
+import { useDrillSet } from '../hooks/use-drill-set';
 import { RecognitionDrill } from './RecognitionDrill';
 import { SolveDrill } from './SolveDrill';
 
@@ -20,7 +21,7 @@ import { SolveDrill } from './SolveDrill';
  */
 export function DrillScreen() {
   const [mode, setMode] = useSetting('trainer.drillMode');
-  const [setId] = useSetting('trainer.drillSetId');
+  const { setId } = useDrillSet();
   const canRecognise = setId !== CROSS_SET_ID;
 
   return mode === 'recognise' && canRecognise ? (

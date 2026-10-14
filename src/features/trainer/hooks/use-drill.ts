@@ -17,10 +17,10 @@ import { now } from '../../../lib/clock';
 import { logQuietly, reportError, watchWrite } from '../../../lib/errors';
 import { systemRandom } from '../../../lib/random';
 import { requestCaseScramble } from '../../../lib/scramble-client';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { strings } from '../../../lib/strings';
 import { useCaseStats } from './use-case-stats';
 
-const PUZZLE = '333';
 
 /** The case on screen and the scramble that gets you to it. */
 export interface DrillItem {
@@ -91,6 +91,8 @@ export interface DrillView {
  * this is are the point of the exercise, not something to be penalised at 15.
  */
 export function useDrill(setId: string, selectedIds: readonly string[]): DrillView {
+  // The drill's sets are the cube's (useDrillSet), so its attempts are too.
+  const [puzzle] = usePuzzle();
   const isCross = setId === CROSS_SET_ID;
   const selectionKey = selectedIds.join(',');
 
@@ -145,7 +147,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     const drawn = pick;
     const settle = (scramble: string) =>
       setPick((shown) => (shown === drawn ? { ...shown, scramble } : shown));
-    requestCaseScramble(pick.target).then(
+    requestCaseScramble(pick.target, puzzle).then(
       (text) => settle(spelled(text)),
       (cause: unknown) => {
         // Offline on a first visit, or a wedged worker: the setup still gets
@@ -154,7 +156,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
         settle(drawn.fallback);
       },
     );
-  }, [pick]);
+  }, [pick, puzzle]);
 
   const current: DrillItem | null = useMemo(() => {
     if (!isCross) return pick;
@@ -189,8 +191,10 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   // The completion callback lives as long as the timer does, so what it needs
   // is read from refs rather than captured.
   const currentRef = useRef(current);
+  const puzzleRef = useRef(puzzle);
   useEffect(() => {
     currentRef.current = current;
+    puzzleRef.current = puzzle;
   });
 
   const handleComplete = useCallback((attempt: CompletedAttempt) => {
@@ -201,7 +205,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     setRevealed({ caseId: item.algCase.id, gaveUp: false });
 
     void addDrillSolve({
-      puzzle: PUZZLE,
+      puzzle: puzzleRef.current,
       caseId: item.algCase.id,
       scramble: item.scramble ?? '',
       rawMs: attempt.rawMs,
@@ -300,7 +304,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
       watchWrite(
         () =>
           addDrillSolve({
-            puzzle: PUZZLE,
+            puzzle,
             caseId: current.algCase.id,
             scramble: current.scramble ?? '',
             rawMs: 0,

@@ -10,7 +10,7 @@ import { useSetting } from '../../../hooks/use-setting';
 import { formatTime } from '../../../lib/format';
 import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
-import { useAlgSets } from '../hooks/use-alg-cases';
+import { useDrillSet } from '../hooks/use-drill-set';
 import { useTriggers } from '../hooks/use-triggers';
 import {
   useRecognition,
@@ -42,8 +42,7 @@ interface RecognitionDrillProps {
  * seconds it takes, which is exactly what turning the cube round costs.
  */
 export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
-  const sets = useAlgSets();
-  const [setId, setSetId] = useSetting('trainer.drillSetId');
+  const { sets, setId, setSetId } = useDrillSet();
   const [selectedIds, setSelectedIds] = useSetting('trainer.drillCaseIds');
   const recognition = useRecognition(setId, selectedIds);
   const skin = useCubeSkin();
@@ -85,6 +84,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
         // at once, which is the one thing a cube in your hands does not.
         view="isometric"
         stickering={chart.stickering}
+        order={chart.order}
         skin={skin}
         label={strings.recognition.question}
       />
@@ -153,6 +153,7 @@ export function RecognitionDrill({ mode, onMode }: RecognitionDrillProps) {
                 setupAlg={question.scramble}
                 alg={formatAlg([...(question.auf ?? []), ...question.algorithm])}
                 stickering={chart.playerStickering}
+                order={chart.order}
                 // The question's own turn of the cube, which its scramble
                 // opens on: the blocks are wherever that left them.
                 standing={/^y[2']?(?= |$)/.exec(question.scramble)?.[0] ?? ''}
@@ -326,6 +327,7 @@ function OptionCard({ option, setId, skin, outcome, answerId, onChoose }: Option
         state={option.state}
         view={diagram.view}
         stickering={diagram.stickering}
+        order={diagram.order}
         skin={skin}
         label={null}
       />

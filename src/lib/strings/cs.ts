@@ -203,8 +203,6 @@ export const cs: Strings = {
       clock: 'Clock',
       minx: 'Megaminx',
     },
-    nothingYet: (name: string) =>
-      `Dril pro ${name} tu zatím není. Průvodce, sady v trenažéru, timer i statistiky už pro ni jsou.`,
   },
   stats: {
     empty: 'V této session zatím nejsou žádná složení.',

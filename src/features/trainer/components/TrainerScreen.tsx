@@ -191,20 +191,17 @@ export function TrainerScreen() {
           done to the set stands on the left, what is only looked up on the
           right. */}
       <div className="trainer__actions">
-        {/* The drill opens on whatever is being looked at, two-look included.
-            The 3×3's alone so far: its drills are built on a 3×3 that turns. */}
-        {puzzle === '333' ? (
-          <button
-            type="button"
-            disabled={setId === null}
-            onClick={() => {
-              if (setId !== null) setDrillSetId(setId);
-              navigate('drill');
-            }}
-          >
-            {strings.trainer.drillSet}
-          </button>
-        ) : null}
+        {/* The drill opens on whatever is being looked at, two-look included. */}
+        <button
+          type="button"
+          disabled={setId === null}
+          onClick={() => {
+            if (setId !== null) setDrillSetId(setId);
+            navigate('drill');
+          }}
+        >
+          {strings.trainer.drillSet}
+        </button>
         <span className="trainer__spacer" />
         <button
           type="button"
@@ -222,10 +219,7 @@ export function TrainerScreen() {
         </button>
       </div>
 
-      {/* What the drill has measured, so nothing on a cube it does not drill yet. */}
-      {puzzle === '333' ? (
-        <SetSummary groups={groups} onOpen={(id, group) => setOpenCase({ id, group })} />
-      ) : null}
+      <SetSummary groups={groups} onOpen={(id, group) => setOpenCase({ id, group })} />
 
       {panel === 'notation' ? (
         <NotationReference skin={skin} order={puzzle === '333' ? 3 : 2} />

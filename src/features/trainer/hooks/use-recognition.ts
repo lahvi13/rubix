@@ -17,10 +17,10 @@ import { reportError } from '../../../lib/errors';
 import { systemRandom } from '../../../lib/random';
 import { strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
+import { usePuzzle } from '../../../hooks/use-puzzle';
 import { stateOf } from './use-alg-cases';
 import { useRecognitionStats } from './use-case-stats';
 
-const PUZZLE = '333';
 
 /** One card on offer: the case as the trainer draws it, in its own chart. */
 export interface RecognitionOption {
@@ -98,6 +98,8 @@ interface Round {
  * ten cases you keep losing to should not have to be done twice.
  */
 export function useRecognition(setId: string, selectedIds: readonly string[]): RecognitionView {
+  // The drill's sets are the cube's (useDrillSet), so its attempts are too.
+  const [puzzle] = usePuzzle();
   const selectionKey = selectedIds.join(',');
 
   const data = useLiveQuery(async () => {
@@ -203,7 +205,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
       setOutcome({ chosenId: caseId, isCorrect, elapsedMs });
 
       void addRecognitionAttempt({
-        puzzle: PUZZLE,
+        puzzle,
         caseId: round.answerId,
         scramble: round.scramble,
         rawMs: elapsedMs,
@@ -213,7 +215,7 @@ export function useRecognition(setId: string, selectedIds: readonly string[]): R
         reportError(strings.errors.saveSolve, cause);
       });
     },
-    [outcome, round],
+    [outcome, puzzle, round],
   );
 
   return {

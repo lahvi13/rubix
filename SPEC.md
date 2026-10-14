@@ -1300,9 +1300,8 @@ Pořadí:
    přesně všech 7 možností vršku, u PBL sedí pravidlo, podle kterého je
    průvodce čte (čtyři pruhy hotovo, jeden sousední, žádný protilehlé).
    OLL se kreslí shora, PBL rozvinutá — obě vrstvy ze všech stran najednou.
-   Trenažér na 2×2 ukazuje jen tyhle dvě sady; dril a jeho souhrn zatím ne.
-   Naposledy otevřená sada je jedna pro obě kostky — přepnutí ji vrátí na první
-   sadu té druhé.
+   Trenažér na 2×2 ukazuje jen tyhle dvě sady. Naposledy otevřená sada je
+   jedna pro obě kostky — přepnutí ji vrátí na první sadu té druhé.
 4. **3D přehrávání** — hotovo: scramble na timeru, karta případu i situace v
    průvodci se na 2×2 přehrávají na 2×2 v barvách aplikace. 2×2 kreslí
    cubing.js jinou třídou (`PG3D`) než 3×3: barví per vrchol z barvy, kterou
@@ -1313,7 +1312,13 @@ Pořadí:
    plast i materiály se vrací na místo pokaždé, když je knihovna přepíše.
    Masky se staví na 3×3 a platí i pro 2×2: cubing.js čísluje rohy 2×2 stejně
    jako rohy 3×3.
-5. **Dril na 2×2** — zbývá.
+5. **Dril na 2×2** — hotovo: oba režimy (složit na čas, poznat případ) nad
+   sadami OLL a PBL, pokusy se ukládají jako 2×2. Scramble případu hledá
+   řešič 2×2 z cubing.js (`experimentalSolve2x2x2`), který řeší přesně, ne jen
+   do otočení kostky — 14 scramblů z prohlížeče puštěných na modelu vedlo
+   každý na svůj případ. Sada drilu je jedno nastavení pro obě kostky:
+   `useDrillSet` za sadu druhé kostky dosadí první sadu té zvolené (na 3×3
+   výchozí PLL) a nastavení nepřepíše.
 
 CLL a EG se neplánují, dokud Ortega nepůjde z ruky.
 
