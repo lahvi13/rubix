@@ -4,6 +4,7 @@ import type { PlaybackPosition, PlaybackRequest } from '../../../hooks/use-playb
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import { usePlayingMove } from '../../../hooks/use-playing-move';
 import { useTwistySkin } from '../../../hooks/use-twisty-skin';
+import type { CubeOrder } from '../../../domain/cube/views';
 import { strings } from '../../../lib/strings';
 import { CAMERA_LATITUDE, CAMERA_LONGITUDE, CUBE_ORIENTATION } from '../../../lib/twisty-view';
 import {
@@ -74,6 +75,12 @@ interface CasePlayerProps {
    * "loading" where a cube just was reads as the cube having gone.
    */
   placeholder?: ReactNode;
+  /**
+   * 2 plays a 2×2. The same setup and the same masks serve both: cubing.js
+   * numbers a 2×2's corners as it numbers a 3×3's, and the edges and centres
+   * of a mask are simply not there to apply to.
+   */
+  order?: CubeOrder;
 }
 
 /**
@@ -87,6 +94,7 @@ export function CasePlayer({
   stickering,
   standing = '',
   isFromLeft = false,
+  order = 3,
   request,
   onMove,
   onStopped,
@@ -139,7 +147,7 @@ export function CasePlayer({
         // Dragging this turns the cube. A swipe that spun it instead of
         // turning the page would be maddening, so the sheet skips it.
         data-no-swipe=""
-        puzzle="3x3x3"
+        puzzle={order === 2 ? '2x2x2' : '3x3x3'}
         alg={alg}
         experimental-setup-alg={`${CUBE_ORIENTATION} ${setupAlg}`}
         experimental-setup-anchor="start"

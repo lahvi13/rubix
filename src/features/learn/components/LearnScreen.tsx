@@ -594,11 +594,6 @@ function Situation({ situation, picture, skin, order, triggers }: SituationProps
     </>
   );
 
-  // The cube that plays a situation is cubing.js's 3×3. A 2×2's card is the
-  // picture and the moves and opens nothing: played on that cube it would be
-  // another puzzle in other colours.
-  if (order !== 3) return <div className="case-card learn__case learn__case--still">{card}</div>;
-
   return (
     <>
       <button type="button" className="case-card learn__case" onClick={() => setOpen(true)}>
@@ -609,6 +604,7 @@ function Situation({ situation, picture, skin, order, triggers }: SituationProps
           situation={situation}
           picture={picture}
           skin={skin}
+          order={order}
           triggers={triggers}
           onClose={() => setOpen(false)}
         />

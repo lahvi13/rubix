@@ -14,6 +14,10 @@
  * All of it leans on the inside of cubing.js. What comes back is checked before
  * anything is touched, and a cube that does not look the way this expects is
  * left alone: a version that moved things only costs the reader their colours.
+ *
+ * The 2×2 is drawn by another class (`PG3D`), which colours its stickers per
+ * vertex rather than per material; it is painted further down, by the same
+ * rules.
  */
 
 import type { Face } from '../domain/cube/notation';
@@ -88,6 +92,10 @@ const AS_WRITTEN = 'srgb-linear';
 const paints = new WeakMap<Cube3D, Paint>();
 
 export function paintCube(cube: unknown, skin: CubeSkin, options: PaintOptions = {}): void {
+  if (isPG3D(cube)) {
+    paintPG3D(cube, skin, options);
+    return;
+  }
   if (!isCube3D(cube)) return;
   const paint = paints.get(cube) ?? adopt(cube);
   if (!paint) return;
@@ -131,6 +139,37 @@ export function sideLighting(shade: { front: number; right: number }): {
 }
 
 const LIGHT = sideLighting(SIDE_SHADE);
+
+/**
+ * The same light on a mesh with no normals to read the facing from: the 2×2's
+ * stickers are one geometry of loose triangles. Each pixel works its facing
+ * out from how its position changes across the screen — a flat sticker gives
+ * one answer everywhere on it.
+ */
+function shadeByScreenFacing(shader: ShaderSource, shadeStrength: { value: number }): void {
+  const vertexAnchor = '#include <project_vertex>';
+  const fragmentAnchor = '#include <color_fragment>';
+  if (!shader.vertexShader.includes(vertexAnchor)) return;
+  if (!shader.fragmentShader.includes(fragmentAnchor)) return;
+
+  shader.uniforms.shadeStrength = shadeStrength;
+  shader.vertexShader =
+    'varying vec3 vSkinPosition;\n' +
+    shader.vertexShader.replace(
+      vertexAnchor,
+      `${vertexAnchor}
+      vSkinPosition = mvPosition.xyz;`,
+    );
+  shader.fragmentShader =
+    'uniform float shadeStrength;\nvarying vec3 vSkinPosition;\n' +
+    shader.fragmentShader.replace(
+      fragmentAnchor,
+      `${fragmentAnchor}
+      vec3 facing = normalize(cross(dFdx(vSkinPosition), dFdy(vSkinPosition)));
+      float lit = ${glsl(LIGHT.base)} + dot(facing.xy, vec2(${glsl(LIGHT.x)}, ${glsl(LIGHT.y)}));
+      diffuseColor.rgb *= min(1.0 - shadeStrength * (1.0 - lit), 1.0);`,
+    );
+}
 
 function shadeByFacing(shader: ShaderSource, shadeStrength: { value: number }): void {
   const vertexAnchor = '#include <project_vertex>';
@@ -262,5 +301,192 @@ function isCube3D(value: unknown): value is Cube3D {
     Array.isArray(value.experimentalFoundationMeshes) &&
     typeof at(material, 'clone') === 'function' &&
     typeof at(at(material, 'color'), 'setStyle') === 'function'
+  );
+}
+
+/* The 2×2: cubing.js's PG3D. */
+
+/** One sticker as PG3D keeps it: the colour it is drawn in, as a number. */
+interface StickerDef {
+  origColor: number;
+}
+
+/** As much of cubing.js's `PG3D` as is touched here. */
+interface PG3D {
+  stickers: Record<string, StickerDef[][]>;
+  materialArray1: Material[];
+  materialArray2: Material[];
+  params: { stickeringMask?: unknown };
+  setStickeringMask(mask: unknown): void;
+  updateMaterialArrays(): void;
+  scheduleRenderCallback?: () => void;
+}
+
+interface PG3DPaint {
+  /** The face of the skin each sticker stands for, read once off its first colour. */
+  faces: Map<StickerDef, Face>;
+  sticker: Material;
+  foundation: Material | undefined;
+  shadeStrength: { value: number };
+  skin: CubeSkin;
+  /** The stickering asked for. PG3D is only ever handed one with nothing greyed. */
+  mask: unknown;
+  setStickeringMask: (mask: unknown) => void;
+}
+
+/**
+ * PG3D's six colours and the face of the skin each one stands for. Matched by
+ * colour, like the 3×3's: its cube is white on top, ours is written down
+ * yellow up (`lib/cube-skins.ts`).
+ */
+const PG3D_FACE = new Map<number, Face>([
+  [0xffffff, 'D'],
+  [0xf4f400, 'U'],
+  [0x44ee00, 'F'],
+  [0x2266ff, 'B'],
+  [0xff0000, 'L'],
+  [0xff8000, 'R'],
+]);
+
+const pg3dPaints = new WeakMap<PG3D, PG3DPaint>();
+
+function paintPG3D(cube: PG3D, skin: CubeSkin, options: PaintOptions): void {
+  const paint = pg3dPaints.get(cube) ?? adoptPG3D(cube, skin);
+  if (!paint) return;
+
+  paint.skin = skin;
+  paint.shadeStrength.value = options.shadeStrength ?? 1;
+  paint.foundation?.color.setStyle(skin.outline, AS_WRITTEN);
+  colourPG3D(cube, paint);
+  cube.scheduleRenderCallback?.();
+}
+
+function adoptPG3D(cube: PG3D, skin: CubeSkin): PG3DPaint | null {
+  const faces = new Map<StickerDef, Face>();
+  for (const sticker of allStickers(cube)) {
+    const face = PG3D_FACE.get(sticker.origColor);
+    // A colour that is not one of the six is a cube this does not know.
+    if (face === undefined) return null;
+    faces.set(sticker, face);
+  }
+  const template = cube.materialArray1[0];
+  if (!template) return null;
+
+  const shadeStrength = { value: 1 };
+  const sticker = template.clone();
+  sticker.onBeforeCompile = (shader) => shadeByScreenFacing(shader, shadeStrength);
+
+  // The plastic, where cubing.js draws one: invisible stays invisible.
+  const shown = cube.materialArray1[6];
+  const foundation = shown?.visible === false ? undefined : shown?.clone();
+  if (foundation) {
+    foundation.transparent = false;
+    foundation.opacity = 1;
+  }
+
+  const paint: PG3DPaint = {
+    faces,
+    sticker,
+    foundation,
+    shadeStrength,
+    skin,
+    mask: cube.params.stickeringMask,
+    setStickeringMask: cube.setStickeringMask.bind(cube),
+  };
+
+  // A new stickering is a new set of colours to lay on.
+  cube.setStickeringMask = (mask) => {
+    paint.mask = mask;
+    colourPG3D(cube, paint);
+  };
+  // And whatever PG3D puts back into its material lists, ours go over again.
+  const updateMaterialArrays = cube.updateMaterialArrays.bind(cube);
+  cube.updateMaterialArrays = () => {
+    updateMaterialArrays();
+    placePG3DMaterials(cube, paint);
+  };
+  placePG3DMaterials(cube, paint);
+
+  pg3dPaints.set(cube, paint);
+  return paint;
+}
+
+/**
+ * PG3D colours a sticker from its own colour, and greys one out in a fixed
+ * dark grey that is no skin's. So the greyed ones are given the skin's muted
+ * colour as their own and handed over as ordinary stickers; PG3D then carries
+ * every colour along with its piece as the cube turns.
+ */
+function colourPG3D(cube: PG3D, paint: PG3DPaint): void {
+  for (const [orbit, byFacelet] of Object.entries(cube.stickers)) {
+    byFacelet.forEach((pieces, facelet) => {
+      pieces.forEach((sticker, piece) => {
+        const role = roleOf(paint.mask, orbit, piece, facelet);
+        const face = paint.faces.get(sticker);
+        if (face === undefined) return;
+        sticker.origColor = hexOf(role === 'ignored' ? paint.skin.muted : paint.skin.faces[face]);
+      });
+    });
+  }
+  paint.setStickeringMask(withoutGrey(cube, paint.mask));
+}
+
+/** The stickering with every greyed sticker made an ordinary one, every orbit in it. */
+function withoutGrey(cube: PG3D, mask: unknown): unknown {
+  const orbits: Record<string, { pieces: { facelets: unknown[] }[] }> = {};
+  for (const [orbit, byFacelet] of Object.entries(cube.stickers)) {
+    const pieceCount = byFacelet[0]?.length ?? 0;
+    orbits[orbit] = {
+      pieces: Array.from({ length: pieceCount }, (_, piece) => ({
+        facelets: byFacelet.map((_, facelet) => {
+          const entry = at(at(at(at(at(at(mask, 'orbits'), orbit), 'pieces'), piece), 'facelets'), facelet);
+          const role = roleOf(mask, orbit, piece, facelet);
+          if (role === 'ignored') return 'regular';
+          return entry === undefined || entry === null ? 'regular' : entry;
+        }),
+      })),
+    };
+  }
+  return { orbits };
+}
+
+function placePG3DMaterials(cube: PG3D, paint: PG3DPaint): void {
+  cube.materialArray1[0] = paint.sticker;
+  cube.materialArray2[1] = paint.sticker;
+  if (paint.foundation && cube.materialArray1[6]?.visible !== false) {
+    cube.materialArray1[6] = paint.foundation;
+    cube.materialArray2[7] = paint.foundation;
+  }
+}
+
+function allStickers(cube: PG3D): StickerDef[] {
+  return Object.values(cube.stickers).flatMap((byFacelet) => byFacelet.flat());
+}
+
+function hexOf(colour: string): number {
+  return Number.parseInt(colour.replace('#', '').slice(0, 6), 16);
+}
+
+function isPG3D(value: unknown): value is PG3D {
+  if (typeof value !== 'object' || value === null) return false;
+  if (
+    !('stickers' in value) ||
+    !('materialArray1' in value) ||
+    !('materialArray2' in value) ||
+    !('params' in value) ||
+    !('setStickeringMask' in value) ||
+    !('updateMaterialArrays' in value)
+  ) {
+    return false;
+  }
+  const first = at(at(at(Object.values(value.stickers ?? {})[0], 0), 0), 'origColor');
+  const material = at(value.materialArray1, 0);
+  return (
+    typeof value.setStickeringMask === 'function' &&
+    typeof value.updateMaterialArrays === 'function' &&
+    Array.isArray(value.materialArray1) &&
+    Array.isArray(value.materialArray2) &&
+    typeof first === 'number' &&
+    typeof at(material, 'clone') === 'function'
   );
 }

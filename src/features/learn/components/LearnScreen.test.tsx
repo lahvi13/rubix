@@ -319,7 +319,7 @@ describe('LearnScreen', () => {
       expect(screen.queryByRole('button', { name: 'CFOP' })).toBeNull();
     });
 
-    it('switches to Ortega: the face, then every case of the two sets, opened without a player', async () => {
+    it('switches to Ortega: the face, then every case of the two sets, each one to play', async () => {
       const user = userEvent.setup();
       render(<LearnScreen />);
       await user.click(await screen.findByRole('button', { name: strings.learn.guideNames['222-ortega'] }));
@@ -343,8 +343,7 @@ describe('LearnScreen', () => {
 
       const sheet = await screen.findByRole('dialog');
       expect(within(sheet).getByRole('heading', { level: 2, name: 'Sune' })).toBeInTheDocument();
-      expect(within(sheet).queryByRole('button', { name: strings.playback.play })).toBeNull();
-      expect(within(sheet).queryByRole('button', { name: strings.playback.step })).toBeNull();
+      expect(within(sheet).getByRole('button', { name: strings.playback.play })).toBeInTheDocument();
     });
 
     it('draws every picture as a 2×2: four stickers to a face, not nine', async () => {
@@ -360,15 +359,22 @@ describe('LearnScreen', () => {
       }
     });
 
-    it('shows a situation as a picture and its moves, with nothing to open', async () => {
+    it('opens a situation in its own sheet, the four moves printed once', async () => {
+      const user = userEvent.setup();
       render(<LearnScreen />);
       await screen.findByText(strings.learn.pocket.intro);
 
       const [whiteLayer] = sections();
       if (!whiteLayer) throw new Error('the guide lost its first step');
-      expect(caseButtons(whiteLayer)).toHaveLength(0);
-      expect(within(whiteLayer).getByText(strings.learn.pocket.situations.whiteRight)).toBeInTheDocument();
+      const cards = caseButtons(whiteLayer);
+      expect(cards).toHaveLength(3);
       expect(whiteLayer.querySelectorAll('.alg')).toHaveLength(3);
+
+      const [, threeTimes] = cards;
+      if (!threeTimes) throw new Error('no second card');
+      await user.click(threeTimes);
+      const sheet = await screen.findByRole('dialog', { name: strings.learn.pocket.situations.whiteUp });
+      expect(within(sheet).getByRole('button', { name: strings.playback.play })).toBeInTheDocument();
     });
 
     it('explains only the letters a 2×2 can turn', async () => {

@@ -56,10 +56,7 @@ interface CaseDetailProps {
   playerStickering: PlayerStickering;
   /** The whole-cube rotation the set is looked at through; see `case-view`. */
   orientation: string;
-  /**
-   * 2 for a 2×2 case: drawn as the corners, and not played — the cube that
-   * plays is cubing.js's 3×3, and it would be another puzzle in other colours.
-   */
+  /** 2 for a 2×2 case: drawn as the corners, and played on a 2×2. */
   order?: CubeOrder;
   skin: CubeSkin;
   triggers: readonly TriggerDefinition[];
@@ -83,7 +80,6 @@ export function CaseDetail({
   onOpen,
   onClose,
 }: CaseDetailProps) {
-  const canPlay = order === 3;
   const { algCase, algorithms, active, moves, groups, choose, addVariant, editVariant, removeVariant, rename, setProgress, forgetRecognition } =
     useCaseDetail(caseId);
   // The sheet used to be keyed by case id so that stepping to the next one
@@ -115,7 +111,7 @@ export function CaseDetail({
   const playback = usePlayback(`${caseId} ${formatAlg(moves)}`);
   const isPlaying = playback.status !== 'idle';
   const tap = useTap(playback.toggle);
-  usePlaybackKeys(playback, { isActive: canPlay, withSpace: true });
+  usePlaybackKeys(playback, { isActive: true, withSpace: true });
   const stats = useCaseStat(caseId);
   const recognition = useRecognitionStat(caseId);
   const attempts = useCaseAttempts(caseId);
@@ -200,7 +196,7 @@ export function CaseDetail({
       {/* Playing does not ask about the flat/3D setting: that one is about the
           still picture, and nothing but a turning cube shows what the moves
           do. A tap on the cube plays and pauses it, as the button does. */}
-      <div className="case-detail__stage" {...(canPlay ? tap : {})}>
+      <div className="case-detail__stage" {...tap}>
         {isPlaying ? (
           <CasePlayer
             // Performed exactly as written — the player is stood yellow up
@@ -214,6 +210,7 @@ export function CaseDetail({
             // the cube before it was turned — the front and back were lit,
             // and the right block's centre and bottom edge went grey.
             standing={orientation}
+            order={order}
             request={playback.request}
             onMove={setPlayingMove}
             onStopped={playback.stopped}
@@ -224,18 +221,16 @@ export function CaseDetail({
         )}
       </div>
 
-      {canPlay ? (
-        <div className="case-detail__controls">
-          <PlaybackButtons
-            status={playback.status}
-            onToggle={playback.toggle}
-            onStep={playback.step}
-            onBack={playback.back}
-            position={playback.position}
-            placement="row"
-          />
-        </div>
-      ) : null}
+      <div className="case-detail__controls">
+        <PlaybackButtons
+          status={playback.status}
+          onToggle={playback.toggle}
+          onStep={playback.step}
+          onBack={playback.back}
+          position={playback.position}
+          placement="row"
+        />
+      </div>
 
       {/* Under the case it is about, where a verdict on it is made: after
           looking at the cube and watching it solved. Three joined steps rather

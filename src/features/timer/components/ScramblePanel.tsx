@@ -65,17 +65,13 @@ export const ScramblePanel = memo(function ScramblePanel({
 }: ScramblePanelProps) {
   const [mode] = useSetting('ui.twistyMode');
   const [isPreviewShown] = useSetting('timer.showScramblePreview');
-  // The cube that turns is cubing.js's, and only its 3×3 has been taught the
-  // reader's colours. Until the 2×2 has, its scramble is a picture alone: a
-  // cube that changed colours when played would be another cube.
-  const canPlay = puzzle === '333';
   const skin = useCubeSkin();
   // Tied to the scramble: a new one means a new cube to look at, not the
   // previous animation still running.
   const playback = usePlayback(scramble ?? '');
   const tap = useTap(playback.toggle);
   // Space is the timer's.
-  usePlaybackKeys(playback, { isActive: !hidden && canPlay, withSpace: false });
+  usePlaybackKeys(playback, { isActive: !hidden, withSpace: false });
   // Which move the cube is turning while the scramble is played back. Null
   // whenever nothing is turning or paused, which is the only gate it needs.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
@@ -159,7 +155,7 @@ export const ScramblePanel = memo(function ScramblePanel({
                own on a screen that has none to spare, and it sat under the
                picture it belonged to. Both cubes share this box, so watching
                the scramble does not resize the screen under the thumb. */
-            <div className="scramble__stage" {...(canPlay ? tap : {})}>
+            <div className="scramble__stage" {...tap}>
               {isWatching ? (
                 <SpatialPreview
                   puzzle={puzzle}
@@ -175,17 +171,15 @@ export const ScramblePanel = memo(function ScramblePanel({
               ) : (
                 picture
               )}
-              {canPlay ? (
-                <PlaybackButtons
-                  status={playback.status}
-                  onToggle={playback.toggle}
-                  onStep={playback.step}
-                  onBack={playback.back}
-                  position={playback.position}
-                  placement="corners"
-                  playLabel={strings.scramble.replay}
-                />
-              ) : null}
+              <PlaybackButtons
+                status={playback.status}
+                onToggle={playback.toggle}
+                onStep={playback.step}
+                onBack={playback.back}
+                position={playback.position}
+                placement="corners"
+                playLabel={strings.scramble.replay}
+              />
             </div>
           )}
         </>

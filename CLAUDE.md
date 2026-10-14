@@ -252,6 +252,11 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
   `PUZZLE_GUIDES` (`features/learn/steps.ts`); nový průvodce se zapíše tam i do
   `GUIDES`, jinak ho test nepustí. Průvodce, který není metodou session, má
   jméno ve `strings.learn.guideNames`.
+- **otáčející se 2×2 je jiná třída cubing.js než 3×3** (`PG3D`, ne `Cube3D`)
+  a `lib/twisty-skin.ts` ji barví zvlášť: přes barvu každé nálepky, ne přes
+  materiály. Co ověřit v prohlížeči, ověřit s WebGL (`--use-angle=swiftshader
+  --enable-unsafe-swiftshader`); přehrávač se spustí tlačítkem Play, krokovací
+  tlačítka se objeví až potom.
 - **2×2 nemá vlastní model.** Stav je pořád 54 nálepek 3×3 a 2×2 jsou jeho
   rohy; `CubeDiagram` ji nakreslí s `order={2}` (z `CUBE_ORDER[puzzle]`).
   Algoritmus pro 2×2 se tedy ověřuje na stejném modelu jako každý jiný — hrany

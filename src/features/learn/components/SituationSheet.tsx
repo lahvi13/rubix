@@ -4,6 +4,7 @@ import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { Sheet } from '../../../components/Sheet';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
 import { formatAlg, invertAlg, parseAlg } from '../../../domain/cube/notation';
+import type { CubeOrder } from '../../../domain/cube/views';
 import { usePlayback } from '../../../hooks/use-playback';
 import { usePlaybackKeys } from '../../../hooks/use-playback-keys';
 import { useTap } from '../../../hooks/use-tap';
@@ -16,6 +17,8 @@ interface SituationSheetProps {
   situation: LearnSituation;
   picture: SituationPicture;
   skin: CubeSkin;
+  /** 2 for the 2×2: drawn as the corners and played on a 2×2. */
+  order?: CubeOrder;
   triggers: readonly TriggerDefinition[];
   onClose: () => void;
 }
@@ -30,6 +33,7 @@ export function SituationSheet({
   situation,
   picture: drawing,
   skin,
+  order = 3,
   triggers,
   onClose,
 }: SituationSheetProps) {
@@ -52,6 +56,7 @@ export function SituationSheet({
       view={drawing.view}
       stickering={drawing.stickering}
       skin={skin}
+      order={order}
       label={situation.text}
     />
   );
@@ -70,6 +75,7 @@ export function SituationSheet({
             stickering={drawing.playerStickering}
             standing={drawing.standing}
             isFromLeft={drawing.view === 'isometricLeft'}
+            order={order}
             request={playback.request}
             onMove={setPlayingMove}
             onStopped={playback.stopped}

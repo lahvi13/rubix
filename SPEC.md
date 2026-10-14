@@ -1288,12 +1288,10 @@ Pořadí:
    Platí pro rozvin, pohled od rohu i pohled shora; šipky permutace zůstávají
    jen rohové. Že se 2×2 chová jako rohy 3×3 i při tazích L, D a B, je ověřené
    proti cubing.js (500 náhodných scramblů, stejné rohy na obou). Náhled
-   scramblu na timeru a kartička ke sdílení 2×2 kreslí; přehrání scramblu na
-   2×2 zatím není — kostka z cubing.js by měla jiné barvy než obrázek.
+   scramblu na timeru a kartička ke sdílení 2×2 kreslí.
 3. **Průvodce a sady** — hotovo. Průvodce **po vrstvách**: tři kroky, obrázky
-   2×2, česky i anglicky. Situace se na 2×2 neotevírají do sheetu s přehráním
-   — přehrávač je 3×3 z cubing.js — takže karta je obrázek a tahy; kde řádek
-   karty říká „pětkrát“, tisknou se čtyři tahy jednou (`shown`). Průvodce
+   2×2, česky i anglicky. Kde řádek karty říká „pětkrát“, tisknou se čtyři
+   tahy jednou (`shown`); sheet karty přehraje všech pět kol. Průvodce
    **Ortega**: stěna (bez algoritmu, J Perm ji staví citem; obrázek hotové
    stěny), pak všech 7 případů OLL a 5 PBL ze sad. Sady `pocket-oll` a
    `pocket-pbl` jsou J Permovy (`jperm.net/lib/2x2oll.js`, `2x2pbl.js`, jména i
@@ -1305,7 +1303,17 @@ Pořadí:
    Trenažér na 2×2 ukazuje jen tyhle dvě sady; dril a jeho souhrn zatím ne.
    Naposledy otevřená sada je jedna pro obě kostky — přepnutí ji vrátí na první
    sadu té druhé.
-4. **Dril a 3D přehrávání** v barvách 3×3 (jde to, viz průzkum PG3D).
+4. **3D přehrávání** — hotovo: scramble na timeru, karta případu i situace v
+   průvodci se na 2×2 přehrávají na 2×2 v barvách aplikace. 2×2 kreslí
+   cubing.js jinou třídou (`PG3D`) než 3×3: barví per vrchol z barvy, kterou
+   si každá nálepka drží (`origColor`), a šedé nálepky v pevné šedé, která
+   není ničí. `lib/twisty-skin.ts` proto nálepkám přepíše jejich barvu na barvu
+   skinu, šedým dá ztlumenou barvu skinu a knihovně je předá jako běžné;
+   stínování boků počítá shader z derivací polohy (geometrie normály nemá) a
+   plast i materiály se vrací na místo pokaždé, když je knihovna přepíše.
+   Masky se staví na 3×3 a platí i pro 2×2: cubing.js čísluje rohy 2×2 stejně
+   jako rohy 3×3.
+5. **Dril na 2×2** — zbývá.
 
 CLL a EG se neplánují, dokud Ortega nepůjde z ruky.
 
