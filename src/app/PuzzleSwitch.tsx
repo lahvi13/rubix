@@ -1,5 +1,6 @@
 import { CubeDiagram } from '../components/CubeDiagram';
-import { solvedState } from '../domain/cube/state';
+import { parseAlg } from '../domain/cube/notation';
+import { applyAlg, solvedState, type CubeState } from '../domain/cube/state';
 import {
   CUBE_ORDER,
   SUPPORTED_PUZZLES,
@@ -9,6 +10,21 @@ import { useBackToClose } from '../hooks/use-back-to-close';
 import { useCubeSkin } from '../hooks/use-cube-skin';
 import { useKeyCapture } from '../hooks/use-key-capture';
 import { strings } from '../lib/strings';
+
+/**
+ * Each cube on its tile, scrambled: a solved one shows the same three faces
+ * on both tiles, and read as a dull row of yellow, green and orange. Always
+ * the same scramble, so a tile looks the same every time it is opened.
+ */
+const TILE_SCRAMBLE: Readonly<Record<SupportedPuzzle, string>> = {
+  '333': "R U2 F' L D2 B R' U F2 L'",
+  '222': "R U' F2 R' U F' R2",
+};
+
+function tileState(puzzle: SupportedPuzzle): CubeState {
+  const parsed = parseAlg(TILE_SCRAMBLE[puzzle]);
+  return parsed.ok ? applyAlg(solvedState(), parsed.moves) : solvedState();
+}
 
 interface PuzzleSwitchProps {
   puzzle: SupportedPuzzle;
@@ -103,7 +119,7 @@ export function PuzzleMenu({ puzzle, onPick, onClose }: PuzzleMenuProps) {
           >
             <CubeDiagram
               className="puzzle-menu__picture"
-              state={solvedState()}
+              state={tileState(candidate)}
               view="isometric"
               skin={skin}
               order={CUBE_ORDER[candidate]}
