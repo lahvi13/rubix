@@ -474,21 +474,25 @@ export function TimerScreen() {
                     {strings.timer.inspectionToggleLabel}
                   </span>
                 </label>
-                <label className="toggle solves-panel__toggle">
-                  <input
-                    type="checkbox"
-                    checked={splitMode === 'phases'}
-                    disabled={methodPhases.length === 0}
-                    onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
-                    aria-label={strings.timer.phaseToggleLabel}
-                  />
-                  <span className="solves-panel__short" aria-hidden="true">
-                    {strings.timer.phaseToggle}
-                  </span>
-                  <span className="solves-panel__full" aria-hidden="true">
-                    {strings.timer.phaseToggleLabel}
-                  </span>
-                </label>
+                {/* Gone, not greyed, where the method has no phases — the
+                    2×2's: the setting is the 3×3's, and a ticked box that
+                    cannot be unticked reads as phases being timed. */}
+                {methodPhases.length === 0 ? null : (
+                  <label className="toggle solves-panel__toggle">
+                    <input
+                      type="checkbox"
+                      checked={splitMode === 'phases'}
+                      onChange={(event) => setSplitMode(event.target.checked ? 'phases' : 'total')}
+                      aria-label={strings.timer.phaseToggleLabel}
+                    />
+                    <span className="solves-panel__short" aria-hidden="true">
+                      {strings.timer.phaseToggle}
+                    </span>
+                    <span className="solves-panel__full" aria-hidden="true">
+                      {strings.timer.phaseToggleLabel}
+                    </span>
+                  </label>
+                )}
               </span>
             )}
           </h2>
