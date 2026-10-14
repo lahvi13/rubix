@@ -18,7 +18,7 @@ import { ChartLegend } from './ChartLegend';
 import { ChartTooltip } from './ChartTooltip';
 
 interface TrendChartProps {
-  /** Already trimmed to where the window has filled — see useSessionStats. */
+  /** The recent window; the first eleven solves of a history have no ao12 yet. */
   points: TrendPoint[];
   /** The best ao12 of the session, drawn as the mark to beat. */
   bestMs: number | null;
@@ -57,6 +57,9 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
   // Under fifty solves there is no line to draw, and a legend entry for one
   // would promise it.
   const hasLong = points.some((point) => point.longAoMs !== null);
+  // Before the twelfth solve the singles are all there is, so they are drawn
+  // to be read rather than as the quiet spread behind a line.
+  const hasAverage = points.some((point) => point.aoMs !== null);
 
   const first = points[0]?.index ?? 1;
   const last = points[points.length - 1]?.index ?? first;
@@ -93,9 +96,10 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
                 const point =
                   active === true
                     ? points.find((candidate) => candidate.index === Number(label))
-                    : points.findLast((candidate) => candidate.aoMs !== null);
-                const value = point?.aoMs;
-                if (point === undefined || value == null) return null;
+                    : (points.findLast((candidate) => candidate.aoMs !== null) ?? points.at(-1));
+                if (point === undefined) return null;
+                // Before the twelfth solve a point is its single and nothing more.
+                const value = point.aoMs;
                 return (
                   <ChartTooltip
                     title={`${strings.stats.solveIndex} ${point.index} · ${formatShortDate(point.at, now())}`}
@@ -105,11 +109,15 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
                         colour: 'var(--muted)',
                         value: formatTime(point.singleMs),
                       },
-                      {
-                        label: strings.stats.trendSeries,
-                        colour: 'var(--accent)',
-                        value: formatMs(value),
-                      },
+                      ...(value === null
+                        ? []
+                        : [
+                            {
+                              label: strings.stats.trendSeries,
+                              colour: 'var(--accent)',
+                              value: formatMs(value),
+                            },
+                          ]),
                       ...(hasLong
                         ? [
                             {
@@ -121,7 +129,7 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
                         : []),
                       // The distance to the record is the question the reference
                       // line raises; the tooltip is where it gets a number.
-                      ...(bestMs === null
+                      ...(bestMs === null || value === null
                         ? []
                         : [
                             {
@@ -157,7 +165,12 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
           <Line
             dataKey="singleMs"
             stroke="none"
-            dot={{ r: 1.5, fill: 'var(--muted)', fillOpacity: 0.55, strokeWidth: 0 }}
+            dot={{
+              r: hasAverage ? 1.5 : 3,
+              fill: 'var(--muted)',
+              fillOpacity: hasAverage ? 0.55 : 0.9,
+              strokeWidth: 0,
+            }}
             activeDot={false}
             connectNulls={false}
             isAnimationActive={false}
@@ -193,7 +206,7 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
       <ChartLegend
         entries={[
           { label: strings.stats.singleSeries, colour: 'var(--muted)', isDot: true },
-          { label: strings.stats.trendSeries, colour: 'var(--accent)' },
+          ...(hasAverage ? [{ label: strings.stats.trendSeries, colour: 'var(--accent)' }] : []),
           ...(hasLong
             ? [{ label: strings.stats.longTrendSeries, colour: 'var(--series-long)' }]
             : []),
@@ -212,9 +225,12 @@ export function TrendChart({ points, bestMs, fenceMs, goalMs }: TrendChartProps)
               ]),
         ]}
       />
-      <p className="chart-note">
-        {hasLong ? strings.stats.trendAxesLong : strings.stats.trendAxes}
-      </p>
+      {/* About a line; without one the screen says when it will come. */}
+      {hasAverage ? (
+        <p className="chart-note">
+          {hasLong ? strings.stats.trendAxesLong : strings.stats.trendAxes}
+        </p>
+      ) : null}
     </>
   );
 }

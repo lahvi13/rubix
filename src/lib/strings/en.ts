@@ -260,7 +260,9 @@ export const en = {
     trend: 'Trend',
     bySolve: 'By solve',
     byDay: 'By day',
-    trendNeedsSolves: 'The rolling ao12 starts at the twelfth solve.',
+    /** Under the trend while it is singles only; `count` is how many solves until the ao12. */
+    trendAverageLater: (count: number) =>
+      `The ao12 line starts at the twelfth solve — ${count} to go.`,
     dailyMean: 'Mean',
     dailyBest: 'Best',
     solvesLabel: 'Solves',

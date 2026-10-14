@@ -236,7 +236,8 @@ export const cs: Strings = {
     trend: 'Vývoj',
     bySolve: 'Po složeních',
     byDay: 'Po dnech',
-    trendNeedsSolves: 'Klouzavý ao12 začíná dvanáctým složením.',
+    trendAverageLater: (count: number) =>
+      `Čára ao12 začne dvanáctým složením – ${plural(count, 'zbývá', 'zbývají', 'zbývá')} ${count}.`,
     dailyMean: 'Průměr',
     dailyBest: 'Nejlepší',
     solvesLabel: 'Složení',

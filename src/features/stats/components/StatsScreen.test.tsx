@@ -12,6 +12,7 @@ import { getSetting, setSetting } from '../../../db/repositories/settings-reposi
 import { addSolve, updateSolve } from '../../../db/repositories/solve-repository';
 import { createTag } from '../../../db/repositories/tag-repository';
 import { seedPacks } from '../../../db/seed/seed';
+import { strings } from '../../../lib/strings';
 import { StatsScreen } from './StatsScreen';
 
 // The charts are dumb by contract and jsdom has no layout for Recharts to
@@ -132,9 +133,10 @@ describe('StatsScreen', () => {
     expect(screen.getByText('0% +2')).toBeInTheDocument();
 
     expect(await screen.findByTestId('histogram-chart')).toBeInTheDocument();
-    // Six solves have no ao12, so the rolling chart has nothing to draw and
-    // is left out rather than shown as an empty pair of axes.
-    expect(screen.queryByTestId('trend-chart')).not.toBeInTheDocument();
+    // Six solves have no ao12 yet: the chart shows their singles, and says
+    // when the line will come rather than leaving the reader to wonder.
+    expect(await screen.findByTestId('trend-chart')).toBeInTheDocument();
+    expect(screen.getByText(strings.stats.trendAverageLater(6))).toBeInTheDocument();
   });
 
   it('opens the solves behind an average, with the trimmed ones in brackets', async () => {

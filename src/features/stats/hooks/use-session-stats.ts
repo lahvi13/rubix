@@ -62,7 +62,7 @@ export const PRACTICE_DAYS = 30;
 export const GOAL_RECENT_SOLVES = 50;
 
 /** The trend chart tracks rolling ao12 (SPEC 3.4). */
-const TREND_WINDOW = 12;
+export const TREND_WINDOW = 12;
 
 /** The slower line under it, which says whether today's ao12 is a change of form. */
 const LONG_TREND_WINDOW = 50;
@@ -293,8 +293,10 @@ export function useSessionStats(
     const finals = solves.map(finalMs);
     const rolling = rollingAverage(finals, TREND_WINDOW);
     const window = chartWindow ?? SETTING_DEFAULTS['stats.chartWindow'];
-    // Two cuts, in this order: the recent window the reader asked for, then
-    // the run of solves at the start that have no ao12 yet.
+    // The recent window the reader asked for. The solves before the first ao12
+    // stay in it, as singles under a line still to come: cut, they left a
+    // reader with eleven solves no trend at all and no word of when one would
+    // appear.
     const trendStart = Math.max(0, finals.length - window);
     // Only the solves the chart draws, and the ones their windows reach back
     // into: a pass over every solve in the scope costs as much again, after
@@ -310,8 +312,8 @@ export function useSessionStats(
         longAoMs: longRolling[trendStart + offset - longStart] ?? null,
         singleMs: finals[trendStart + offset] ?? null,
       }));
-    const firstWithAverage = windowed.findIndex((point) => point.aoMs !== null);
-    const trend = firstWithAverage < 0 ? [] : windowed.slice(firstWithAverage);
+    // One solve is a dot, not a trend.
+    const trend = windowed.length < 2 ? [] : windowed;
 
     const globalPbMs = globalPb === undefined || globalPb === null ? null : finalMs(globalPb);
     const sessionBestMs = pbSingle(finals);

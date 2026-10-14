@@ -19,6 +19,7 @@ import type { Average, AverageWindow } from '../../../domain/stats/averages';
 import {
   PRACTICE_DAYS,
   RECENT_SOLVES,
+  TREND_WINDOW,
   useSessionStats,
   type WindowAt,
 } from '../hooks/use-session-stats';
@@ -397,17 +398,23 @@ export function StatsScreen() {
                 <Suspense fallback={<p className="solves__empty">{strings.stats.loadingCharts}</p>}>
                   {isByDay ? (
                     <DailyTrendChart days={stats.days} goalMs={stats.goal?.goalMs ?? null} />
-                  ) : stats.trend.length > 0 ? (
-                    <TrendChart
-                      points={stats.trend}
-                      bestMs={stats.bestAo12Ms}
-                      fenceMs={stats.trendFenceMs}
-                      goalMs={stats.goal?.goalMs ?? null}
-                    />
                   ) : (
-                    // Without a filled window there is no line and no axis
-                    // worth drawing.
-                    <p className="detail__hint">{strings.stats.trendNeedsSolves}</p>
+                    <>
+                      <TrendChart
+                        points={stats.trend}
+                        bestMs={stats.bestAo12Ms}
+                        fenceMs={stats.trendFenceMs}
+                        goalMs={stats.goal?.goalMs ?? null}
+                      />
+                      {/* Said while the line is missing, or the dots read as
+                          the whole chart and the line as a feature that is
+                          not there. */}
+                      {stats.trend.some((point) => point.aoMs !== null) ? null : (
+                        <p className="chart-note">
+                          {strings.stats.trendAverageLater(TREND_WINDOW - stats.trend.length)}
+                        </p>
+                      )}
+                    </>
                   )}
                 </Suspense>
               </section>
