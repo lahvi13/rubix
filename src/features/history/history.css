@@ -86,6 +86,13 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.history__day-count {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Only there while something is selected, so it may take a row of its own

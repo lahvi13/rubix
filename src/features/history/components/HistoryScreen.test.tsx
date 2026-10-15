@@ -151,8 +151,12 @@ describe('HistoryScreen', () => {
     await updateSolve(dnf.id, { penalty: 'dnf' });
     const user = userEvent.setup();
 
+    const summary = () => document.querySelector('.history__summary')?.textContent ?? '';
+
     render(<HistoryScreen />);
-    expect(await screen.findByText(/2 solves/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(summary()).toMatch(/2 solves/);
+    });
 
     await user.click(screen.getByRole('button', { name: 'Filter by DNF' }));
     expect(await screen.findByText(/1 of 2/)).toBeInTheDocument();
@@ -357,6 +361,31 @@ describe('HistoryScreen', () => {
     expect(headings).toHaveLength(2);
     // One heading per day, not one per solve.
     expect(headings[0]?.textContent).not.toBe(headings[1]?.textContent);
+  });
+
+  it('counts the whole day under its heading, whatever a filter leaves of it', async () => {
+    const today = await seedSolve(sessionId, 12_340);
+    const dnf = await seedSolve(sessionId, 9990);
+    await updateSolve(dnf.id, { penalty: 'dnf' });
+    const earlier = await seedSolve(sessionId, 11_110);
+    await db.solves.update(earlier.id, { createdAt: today.createdAt - 2 * 86_400_000 });
+    const user = userEvent.setup();
+    const headings = () => [...document.querySelectorAll('.history__day')];
+
+    render(<HistoryScreen />);
+
+    await waitFor(() => {
+      expect(rows()).toHaveLength(3);
+    });
+    expect(headings()[0]).toHaveTextContent(/2 solves$/);
+    expect(headings()[1]).toHaveTextContent(/1 solve$/);
+
+    await user.click(screen.getByRole('button', { name: 'Filter by DNF' }));
+    await waitFor(() => {
+      expect(rows()).toHaveLength(1);
+    });
+    // One DNF on screen, but the day was two solves long.
+    expect(headings()[0]).toHaveTextContent(/2 solves$/);
   });
 
   it('heads the day once when the solves share it', async () => {

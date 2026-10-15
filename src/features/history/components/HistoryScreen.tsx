@@ -29,6 +29,9 @@ export function HistoryScreen() {
   const history = useHistory(session?.id ?? null, puzzle, phaseKeys, session?.methodId ?? null);
   const tags = useTags();
   const days = useSolveDays(session?.id ?? null);
+  // The whole day, not the rows loaded so far: the list arrives a page at a
+  // time, and a count of what is on screen would shrink a day cut by the page.
+  const dayCounts = useMemo(() => new Map(days.map((day) => [day.key, day.count])), [days]);
   const at = now();
   const [openId, setOpenId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
@@ -230,11 +233,19 @@ export function HistoryScreen() {
             const before = history.solves[index - 1];
             const startsDay =
               before === undefined || dayKey(before.createdAt) !== dayKey(solve.createdAt);
+            const dayCount = startsDay ? dayCounts.get(dayKey(solve.createdAt)) : undefined;
 
             return (
               <Fragment key={solve.id}>
                 {startsDay ? (
-                  <li className="history__day">{formatDay(solve.createdAt, at)}</li>
+                  <li className="history__day">
+                    <span>{formatDay(solve.createdAt, at)}</span>
+                    {dayCount === undefined ? null : (
+                      <span className="history__day-count">
+                        {strings.sessions.solveCount(dayCount)}
+                      </span>
+                    )}
+                  </li>
                 ) : null}
                 <HistoryRow
                   solve={solve}
