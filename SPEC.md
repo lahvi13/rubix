@@ -1784,3 +1784,46 @@ rozhodne, až na ně dojde.
 
 Druhá implementace `SplitSource` přes Web Bluetooth (`source: 'smartcube'`),
 případně rekonstrukce tahů. Datový model se kvůli tomu **nemění**.
+
+### Fáze 9 — Po hodnocení appky (roadmapa od 1.28.0)
+
+Celkové hodnocení appky (2. 11. 2026) skončilo osmi návrhy. Bloky jdou po
+sobě, každý končí vydáním; uvnitř bloku se body dělají jeden po druhém. Co mění
+vzhled, začíná náhledem „teď vs. návrh“ ve screenshotech, staví se až po výběru.
+Každý bod má větu „hotovo, když…“ — podle ní se odškrtává.
+
+**Blok A — první dojem (malé zásahy do UI)**
+
+1. **Hlavička trenažéru zhuštěná.** Sada, úroveň a look v jedné řadě místo
+   tří. *Hotovo, když* na telefonu (412 px) začíná první karta případu aspoň
+   o řadu karet výš než dnes a každá volba je pořád jedním ťuknutím.
+2. **Dril využívá prázdné místo.** Po složení ukáže diagram případu a pár
+   posledních pokusů na něm. *Hotovo, když* spodní polovina drilu po pokusu
+   říká něco o právě složeném případu a během běžícího času nepřibude žádné
+   překreslení navíc.
+3. **Úvod pro nového uživatele.** Na prázdné appce dvě otázky („Umíš kostku
+   složit?“, „Jakou metodou?“), které nastaví průvodce, záložky a sadu
+   v trenažéru. *Hotovo, když* nová instalace vede začátečníka do průvodce
+   a pokročilého do trenažéru jeho metody, otázky jdou přeskočit a vrátit
+   z Nastavení.
+
+**Blok B — data a procvičování**
+
+4. **Záloha přes systémové sdílení.** Soubor zálohy jde poslat jedním
+   ťuknutím (Disk, e-mail) přes Web Share; kde to prohlížeč neumí, zůstává
+   stažení. *Hotovo, když* na Androidu v nainstalované appce záloha odejde
+   do sdílení a obnovení z ní projde round-trip testem.
+5. **„Dnes procvič“.** Fronta případů napříč sadami podle stavu (Učím se),
+   časů z drilu a toho, jak dávno byl případ naposledy na řadě. Počítá se
+   z pokusů v drilu, nic nového se neukládá (bod 3 v CLAUDE.md). *Hotovo, když*
+   trenažér nabídne krátkou frontu na dnešek, dril ji umí projet a případ
+   složený rychle a nedávno se v ní posune dozadu.
+
+**Blok C — dál**
+
+6. **Smart kostka** — viz fáze 8.
+7. **Světlý motiv a tablet** projité stejně jako tmavý telefon. *Hotovo, když*
+   každá obrazovka prošla ve světlém motivu na 412 px a na šířce tabletu
+   a nalezené chyby jsou opravené.
+8. **Screenshoty do README skriptem v repu** (`scripts/`), s vymyšlenými daty.
+   *Hotovo, když* `npm run screenshots` vyrobí všechny obrázky v `docs/`.
