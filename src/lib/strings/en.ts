@@ -868,6 +868,11 @@ export const en = {
     ownAlgPlaceholder: "Your own algorithm, e.g. R U R' U'",
     addAlg: 'Add',
     invalidAlg: 'That is not a move sequence I can read.',
+    /* Said once the algorithm is sent, not while it is being typed. */
+    algDoesNotSolve: "That does not solve this case, not even with U, U' or U2 first.",
+    /* Said after saving, because what was saved reads differently from what was typed. */
+    turnAdded: (turn: string) =>
+      `Saved with ${turn} in front: your algorithm starts from the case turned that way, and this is the turn from the picture.`,
     editAlg: 'Edit',
     saveAlg: 'Save',
     cancelEdit: 'Cancel',

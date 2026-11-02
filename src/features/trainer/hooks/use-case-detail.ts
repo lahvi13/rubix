@@ -12,6 +12,8 @@ import {
 } from '../../../db/repositories/alg-repository';
 import { deleteCaseRecognitions } from '../../../db/repositories/recognition-repository';
 import { parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
+import { goalOf, verifyAlg, type AlgVerdict } from '../../../domain/alg/verify';
+import { stateOf } from './use-alg-cases';
 
 export interface CaseDetailView {
   algCase: AlgCase | null;
@@ -32,6 +34,11 @@ export interface CaseDetailView {
   setProgress: (progress: AlgCase['progress']) => Promise<void>;
   /** Throw away the recognition attempts, leaving the timed ones alone. */
   forgetRecognition: () => Promise<void>;
+  /**
+   * Whether an algorithm solves this case, for one about to be kept. Null
+   * where the set has no rule for that, and the reader's word is taken.
+   */
+  judge: (moves: string) => AlgVerdict | null;
 }
 
 export function useCaseDetail(caseId: string | null): CaseDetailView {
@@ -70,6 +77,11 @@ export function useCaseDetail(caseId: string | null): CaseDetailView {
     forgetRecognition: async () => {
       if (caseId === null) return;
       await deleteCaseRecognitions(caseId);
+    },
+    judge: (moves) => {
+      const algCase = data?.algCase;
+      const goal = algCase ? goalOf(algCase.setId, algCase.group) : null;
+      return algCase && goal ? verifyAlg(stateOf(algCase.setupAlg), moves, goal) : null;
     },
   };
 }

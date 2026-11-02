@@ -806,6 +806,9 @@ export const cs: Strings = {
     ownAlgPlaceholder: "Tvůj vlastní algoritmus, např. R U R' U'",
     addAlg: 'Přidat',
     invalidAlg: 'Toto není sled tahů, který bych uměl přečíst.',
+    algDoesNotSolve: "Tenhle případ to neřeší, ani s U, U' nebo U2 předem.",
+    turnAdded: (turn: string) =>
+      `Uloženo s ${turn} na začátku: tvůj algoritmus začíná z jinak otočeného případu a tohle je otočení z obrázku.`,
     editAlg: 'Upravit',
     saveAlg: 'Uložit',
     cancelEdit: 'Zrušit',

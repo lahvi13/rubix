@@ -5,6 +5,7 @@ import { packAlgKind, type PackAlgKind } from '../../../domain/alg/sets';
 import { PlaybackButtons } from '../../../components/PlaybackButtons';
 import { Sheet, type SheetPaging } from '../../../components/Sheet';
 import { formatAlg, parseAlg } from '../../../domain/cube/notation';
+import { withPreAuf } from '../../../domain/alg/verify';
 import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { CubeOrder, Stickering } from '../../../domain/cube/views';
 import type { TriggerDefinition } from '../../../domain/alg/triggers';
@@ -80,7 +81,7 @@ export function CaseDetail({
   onOpen,
   onClose,
 }: CaseDetailProps) {
-  const { algCase, algorithms, active, moves, groups, choose, addVariant, editVariant, removeVariant, rename, setProgress, forgetRecognition } =
+  const { algCase, algorithms, active, moves, groups, choose, addVariant, editVariant, removeVariant, rename, setProgress, forgetRecognition, judge } =
     useCaseDetail(caseId);
   // The sheet used to be keyed by case id so that stepping to the next one
   // built a fresh panel. That took the panel out of the document and put a
@@ -92,6 +93,18 @@ export function CaseDetail({
   // Which move the player is turning, so the written algorithm can follow along.
   const [playingMove, setPlayingMove] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
+  /**
+   * The draft was tried and solves nothing here. Said only once it is sent:
+   * an algorithm half typed solves nothing either, and a refusal under every
+   * keystroke would be shouting at somebody still writing.
+   */
+  const [isRefused, setRefused] = useState(false);
+  /**
+   * The turn put in front of the algorithm just saved. Said, because the
+   * saved algorithm then reads differently from what was typed, and a change
+   * nobody mentions looks like a mistake.
+   */
+  const [addedTurn, setAddedTurn] = useState<string | null>(null);
   /**
    * The algorithm the box was filled from. The user's own is rewritten in
    * place; a built-in one is only a starting point, and saving adds a copy.
@@ -119,6 +132,8 @@ export function CaseDetail({
   if (shownId !== caseId) {
     setShownId(caseId);
     setDraft('');
+    setRefused(false);
+    setAddedTurn(null);
     setEditing(null);
     setNameDraft(null);
     setPlayingMove(null);
@@ -166,6 +181,7 @@ export function CaseDetail({
   };
   const stopEditing = (): void => {
     setDraft('');
+    setRefused(false);
     setEditing(null);
   };
 
@@ -313,13 +329,22 @@ export function CaseDetail({
         onSubmit={(event) => {
           event.preventDefault();
           if (draft.trim() === '' || draftError) return;
+          const verdict = judge(draft);
+          if (verdict?.ok === false) {
+            setRefused(true);
+            return;
+          }
+          // Kept as performed from the picture, like the packs' own.
+          const preAuf = verdict?.ok ? verdict.preAuf : '';
+          const moves = withPreAuf(draft, preAuf);
           if (editing !== null && editing.isOwn) {
             const id = editing.id;
-            watchWrite(() => editVariant(id, draft), strings.trainer.saveAlgorithm);
+            watchWrite(() => editVariant(id, moves), strings.trainer.saveAlgorithm);
           } else {
-            watchWrite(() => addVariant(draft), strings.trainer.addAlgorithm);
+            watchWrite(() => addVariant(moves), strings.trainer.addAlgorithm);
           }
           stopEditing();
+          setAddedTurn(preAuf === '' ? null : preAuf);
         }}
       >
         {/* Several lines rather than one, because an algorithm is edited in
@@ -342,10 +367,12 @@ export function CaseDetail({
               return;
             }
             setDraft(event.target.value.replace(/\s*\n\s*/g, ' '));
+            setRefused(false);
+            setAddedTurn(null);
           }}
           placeholder={strings.trainer.ownAlgPlaceholder}
           aria-label={strings.trainer.ownAlgPlaceholder}
-          className={draftError ? 'is-invalid' : ''}
+          className={draftError || isRefused ? 'is-invalid' : ''}
           // Moves are not words: a keyboard that corrects them or offers to
           // finish them only puts back what was just typed.
           autoComplete="off"
@@ -363,9 +390,19 @@ export function CaseDetail({
         )}
       </form>
       {draftError ? <p className="detail__error">{strings.trainer.invalidAlg}</p> : null}
+      {isRefused && !draftError ? (
+        <p className="detail__error" role="alert">
+          {strings.trainer.algDoesNotSolve}
+        </p>
+      ) : null}
       {editing !== null && !editing.isOwn ? (
         <p className="detail__hint">{strings.trainer.editPackHint}</p>
       ) : null}
+      {addedTurn === null ? null : (
+        <p className="detail__hint" role="status">
+          {strings.trainer.turnAdded(addedTurn)}
+        </p>
+      )}
 
       <h3 className="case-detail__section">{strings.trainer.rename}</h3>
       <form

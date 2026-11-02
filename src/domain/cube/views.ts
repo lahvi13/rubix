@@ -375,6 +375,7 @@ export function isJudgedAsHeld(stickering: Stickering): boolean {
   return (
     stickering === 'blocks' ||
     stickering === 'blocksAndCorners' ||
+    stickering === 'cornerOrientation' ||
     stickering === 'lseOrientation' ||
     stickering === 'eolr'
   );
@@ -455,6 +456,16 @@ export function isSolvedAsShown(state: CubeState, stickering: Stickering): boole
       );
       return isHome || BOTTOM_SLICE_EDGES.every(holdsSideEdge);
     });
+  }
+  // The first look at Roux's corners: the blocks kept and every top corner
+  // showing yellow up. Judged like the steps around it, as the cube lies — an
+  // algorithm that leaves the middle slice a quarter off has still done the
+  // step, and standing the cube up by its centres would tip it on its side.
+  if (stickering === 'cornerOrientation') {
+    return (
+      isSolvedAsShown(state, 'blocks') &&
+      FACELETS.every((_, index) => cell(state, index, stickering) === cell(SOLVED, index, stickering))
+    );
   }
   if (stickering === 'lseOrientation') {
     return SOLVED_TURNED.some((reference) =>

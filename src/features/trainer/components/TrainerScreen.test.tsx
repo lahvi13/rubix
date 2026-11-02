@@ -129,12 +129,39 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     await user.click(await screen.findByRole('button', { name: /^T$/ }));
 
     const detail = await screen.findByRole('dialog', { name: 'T' });
-    await user.type(within(detail).getByLabelText(/Your own algorithm/), "R U R' U'");
+    // The pack's T perm, held in the reader's own three pieces.
+    await user.type(
+      within(detail).getByLabelText(/Your own algorithm/),
+      "(R U R' U') (R' F R2 U' R') (U' R U R' F')",
+    );
     await user.click(within(detail).getByRole('button', { name: 'Add' }));
 
     await waitFor(async () => {
       expect((await getActiveAlgorithm('pll-t'))?.source).toBe('user');
     });
+  });
+
+  it('refuses an algorithm that does not solve the case, and says so', async () => {
+    const user = userEvent.setup();
+    render(<TrainerScreen />);
+
+    await user.click(await screen.findByRole('button', { name: 'PLL' }));
+    await user.click(await screen.findByRole('button', { name: /^T$/ }));
+
+    const detail = await screen.findByRole('dialog', { name: 'T' });
+    const field = within(detail).getByLabelText(/Your own algorithm/);
+    await user.type(field, "R U R' U'");
+    // Not while it is being typed: half an algorithm solves nothing either.
+    expect(within(detail).queryByRole('alert')).not.toBeInTheDocument();
+
+    await user.click(within(detail).getByRole('button', { name: 'Add' }));
+    expect(await within(detail).findByRole('alert')).toHaveTextContent(/does not solve this case/);
+    const stored = await db.algorithms.where('caseId').equals('pll-t').toArray();
+    expect(stored.filter((algorithm) => algorithm.source === 'user')).toHaveLength(0);
+
+    // Typing on is trying again.
+    await user.type(field, ' U');
+    expect(within(detail).queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('offers a second built-in algorithm where the pack has one, and says why', async () => {
@@ -320,7 +347,8 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
 
     await user.click(screen.getByRole('button', { name: 'F2L 1' }));
     const detail = await screen.findByRole('dialog', { name: 'F2L 1' });
-    await user.type(within(detail).getByLabelText(/Your own algorithm/), "R U R' U'");
+    // The pack's own, in the reader's own brackets: it has to solve the case.
+    await user.type(within(detail).getByLabelText(/Your own algorithm/), "(F' U2 F) (U F' U' F)");
     await user.click(within(detail).getByRole('button', { name: 'Add' }));
     await waitFor(async () => {
       expect((await getActiveAlgorithm('f2l-1'))?.source).toBe('user');
