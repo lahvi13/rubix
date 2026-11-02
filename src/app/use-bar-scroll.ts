@@ -7,8 +7,8 @@ const READER_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const
 
 /**
  * Whether the bottom bar is up: away while the reader scrolls down through a
- * page, back when they head up or reach the top, and up again on every screen
- * they arrive at.
+ * page, back when they head up or reach the top or the end, and up again on
+ * every screen they arrive at.
  *
  * Only the reader's own scrolling moves it. A screen that is opened is put
  * back where it was left (see `useScrollMemory`), which can take a couple of
@@ -39,7 +39,8 @@ export function useBarScroll(route: Route): boolean {
         anchor();
         return;
       }
-      state.current = scrollBar(state.current, window.scrollY);
+      const endY = document.documentElement.scrollHeight - window.innerHeight;
+      state.current = scrollBar(state.current, window.scrollY, endY);
       const isShown = state.current.isShown;
       setBar((current) =>
         current.route === route && current.isShown === isShown ? current : { route, isShown },

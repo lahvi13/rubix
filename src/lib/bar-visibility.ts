@@ -19,14 +19,24 @@ const TOP_PX = 48;
  */
 const RUN_PX = 32;
 
+/**
+ * At the end of the page the bar comes back too. The page keeps the bar's
+ * height free under its last row so the bar never covers it, and with the bar
+ * away that room was a blank strip under the end of every long screen. A few
+ * pixels of slack: a phone scrolled to the end can stop a fraction short.
+ */
+const BOTTOM_PX = 4;
+
 export const BAR_SHOWN: BarScroll = { anchorY: 0, lastY: 0, isShown: true };
 
 /**
  * The bottom bar after the page has scrolled to `y`: away while the reader
- * moves down through the page, back the moment they head up again.
+ * moves down through the page, back the moment they head up again or reach
+ * the end, at `endY`.
  */
-export function scrollBar(state: BarScroll, y: number): BarScroll {
+export function scrollBar(state: BarScroll, y: number, endY = Infinity): BarScroll {
   if (y <= TOP_PX) return { anchorY: y, lastY: y, isShown: true };
+  if (y >= endY - BOTTOM_PX) return { anchorY: y, lastY: y, isShown: true };
 
   const wasDown = state.lastY >= state.anchorY;
   const isDown = y >= state.lastY;

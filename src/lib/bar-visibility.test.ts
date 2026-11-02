@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { BAR_SHOWN, scrollBar } from './bar-visibility';
 
 /** The bar after scrolling through each position in turn, from the top. */
-function after(positions: readonly number[]): boolean {
-  return positions.reduce(scrollBar, BAR_SHOWN).isShown;
+function after(positions: readonly number[], endY = Infinity): boolean {
+  return positions.reduce((state, y) => scrollBar(state, y, endY), BAR_SHOWN).isShown;
 }
 
 describe('scrollBar', () => {
@@ -19,5 +19,15 @@ describe('scrollBar', () => {
     ['bouncing past the top shows it', [400, 800, -20], true],
   ])('%s', (_name, positions, expected) => {
     expect(after(positions)).toBe(expected);
+  });
+
+  it.each<[string, number[], boolean]>([
+    // The room the page leaves for the bar was a blank strip without it.
+    ['reaching the end of the page brings it back', [100, 400, 800, 1000], true],
+    ['a phone stopping a fraction short of the end counts', [100, 400, 800, 997], true],
+    ['short of the end, it stays away', [100, 400, 800, 900], false],
+    ['heading back up from the end keeps it', [100, 400, 1000, 960], true],
+  ])('%s', (_name, positions, expected) => {
+    expect(after(positions, 1000)).toBe(expected);
   });
 });
