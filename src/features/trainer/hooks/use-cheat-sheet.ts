@@ -1,8 +1,12 @@
 import { goalOf, verifyAlg, type Auf, type CaseGoal } from '../../../domain/alg/verify';
 import { formatAlg, formatMove, parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import type { CubeState } from '../../../domain/cube/state';
-import { SHEET_SECTIONS, type SheetSection } from '../cheat-sheet';
-import { useSetCases, type TrainerCase } from './use-alg-cases';
+import type { Stickering } from '../../../domain/cube/views';
+import { useSetting } from '../../../hooks/use-setting';
+import { skinById, type CubeSkin } from '../../../lib/cube-skins';
+import { diagramFor } from '../case-view';
+import { paperLook, TWO_LOOK_SECTIONS, type SheetKind, type SheetSection } from '../cheat-sheet';
+import { useSetCases, type CaseGroup, type TrainerCase } from './use-alg-cases';
 
 export interface SheetCase {
   entry: TrainerCase;
@@ -19,25 +23,45 @@ export interface SheetCase {
 
 export interface SheetSectionView {
   section: SheetSection;
+  /** How its cases are drawn: on paper, or in the trainer's own colours. */
+  look: { stickering: Stickering; skin: CubeSkin };
   cases: SheetCase[];
 }
 
 /**
- * The two-look sets as the sheet prints them, each case with the algorithm the
- * trainer has chosen for it. Nothing is chosen here: the sheet is a view of the
- * trainer, and a different algorithm on paper is chosen there.
+ * A sheet as it prints, each case with the algorithm the trainer has chosen
+ * for it. Nothing is chosen here: the sheet is a view of the trainer, and a
+ * different algorithm on paper is chosen there.
+ *
+ * In colour the cases look as they do on the trainer's cards, in the reader's
+ * skin as a light page draws it — paper is white whatever the theme.
  */
-export function useCheatSheet(): SheetSectionView[] | undefined {
-  const oll = useSetCases('2look-oll');
-  const pll = useSetCases('2look-pll');
-  if (oll === undefined || pll === undefined) return undefined;
+export function useCheatSheet(kind: SheetKind, isColour: boolean): SheetSectionView[] | undefined {
+  const isTwoLook = kind === '2look';
+  const first = useSetCases(isTwoLook ? '2look-oll' : kind);
+  const second = useSetCases(isTwoLook ? '2look-pll' : null);
+  const [skinId] = useSetting('ui.cubeSkin');
+  if (first === undefined || second === undefined) return undefined;
 
-  return SHEET_SECTIONS.map((section) => {
-    const groups = section.setId === '2look-oll' ? oll : pll;
+  const sections: { section: SheetSection; groups: CaseGroup[] }[] = isTwoLook
+    ? TWO_LOOK_SECTIONS.map((section) => ({
+        section,
+        groups: section.setId === '2look-oll' ? first : second,
+      }))
+    : first.map((group) => ({
+        section: { setId: kind, group: group.name, heading: [group.name] },
+        groups: first,
+      }));
+  const paper = skinById(skinId, 'light');
+
+  return sections.map(({ section, groups }) => {
     const goal = goalOf(section.setId, section.group);
     const cases = groups.find((group) => group.name === section.group)?.cases ?? [];
     return {
       section,
+      look: isColour
+        ? { stickering: diagramFor(section.setId, section.group).stickering, skin: paper }
+        : paperLook(section.setId, section.group),
       cases: cases.map((entry) => ({
         entry,
         ...printed(entry.state, entry.algorithm?.moves ?? null, goal),

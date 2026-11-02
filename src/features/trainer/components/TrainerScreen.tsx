@@ -9,6 +9,7 @@ import {
 } from '../../../domain/alg/sets';
 import { navigate } from '../../../app/router';
 import { diagramFor } from '../case-view';
+import { sheetKindOf } from '../cheat-sheet';
 import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../levels';
 import { useAlgSets, useMethods, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
 import type { AlgSet } from '../../../db/types';
@@ -29,9 +30,6 @@ type Panel = 'none' | 'notation' | 'triggers';
 const CheatSheet = lazy(() =>
   import('./CheatSheet').then((module) => ({ default: module.CheatSheet })),
 );
-
-/** The sets the printed two-look sheet belongs to, either look of them. */
-const SHEET_SETS: ReadonlySet<string> = new Set(['oll', 'pll']);
 
 /**
  * The default grid is the small one; the others only change how wide a card
@@ -96,6 +94,8 @@ export function TrainerScreen() {
     levels.length === 0 ? null : levels.find((id) => id === remembered) ?? levels[0] ?? null;
   const twoLookId = baseSetId === null ? undefined : TWO_LOOK_SETS[baseSetId];
   const setId = levelId ?? (isTwoLook && twoLookId !== undefined ? twoLookId : baseSetId);
+  // The sheet prints what is on screen: full OLL or PLL, or the two-look route.
+  const sheetKind = puzzle === '333' ? sheetKindOf(setId) : null;
 
   const fullGroups = useSetCases(levelId ?? baseSetId);
   const twoLookGroups = useSetCases(twoLookId ?? null);
@@ -262,16 +262,16 @@ export function TrainerScreen() {
 
       {/* At the end, under the cases it prints: a page to take away once the
           set has been looked through, not a way into it. */}
-      {puzzle === '333' && baseSetId !== null && SHEET_SETS.has(baseSetId) ? (
+      {sheetKind !== null ? (
         <p className="trainer__print">
           <button type="button" onClick={() => setSheetOpen(true)}>
             {strings.cheatSheet.open}
           </button>
         </p>
       ) : null}
-      {isSheetOpen ? (
+      {isSheetOpen && sheetKind !== null ? (
         <Suspense fallback={null}>
-          <CheatSheet onClose={() => setSheetOpen(false)} />
+          <CheatSheet kind={sheetKind} onClose={() => setSheetOpen(false)} />
         </Suspense>
       ) : null}
 

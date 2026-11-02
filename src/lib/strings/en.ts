@@ -908,8 +908,10 @@ export const en = {
   cheatSheet: {
     /* A quiet line at the end of the OLL and PLL lists, not a feature to sell. */
     open: 'Printable cheat sheet',
-    label: '2-Look OLL and PLL cheat sheet',
+    label: 'Printable cheat sheet',
     back: 'Back',
+    /* A switch: on prints the trainer's colours, off black and white. */
+    colour: 'In colour',
     print: 'Print / PDF',
   },
   drill: {

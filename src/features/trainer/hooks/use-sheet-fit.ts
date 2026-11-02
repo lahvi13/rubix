@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useState, type RefObject } from 'react';
-import { largestFitting, SHEET_TYPE } from '../cheat-sheet';
+import { bestCut, largestFitting, SHEET_TYPE, type SheetLine } from '../cheat-sheet';
 
 /** CSS millimetres are exact: 96 pixels to the inch. */
 const PX_PER_MM = 96 / 25.4;
@@ -18,7 +18,7 @@ const CONTENT_HEIGHT_PX = (297 - 2 * MARGIN_MM - 4) * PX_PER_MM;
 /**
  * Sets every page of the sheet in the largest type that keeps it on its sheet
  * of paper, and scales the pages down to the width of the screen. Hands back
- * whether OLL and PLL had to go on a page each.
+ * the group the sheet is cut in two before, or null while it fits one page.
  *
  * Measured rather than estimated: how many lines an algorithm takes depends on
  * where its triggers break, and that is the browser's to know. The size is set
@@ -28,9 +28,9 @@ const CONTENT_HEIGHT_PX = (297 - 2 * MARGIN_MM - 4) * PX_PER_MM;
  * `contentKey` names what is on the sheet. A different algorithm may fit where
  * the last one did not, so a sheet once split is tried on one page again.
  */
-export function useSheetFit(frame: RefObject<HTMLElement | null>, contentKey: string): boolean {
-  const [split, setSplit] = useState({ key: contentKey, isSplit: false });
-  const isSplit = split.key === contentKey && split.isSplit;
+export function useSheetFit(frame: RefObject<HTMLElement | null>, contentKey: string): number | null {
+  const [split, setSplit] = useState<{ key: string; cutAt: number | null }>({ key: contentKey, cutAt: null });
+  const cutAt = split.key === contentKey ? split.cutAt : null;
   // The type is measured in the font it is drawn in; one still loading would
   // be measured in its fallback.
   const [fontsLoaded, setFontsLoaded] = useState(0);
@@ -60,13 +60,14 @@ export function useSheetFit(frame: RefObject<HTMLElement | null>, contentKey: st
       return best;
     });
 
-    if (!isSplit && sizes.some((pt) => pt < SHEET_TYPE.splitBelowPt)) {
+    if (cutAt === null && sizes.some((pt) => pt < SHEET_TYPE.splitBelowPt)) {
+      const cut = bestCut(linesOf(root));
       // Known only once the page is laid out, and then at most once per
       // content: the split pages are measured, never split again.
       // oxlint-disable-next-line react/set-state-in-effect
-      setSplit({ key: contentKey, isSplit: true });
+      if (cut !== null) setSplit({ key: contentKey, cutAt: cut });
     }
-  }, [frame, contentKey, isSplit, fontsLoaded]);
+  }, [frame, contentKey, cutAt, fontsLoaded]);
 
   useLayoutEffect(() => {
     const root = frame.current;
@@ -85,5 +86,18 @@ export function useSheetFit(frame: RefObject<HTMLElement | null>, contentKey: st
     return () => observer.disconnect();
   }, [frame]);
 
-  return isSplit;
+  return cutAt;
+}
+
+/** The lines the groups of a one-page sheet are laid out in, top to bottom. */
+function linesOf(root: HTMLElement): SheetLine[] {
+  const lines: SheetLine[] = [];
+  root.querySelectorAll<HTMLElement>('.cheat-sheet__section').forEach((section, index) => {
+    const top = section.offsetTop;
+    const bottom = top + section.offsetHeight;
+    const line = lines[lines.length - 1];
+    if (line !== undefined && line.top === top) line.bottom = Math.max(line.bottom, bottom);
+    else lines.push({ firstSection: index, top, bottom });
+  });
+  return lines;
 }

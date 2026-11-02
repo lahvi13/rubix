@@ -186,7 +186,7 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     });
   });
 
-  it('prints both looks of OLL and PLL with the algorithms the trainer has chosen', async () => {
+  it('prints the set on screen with the algorithms the trainer has chosen', async () => {
     const user = userEvent.setup();
     render(<TrainerScreen />);
 
@@ -194,9 +194,25 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     expect(await screen.findByRole('button', { name: 'F2L' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Printable cheat sheet' })).not.toBeInTheDocument();
 
+    // Full PLL prints full PLL.
     await user.click(screen.getByRole('button', { name: 'PLL' }));
     await user.click(await screen.findByRole('button', { name: 'Printable cheat sheet' }, SLOW_RENDER));
-    const sheet = await screen.findByRole('dialog', { name: '2-Look OLL and PLL cheat sheet' });
+    const full = await screen.findByRole('dialog', { name: 'Printable cheat sheet' });
+    await waitFor(() => {
+      expect(within(full).getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)).toEqual([
+        'Corners only',
+        'Edges only',
+        'Adjacent corner swap',
+        'Diagonal corner swap',
+      ]);
+    });
+    expect(within(full).getAllByRole('button', { name: /./ }).filter((button) => button.className === 'cheat-sheet__case')).toHaveLength(21);
+    await user.click(within(full).getByRole('button', { name: 'Back' }));
+
+    // Either look of the two-look route prints the whole route.
+    await user.click(await screen.findByRole('button', { name: /^2-Look/ }));
+    await user.click(await screen.findByRole('button', { name: 'Printable cheat sheet' }, SLOW_RENDER));
+    const sheet = await screen.findByRole('dialog', { name: 'Printable cheat sheet' });
     await waitFor(() => {
       expect(within(sheet).getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)).toEqual([
         '2-Look OLL · 1 / Edges',

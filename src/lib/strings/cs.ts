@@ -839,8 +839,9 @@ export const cs: Strings = {
   },
   cheatSheet: {
     open: 'Tahák na tisk',
-    label: 'Tahák 2-Look OLL a PLL',
+    label: 'Tahák na tisk',
     back: 'Zpět',
+    colour: 'Barevně',
     print: 'Tisk / PDF',
   },
   drill: {

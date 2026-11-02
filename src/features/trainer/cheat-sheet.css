@@ -38,13 +38,17 @@
 
 .cheat-sheet__bar {
   display: flex;
-  justify-content: space-between;
-  gap: var(--space-4);
+  align-items: center;
+  gap: var(--space-3);
   padding: var(--space-2) var(--space-5);
   padding-inline-start: max(var(--space-5), env(safe-area-inset-left));
   padding-inline-end: max(var(--space-5), env(safe-area-inset-right));
   border-bottom: var(--divider-width) solid var(--divider);
   background: var(--bg);
+}
+
+.cheat-sheet__spacer {
+  flex: 1;
 }
 
 .cheat-sheet__bar button {
@@ -88,8 +92,24 @@
   line-height: 1.3;
 }
 
-.cheat-sheet__section + .cheat-sheet__section {
-  margin-top: 1em;
+/*
+ * Groups side by side as far as the page's columns go, each as wide as its
+ * cases: full OLL is fifteen groups of two to eight, and one to a row would
+ * leave most rows half empty and the type too small to read.
+ */
+.cheat-sheet__content {
+  --sheet-gap: 4mm;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1em var(--sheet-gap);
+}
+
+.cheat-sheet__section {
+  width: calc(
+    (100% - (var(--sheet-columns) - 1) * var(--sheet-gap)) / var(--sheet-columns) * var(--sheet-span) +
+      (var(--sheet-span) - 1) * var(--sheet-gap)
+  );
 }
 
 .cheat-sheet__heading {
@@ -104,8 +124,8 @@
 
 .cheat-sheet__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.8em 4mm;
+  grid-template-columns: repeat(var(--sheet-span), minmax(0, 1fr));
+  gap: 0.8em var(--sheet-gap);
 }
 
 /* A case to tap on screen and a cell of a table on paper; nothing of the
@@ -177,6 +197,20 @@
 
 .cheat-sheet .alg__part--group .alg__moves {
   border-color: var(--paper-rule);
+}
+
+/* In colour, a trigger keeps the trainer's colour: a tint inside and its own
+   colour for the line, darkened for paper as the light theme darkens it. The
+   page asks for its colours to be printed, or a printer saving ink would drop
+   the tint and leave the line alone. */
+.cheat-sheet__page.is-colour {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.cheat-sheet__page.is-colour .alg__part--trigger .alg__moves {
+  background: color-mix(in srgb, var(--trigger-colour, var(--accent)) 22%, var(--paper));
+  border-color: color-mix(in srgb, var(--trigger-colour, var(--accent)) 70%, var(--paper-ink));
 }
 
 @page {

@@ -144,6 +144,12 @@ export interface SettingValues {
    * same way every time.
    */
   'trainer.crossFront': string;
+  /**
+   * Device-local: the printed cheat sheet in the trainer's colours rather
+   * than black and white. Which one is right is a question about the printer
+   * this device prints on.
+   */
+  'trainer.sheetInColour': boolean;
   'stats.chartWindow': number;
   /**
    * How the phase trend is drawn. Stacked shows the whole solve, separate puts
@@ -256,6 +262,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'trainer.drillMode': 'solve',
   'trainer.drillCaseIds': [],
   'trainer.crossFront': 'F',
+  'trainer.sheetInColour': false,
   'stats.chartWindow': 100,
   'stats.phaseTrendMode': 'stacked',
   'stats.phaseTrendSmoothed': false,
@@ -304,6 +311,7 @@ const DEVICE_LOCAL_PREFIXES = [
   'ui.caseLayout',
   'ui.puzzle',
   'ui.installNudge',
+  'trainer.sheetInColour',
   'data.',
 ];
 
