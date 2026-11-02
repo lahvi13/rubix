@@ -9,6 +9,19 @@ import type { Route } from './router';
  */
 const RESTORE_WINDOW_MS = 2000;
 
+/**
+ * How long a screen being put back further down may stay out of sight. Shown
+ * while it was still filling in, the page sat at its top for a few frames and
+ * then jumped to where the reader had been — the screen seemed to flash its
+ * start before the place it was left at. Hidden until it is back, it appears
+ * there. Not for longer than this, though: a screen still loading after half
+ * a second is better shown at its top and moved than left blank.
+ */
+const HIDE_WHILE_RESTORING_MS = 500;
+
+/** Set on <html> while a screen is out of sight being put back (app-shell.css). */
+const RESTORING_ATTRIBUTE = 'data-restoring';
+
 /** Any of these is the reader taking the page over, and they win over the put-back. */
 const TAKEOVER_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
 
@@ -53,6 +66,11 @@ export function useScrollMemory(route: Route): void {
 /** Scrolls to `y` as soon as the page is tall enough; returns the cancel. */
 function putBack(y: number, onDone: () => void): () => void {
   let isDone = false;
+  // Only a screen left further down has anywhere to jump from.
+  const root = document.documentElement;
+  const reveal = () => root.removeAttribute(RESTORING_ATTRIBUTE);
+  if (y > 0) root.setAttribute(RESTORING_ATTRIBUTE, '');
+  const revealTimer = window.setTimeout(reveal, HIDE_WHILE_RESTORING_MS);
 
   const attempt = () => {
     window.scrollTo({ top: y, behavior: 'instant' });
@@ -63,6 +81,8 @@ function putBack(y: number, onDone: () => void): () => void {
 
   function stop() {
     isDone = true;
+    reveal();
+    window.clearTimeout(revealTimer);
     observer.disconnect();
     window.clearTimeout(timeout);
     for (const type of TAKEOVER_EVENTS) window.removeEventListener(type, finish, true);

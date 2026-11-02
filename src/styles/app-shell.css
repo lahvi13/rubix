@@ -15,6 +15,16 @@
 }
 
 /*
+ * A screen being put back where it was left (app/use-scroll-memory.ts) stays
+ * out of sight until it is there, so it is not seen at its top first. Laid
+ * out all the same — hidden, not removed — so it grows to the height it is
+ * being scrolled into. The header and the tab bar stay.
+ */
+html[data-restoring] main {
+  visibility: hidden;
+}
+
+/*
  * Pinned to the top: the way out of a screen has to stay reachable however far
  * down the reader is. One height, always — it used to shrink once the page had
  * moved, which bought about ten pixels and paid for them with a jump partway
