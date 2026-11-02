@@ -1,5 +1,5 @@
 {
- "packVersion": 3,
+ "packVersion": 4,
  "set": {
   "id": "2look-oll",
   "name": "2-Look OLL"
@@ -32,7 +32,8 @@
    "group": "1 / Edges",
    "alg": "F R U R' U' F' f R U R' U' f'",
    "others": [
-    "y' U2 L F L' (U2 R U2' R' U2) L F' L'"
+    "y' U2 L F L' (U2 R U2' R' U2) L F' L'",
+    "R U2 R2 F R F' U2 R' F R F'"
    ],
    "orientOnly": [
     "U L F L' (U2 R U2' R' U2) L F' L'"
@@ -63,7 +64,8 @@
    "alg": "(R U2 R') (U' R U R') (U' R U' R')",
    "orientOnly": [
     "U (R U R' U) (R U' R' U) (R U2' R')",
-    "y (R U R' U) (R U' R' U) (R U2 R')"
+    "y (R U R' U) (R U' R' U) (R U2 R')",
+    "F (R U R' U') (R U R' U') (R U R' U') F'"
    ]
   },
   {

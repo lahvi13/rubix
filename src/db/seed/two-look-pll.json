@@ -1,5 +1,5 @@
 {
- "packVersion": 2,
+ "packVersion": 3,
  "set": {
   "id": "2look-pll",
   "name": "2-Look PLL"
@@ -11,7 +11,9 @@
    "group": "1 / Corners",
    "alg": "R U R' U' R' F R2 U' R' U' R U R' F'",
    "others": [
-    "y2 U2 R U R' U' R' F R2 U' R' U F' L' U L"
+    "y2 U2 R U R' U' R' F R2 U' R' U F' L' U L",
+    "R U R' F' R U R' U' R' F R2 U' R'",
+    "U x R' U R' D2 R U' R' D2 R2 x'"
    ]
   },
   {
@@ -51,7 +53,10 @@
    "id": "2pll-h",
    "name": "H",
    "group": "2 / Edges",
-   "alg": "M2 U M2 U2 M2 U M2"
+   "alg": "M2 U M2 U2 M2 U M2",
+   "others": [
+    "R2 U2 R U2 R2 U2 R2 U2 R U2 R2"
+   ]
   },
   {
    "id": "2pll-z",
@@ -61,7 +66,8 @@
    "others": [
     "U' M U M2 U M2 U M U2 M2",
     "U' M' U M2 U M2 U M' U2 M2",
-    "U' M2 U2 M U M2 U M2 U M"
+    "U' M2 U2 M U M2 U M2 U M",
+    "U R' U' R U' R U R U' R' U R U R2 U' R' U"
    ]
   }
  ]

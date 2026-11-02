@@ -12,6 +12,7 @@ import { FACELETS, applyAlg, isSolved, solvedState, stateKey } from '../../domai
 import { isSolvedAsShown, lastLayerView, type Stickering } from '../../domain/cube/views';
 import { PACKS, type AlgPack, type PackCase } from './packs';
 import { BEGINNER_GROUPS, CASE_TWINS } from '../../domain/alg/sets';
+import { goalOf, verifyAlg } from '../../domain/alg/verify';
 
 function movesOf(text: string): Move[] {
   const parsed = parseAlg(text);
@@ -114,6 +115,15 @@ const edgesOriented = (state: CubeStateOf): boolean =>
  */
 function answers(entry: PackCase, moves: Move[], setId = ''): boolean {
   const before = caseState(entry);
+  // A two-look case is one step, and what does the step answers it: an A perm
+  // puts the corners home and leaves the edges to the next look. Judged as an
+  // algorithm typed in is judged, and as written — the turn it wants first is
+  // part of what the pack writes, as it is of what the trainer keeps.
+  const goal = goalOf(setId, entry.group);
+  if (goal !== null && setId.startsWith('2look-')) {
+    const verdict = verifyAlg(before, formatAlg(moves), goal);
+    return verdict.ok && verdict.preAuf === '';
+  }
   // Roux's edge orientation the same way, judged on the edges' top and bottom
   // colours alone.
   // And the second block by the two blocks alone: the top layer and the
