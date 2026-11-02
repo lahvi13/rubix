@@ -193,7 +193,7 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     // F2L prints too, in colour alone: its cases are read by their side
     // colours, and black and white is not offered.
     expect(await screen.findByRole('button', { name: 'F2L' })).toBeInTheDocument();
-    await user.click(await screen.findByRole('button', { name: 'Printable cheat sheet' }, SLOW_RENDER));
+    await user.click(await screen.findByRole('button', { name: 'Print' }, SLOW_RENDER));
     const f2l = await screen.findByRole('dialog', { name: 'Printable cheat sheet' });
     await waitFor(() => {
       expect(within(f2l).getAllByRole('heading', { level: 2 }).length).toBeGreaterThan(0);
@@ -203,7 +203,7 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
 
     // Full PLL prints full PLL, and may be printed either way.
     await user.click(screen.getByRole('button', { name: 'PLL' }));
-    await user.click(await screen.findByRole('button', { name: 'Printable cheat sheet' }, SLOW_RENDER));
+    await user.click(await screen.findByRole('button', { name: 'Print' }, SLOW_RENDER));
     const full = await screen.findByRole('dialog', { name: 'Printable cheat sheet' });
     await waitFor(() => {
       expect(within(full).getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)).toEqual([
@@ -219,7 +219,7 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
 
     // Either look of the two-look route prints the whole route.
     await user.click(await screen.findByRole('button', { name: /^2-Look/ }));
-    await user.click(await screen.findByRole('button', { name: 'Printable cheat sheet' }, SLOW_RENDER));
+    await user.click(await screen.findByRole('button', { name: 'Print' }, SLOW_RENDER));
     const sheet = await screen.findByRole('dialog', { name: 'Printable cheat sheet' });
     await waitFor(() => {
       expect(within(sheet).getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)).toEqual([

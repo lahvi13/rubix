@@ -18,7 +18,6 @@ import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CaseLayout } from '../../../lib/appearance';
 import { useTriggers } from '../hooks/use-triggers';
-import { NextIcon, NotationIcon, PrintIcon, TriggersIcon } from '../../../components/Icons';
 import { Sheet } from '../../../components/Sheet';
 import { CaseCard } from './CaseCard';
 import { CaseDetail } from './CaseDetail';
@@ -254,20 +253,14 @@ export function TrainerScreen() {
           came up under the bottom edge, and nothing seemed to happen. */}
       <div className="trainer__tools">
         <button type="button" onClick={() => setPanel('notation')}>
-          <NotationIcon />
-          <span>{strings.trainer.notation}</span>
-          <NextIcon />
+          {strings.trainer.notation}
         </button>
         <button type="button" onClick={() => setPanel('triggers')}>
-          <TriggersIcon />
-          <span>{strings.trainer.triggers}</span>
-          <NextIcon />
+          {strings.trainer.triggers}
         </button>
         {sheetKind !== null ? (
           <button type="button" onClick={() => setSheetOpen(true)}>
-            <PrintIcon />
-            <span>{strings.cheatSheet.open}</span>
-            <NextIcon />
+            {strings.cheatSheet.open}
           </button>
         ) : null}
       </div>

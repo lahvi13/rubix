@@ -838,7 +838,7 @@ export const cs: Strings = {
     renaming: 'Přejmenovávám případ',
   },
   cheatSheet: {
-    open: 'Tahák na tisk',
+    open: 'Tisk',
     label: 'Tahák na tisk',
     back: 'Zpět',
     colour: 'Barevně',

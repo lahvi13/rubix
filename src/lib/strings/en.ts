@@ -907,8 +907,9 @@ export const en = {
     renaming: 'Renaming the case',
   },
   cheatSheet: {
-    /* A quiet line at the end of the OLL and PLL lists, not a feature to sell. */
-    open: 'Printable cheat sheet',
+    /* One word on a button beside Notation and Triggers; the sheet it opens
+       says in its title what it is. */
+    open: 'Print',
     label: 'Printable cheat sheet',
     back: 'Back',
     /* A switch: on prints the trainer's colours, off black and white. */
