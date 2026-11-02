@@ -94,8 +94,8 @@ export function TrainerScreen() {
     levels.length === 0 ? null : levels.find((id) => id === remembered) ?? levels[0] ?? null;
   const twoLookId = baseSetId === null ? undefined : TWO_LOOK_SETS[baseSetId];
   const setId = levelId ?? (isTwoLook && twoLookId !== undefined ? twoLookId : baseSetId);
-  // The sheet prints what is on screen: full OLL or PLL, or the two-look route.
-  const sheetKind = puzzle === '333' ? sheetKindOf(setId) : null;
+  // The sheet prints what is on screen: the set, or the whole two-look route.
+  const sheetKind = sheetKindOf(setId);
 
   const fullGroups = useSetCases(levelId ?? baseSetId);
   const twoLookGroups = useSetCases(twoLookId ?? null);

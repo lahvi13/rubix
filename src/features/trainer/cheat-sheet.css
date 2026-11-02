@@ -164,6 +164,12 @@
   aspect-ratio: 1;
 }
 
+/* The net's own proportions (cube-diagram-svg.ts): four faces by three. */
+.cheat-sheet__diagram--net {
+  width: min(100%, 10em);
+  aspect-ratio: 150 / 112;
+}
+
 .cheat-sheet__alg {
   display: block;
   font-weight: 600;

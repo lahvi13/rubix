@@ -9,7 +9,7 @@ import { useKeyCapture } from '../../../hooks/use-key-capture';
 import { useSetting } from '../../../hooks/use-setting';
 import { packLabel, strings } from '../../../lib/strings';
 import { diagramFor } from '../case-view';
-import { sheetColumns, sheetPages, type SheetKind } from '../cheat-sheet';
+import { isColourOnly, sheetColumns, sheetPages, type SheetKind } from '../cheat-sheet';
 import { useCheatSheet, type SheetCase, type SheetSectionView } from '../hooks/use-cheat-sheet';
 import { useSheetFit } from '../hooks/use-sheet-fit';
 import { useTriggers } from '../hooks/use-triggers';
@@ -28,9 +28,13 @@ interface SheetStyle extends CSSProperties {
   '--sheet-span'?: number;
 }
 
-/** How many of the page's columns a group takes: its cases, up to all of them. */
+/**
+ * How many of the page's columns a group takes: its cases, up to all of them —
+ * and never fewer than two, or a group of one has its heading broken over
+ * three lines above a single case.
+ */
 function spanStyle(caseCount: number, columns: number): SheetStyle {
-  return { '--sheet-span': Math.min(caseCount, columns) };
+  return { '--sheet-span': Math.min(Math.max(caseCount, 2), columns) };
 }
 
 /**
@@ -47,7 +51,9 @@ function spanStyle(caseCount: number, columns: number): SheetStyle {
  * leave out everything that is not the paper (cheat-sheet.css).
  */
 export function CheatSheet({ kind, onClose }: CheatSheetProps) {
-  const [isColour, setColour] = useSetting('trainer.sheetInColour');
+  const [inColour, setColour] = useSetting('trainer.sheetInColour');
+  const isColourOnlySheet = isColourOnly(kind);
+  const isColour = inColour || isColourOnlySheet;
   const sections = useCheatSheet(kind, isColour);
   const { definitions } = useTriggers();
   const skin = useCubeSkin();
@@ -68,7 +74,7 @@ export function CheatSheet({ kind, onClose }: CheatSheetProps) {
     ),
     definitions.map((definition) => definition.id),
   ]);
-  const cutAt = useSheetFit(frame, contentKey);
+  const cuts = useSheetFit(frame, contentKey);
 
   // Stepping in the case's sheet runs through the set the case is in.
   const ordered = useMemo(
@@ -84,7 +90,7 @@ export function CheatSheet({ kind, onClose }: CheatSheetProps) {
   );
 
   const columns = sheetColumns((sections ?? []).reduce((count, view) => count + view.cases.length, 0));
-  const pages = sheetPages(sections ?? [], cutAt);
+  const pages = sheetPages(sections ?? [], cuts);
   const pageStyle: SheetStyle = { '--sheet-columns': columns };
 
   const caseCard = ({ section, look }: SheetSectionView, { entry, moves, groups, preAuf }: SheetCase) => (
@@ -96,9 +102,11 @@ export function CheatSheet({ kind, onClose }: CheatSheetProps) {
     >
       <span className="cheat-sheet__name">{packLabel(caseTitle(entry.algCase))}</span>
       <CubeDiagram
-        className="cheat-sheet__diagram"
+        // The 2×2's PBL is the cube unfolded, wider than it is tall.
+        className={look.view === 'net' ? 'cheat-sheet__diagram cheat-sheet__diagram--net' : 'cheat-sheet__diagram'}
         state={entry.state}
-        view="lastLayer"
+        view={look.view}
+        order={look.order}
         stickering={look.stickering}
         skin={look.skin}
         label={null}
@@ -123,14 +131,17 @@ export function CheatSheet({ kind, onClose }: CheatSheetProps) {
           {strings.cheatSheet.back}
         </button>
         <span className="cheat-sheet__spacer" />
-        <button
-          type="button"
-          className={isColour ? 'is-active' : ''}
-          aria-pressed={isColour}
-          onClick={() => setColour(!isColour)}
-        >
-          {strings.cheatSheet.colour}
-        </button>
+        {/* Not offered where black and white could not be read. */}
+        {isColourOnlySheet ? null : (
+          <button
+            type="button"
+            className={isColour ? 'is-active' : ''}
+            aria-pressed={isColour}
+            onClick={() => setColour(!isColour)}
+          >
+            {strings.cheatSheet.colour}
+          </button>
+        )}
         <button type="button" className="is-primary" onClick={() => window.print()}>
           {strings.cheatSheet.print}
         </button>

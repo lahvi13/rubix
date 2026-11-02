@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { PACKS } from '../../db/seed/packs';
 import {
+  isColourOnly,
   largestFitting,
   paperLook,
   sheetColumns,
   sheetKindOf,
   sheetPages,
-  bestCut,
+  bestCuts,
   SHEET_TYPE,
   TWO_LOOK_SECTIONS,
 } from './cheat-sheet';
@@ -40,12 +41,31 @@ describe('sheetKindOf', () => {
     // Either half of the two-look route prints the whole of it.
     { setId: '2look-oll', kind: '2look' },
     { setId: '2look-pll', kind: '2look' },
-    // Sets read by their colours have no sheet.
-    { setId: 'f2l', kind: null },
-    { setId: 'cmll', kind: null },
+    { setId: 'f2l-advanced', kind: 'f2l-advanced' },
+    { setId: 'cmll', kind: 'cmll' },
+    { setId: 'pocket-pbl', kind: 'pocket-pbl' },
+    // Nothing to print, or not the trainer's to print.
+    { setId: 'cross', kind: null },
+    { setId: 'beginner', kind: null },
     { setId: null, kind: null },
   ])('$setId prints as $kind', ({ setId, kind }) => {
     expect(sheetKindOf(setId)).toBe(kind);
+  });
+});
+
+describe('isColourOnly', () => {
+  it.each([
+    { kind: '2look', expected: false },
+    { kind: 'oll', expected: false },
+    { kind: 'pll', expected: false },
+    { kind: 'f2l', expected: true },
+    { kind: 'roux-sb', expected: true },
+    { kind: 'cmll', expected: true },
+    // The 2×2's OLL is read by its yellow alone; its PBL by both layers' sides.
+    { kind: 'pocket-oll', expected: false },
+    { kind: 'pocket-pbl', expected: true },
+  ])('$kind: $expected', ({ kind, expected }) => {
+    expect(isColourOnly(kind)).toBe(expected);
   });
 });
 
@@ -61,33 +81,45 @@ describe('sheetColumns', () => {
 
 describe('sheetPages', () => {
   it.each([
-    { cutAt: null, pages: [[0, 1, 2, 3]] },
-    { cutAt: 2, pages: [[0, 1], [2, 3]] },
-    // A cut at either end is no cut.
-    { cutAt: 0, pages: [[0, 1, 2, 3]] },
-    { cutAt: 4, pages: [[0, 1, 2, 3]] },
-  ])('cut at $cutAt', ({ cutAt, pages }) => {
-    expect(sheetPages([0, 1, 2, 3], cutAt)).toEqual(pages);
+    { cuts: [], pages: [[0, 1, 2, 3]] },
+    { cuts: [2], pages: [[0, 1], [2, 3]] },
+    { cuts: [3, 1], pages: [[0], [1, 2], [3]] },
+    // A cut at either end, or twice in one place, is no cut.
+    { cuts: [0, 4], pages: [[0, 1, 2, 3]] },
+    { cuts: [2, 2], pages: [[0, 1], [2, 3]] },
+  ])('cut at $cuts', ({ cuts, pages }) => {
+    expect(sheetPages([0, 1, 2, 3], cuts)).toEqual(pages);
   });
 });
 
-describe('bestCut', () => {
+describe('bestCuts', () => {
   const line = (firstSection: number, top: number, bottom: number) => ({ firstSection, top, bottom });
 
   it('cuts where the taller page is shortest, not where the cases halve', () => {
     // Two tall lines first, three short ones after: the cut goes after the
     // second line, though most cases come after it.
     const lines = [line(0, 0, 40), line(1, 45, 85), line(3, 90, 110), line(5, 115, 135), line(8, 140, 160)];
-    expect(bestCut(lines)).toBe(3);
+    expect(bestCuts(lines, 2)).toEqual([3]);
   });
 
   it('cuts two-look OLL from PLL', () => {
     const lines = [line(0, 0, 30), line(1, 35, 95), line(2, 100, 130), line(3, 135, 165)];
-    expect(bestCut(lines)).toBe(2);
+    expect(bestCuts(lines, 2)).toEqual([2]);
   });
 
-  it.each([{ lines: [] }, { lines: [line(0, 0, 100)] }])('has nothing to cut in $lines.length lines', ({ lines }) => {
-    expect(bestCut(lines)).toBeNull();
+  it('spreads three pages evenly rather than cutting the fullest one again', () => {
+    // Six lines of 20 with gaps of 5: two lines to a page.
+    const lines = [0, 1, 2, 3, 4, 5].map((index) => line(index * 2, index * 25, index * 25 + 20));
+    expect(bestCuts(lines, 3)).toEqual([4, 8]);
+  });
+
+  it.each([
+    { lines: [], pages: 2 },
+    { lines: [line(0, 0, 100)], pages: 2 },
+    { lines: [line(0, 0, 40), line(1, 45, 85)], pages: 3 },
+    { lines: [line(0, 0, 40), line(1, 45, 85)], pages: 1 },
+  ])('has nothing to cut in $lines.length lines over $pages pages', ({ lines, pages }) => {
+    expect(bestCuts(lines, pages)).toEqual([]);
   });
 });
 
@@ -114,6 +146,7 @@ describe('paperLook', () => {
     { setId: '2look-oll', group: '1 / Edges', stickering: 'allEdges' },
     { setId: '2look-oll', group: '2 / Corners', stickering: 'orientation' },
     { setId: 'oll', group: 'Dot', stickering: 'orientation' },
+    { setId: 'pocket-oll', group: 'Sune', stickering: 'orientation' },
     { setId: '2look-pll', group: '1 / Corners', stickering: 'corners' },
     { setId: '2look-pll', group: '2 / Edges', stickering: 'edges' },
     { setId: 'pll', group: 'Adjacent corner swap', stickering: 'full' },

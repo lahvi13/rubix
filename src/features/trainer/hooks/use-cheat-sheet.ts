@@ -1,11 +1,12 @@
 import { goalOf, verifyAlg, type Auf, type CaseGoal } from '../../../domain/alg/verify';
 import { formatAlg, formatMove, parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import type { CubeState } from '../../../domain/cube/state';
-import type { Stickering } from '../../../domain/cube/views';
+import type { CubeOrder, Stickering } from '../../../domain/cube/views';
+import type { DiagramView } from '../../../components/CubeDiagram';
 import { useSetting } from '../../../hooks/use-setting';
 import { skinById, type CubeSkin } from '../../../lib/cube-skins';
 import { diagramFor } from '../case-view';
-import { paperLook, TWO_LOOK_SECTIONS, type SheetKind, type SheetSection } from '../cheat-sheet';
+import { paperLook, TWO_LOOK_SECTIONS, TWO_LOOK_SHEET, type SheetKind, type SheetSection } from '../cheat-sheet';
 import { useSetCases, type CaseGroup, type TrainerCase } from './use-alg-cases';
 
 export interface SheetCase {
@@ -24,7 +25,7 @@ export interface SheetCase {
 export interface SheetSectionView {
   section: SheetSection;
   /** How its cases are drawn: on paper, or in the trainer's own colours. */
-  look: { stickering: Stickering; skin: CubeSkin };
+  look: { view: DiagramView; stickering: Stickering; skin: CubeSkin; order: CubeOrder };
   cases: SheetCase[];
 }
 
@@ -37,7 +38,7 @@ export interface SheetSectionView {
  * skin as a light page draws it — paper is white whatever the theme.
  */
 export function useCheatSheet(kind: SheetKind, isColour: boolean): SheetSectionView[] | undefined {
-  const isTwoLook = kind === '2look';
+  const isTwoLook = kind === TWO_LOOK_SHEET;
   const first = useSetCases(isTwoLook ? '2look-oll' : kind);
   const second = useSetCases(isTwoLook ? '2look-pll' : null);
   const [skinId] = useSetting('ui.cubeSkin');
@@ -57,29 +58,33 @@ export function useCheatSheet(kind: SheetKind, isColour: boolean): SheetSectionV
   return sections.map(({ section, groups }) => {
     const goal = goalOf(section.setId, section.group);
     const cases = groups.find((group) => group.name === section.group)?.cases ?? [];
+    const { view, stickering, order } = diagramFor(section.setId, section.group);
     return {
       section,
       look: isColour
-        ? { stickering: diagramFor(section.setId, section.group).stickering, skin: paper }
-        : paperLook(section.setId, section.group),
+        ? { view, stickering, skin: paper, order }
+        : { view: 'lastLayer', order, ...paperLook(section.setId, section.group) },
       cases: cases.map((entry) => ({
         entry,
-        ...printed(entry.state, entry.algorithm?.moves ?? null, goal),
+        ...printed(entry.state, entry.algorithm?.moves ?? null, goal, view === 'lastLayer'),
       })),
     };
   });
 }
 
 /**
- * The algorithm split the way the sheet prints it: a turn of the top layer it
- * opens with goes in brackets in front — `(U) L' U2 L …` — because it is not
- * part of what the hands learn but the way the case is picked up. Only a turn
- * that really is that: the rest has to solve the case from the turned side.
+ * The algorithm split the way the sheet prints it: on a last-layer case, a
+ * turn of the top layer it opens with goes in brackets in front — `(U) L' U2
+ * L …` — because it is not part of what the hands learn but the way the case
+ * is picked up. Only a turn that really is that: the rest has to solve the
+ * case from the turned side. Lower down a U turn is part of the algorithm —
+ * it is what sets an F2L pair up — and stays where it is written.
  */
 function printed(
   state: CubeState,
   alg: string | null,
   goal: CaseGoal | null,
+  isLastLayer: boolean,
 ): Omit<SheetCase, 'entry'> {
   const parsed = alg === null ? null : parseAlg(alg);
   if (!parsed?.ok) return { moves: [], groups: [], preAuf: null };
@@ -88,7 +93,7 @@ function printed(
   if (goal === null) return { ...whole, preAuf: null };
 
   const [first, ...rest] = parsed.moves;
-  if (first?.family === 'U' && rest.length > 0) {
+  if (isLastLayer && first?.family === 'U' && rest.length > 0) {
     const turn = formatMove(first);
     const verdict = verifyAlg(state, formatAlg(rest), goal);
     if (verdict.ok && verdict.preAuf === turn) {

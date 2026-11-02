@@ -190,11 +190,18 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     const user = userEvent.setup();
     render(<TrainerScreen />);
 
-    // Only under the sets it prints.
+    // F2L prints too, in colour alone: its cases are read by their side
+    // colours, and black and white is not offered.
     expect(await screen.findByRole('button', { name: 'F2L' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Printable cheat sheet' })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Printable cheat sheet' }, SLOW_RENDER));
+    const f2l = await screen.findByRole('dialog', { name: 'Printable cheat sheet' });
+    await waitFor(() => {
+      expect(within(f2l).getAllByRole('heading', { level: 2 }).length).toBeGreaterThan(0);
+    });
+    expect(within(f2l).queryByRole('button', { name: 'In colour' })).not.toBeInTheDocument();
+    await user.click(within(f2l).getByRole('button', { name: 'Back' }));
 
-    // Full PLL prints full PLL.
+    // Full PLL prints full PLL, and may be printed either way.
     await user.click(screen.getByRole('button', { name: 'PLL' }));
     await user.click(await screen.findByRole('button', { name: 'Printable cheat sheet' }, SLOW_RENDER));
     const full = await screen.findByRole('dialog', { name: 'Printable cheat sheet' });
@@ -207,6 +214,7 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
       ]);
     });
     expect(within(full).getAllByRole('button', { name: /./ }).filter((button) => button.className === 'cheat-sheet__case')).toHaveLength(21);
+    expect(within(full).getByRole('button', { name: 'In colour' })).toHaveAttribute('aria-pressed', 'false');
     await user.click(within(full).getByRole('button', { name: 'Back' }));
 
     // Either look of the two-look route prints the whole route.

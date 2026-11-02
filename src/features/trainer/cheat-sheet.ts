@@ -21,17 +21,31 @@ export interface SheetSection {
 }
 
 /**
- * The sheets there are: OLL and PLL in full, and the two-look route through
- * both, which is printed whole from either of its sets — it is the beginner's
- * last layer on one page, and either half alone would leave most of the page
- * empty.
+ * Which sheet a set prints as: the set itself, or — for either half of the
+ * two-look route through the last layer — the whole route, which is the
+ * beginner's last layer on one page; either half alone would leave most of
+ * the page empty.
  */
-export type SheetKind = 'oll' | 'pll' | '2look';
+export const TWO_LOOK_SHEET = '2look';
+export type SheetKind = string;
 
+/** The cross has no cases to print, and the beginner's set belongs to its guide. */
 export function sheetKindOf(setId: string | null): SheetKind | null {
-  if (setId === 'oll' || setId === 'pll') return setId;
-  if (setId === '2look-oll' || setId === '2look-pll') return '2look';
-  return null;
+  if (setId === null || setId === 'cross' || setId === 'beginner') return null;
+  if (setId === '2look-oll' || setId === '2look-pll') return TWO_LOOK_SHEET;
+  return setId;
+}
+
+/**
+ * Sheets that only print in colour. Everything but the last layer's own sets
+ * is read by side colours — an F2L pair by the faces beside its slot, a Roux
+ * block by blue and green, a 2×2's PBL by both layers' sides — and in black
+ * and white every case would look like the next.
+ */
+const PAPER_SHEETS: ReadonlySet<SheetKind> = new Set([TWO_LOOK_SHEET, 'oll', 'pll', 'pocket-oll']);
+
+export function isColourOnly(kind: SheetKind): boolean {
+  return !PAPER_SHEETS.has(kind);
 }
 
 export const TWO_LOOK_SECTIONS: readonly SheetSection[] = [
@@ -54,7 +68,7 @@ export function paperLook(setId: string, group: string): { stickering: Stickerin
     // yet. The screen's picture leaves the edges' sides out.
     return { stickering: 'allEdges', skin: PAPER_SKIN };
   }
-  if (setId === '2look-oll' || setId === 'oll') {
+  if (setId === '2look-oll' || setId === 'oll' || setId === 'pocket-oll') {
     return { stickering: 'orientation', skin: PAPER_SKIN_ORIENTATION };
   }
   if (setId === '2look-pll') {
@@ -85,37 +99,63 @@ export interface SheetLine {
 }
 
 /**
- * Where a sheet too long for one page is cut in two: at the start of the line
- * that leaves the taller page shortest. Measured lines rather than counted
- * cases — a group of eight alone on its lines takes the room of twelve, and
- * an algorithm in three lines the room of two in one; cut by case count, OLL
- * came out at seven points on one page and nine on the other. Null when there
- * is only one line to cut.
+ * Where a sheet too long for one page is cut, into `pages` pages: before the
+ * lines that leave the tallest page shortest. Every page is set in one size,
+ * the tallest page's, so the pages are balanced against each other rather
+ * than each filled in turn — cut one page at a time, full OLL came out with
+ * its first page half empty. Measured lines rather than counted cases: a
+ * group of eight alone on its lines takes the room of twelve, and an
+ * algorithm in three lines the room of two in one. No cuts when there are
+ * not enough lines to cut.
  */
-export function bestCut(lines: readonly SheetLine[]): number | null {
-  const first = lines[0];
-  const last = lines[lines.length - 1];
-  if (first === undefined || last === undefined || lines.length < 2) return null;
+export function bestCuts(lines: readonly SheetLine[], pages: number): number[] {
+  const count = lines.length;
+  if (pages < 2 || count < pages) return [];
+  const heightOf = (from: number, to: number): number =>
+    (lines[to - 1]?.bottom ?? 0) - (lines[from]?.top ?? 0);
 
-  let best: number | null = null;
-  let bestHeight = Infinity;
-  for (let index = 1; index < lines.length; index++) {
-    const before = lines[index - 1];
-    const at = lines[index];
-    if (before === undefined || at === undefined) continue;
-    const height = Math.max(before.bottom - first.top, last.bottom - at.top);
-    if (height < bestHeight) {
-      best = at.firstSection;
-      bestHeight = height;
+  // tallest[k][i]: the shortest tallest page laying the first i lines on k
+  // pages; cutBefore[k][i]: the line its last page starts on.
+  const tallest: number[][] = [[], Array.from({ length: count + 1 }, (_, i) => heightOf(0, i))];
+  const cutBefore: number[][] = [[], []];
+  for (let k = 2; k <= pages; k++) {
+    const previous = tallest[k - 1] ?? [];
+    const row: number[] = [];
+    const cutRow: number[] = [];
+    for (let i = k; i <= count; i++) {
+      let best = Infinity;
+      for (let j = k - 1; j < i; j++) {
+        const height = Math.max(previous[j] ?? Infinity, heightOf(j, i));
+        if (height < best) {
+          best = height;
+          cutRow[i] = j;
+        }
+      }
+      row[i] = best;
     }
+    tallest.push(row);
+    cutBefore.push(cutRow);
   }
-  return best;
+
+  const cuts: number[] = [];
+  let end = count;
+  for (let k = pages; k > 1; k--) {
+    const at = cutBefore[k]?.[end] ?? 0;
+    cuts.unshift(lines[at]?.firstSection ?? 0);
+    end = at;
+  }
+  return cuts;
 }
 
-/** The sheet on one page, or on two cut before the group `cutAt`. */
-export function sheetPages<T>(sections: readonly T[], cutAt: number | null): T[][] {
-  if (cutAt === null || cutAt <= 0 || cutAt >= sections.length) return [[...sections]];
-  return [sections.slice(0, cutAt), sections.slice(cutAt)];
+/**
+ * The sheet cut into pages before each group in `cuts`. A page still too
+ * long once cut is cut again, so the second block of Roux — sixty-five cases
+ * in groups of fourteen — goes over three pages rather than two at seven
+ * points.
+ */
+export function sheetPages<T>(sections: readonly T[], cuts: readonly number[]): T[][] {
+  const at = [...new Set(cuts)].filter((cut) => cut > 0 && cut < sections.length).sort((a, b) => a - b);
+  return [0, ...at].map((start, index) => sections.slice(start, at[index] ?? sections.length));
 }
 
 /**
