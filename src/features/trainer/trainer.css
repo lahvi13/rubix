@@ -255,27 +255,50 @@
 }
 
 /*
- * Under the cases: the references and the printable sheet. Lines to tap, not
- * buttons — the button family would draw an outline round each, and three
- * outlines under the last case read as the start of another screen.
+ * Under the cases: the references and the printable sheet, as rows of one
+ * card in the cases' own colour, so they read as part of this page and not
+ * the start of another. Underlined words used to stand here and looked like a
+ * web page's links; three outlined buttons side by side left "Tahák na tisk"
+ * barely room at a large text size. A row has room, and its chevron says a
+ * tap opens something.
  */
 .trainer__tools {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-2) var(--space-4);
+  flex-direction: column;
   max-width: var(--page-width);
   margin: 0 auto var(--space-6);
   width: 100%;
+  background: var(--surface-raised);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
+/* Rows of a card rather than buttons, so they repaint the family's outline. */
 .trainer__tools button {
-  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 3.25rem;
   border: none;
-  background: none;
+  border-radius: 0;
+  color: var(--text);
+  font-size: var(--text-lg);
+  text-align: start;
+}
+
+.trainer__tools button + button {
+  border-top: var(--divider-width) solid var(--divider);
+}
+
+.trainer__tools .icon {
+  flex: none;
+  width: 1.3rem;
+  height: 1.3rem;
   color: var(--muted);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+}
+
+.trainer__tools button > :last-child {
+  margin-inline-start: auto;
 }
 
 /* A reference in a sheet: the sheet is the card, so the panel drops its own. */

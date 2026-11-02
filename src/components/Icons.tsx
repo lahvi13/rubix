@@ -148,3 +148,34 @@ export function MoreIcon() {
     </svg>
   );
 }
+
+/*
+ * The trainer's references, on the rows under the cases.
+ */
+
+/** R′, the move every notation starts from: how turns are written. */
+export function NotationIcon() {
+  return (
+    <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 19.5v-15h5.5a3.75 3.75 0 0 1 0 7.5H5M10 12l5 7.5M19 4l-1.5 4.5" />
+    </svg>
+  );
+}
+
+/** Two links of a chain: a trigger is moves that always come together. */
+export function TriggersIcon() {
+  return (
+    <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" />
+    </svg>
+  );
+}
+
+/** A printer: the sheet to take away on paper. */
+export function PrintIcon() {
+  return (
+    <svg className="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 9V4h10v5M7 16H5.5A1.5 1.5 0 0 1 4 14.5v-4A1.5 1.5 0 0 1 5.5 9h13a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5H17M7 13.5h10V20H7z" />
+    </svg>
+  );
+}
