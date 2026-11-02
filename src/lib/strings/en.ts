@@ -1156,9 +1156,10 @@ export const en = {
     keepStorage: 'Ask the browser to keep it',
     keepStorageRefused:
       'The browser said no. Browsers tend to agree once the app is installed — until then, a backup is the only sure copy.',
-    shareBackup: 'Send it somewhere…',
+    shareBackup: 'Send a backup…',
     shareHint: 'Drive, Dropbox, an email to yourself — a copy off this device.',
-    shareFailed: 'This device would not share the file. The downloaded copy is still there.',
+    shareDone: 'Backup sent.',
+    shareFailed: 'This device would not share the file. Export data saves it to your downloads instead.',
     exported: 'Backup saved as',
     exportedCsv: 'Solves saved as',
     importTitle: 'Restore and import',

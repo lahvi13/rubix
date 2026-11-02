@@ -38,6 +38,7 @@ export function DataScreen() {
     setMode,
     exportToFile,
     canShareBackup,
+    isShareReady,
     shareBackup,
     shareOutcome,
     exportSolvesToCsv,
@@ -65,22 +66,39 @@ export function DataScreen() {
         {/* What the section is for, right under what there is to lose. The
             CSV shares the row; its note under both names it, or it read as a
             caveat about the backup as a whole. */}
+        {/* Where the device can hand a file to another app, sending it off
+            is the backup worth making — a copy in the downloads is still on
+            the phone it is meant to outlive — so it comes first, one tap to
+            Drive or a mail. Downloading stays beside it. */}
         <div className="data-section__row">
-          <button type="button" className="is-primary" onClick={() => void exportToFile()}>
+          {canShareBackup ? (
+            <button
+              type="button"
+              className="is-primary"
+              disabled={!isShareReady}
+              onClick={() => void shareBackup()}
+            >
+              {strings.data.shareBackup}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className={canShareBackup ? '' : 'is-primary'}
+            onClick={() => void exportToFile()}
+          >
             {strings.data.exportAction}
           </button>
           <button type="button" onClick={() => void exportSolvesToCsv()}>
             {strings.data.exportCsvAction}
           </button>
-          {canShareBackup ? (
-            <button type="button" onClick={() => void shareBackup()}>
-              {strings.data.shareBackup}
-            </button>
-          ) : null}
         </div>
         {canShareBackup ? (
-          <p className="data-section__hint data-section__hint--after">
-            {shareOutcome === 'failed' ? strings.data.shareFailed : strings.data.shareHint}
+          <p className="data-section__hint data-section__hint--after" role="status">
+            {shareOutcome === 'failed'
+              ? strings.data.shareFailed
+              : shareOutcome === 'shared'
+                ? strings.data.shareDone
+                : strings.data.shareHint}
           </p>
         ) : null}
         <p className="data-section__hint data-section__hint--after">{strings.data.exportCsvHint}</p>

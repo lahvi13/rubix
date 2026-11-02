@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { upgradeImportFormat } from '../../../db/migrations/import/upgrade';
 import {
   applyImportPlan,
@@ -43,8 +43,10 @@ export interface DataTransferView {
   mode: ImportMode;
   setMode: (mode: ImportMode) => void;
   exportToFile: () => Promise<void>;
-  /** Whether the backup just written can go to the share sheet. */
+  /** Whether this device hands files to other apps; a phone does, most desktops not. */
   canShareBackup: boolean;
+  /** The backup is built and waiting for the tap that sends it. */
+  isShareReady: boolean;
   shareBackup: () => Promise<void>;
   shareOutcome: ShareOutcome | null;
   exportSolvesToCsv: () => Promise<void>;
@@ -65,8 +67,31 @@ export function useDataTransfer(appVersion: string): DataTransferView {
   const [mode, setMode] = useState<ImportMode>('merge');
   const [, setLastExportAt] = useSetting('data.lastExportAt');
   const [, setLastExportBytes] = useSetting('data.lastExportBytes');
-  const [shareable, setShareable] = useState<File | null>(null);
+  // Asked once: whether the device shares files at all does not change.
+  const [canShareBackup] = useState(() =>
+    canShareFile(new File(['{}'], 'rubix.txt', { type: 'text/plain' })),
+  );
+  const [prepared, setPrepared] = useState<{ file: File; exportedAt: number } | null>(null);
   const [shareOutcome, setShareOutcome] = useState<ShareOutcome | null>(null);
+
+  // Built ahead (see shareableBackup) when the screen opens, and again after
+  // an import or a delete changes what there is to send.
+  const [generation, setGeneration] = useState(0);
+  const prepare = (): void => setGeneration((count) => count + 1);
+
+  useEffect(() => {
+    if (!canShareBackup) return;
+    let isLive = true;
+    shareableBackup(appVersion).then(
+      (backup) => {
+        if (isLive) setPrepared(backup);
+      },
+      (cause: unknown) => reportError(strings.data.exportFailed, cause),
+    );
+    return () => {
+      isLive = false;
+    };
+  }, [appVersion, canShareBackup, generation]);
 
   const exportToFile = async (): Promise<void> => {
     setNotice(null);
@@ -79,24 +104,28 @@ export function useDataTransfer(appVersion: string): DataTransferView {
       const json = JSON.stringify(file);
       downloadText(`${name}.json`, json);
 
-      // The copy for the share sheet goes as plain text. Android's Chrome
-      // shares only the file types on its own list, and plain text is on every
-      // list; the restore reads a .txt all the same.
-      const copy = new File([json], `${name}.txt`, { type: 'text/plain' });
-      setShareable(canShareFile(copy) ? copy : null);
-
       setLastExportAt(file.exportedAt);
-      setLastExportBytes(copy.size);
+      setLastExportBytes(new Blob([json]).size);
       setNotice({ kind: 'exported', filename: `${name}.json` });
     } catch (cause) {
       reportError(strings.data.exportFailed, cause);
     }
   };
 
-  /** Straight from the tap, with no await before it: the sheet needs the gesture. */
+  /**
+   * Straight from the tap, with no await before it: the sheet needs the
+   * gesture. Counted as a backup only once it went somewhere — a sheet closed
+   * without picking an app sent nothing.
+   */
   const shareBackup = async (): Promise<void> => {
-    if (shareable === null) return;
-    setShareOutcome(await shareFile(shareable));
+    if (prepared === null) return;
+    setNotice(null);
+    const outcome = await shareFile(prepared.file);
+    setShareOutcome(outcome);
+    if (outcome === 'shared') {
+      setLastExportAt(prepared.exportedAt);
+      setLastExportBytes(prepared.file.size);
+    }
   };
 
   /**
@@ -167,6 +196,8 @@ export function useDataTransfer(appVersion: string): DataTransferView {
       await applyImportPlan(plan);
       setState({ status: 'idle' });
       setNotice({ kind: 'imported', counts: plan.counts });
+      // What would be sent is what was there before the import.
+      prepare();
     } catch (cause) {
       reportError(strings.data.importFailed, cause);
       setState({ status: 'idle' });
@@ -179,6 +210,7 @@ export function useDataTransfer(appVersion: string): DataTransferView {
       await clearAllData();
       setState({ status: 'idle' });
       setNotice({ kind: 'deleted' });
+      prepare();
     } catch (cause) {
       reportError(strings.data.deleteFailed, cause);
     }
@@ -191,7 +223,8 @@ export function useDataTransfer(appVersion: string): DataTransferView {
     mode,
     setMode: changeMode,
     exportToFile,
-    canShareBackup: shareable !== null,
+    canShareBackup,
+    isShareReady: prepared !== null,
     shareBackup,
     shareOutcome,
     exportSolvesToCsv,
@@ -199,5 +232,23 @@ export function useDataTransfer(appVersion: string): DataTransferView {
     confirmImport,
     cancel: () => setState({ status: 'idle' }),
     deleteEverything,
+  };
+}
+
+/**
+ * The backup for the share sheet, built before anybody asks for it. The sheet
+ * only opens straight from a tap, and reading the whole database between the
+ * tap and the sheet could outlast the moment the tap allows — so the send was
+ * a second tap after a download. Built ahead, it is one.
+ *
+ * Sent as plain text: Android's Chrome shares only the file types on its own
+ * list, and plain text is on every list; the restore reads a .txt all the same.
+ */
+async function shareableBackup(appVersion: string): Promise<{ file: File; exportedAt: number }> {
+  const file = await buildExportFile(appVersion);
+  const name = `rubix-${formatIsoDate(file.exportedAt)}`;
+  return {
+    file: new File([JSON.stringify(file)], `${name}.txt`, { type: 'text/plain' }),
+    exportedAt: file.exportedAt,
   };
 }

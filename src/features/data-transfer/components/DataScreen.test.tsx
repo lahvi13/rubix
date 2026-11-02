@@ -112,17 +112,13 @@ describe('DataScreen', () => {
       await screen.findByText(/^Last backup: Today · \d+ KB\. Nothing has changed since\.$/),
     ).toBeInTheDocument();
     // jsdom cannot share, and a button that cannot work is not offered.
-    expect(screen.queryByRole('button', { name: 'Send it somewhere…' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Send a backup…' })).not.toBeInTheDocument();
 
     click.mockRestore();
     vi.unstubAllGlobals();
   });
 
-  it('hands the backup to the share sheet as plain text', async () => {
-    vi.stubGlobal('URL', { ...URL, createObjectURL: vi.fn(() => 'blob:test'), revokeObjectURL: vi.fn() });
-    const click = vi
-      .spyOn(HTMLAnchorElement.prototype, 'click')
-      .mockImplementation(() => undefined);
+  it('sends the backup to the share sheet in one tap, as plain text', async () => {
     const share = vi.fn<(data: ShareData) => Promise<void>>(() => Promise.resolve());
     Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true });
     Object.defineProperty(navigator, 'share', { value: share, configurable: true });
@@ -130,17 +126,43 @@ describe('DataScreen', () => {
 
     try {
       render(<DataScreen />);
-      await user.click(screen.getByRole('button', { name: 'Export data' }));
-      await user.click(await screen.findByRole('button', { name: 'Send it somewhere…' }));
+      // Built ahead, so the tap opens the sheet with nothing in between.
+      const send = await screen.findByRole('button', { name: 'Send a backup…' });
+      await waitFor(() => expect(send).toBeEnabled());
+      await user.click(send);
 
       const shared = share.mock.calls[0]?.[0].files?.[0];
       expect(shared?.name).toMatch(/^rubix-\d{4}-\d{2}-\d{2}\.txt$/);
       expect(shared?.type).toBe('text/plain');
+      expect(await screen.findByText('Backup sent.')).toBeInTheDocument();
+      // Sent is backed up: the line under the buttons says so.
+      expect(await screen.findByText(/^Last backup: Today/)).toBeInTheDocument();
     } finally {
       Reflect.deleteProperty(navigator, 'canShare');
       Reflect.deleteProperty(navigator, 'share');
-      click.mockRestore();
-      vi.unstubAllGlobals();
+    }
+  });
+
+  it('does not count a share sheet closed without picking anything as a backup', async () => {
+    const share = vi.fn<(data: ShareData) => Promise<void>>(() =>
+      Promise.reject(new DOMException('closed', 'AbortError')),
+    );
+    Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true });
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true });
+    const user = userEvent.setup();
+
+    try {
+      render(<DataScreen />);
+      const send = await screen.findByRole('button', { name: 'Send a backup…' });
+      await waitFor(() => expect(send).toBeEnabled());
+      await user.click(send);
+
+      await waitFor(() => expect(share).toHaveBeenCalled());
+      expect(screen.queryByText('Backup sent.')).not.toBeInTheDocument();
+      expect(screen.queryByText(/^Last backup: Today/)).not.toBeInTheDocument();
+    } finally {
+      Reflect.deleteProperty(navigator, 'canShare');
+      Reflect.deleteProperty(navigator, 'share');
     }
   });
 
