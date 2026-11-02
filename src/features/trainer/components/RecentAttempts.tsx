@@ -35,9 +35,12 @@ export function RecentAttempts({ run, cases, setId, skin, withPictures, onOpen }
     <section className="drill-run" aria-label={strings.drill.recentTitle}>
       <div className="drill-run__head">
         <h3 className="drill-run__title">{strings.drill.recentTitle}</h3>
-        <span className="drill-run__today">
-          {strings.drill.recentToday(run.todayCount, formatAverage(run.todayMeanMs))}
-        </span>
+        {/* "Today 0" over yesterday's attempts reads as if they were lost. */}
+        {run.todayCount === 0 ? null : (
+          <span className="drill-run__today">
+            {strings.drill.recentToday(run.todayCount, formatAverage(run.todayMeanMs))}
+          </span>
+        )}
       </div>
       <ol className="drill-run__list">
         {run.recent.map((attempt) => {

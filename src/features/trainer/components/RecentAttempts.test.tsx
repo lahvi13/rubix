@@ -77,6 +77,24 @@ describe('RecentAttempts', () => {
     expect(onOpen).toHaveBeenCalledWith(CASES.get('pll-ua'));
   });
 
+  it('leaves today out when nothing was drilled today', () => {
+    render(
+      <RecentAttempts
+        run={{
+          recent: [{ id: 'a', caseId: 'pll-ua', finalMs: 1880, penalty: 'none', versusAo5Ms: null }],
+          todayCount: 0,
+          todayMeanMs: null,
+        }}
+        cases={CASES}
+        setId="pll"
+        skin={defaultSkin('dark')}
+        withPictures
+        onOpen={() => {}}
+      />,
+    );
+    expect(screen.queryByText(/today/)).not.toBeInTheDocument();
+  });
+
   it('says nothing before the first attempt', () => {
     const { container } = render(
       <RecentAttempts

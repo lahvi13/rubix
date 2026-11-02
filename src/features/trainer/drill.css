@@ -193,6 +193,24 @@
   flex-shrink: 0;
 }
 
+/*
+ * The room the bottom bar needs, as the answer's last item. The app keeps it
+ * under the screen, but the drill is one viewport tall and its answer
+ * overflows it — so the room sat under the screen's edge, and the end of what
+ * overflowed sat under the bar: the last recent attempt could not be scrolled
+ * into sight. An item rather than padding, because the answer's own box is
+ * its row's height and padding stays inside it; an item overflows with the
+ * rest. Nothing on a wide screen or mid-solve, where there is no bar.
+ *
+ * Stretched across: the answer centres its items, which left this one zero
+ * pixels wide, and a box with no area does not count towards how far a page
+ * scrolls (measured — the room was there and the page still stopped short).
+ */
+.drill__bar-room {
+  align-self: stretch;
+  height: var(--tabbar-height);
+}
+
 .drill__case-name {
   margin: 0;
   font-size: var(--text-2xl);

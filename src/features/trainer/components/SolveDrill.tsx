@@ -238,6 +238,7 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
               onOpen={setOpenCase}
             />
           )}
+          <div className="drill__bar-room" aria-hidden="true" />
         </section>
       )}
 
