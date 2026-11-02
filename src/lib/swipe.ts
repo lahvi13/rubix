@@ -58,6 +58,25 @@ export function readSwipe(
   return dx < 0 ? 'next' : 'previous';
 }
 /**
+ * A drag the page has already been following when it ends. It set off
+ * decisively across — that is what started the page moving — so the release
+ * is judged by how far across it got, and nothing else. A thumb sweeps in an
+ * arc, and a long swipe judged over its whole path by the ratio above came out
+ * as too far down: 120 across and 70 down turned no page, and the page that
+ * had moved under the finger slid back as though the swipe were too short.
+ */
+export function readFollowedSwipe(
+  start: SwipePoint,
+  end: SwipePoint,
+  bounds: SwipeBounds,
+): SwipeDirection | null {
+  if (start.x <= EDGE_MARGIN_PX || start.x >= bounds.width - EDGE_MARGIN_PX) return null;
+  const dx = end.x - start.x;
+  if (Math.abs(dx) < PAGE_DISTANCE_PX) return null;
+  return dx < 0 ? 'next' : 'previous';
+}
+
+/**
  * Whether a finished drag was a pull downwards — the gesture for putting a
  * panel that was dragged open back down again.
  *

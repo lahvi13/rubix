@@ -3,6 +3,7 @@ import {
   isPullDown,
   isPullUp,
   isSheetDismissed,
+  readFollowedSwipe,
   readSheetDrag,
   readSwipe,
   type SwipeDirection,
@@ -28,6 +29,26 @@ describe('readSwipe', () => {
     ['no movement at all is a tap', from, from, null],
   ])('%s', (_name, start, end, expected) => {
     expect(readSwipe(start, end, BOUNDS)).toBe(expected);
+  });
+});
+
+describe('readFollowedSwipe', () => {
+  it.each<[string, { x: number; y: number }, { x: number; y: number }, SwipeDirection | null]>([
+    // The arc of a thumb: a long way across, and a good way down with it.
+    ['a long swipe that arcs down still turns the page', from, { x: 80, y: 470 }, 'next'],
+    ['an arc the other way, and up', from, { x: 320, y: 330 }, 'previous'],
+    ['far across is what counts, however far down', from, { x: 150, y: 520 }, 'next'],
+    ['short of the threshold the page springs back', from, { x: 170, y: 460 }, null],
+    ['the threshold itself turns the page', from, { x: 160, y: 400 }, 'next'],
+    ['the edges still belong to the system', { x: 8, y: 400 }, { x: 200, y: 400 }, null],
+  ])('%s', (_name, start, end, expected) => {
+    expect(readFollowedSwipe(start, end, BOUNDS)).toBe(expected);
+  });
+
+  it('turns pages readSwipe would not, once the page has followed', () => {
+    const arc = { x: 80, y: 470 };
+    expect(readSwipe(from, arc, BOUNDS)).toBeNull();
+    expect(readFollowedSwipe(from, arc, BOUNDS)).toBe('next');
   });
 });
 

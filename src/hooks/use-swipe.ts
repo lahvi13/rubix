@@ -1,5 +1,5 @@
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { readSwipe, type SwipeDirection } from '../lib/swipe';
+import { readFollowedSwipe, readSwipe, type SwipeDirection } from '../lib/swipe';
 
 export interface SwipeHandlers {
   onPointerDown: (event: ReactPointerEvent) => void;
@@ -91,7 +91,9 @@ export function useSwipe(
         return;
       }
 
-      const direction = readSwipe(from, { x: event.clientX, y: event.clientY }, {
+      // A page already following the finger was decided on at the start.
+      const read = isFollowing.current ? readFollowedSwipe : readSwipe;
+      const direction = read(from, { x: event.clientX, y: event.clientY }, {
         width: window.innerWidth,
       });
       if (direction !== null && canStep(direction)) {
