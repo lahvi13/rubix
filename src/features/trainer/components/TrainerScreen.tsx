@@ -18,6 +18,7 @@ import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useSetting } from '../../../hooks/use-setting';
 import type { CaseLayout } from '../../../lib/appearance';
 import { useTriggers } from '../hooks/use-triggers';
+import { Sheet } from '../../../components/Sheet';
 import { CaseCard } from './CaseCard';
 import { CaseDetail } from './CaseDetail';
 import { NotationReference } from './NotationReference';
@@ -25,6 +26,11 @@ import { SetSummary } from './SetSummary';
 import { TriggerPanel } from './TriggerPanel';
 
 type Panel = 'none' | 'notation' | 'triggers';
+
+const panelTitle: Record<Exclude<Panel, 'none'>, string> = {
+  notation: strings.trainer.notation,
+  triggers: strings.trainer.triggers,
+};
 
 // Opened now and then, to print; nobody looking up a case pays for it.
 const CheatSheet = lazy(() =>
@@ -243,22 +249,13 @@ export function TrainerScreen() {
       {/* At the end, under the cases: what is looked up now and then rather
           than worked through — how the moves are written, the triggers the
           algorithms are broken into, and a page of the set to take away. A
-          panel opens where it was asked for, under the line that opened it. */}
+          reference opens as a sheet over the screen: unfolded down here it
+          came up under the bottom edge, and nothing seemed to happen. */}
       <div className="trainer__tools">
-        <button
-          type="button"
-          className={panel === 'notation' ? 'is-active' : ''}
-          aria-pressed={panel === 'notation'}
-          onClick={() => setPanel((current) => (current === 'notation' ? 'none' : 'notation'))}
-        >
+        <button type="button" onClick={() => setPanel('notation')}>
           {strings.trainer.notation}
         </button>
-        <button
-          type="button"
-          className={panel === 'triggers' ? 'is-active' : ''}
-          aria-pressed={panel === 'triggers'}
-          onClick={() => setPanel((current) => (current === 'triggers' ? 'none' : 'triggers'))}
-        >
+        <button type="button" onClick={() => setPanel('triggers')}>
           {strings.trainer.triggers}
         </button>
         {sheetKind !== null ? (
@@ -267,10 +264,16 @@ export function TrainerScreen() {
           </button>
         ) : null}
       </div>
-      {panel === 'notation' ? (
-        <NotationReference skin={skin} order={puzzle === '333' ? 3 : 2} />
-      ) : null}
-      {panel === 'triggers' ? <TriggerPanel /> : null}
+      {panel === 'none' ? null : (
+        <Sheet label={panelTitle[panel]} className="reference-sheet" onClose={() => setPanel('none')}>
+          <h2 className="session-picker__title">{panelTitle[panel]}</h2>
+          {panel === 'notation' ? (
+            <NotationReference skin={skin} order={puzzle === '333' ? 3 : 2} />
+          ) : (
+            <TriggerPanel />
+          )}
+        </Sheet>
+      )}
       {isSheetOpen && sheetKind !== null ? (
         <Suspense fallback={null}>
           <CheatSheet kind={sheetKind} onClose={() => setSheetOpen(false)} />

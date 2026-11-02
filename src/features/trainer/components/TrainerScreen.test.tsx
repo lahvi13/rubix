@@ -457,8 +457,16 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
 
     await user.click(await screen.findByRole('button', { name: 'Notation' }));
 
-    expect(await screen.findByRole('img', { name: "R'" })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'M' })).toBeInTheDocument();
+    // A sheet over the screen, not a panel unfolding under the last case,
+    // where it came up below the edge and nothing seemed to happen.
+    const sheet = await screen.findByRole('dialog', { name: 'Notation' });
+    expect(await within(sheet).findByRole('img', { name: "R'" })).toBeInTheDocument();
+    expect(within(sheet).getByRole('img', { name: 'M' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Notation' })).not.toBeInTheDocument();
+    });
   });
 
   describe('with the app on the 2×2', () => {

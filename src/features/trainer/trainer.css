@@ -257,8 +257,7 @@
 /*
  * Under the cases: the references and the printable sheet. Lines to tap, not
  * buttons — the button family would draw an outline round each, and three
- * outlines under the last case read as the start of another screen. The one
- * open shows in the accent, as a chosen tab does.
+ * outlines under the last case read as the start of another screen.
  */
 .trainer__tools {
   display: flex;
@@ -279,6 +278,11 @@
   text-underline-offset: 0.2em;
 }
 
-.trainer__tools button.is-active {
-  color: var(--accent);
+/* A reference in a sheet: the sheet is the card, so the panel drops its own. */
+.reference-sheet .notation,
+.reference-sheet .triggers {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: none;
 }
