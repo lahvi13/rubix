@@ -1794,18 +1794,18 @@ Každý bod má větu „hotovo, když…“ — podle ní se odškrtává.
 
 **Blok A — první dojem (malé zásahy do UI)**
 
-1. **Hlavička trenažéru zhuštěná.** Metody si nechají řadu každá (posuvná
+1. ✅ *(hotovo, 1.29.0)* **Hlavička trenažéru zhuštěná.** Metody si nechají řadu každá (posuvná
    řada by novou metodu schovala), úroveň nebo look sdílí řadu s drilem
    a Notace s Triggery jdou pod případy k taháku. *Hotovo, když* na telefonu
    (412 px) začíná první karta o jednu řadu ovládání výš než dnes, každá volba
    je pořád jedním ťuknutím a dril se nezalomí ani při velkém textu.
-2. **Dril využívá prázdné místo.** Po složení už dril případ ukazuje; prázdná
+2. ✅ *(hotovo, 1.29.0)* **Dril využívá prázdné místo.** Po složení už dril případ ukazuje; prázdná
    je polovina před složením, kde se o čekajícím případu nesmí nic prozradit.
    Je tam proto várka: posledních pět pokusů v sadě (diagram, čas, rozdíl proti
    ao5 toho případu) a dnešní počet a průměr; řádek otevře kartu případu.
    *Hotovo, když* seznam stojí pod hodinami, čte se ze stejného dotazu jako
    statistiky drilu a během běžícího času se neukazuje ani nepřekresluje.
-3. **Úvod pro nového uživatele.** Na prázdné appce dvě otázky („Umíš kostku
+3. ✅ *(hotovo, 1.29.0)* **Úvod pro nového uživatele.** Na prázdné appce dvě otázky („Umíš kostku
    složit?“, „Jakou metodou?“), které nastaví průvodce, záložky a sadu
    v trenažéru. *Hotovo, když* nová instalace vede začátečníka do průvodce
    a pokročilého do trenažéru jeho metody, otázky jdou přeskočit a vrátit
@@ -1813,7 +1813,7 @@ Každý bod má větu „hotovo, když…“ — podle ní se odškrtává.
 
 **Blok B — data a procvičování**
 
-4. **Záloha přes systémové sdílení.** Soubor zálohy jde poslat jedním
+4. ✅ *(hotovo, vyzkoušeno na Androidu; vyjde v příštím vydání)* **Záloha přes systémové sdílení.** Soubor zálohy jde poslat jedním
    ťuknutím (Disk, e-mail) přes Web Share; kde to prohlížeč neumí, zůstává
    stažení. *Hotovo, když* na Androidu v nainstalované appce záloha odejde
    do sdílení a obnovení z ní projde round-trip testem.
