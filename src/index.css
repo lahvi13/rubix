@@ -27,6 +27,7 @@
 @import './features/trainer/drill.css';
 @import './features/trainer/case-detail.css';
 @import './features/trainer/notation.css';
+@import './features/trainer/cheat-sheet.css';
 @import './features/settings/settings.css';
 @import './styles/notices.css';
 @import './styles/data-section.css';

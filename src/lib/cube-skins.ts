@@ -33,7 +33,10 @@ export interface CubeSkin {
   name: string;
   faces: Record<Face, string>;
   muted: string;
+  /** The line round every sticker, and the plastic under them unless `plastic` says otherwise. */
   outline: string;
+  /** The body of the cube between the stickers; the outline's colour when left out. */
+  plastic?: string;
   arrow: ArrowStyle;
 }
 
@@ -196,3 +199,42 @@ export function withWhiteTop(skin: CubeSkin): CubeSkin {
     },
   };
 }
+
+/**
+ * The printed cheat sheet: black ink on white paper, whatever skin the screen
+ * wears. A black-and-white printer can tell three things apart and the last
+ * layer is read by three — the yellow every case is about, black; any other
+ * colour, paper with a grey line round it; and a sticker the case does not
+ * depend on, a light grey. The plastic is paper too, or the grid between the
+ * stickers prints as a slab of toner, and the arrow is black on a paper band.
+ */
+export const PAPER_SKIN: CubeSkin = {
+  id: 'paper',
+  name: 'Paper',
+  faces: { U: '#000000', D: '#ffffff', F: '#ffffff', B: '#ffffff', L: '#ffffff', R: '#ffffff' },
+  muted: '#d4d4d4',
+  outline: '#8a8a8a',
+  plastic: '#ffffff',
+  arrow: { fill: '#000000', band: '#ffffff' },
+};
+
+/**
+ * Paper for a permutation case. Its top is all yellow by then, and a black top
+ * under black arrows would hide the arrows the case is read by.
+ */
+export const PAPER_SKIN_PERMUTATION: CubeSkin = {
+  ...PAPER_SKIN,
+  id: 'paper-permutation',
+  faces: { ...PAPER_SKIN.faces, U: '#ffffff' },
+};
+
+/**
+ * Paper for a case where every sticker counts: orientation draws what is not
+ * yellow as "does not matter", and on the sheet that grey would say the
+ * corners of a Sune can be anything.
+ */
+export const PAPER_SKIN_ORIENTATION: CubeSkin = {
+  ...PAPER_SKIN,
+  id: 'paper-orientation',
+  muted: '#ffffff',
+};

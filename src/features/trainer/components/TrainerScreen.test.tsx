@@ -186,6 +186,44 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
     });
   });
 
+  it('prints both looks of OLL and PLL with the algorithms the trainer has chosen', async () => {
+    const user = userEvent.setup();
+    render(<TrainerScreen />);
+
+    // Only under the sets it prints.
+    expect(await screen.findByRole('button', { name: 'F2L' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Printable cheat sheet' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'PLL' }));
+    await user.click(await screen.findByRole('button', { name: 'Printable cheat sheet' }, SLOW_RENDER));
+    const sheet = await screen.findByRole('dialog', { name: '2-Look OLL and PLL cheat sheet' });
+    await waitFor(() => {
+      expect(within(sheet).getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)).toEqual([
+        '2-Look OLL · 1 / Edges',
+        '2-Look OLL · 2 / Corners',
+        '2-Look PLL · 1 / Corners',
+        '2-Look PLL · 2 / Edges',
+      ]);
+    });
+
+    // The left hand's Sune, which starts from the case a quarter turn round:
+    // kept with that turn in front, as the packs write theirs, and printed
+    // with the turn in brackets.
+    await user.click(within(sheet).getByRole('button', { name: 'Sune' }));
+    const detail = await screen.findByRole('dialog', { name: 'Sune' });
+    await user.type(within(detail).getByLabelText(/Your own algorithm/), "L' U2 L U L' U L");
+    await user.click(within(detail).getByRole('button', { name: 'Add' }));
+
+    await waitFor(async () => {
+      expect(await getActiveAlgorithm('2oll-sune')).toMatchObject({
+        source: 'user',
+        moves: "U L' U2 L U L' U L",
+      });
+    });
+    expect(within(detail).getByRole('status')).toHaveTextContent(/Saved with U in front/);
+    expect(await within(sheet).findByText('(U)', undefined, SLOW_RENDER)).toBeInTheDocument();
+  });
+
   it('refuses an algorithm it cannot read', async () => {
     const user = userEvent.setup();
     render(<TrainerScreen />);

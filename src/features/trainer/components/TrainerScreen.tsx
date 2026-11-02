@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { packLabel, strings } from '../../../lib/strings';
 import {
   BEGINNER_SET_ID,
@@ -24,6 +24,14 @@ import { SetSummary } from './SetSummary';
 import { TriggerPanel } from './TriggerPanel';
 
 type Panel = 'none' | 'notation' | 'triggers';
+
+// Opened now and then, to print; nobody looking up a case pays for it.
+const CheatSheet = lazy(() =>
+  import('./CheatSheet').then((module) => ({ default: module.CheatSheet })),
+);
+
+/** The sets the printed two-look sheet belongs to, either look of them. */
+const SHEET_SETS: ReadonlySet<string> = new Set(['oll', 'pll']);
 
 /**
  * The default grid is the small one; the others only change how wide a card
@@ -107,6 +115,7 @@ export function TrainerScreen() {
     [groups],
   );
   const [panel, setPanel] = useState<Panel>('none');
+  const [isSheetOpen, setSheetOpen] = useState(false);
 
   const countOf = (list: CaseGroup[] | undefined): number =>
     (list ?? []).reduce((count, group) => count + group.cases.length, 0);
@@ -250,6 +259,21 @@ export function TrainerScreen() {
           </div>
         </section>
       ))}
+
+      {/* At the end, under the cases it prints: a page to take away once the
+          set has been looked through, not a way into it. */}
+      {puzzle === '333' && baseSetId !== null && SHEET_SETS.has(baseSetId) ? (
+        <p className="trainer__print">
+          <button type="button" onClick={() => setSheetOpen(true)}>
+            {strings.cheatSheet.open}
+          </button>
+        </p>
+      ) : null}
+      {isSheetOpen ? (
+        <Suspense fallback={null}>
+          <CheatSheet onClose={() => setSheetOpen(false)} />
+        </Suspense>
+      ) : null}
 
       {openCase !== null ? (
         <CaseDetail

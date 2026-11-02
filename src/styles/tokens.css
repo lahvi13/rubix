@@ -65,6 +65,11 @@
      other ink, so it reads as doing something the other four do not. Only on
      a sticker dark enough for it (takesLightInk in lib/colour.ts). */
   --sticker-ink-action: #ffffff;
+  /* The printed cheat sheet, which is paper in either theme: shown as the page
+     that will come out of the printer, and printed in black alone. */
+  --paper: #ffffff;
+  --paper-ink: #000000;
+  --paper-rule: #8a8a8a;
 
   /*
    * The phase colours — --phase-<slot> as ink, --phase-fill-<slot> as an area

@@ -1,0 +1,79 @@
+import { goalOf, verifyAlg, type Auf, type CaseGoal } from '../../../domain/alg/verify';
+import { formatAlg, formatMove, parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
+import type { CubeState } from '../../../domain/cube/state';
+import { SHEET_SECTIONS, type SheetSection } from '../cheat-sheet';
+import { useSetCases, type TrainerCase } from './use-alg-cases';
+
+export interface SheetCase {
+  entry: TrainerCase;
+  /** The algorithm as printed, after the turn in brackets; empty when there is none. */
+  moves: Move[];
+  groups: MoveGroup[];
+  /**
+   * The turn of the top layer to make first, printed in brackets in front of
+   * the algorithm. Null when the algorithm does not solve the case at all —
+   * kept before the check existed — and there is no turn to say.
+   */
+  preAuf: Auf | null;
+}
+
+export interface SheetSectionView {
+  section: SheetSection;
+  cases: SheetCase[];
+}
+
+/**
+ * The two-look sets as the sheet prints them, each case with the algorithm the
+ * trainer has chosen for it. Nothing is chosen here: the sheet is a view of the
+ * trainer, and a different algorithm on paper is chosen there.
+ */
+export function useCheatSheet(): SheetSectionView[] | undefined {
+  const oll = useSetCases('2look-oll');
+  const pll = useSetCases('2look-pll');
+  if (oll === undefined || pll === undefined) return undefined;
+
+  return SHEET_SECTIONS.map((section) => {
+    const groups = section.setId === '2look-oll' ? oll : pll;
+    const goal = goalOf(section.setId, section.group);
+    const cases = groups.find((group) => group.name === section.group)?.cases ?? [];
+    return {
+      section,
+      cases: cases.map((entry) => ({
+        entry,
+        ...printed(entry.state, entry.algorithm?.moves ?? null, goal),
+      })),
+    };
+  });
+}
+
+/**
+ * The algorithm split the way the sheet prints it: a turn of the top layer it
+ * opens with goes in brackets in front — `(U) L' U2 L …` — because it is not
+ * part of what the hands learn but the way the case is picked up. Only a turn
+ * that really is that: the rest has to solve the case from the turned side.
+ */
+function printed(
+  state: CubeState,
+  alg: string | null,
+  goal: CaseGoal | null,
+): Omit<SheetCase, 'entry'> {
+  const parsed = alg === null ? null : parseAlg(alg);
+  if (!parsed?.ok) return { moves: [], groups: [], preAuf: null };
+
+  const whole = { moves: parsed.moves, groups: parsed.groups };
+  if (goal === null) return { ...whole, preAuf: null };
+
+  const [first, ...rest] = parsed.moves;
+  if (first?.family === 'U' && rest.length > 0) {
+    const turn = formatMove(first);
+    const verdict = verifyAlg(state, formatAlg(rest), goal);
+    if (verdict.ok && verdict.preAuf === turn) {
+      const groups = parsed.groups
+        .map(([start, end]): MoveGroup => [Math.max(start - 1, 0), end - 1])
+        .filter(([start, end]) => end > start);
+      return { moves: rest, groups, preAuf: verdict.preAuf };
+    }
+  }
+  const verdict = verifyAlg(state, formatAlg(parsed.moves), goal);
+  return { ...whole, preAuf: verdict.ok ? verdict.preAuf : null };
+}

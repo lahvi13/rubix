@@ -837,6 +837,12 @@ export const cs: Strings = {
     renameSave: 'Uložit',
     renaming: 'Přejmenovávám případ',
   },
+  cheatSheet: {
+    open: 'Tahák na tisk',
+    label: 'Tahák 2-Look OLL a PLL',
+    back: 'Zpět',
+    print: 'Tisk / PDF',
+  },
   drill: {
     pool: 'Případy',
     poolAll: 'Vše',

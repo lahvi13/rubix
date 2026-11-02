@@ -905,6 +905,13 @@ export const en = {
     renameSave: 'Save',
     renaming: 'Renaming the case',
   },
+  cheatSheet: {
+    /* A quiet line at the end of the OLL and PLL lists, not a feature to sell. */
+    open: 'Printable cheat sheet',
+    label: '2-Look OLL and PLL cheat sheet',
+    back: 'Back',
+    print: 'Print / PDF',
+  },
   drill: {
     pool: 'Cases',
     poolAll: 'All',

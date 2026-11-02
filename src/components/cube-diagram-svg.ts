@@ -52,7 +52,7 @@ export function diagramUrl(
 ): string {
   // Everything the theme changes about a skin belongs in the key, or a picture
   // drawn before the theme flipped gets handed back after it.
-  const skinKey = `${skin.id}|${skin.muted}|${skin.outline}`;
+  const skinKey = `${skin.id}|${skin.muted}|${skin.outline}|${plasticOf(skin)}`;
   const key = `${skinKey}|${view}|${stickering}|${mark}|${order}|${stateKey(state)}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
@@ -143,6 +143,10 @@ function polygon(points: string, fill: string, stroke: string, strokeWidth: numb
   );
 }
 
+function plasticOf(skin: CubeSkin): string {
+  return skin.plastic ?? skin.outline;
+}
+
 function colourOf(cell: Cell, skin: CubeSkin): string {
   if (cell === null) return skin.muted;
   return cell === MARKED ? MARKED_STICKER : skin.faces[cell];
@@ -180,8 +184,8 @@ function lastLayerSvg(
   // The plastic under the top face and the strips round it, as the cross it
   // makes — the corners of the square are no part of the cube.
   const plastic =
-    rect(OFFSET, 0, CELL * 3, SIZE, 2, skin.outline, skin, 1) +
-    rect(0, OFFSET, SIZE, CELL * 3, 2, skin.outline, skin, 1);
+    rect(OFFSET, 0, CELL * 3, SIZE, 2, plasticOf(skin), skin, 1) +
+    rect(0, OFFSET, SIZE, CELL * 3, 2, plasticOf(skin), skin, 1);
 
   const top = cellsOfOrder(view.top, order)
     .map((cell, index) =>
@@ -381,7 +385,7 @@ function netSvg(
         NET_FACE,
         NET_FACE,
         1.5,
-        skin.outline,
+        plasticOf(skin),
         skin,
         0.7,
       ) +
@@ -480,7 +484,7 @@ function isometricSvg(
     [point(-1.5, 1.5, 0), point(1.5, 1.5, 0), point(1.5, 1.5, 3), point(-1.5, 1.5, 3)],
     [point(1.5, 1.5, 0), point(1.5, -1.5, 0), point(1.5, -1.5, 3), point(1.5, 1.5, 3)],
   ]
-    .map((corners) => polygon(corners.join(' '), skin.outline, skin.outline, 0.8))
+    .map((corners) => polygon(corners.join(' '), plasticOf(skin), skin.outline, 0.8))
     .join('');
 
   const body =
