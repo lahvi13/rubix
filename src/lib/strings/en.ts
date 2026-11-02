@@ -896,7 +896,8 @@ export const en = {
     removeAlgorithm: 'Removing the algorithm',
     addAlgorithm: 'Adding the algorithm',
     saveAlgorithm: 'Saving the algorithm',
-    drillSet: 'Drill this set',
+    /* Beside the set's route, so the set goes without saying. */
+    drillSet: 'Drill',
     caseStats: 'Your drills',
     rename: 'Your name for it',
     renamePlaceholder: 'e.g. Fat Antisune',

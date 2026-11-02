@@ -473,7 +473,7 @@ describe('TrainerScreen', { timeout: 20_000 }, () => {
       expect(await screen.findByText('Sune', undefined, SLOW_RENDER)).toBeInTheDocument();
       const sets = screen.getAllByRole('button', { name: /^(F2L|OLL|PLL|PBL)$/ });
       expect(sets.map((button) => button.textContent)).toEqual(['OLL', 'PBL']);
-      expect(screen.getByRole('button', { name: 'Drill this set' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Drill' })).toBeInTheDocument();
 
       await userEvent.setup().click(screen.getByRole('button', { name: 'PBL' }));
       expect(await screen.findByText('Diag/Diag', undefined, SLOW_RENDER)).toBeInTheDocument();

@@ -1,13 +1,13 @@
 /* Trainer */
 
 /*
- * Three rows, narrowing from what is being looked at to what can be done with
- * it: which set, which route through it, and then the drill and the two
- * references. They used to be one row, which on a phone was wider than the
- * screen — the last button wrapped and sat alone under the set names, reading
- * as one of them.
+ * Narrowing from what is being looked at to what can be done with it: a row
+ * of sets for each method, then the route through the set beside the drill.
+ * The methods keep a row each rather than sharing one that scrolls: a set
+ * scrolled out of sight is a set nobody finds, and a method added later only
+ * adds a row. The references used to have a row up here too, and now sit
+ * under the cases (.trainer__tools).
  */
-/* The method a row of sets belongs to, ahead of its sets. */
 /* The method a row of sets belongs to: a heading for the row, so it is set
    in the text's own colour and weight, not in the quiet of a caption. */
 .trainer__method {
@@ -18,7 +18,7 @@
 }
 
 .trainer__sets,
-.trainer__actions {
+.trainer__bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -28,9 +28,15 @@
   width: 100%;
 }
 
-/* Only the last of the three carries the gap down to the cases. */
-.trainer__actions {
+/* The last row above the cases carries the gap down to them. */
+.trainer__bar {
   margin-bottom: var(--space-6);
+}
+
+/* The route's switch beside the drill rather than on a line of its own. */
+.trainer__bar .trainer__looks {
+  width: auto;
+  margin: 0;
 }
 
 .trainer__spacer {
@@ -246,4 +252,33 @@
   text-align: start;
   font-size: var(--text-2xl);
   line-height: 1.45;
+}
+
+/*
+ * Under the cases: the references and the printable sheet. Lines to tap, not
+ * buttons — the button family would draw an outline round each, and three
+ * outlines under the last case read as the start of another screen. The one
+ * open shows in the accent, as a chosen tab does.
+ */
+.trainer__tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2) var(--space-4);
+  max-width: var(--page-width);
+  margin: 0 auto var(--space-6);
+  width: 100%;
+}
+
+.trainer__tools button {
+  min-height: 2.75rem;
+  border: none;
+  background: none;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.trainer__tools button.is-active {
+  color: var(--accent);
 }

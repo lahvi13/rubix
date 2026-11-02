@@ -828,7 +828,7 @@ export const cs: Strings = {
     removeAlgorithm: 'Odebírám algoritmus',
     addAlgorithm: 'Přidávám algoritmus',
     saveAlgorithm: 'Ukládám algoritmus',
-    drillSet: 'Drilovat sadu',
+    drillSet: 'Drilovat',
     caseStats: 'Tvůj dril',
     rename: 'Tvůj název',
     renamePlaceholder: 'např. Fat Antisune',

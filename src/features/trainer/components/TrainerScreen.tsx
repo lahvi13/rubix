@@ -147,60 +147,60 @@ export function TrainerScreen() {
         </div>
       ))}
 
-      {/* How far into the set: the cases everybody meets, and the two sets of
-          cases that only turn up once another slot is in the way. */}
-      {levels.length === 0 ? null : (
-        <div className="trainer__looks">
-          {levels.map((id) => (
+      {/* The route through the set and what to do with it, on one line: how
+          far into F2L, or the two-look route or the full set — and the drill,
+          which opens on whatever is being looked at. The references that used
+          to share a row with the drill are only looked up now and then, and
+          sit under the cases instead. */}
+      <div className="trainer__bar">
+        {/* How far into the set: the cases everybody meets, and the two sets
+            of cases that only turn up once another slot is in the way. */}
+        {levels.length === 0 ? null : (
+          <div className="trainer__looks">
+            {levels.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={id === levelId ? 'is-active' : ''}
+                aria-pressed={id === levelId}
+                onClick={() => {
+                  setRememberedSetId(id);
+                  setLastLevels(withLastLevel(lastLevels, id));
+                  setOpenCase(null);
+                }}
+              >
+                {levelName(id)}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {twoLookId !== undefined ? (
+          <div className="trainer__looks">
             <button
-              key={id}
               type="button"
-              className={id === levelId ? 'is-active' : ''}
-              aria-pressed={id === levelId}
+              className={isTwoLook ? 'is-active' : ''}
               onClick={() => {
-                setRememberedSetId(id);
-                setLastLevels(withLastLevel(lastLevels, id));
+                setTwoLook(true);
                 setOpenCase(null);
               }}
             >
-              {levelName(id)}
+              {strings.trainer.twoLook} <span>{countOf(twoLookGroups)}</span>
             </button>
-          ))}
-        </div>
-      )}
+            <button
+              type="button"
+              className={isTwoLook ? '' : 'is-active'}
+              onClick={() => {
+                setTwoLook(false);
+                setOpenCase(null);
+              }}
+            >
+              {strings.trainer.fullSet} <span>{countOf(fullGroups)}</span>
+            </button>
+          </div>
+        ) : null}
 
-      {twoLookId !== undefined ? (
-        <div className="trainer__looks">
-          <button
-            type="button"
-            className={isTwoLook ? 'is-active' : ''}
-            onClick={() => {
-              setTwoLook(true);
-              setOpenCase(null);
-            }}
-          >
-            {strings.trainer.twoLook} <span>{countOf(twoLookGroups)}</span>
-          </button>
-          <button
-            type="button"
-            className={isTwoLook ? '' : 'is-active'}
-            onClick={() => {
-              setTwoLook(false);
-              setOpenCase(null);
-            }}
-          >
-            {strings.trainer.fullSet} <span>{countOf(fullGroups)}</span>
-          </button>
-        </div>
-      ) : null}
-
-      {/* What to do with the set, kept off the row that says which set it is:
-          three named sets and three unrelated buttons ran past the width of a
-          phone and left the last one stranded on a line of its own. What is
-          done to the set stands on the left, what is only looked up on the
-          right. */}
-      <div className="trainer__actions">
-        {/* The drill opens on whatever is being looked at, two-look included. */}
+        <span className="trainer__spacer" />
         <button
           type="button"
           disabled={setId === null}
@@ -211,29 +211,9 @@ export function TrainerScreen() {
         >
           {strings.trainer.drillSet}
         </button>
-        <span className="trainer__spacer" />
-        <button
-          type="button"
-          className={panel === 'notation' ? 'is-active' : ''}
-          onClick={() => setPanel((current) => (current === 'notation' ? 'none' : 'notation'))}
-        >
-          {strings.trainer.notation}
-        </button>
-        <button
-          type="button"
-          className={panel === 'triggers' ? 'is-active' : ''}
-          onClick={() => setPanel((current) => (current === 'triggers' ? 'none' : 'triggers'))}
-        >
-          {strings.trainer.triggers}
-        </button>
       </div>
 
       <SetSummary groups={groups} onOpen={(id, group) => setOpenCase({ id, group })} />
-
-      {panel === 'notation' ? (
-        <NotationReference skin={skin} order={puzzle === '333' ? 3 : 2} />
-      ) : null}
-      {panel === 'triggers' ? <TriggerPanel /> : null}
 
       {isLoading ? <p className="data-section__hint">{strings.trainer.loading}</p> : null}
       {!isLoading && groups.length === 0 ? (
@@ -260,15 +240,37 @@ export function TrainerScreen() {
         </section>
       ))}
 
-      {/* At the end, under the cases it prints: a page to take away once the
-          set has been looked through, not a way into it. */}
-      {sheetKind !== null ? (
-        <p className="trainer__print">
+      {/* At the end, under the cases: what is looked up now and then rather
+          than worked through — how the moves are written, the triggers the
+          algorithms are broken into, and a page of the set to take away. A
+          panel opens where it was asked for, under the line that opened it. */}
+      <div className="trainer__tools">
+        <button
+          type="button"
+          className={panel === 'notation' ? 'is-active' : ''}
+          aria-pressed={panel === 'notation'}
+          onClick={() => setPanel((current) => (current === 'notation' ? 'none' : 'notation'))}
+        >
+          {strings.trainer.notation}
+        </button>
+        <button
+          type="button"
+          className={panel === 'triggers' ? 'is-active' : ''}
+          aria-pressed={panel === 'triggers'}
+          onClick={() => setPanel((current) => (current === 'triggers' ? 'none' : 'triggers'))}
+        >
+          {strings.trainer.triggers}
+        </button>
+        {sheetKind !== null ? (
           <button type="button" onClick={() => setSheetOpen(true)}>
             {strings.cheatSheet.open}
           </button>
-        </p>
+        ) : null}
+      </div>
+      {panel === 'notation' ? (
+        <NotationReference skin={skin} order={puzzle === '333' ? 3 : 2} />
       ) : null}
+      {panel === 'triggers' ? <TriggerPanel /> : null}
       {isSheetOpen && sheetKind !== null ? (
         <Suspense fallback={null}>
           <CheatSheet kind={sheetKind} onClose={() => setSheetOpen(false)} />

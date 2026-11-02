@@ -1794,9 +1794,11 @@ Každý bod má větu „hotovo, když…“ — podle ní se odškrtává.
 
 **Blok A — první dojem (malé zásahy do UI)**
 
-1. **Hlavička trenažéru zhuštěná.** Sada, úroveň a look v jedné řadě místo
-   tří. *Hotovo, když* na telefonu (412 px) začíná první karta případu aspoň
-   o řadu karet výš než dnes a každá volba je pořád jedním ťuknutím.
+1. **Hlavička trenažéru zhuštěná.** Metody si nechají řadu každá (posuvná
+   řada by novou metodu schovala), úroveň nebo look sdílí řadu s drilem
+   a Notace s Triggery jdou pod případy k taháku. *Hotovo, když* na telefonu
+   (412 px) začíná první karta o jednu řadu ovládání výš než dnes, každá volba
+   je pořád jedním ťuknutím a dril se nezalomí ani při velkém textu.
 2. **Dril využívá prázdné místo.** Po složení ukáže diagram případu a pár
    posledních pokusů na něm. *Hotovo, když* spodní polovina drilu po pokusu
    říká něco o právě složeném případu a během běžícího času nepřibude žádné

@@ -7,24 +7,6 @@
  * width as one picture; printed, it is the page.
  */
 
-.trainer__print {
-  max-width: var(--page-width);
-  margin: 0 auto var(--space-7);
-  width: 100%;
-  text-align: center;
-}
-
-/* A line to tap, not a button: a way out of the list, said quietly under it,
-   as the drill's alternatives are. */
-.trainer__print button {
-  min-height: 2.75rem;
-  border: none;
-  background: none;
-  color: var(--muted);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
 .cheat-sheet {
   position: fixed;
   inset: 0;
