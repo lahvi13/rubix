@@ -290,6 +290,17 @@ function roughly(value: number): string {
   return value < 10 ? value.toFixed(1) : String(Math.round(value));
 }
 
+/**
+ * A difference between two times, as a time: "−0.32", "+1.05", "±0.00".
+ * The minus is a real one, the width of the plus, so a column of them lines
+ * up.
+ */
+export function formatDelta(ms: number): string {
+  const rounded = Math.round(ms / 10) * 10;
+  const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '±';
+  return `${sign}${formatMs(Math.abs(rounded))}`;
+}
+
 /** A small signed difference in ms, without the unit: "+40", "−50", "±0". */
 export function formatSigned(ms: number): string {
   const rounded = Math.round(ms);
@@ -311,4 +322,11 @@ export function dayKey(ms: number): string {
   const month = String(at.getMonth() + 1).padStart(2, '0');
   const day = String(at.getDate()).padStart(2, '0');
   return `${at.getFullYear()}-${month}-${day}`;
+}
+
+/** Midnight before `ms` on the reader's clock: where "today" begins, as dayKey reads it. */
+export function startOfDay(ms: number): number {
+  const at = new Date(ms);
+  at.setHours(0, 0, 0, 0);
+  return at.getTime();
 }

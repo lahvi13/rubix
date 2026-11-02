@@ -1799,10 +1799,12 @@ Každý bod má větu „hotovo, když…“ — podle ní se odškrtává.
    a Notace s Triggery jdou pod případy k taháku. *Hotovo, když* na telefonu
    (412 px) začíná první karta o jednu řadu ovládání výš než dnes, každá volba
    je pořád jedním ťuknutím a dril se nezalomí ani při velkém textu.
-2. **Dril využívá prázdné místo.** Po složení ukáže diagram případu a pár
-   posledních pokusů na něm. *Hotovo, když* spodní polovina drilu po pokusu
-   říká něco o právě složeném případu a během běžícího času nepřibude žádné
-   překreslení navíc.
+2. **Dril využívá prázdné místo.** Po složení už dril případ ukazuje; prázdná
+   je polovina před složením, kde se o čekajícím případu nesmí nic prozradit.
+   Je tam proto várka: posledních pět pokusů v sadě (diagram, čas, rozdíl proti
+   ao5 toho případu) a dnešní počet a průměr; řádek otevře kartu případu.
+   *Hotovo, když* seznam stojí pod hodinami, čte se ze stejného dotazu jako
+   statistiky drilu a během běžícího času se neukazuje ani nepřekresluje.
 3. **Úvod pro nového uživatele.** Na prázdné appce dvě otázky („Umíš kostku
    složit?“, „Jakou metodou?“), které nastaví průvodce, záložky a sadu
    v trenažéru. *Hotovo, když* nová instalace vede začátečníka do průvodce

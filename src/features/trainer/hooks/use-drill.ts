@@ -12,14 +12,16 @@ import { drillScramble } from '../../../domain/drill/scramble';
 import { pickNextCase } from '../../../domain/drill/selection';
 import type { CaseStats } from '../../../domain/drill/case-stats';
 import { caseWeights } from '../../../domain/drill/weights';
+import { drillRun, type DrillRun } from '../../../domain/drill/recent';
 import { useTimer, type CompletedAttempt, type TimerView } from '../../../hooks/use-timer';
 import { now } from '../../../lib/clock';
 import { logQuietly, reportError, watchWrite } from '../../../lib/errors';
 import { systemRandom } from '../../../lib/random';
 import { requestCaseScramble } from '../../../lib/scramble-client';
 import { usePuzzle } from '../../../hooks/use-puzzle';
+import { startOfDay } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import { useCaseStats } from './use-case-stats';
+import { useAttemptsByCase, useStatsOf } from './use-case-stats';
 
 
 /** The case on screen and the scramble that gets you to it. */
@@ -58,6 +60,11 @@ export interface DrillView {
   pool: CaseWithAlg[] | undefined;
   /** Every case's numbers, by case id. Undefined while loading. */
   stats: Map<string, CaseStats> | undefined;
+  /**
+   * The last attempts across the set and today's count, for the screen while
+   * the next case waits. Undefined while loading.
+   */
+  run: DrillRun | undefined;
   current: DrillItem | null;
   /** Cross is drilled from a scramble, so it has no case to recognise. */
   isCross: boolean;
@@ -109,7 +116,16 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
   );
   const cases = data?.cases;
   const pool = data?.pool;
-  const stats = useCaseStats((cases ?? []).map((entry) => entry.algCase.id));
+  // One query for both: the statistics and the run are read off the same
+  // attempts, and the set's attempts are the most expensive thing asked for.
+  const attempts = useAttemptsByCase((cases ?? []).map((entry) => entry.algCase.id));
+  const stats = useStatsOf(attempts);
+  // Changes only when an attempt is stored or changed, which is after the
+  // clock has stopped — never while it runs.
+  const run = useMemo(
+    () => (attempts === undefined ? undefined : drillRun(attempts, startOfDay(now()))),
+    [attempts],
+  );
   // The slow cases come up more often; see drill/weights.
   const weights = useMemo(
     // Read against the clock when the numbers change, which is after every
@@ -273,6 +289,7 @@ export function useDrill(setId: string, selectedIds: readonly string[]): DrillVi
     cases,
     pool,
     stats,
+    run,
     current,
     isCross,
     timer,

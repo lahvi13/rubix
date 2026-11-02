@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../../db/schema';
@@ -8,6 +8,7 @@ import { getSetting, setSetting } from '../../../db/repositories/settings-reposi
 import { setCaseProgress } from '../../../db/repositories/alg-repository';
 import { seedPacks } from '../../../db/seed/seed';
 import { CROSS_SCRAMBLE_LENGTH } from '../../../domain/drill/cross-scramble';
+import { strings } from '../../../lib/strings';
 import { DrillScreen } from './DrillScreen';
 
 vi.mock('cubing/twisty', () => ({}));
@@ -56,9 +57,14 @@ async function shownWithAlternatives(
     await user.click(screen.getByRole('button', { name: 'Show me' }));
     await screen.findByRole('heading', { name: /Shortest cross/ });
 
-    const alternatives = screen
-      .queryAllByRole('listitem')
-      .map((node) => node.textContent?.trim() ?? '');
+    // The alternatives' own list: the recent attempts are a list too.
+    const list = screen.queryByRole('list', { name: strings.drill.crossAlternatives });
+    const alternatives =
+      list === null
+        ? []
+        : within(list)
+            .queryAllByRole('listitem')
+            .map((node) => node.textContent?.trim() ?? '');
     if (alternatives.length > 0) return { scramble, alternatives };
 
     view.unmount();
@@ -421,9 +427,11 @@ describe('DrillScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Next' }));
 
     // The answer belonged to that attempt, and so did the time on the clock.
+    // The time stays only among the recent attempts, which look back.
     expect(screen.queryByRole('heading', { name: 'T' })).not.toBeInTheDocument();
-    expect(screen.queryByText('3.21')).not.toBeInTheDocument();
     expect(screen.getByRole('timer')).toHaveTextContent('0.00');
+    const recent = screen.getByRole('region', { name: 'Recent attempts' });
+    expect(screen.getAllByText('3.21')).toEqual([within(recent).getByText('3.21')]);
   });
 
   it('does not carry the answer over to another set', async () => {

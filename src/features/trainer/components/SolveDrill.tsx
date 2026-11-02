@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
 import { ChevronIcon } from '../../../components/Icons';
 import { PlaybackButtons } from '../../../components/PlaybackButtons';
@@ -11,7 +11,7 @@ import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { CaseStats } from '../../../domain/drill/case-stats';
-import type { Penalty } from '../../../db/types';
+import type { AlgCase, Penalty } from '../../../db/types';
 import type { DrillMode } from '../../../db/repositories/settings-repository';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
@@ -43,6 +43,8 @@ import { CaseStatsRow } from './CaseStats';
 import { drillSummary } from '../drill-summary';
 import { DrillLevels, DrillLooks, DrillModes, DrillSets, DrillSetup } from './DrillControls';
 import { DrillStage } from './DrillStage';
+import { CaseDetail } from './CaseDetail';
+import { RecentAttempts } from './RecentAttempts';
 
 interface SolveDrillProps {
   mode: DrillMode;
@@ -73,6 +75,12 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
   const status = drill.timer.state.status;
   const isSolving = status === 'running';
   const current = drill.current;
+  const casesById = useMemo(
+    () => new Map((drill.cases ?? []).map((entry) => [entry.algCase.id, entry.algCase])),
+    [drill.cases],
+  );
+  /** A case opened from the recent attempts, in the trainer's own sheet. */
+  const [openCase, setOpenCase] = useState<AlgCase | null>(null);
 
   // Building the solver's table takes about a tenth of a second, so it is
   // built while the user is still scrambling rather than while they wait for
@@ -218,7 +226,29 @@ export function SolveDrill({ mode, onMode, canRecognise }: SolveDrillProps) {
               {strings.drill.showCase}
             </button>
           )}
+          {/* Hidden with the rest of the answer while the clock runs: it
+              changes only once an attempt is stored, after the clock stops. */}
+          {drill.run === undefined ? null : (
+            <RecentAttempts
+              run={drill.run}
+              cases={casesById}
+              setId={setId}
+              skin={skin}
+              withPictures={!drill.isCross}
+              onOpen={setOpenCase}
+            />
+          )}
         </section>
+      )}
+
+      {openCase === null ? null : (
+        <CaseDetail
+          caseId={openCase.id}
+          {...diagramFor(setId, openCase.group ?? '')}
+          skin={skin}
+          triggers={definitions}
+          onClose={() => setOpenCase(null)}
+        />
       )}
     </main>
   );

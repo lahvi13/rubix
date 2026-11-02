@@ -951,6 +951,10 @@ export const en = {
     attemptCount: (count: number) => `${count} ${count === 1 ? 'attempt' : 'attempts'}`,
     last: 'Last',
     noAttempts: 'First time on this case.',
+    /* Under the clock while the next case waits: how the drill is going. */
+    recentTitle: 'Recent attempts',
+    recentToday: (count: number, mean: string) => `today ${count} · mean ${mean}`,
+    recentVersus: 'Against your ao5 on this case',
     judging: 'Changing the penalty',
     discarding: 'Discarding the attempt',
     attemptsTitle: 'Attempts',

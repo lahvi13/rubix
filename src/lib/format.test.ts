@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatDelta,
   formatAxisMs,
   formatBytes,
   formatClock,
@@ -218,5 +219,19 @@ describe('formatAxisMs', () => {
     const ticks = [40_000, 50_000, 60_000, 70_000];
     const shapes = ticks.map((tick) => formatAxisMs(tick, 70_000).includes(':'));
     expect(new Set(shapes).size).toBe(1);
+  });
+});
+
+describe('formatDelta', () => {
+  it.each([
+    [-320, '−0.32'],
+    [450, '+0.45'],
+    [1050, '+1.05'],
+    // Under half a hundredth either way is no difference at all.
+    [4, '±0.00'],
+    [-4, '±0.00'],
+    [0, '±0.00'],
+  ])('%i ms is %s', (ms, expected) => {
+    expect(formatDelta(ms)).toBe(expected);
   });
 });
