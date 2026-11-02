@@ -255,11 +255,11 @@
 }
 
 /*
- * Under the cases: the references and the printable sheet, as the app's own
- * buttons in a row, sharing it evenly. Underlined words used to stand here and
- * looked like a web page's links; rows of a card were tried too, and looked
- * like a settings screen dropped onto this one. Words kept to one each, so
- * three still fit side by side at a large text size.
+ * Under the cases: the references and the printable sheet, three in a row
+ * sharing it evenly. Underlined words used to stand here and looked like a
+ * web page's links; rows of a card were tried too, and looked like a settings
+ * screen dropped onto this one. Words kept to one each, so three still fit
+ * side by side at a large text size.
  */
 .trainer__tools {
   display: flex;
@@ -269,10 +269,25 @@
   width: 100%;
 }
 
+/*
+ * Filled like the case cards above, not outlined like a button: each opens a
+ * sheet to look at, as a case card does, where an outlined button is a choice
+ * made on this screen. Outlined, with a muted label, they were barely seen
+ * under the last case. Keep the fill for things that open something.
+ */
 .trainer__tools button {
   flex: 1 1 0;
   min-width: 0;
+  min-height: 2.75rem;
   padding-inline: var(--space-2);
+  background: var(--surface-raised);
+  border-color: transparent;
+  color: var(--text);
+}
+
+.trainer__tools button:hover,
+.trainer__tools button:focus-visible {
+  border-color: var(--accent);
 }
 
 /* A reference in a sheet: the sheet is the card, so the panel drops its own. */
