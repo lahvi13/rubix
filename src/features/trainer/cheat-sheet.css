@@ -147,6 +147,16 @@
   break-inside: avoid;
 }
 
+/* The button family's hover repaints the text in the screen's own ink, which
+   on a dark theme is near white — on paper the algorithm all but vanished.
+   The case keeps the paper's ink and says it can be tapped with a tint. */
+@media (hover: hover) {
+  .cheat-sheet__case:hover:not([disabled]) {
+    color: inherit;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+
 .cheat-sheet__case:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
