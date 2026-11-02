@@ -1073,6 +1073,8 @@ export const en = {
       'A tap ends a phase; the last one stops the clock. Hold to finish early if you skip a phase.',
     showLearn: "Show the beginner's guide",
     showLearnHint: 'In the menu as Learn. Hiding it changes nothing else.',
+    welcomeAgain: 'Ask the first questions again',
+    welcomeAgainHint: 'The two questions a new install starts with, and the setup they lead to.',
   },
   /* The voice trial: the microphone listens alongside the phase taps. */
   voice: {
@@ -1358,6 +1360,40 @@ export const en = {
       'Safari clears a site’s data after a week without a visit. Add Rubix to the Home Screen and your solves stay.',
     how: 'Show me how',
     dismiss: 'Got it',
+  },
+  /* The two questions a fresh install asks (features/welcome). */
+  welcome: {
+    title: 'Welcome to Rubix',
+    intro: 'Two questions and the app sets itself up for you. You can change all of it in Settings later.',
+    canSolve: 'Can you solve the cube?',
+    notYet: 'Not yet',
+    notYetText: 'I will walk you through your first solve, step by step.',
+    yes: 'Yes',
+    yesText: 'A timer, an algorithm trainer and drills, to get faster.',
+    learnMethod: 'Which method do you want to learn?',
+    solveMethod: 'Which method do you solve with?',
+    methods: {
+      cfop: {
+        name: 'CFOP',
+        learn: 'The most common, with the most tutorials. The usual place to start.',
+        solve: 'Cross, F2L, OLL and PLL. You start on 2-look OLL.',
+      },
+      roux: {
+        name: 'Roux',
+        learn: 'Two blocks, the corners and the last six edges, with few algorithms.',
+        solve: 'Two blocks, CMLL and the last six edges. You start on 2-look CMLL.',
+      },
+      zz: {
+        name: 'ZZ',
+        learn: 'The edges oriented first, then F2L without turning the cube.',
+        solve: 'EOCross and F2L without turning the cube. You start on the timer.',
+      },
+    },
+    unknown: 'Not sure',
+    unknownText: 'I will set up CFOP, which has the most tutorials.',
+    skip: 'Skip',
+    back: 'Back',
+    saving: 'Setting the app up',
   },
   install: {
     title: 'Install',

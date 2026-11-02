@@ -978,6 +978,8 @@ export const cs: Strings = {
       'Ťuknutí ukončí fázi, poslední fáze zastaví hodiny. Podržením složení ukončíš dřív, když fázi přeskočíš.',
     showLearn: 'Zobrazit průvodce pro začátečníky',
     showLearnHint: 'V menu jako Pro začátečníky. Skrytí nic jiného nezmění.',
+    welcomeAgain: 'Zeptat se znovu na úvodní otázky',
+    welcomeAgainHint: 'Dvě otázky, kterými začíná nová instalace, a nastavení, ke kterému vedou.',
   },
   voice: {
     title: 'Fáze hlasem (zkouška)',
@@ -1264,6 +1266,39 @@ export const cs: Strings = {
       'Safari smaže data webu po týdnu bez návštěvy. Přidej si Rubix na plochu a tvoje složení zůstanou.',
     how: 'Ukaž mi jak',
     dismiss: 'Rozumím',
+  },
+  welcome: {
+    title: 'Vítej v Rubixu',
+    intro: 'Dvě otázky a appka se nastaví podle tebe. Všechno jde později změnit v Nastavení.',
+    canSolve: 'Umíš složit kostku?',
+    notYet: 'Ještě ne',
+    notYetText: 'Provedu tě prvním složením krok za krokem.',
+    yes: 'Ano',
+    yesText: 'Timer, trenažér algoritmů a dril, ať jsi rychlejší.',
+    learnMethod: 'Jakou metodu se chceš naučit?',
+    solveMethod: 'Jakou metodou skládáš?',
+    methods: {
+      cfop: {
+        name: 'CFOP',
+        learn: 'Nejrozšířenější, s nejvíc návody. Obvyklý začátek.',
+        solve: 'Cross, F2L, OLL a PLL. Začneš 2-look OLL.',
+      },
+      roux: {
+        name: 'Roux',
+        learn: 'Dva bloky, rohy a posledních šest hran, s málem algoritmů.',
+        solve: 'Dva bloky, CMLL a posledních šest hran. Začneš 2-look CMLL.',
+      },
+      zz: {
+        name: 'ZZ',
+        learn: 'Nejdřív otočíš hrany, pak F2L bez otáčení kostky.',
+        solve: 'EOCross a F2L bez otáčení kostky. Začneš na timeru.',
+      },
+    },
+    unknown: 'Nevím',
+    unknownText: 'Nastavím CFOP, pro ten je nejvíc návodů.',
+    skip: 'Přeskočit',
+    back: 'Zpět',
+    saving: 'Nastavuju appku',
   },
   install: {
     title: 'Instalace',

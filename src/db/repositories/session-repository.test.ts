@@ -10,6 +10,7 @@ import {
   getOrCreateActiveSession,
   listSessions,
   renameSession,
+  setMethodWhileEmpty,
   setSessionArchived,
 } from './session-repository';
 
@@ -31,6 +32,31 @@ describe('session repository', () => {
     await Promise.all(db.tables.map((table) => table.clear()));
     expect((await getOrCreateActiveSession('222', 'freestyle')).methodId).toBe('222');
     expect((await getOrCreateActiveSession('333', 'freestyle')).methodId).toBe('cfop');
+  });
+
+  it('changes the method of a session nothing has been timed into', async () => {
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    expect(await setMethodWhileEmpty(session.id, 'roux')).toBe(true);
+    expect((await db.sessions.get(session.id))?.methodId).toBe('roux');
+  });
+
+  it('keeps the method of a session once a solve is in it', async () => {
+    // The method names the phases of every solve in the session; changed
+    // afterwards, it would name them wrongly.
+    const session = await getOrCreateActiveSession('333', 'freestyle');
+    await addSolve({
+      sessionId: session.id,
+      puzzle: '333',
+      mode: 'freestyle',
+      scramble: "R U R' U'",
+      rawMs: 12_340,
+      penalty: 'none',
+      penaltySource: 'auto',
+      inspectionMs: null,
+      startedAt: Date.now(),
+    });
+    expect(await setMethodWhileEmpty(session.id, 'roux')).toBe(false);
+    expect((await db.sessions.get(session.id))?.methodId).toBe('cfop');
   });
 
   it('creates the default session once and reuses it afterwards', async () => {

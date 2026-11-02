@@ -88,6 +88,12 @@ export interface SettingValues {
    */
   'ui.installNudgeDismissed': boolean;
   /**
+   * The two questions a new install asks. 'new' asks them once there is not
+   * a solve on the device yet; 'asked' never again; 'again' asks them next
+   * time whatever is on the device — Settings starts them over.
+   */
+  'ui.welcome': WelcomeState;
+  /**
    * Which route through the last layer the trainer and the drill open OLL and
    * PLL on: the one last chosen in either. Set in Settings once; the choice
    * made on the screen is what the reader means, so that is what it keeps.
@@ -220,6 +226,9 @@ export interface SettingValues {
   'data.backupReminderSnoozedAt': number;
 }
 
+export const WELCOME_STATES = ['new', 'asked', 'again'] as const;
+export type WelcomeState = (typeof WELCOME_STATES)[number];
+
 export const DRILL_MODES = ['solve', 'recognise'] as const;
 export type DrillMode = (typeof DRILL_MODES)[number];
 
@@ -253,6 +262,7 @@ export const SETTING_DEFAULTS: SettingValues = {
   'ui.learnMethod.222': '',
   'ui.puzzle': '333',
   'ui.installNudgeDismissed': false,
+  'ui.welcome': 'new',
   'trainer.twoLookDefault': true,
   'trainer.showAlgs': true,
   'trainer.showRotationAlgs': true,

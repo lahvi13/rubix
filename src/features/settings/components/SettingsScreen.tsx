@@ -94,6 +94,7 @@ export function SettingsScreen() {
   // The guide of the cube the app is on; each cube has its own switch.
   const [puzzle] = usePuzzle();
   const [showLearn, setShowLearn] = useShowLearn(puzzle);
+  const [, setWelcome] = useSetting('ui.welcome');
   const [holdThresholdMs, setHoldThresholdMs] = useSetting('timer.holdThresholdMs');
   const [inspectionEnabled, setInspectionEnabled] = useSetting('timer.inspectionEnabled');
   const [isPreviewShown, setPreviewShown] = useSetting('timer.showScramblePreview');
@@ -233,6 +234,13 @@ export function SettingsScreen() {
           {strings.settings.showLearn}
         </label>
         <p className="data-section__hint">{strings.settings.showLearnHint}</p>
+
+        {/* Beside the guide's switch, which is one of the things the answers
+            set; the sheet comes up over this screen at once. */}
+        <button type="button" onClick={() => setWelcome('again')}>
+          {strings.settings.welcomeAgain}
+        </button>
+        <p className="data-section__hint">{strings.settings.welcomeAgainHint}</p>
       </section>
 
       <section className="data-section">

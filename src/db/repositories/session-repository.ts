@@ -130,6 +130,22 @@ export async function setSessionArchived(id: string, archived: boolean): Promise
 }
 
 /**
+ * Times an empty session in another method. A session's method names the
+ * phases of every solve in it, so it is fixed once a solve is in; before that
+ * there is nothing for a new method to name wrongly. Hands back whether it
+ * changed.
+ */
+export async function setMethodWhileEmpty(id: string, methodId: string): Promise<boolean> {
+  return db.transaction('rw', db.sessions, db.solves, async () => {
+    const session = await db.sessions.get(id);
+    if (!session || session.methodId === methodId) return false;
+    if ((await db.solves.where('sessionId').equals(id).count()) > 0) return false;
+    await db.sessions.update(id, { methodId, updatedAt: now() });
+    return true;
+  });
+}
+
+/**
  * Deletes a session and everything timed into it. Archiving is the softer act —
  * out of the pickers, still counted in a personal best, because a best that
  * moves when the session list is tidied is not one. This is the act that takes
