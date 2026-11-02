@@ -81,6 +81,13 @@ export function useSheetDrag(
             if (intent === null) return;
             isPulling.current = true;
             sheet.style.transition = 'none';
+            // A layer of its own for as long as it moves. Without one every
+            // frame of the drag painted the whole panel again — measured on
+            // the notation sheet, 52 paints to 7, its thirty-six cubes
+            // rasterised over and over, which a phone showed as a stutter.
+            // Only from the pull on: held all the time, a panel taller than
+            // the screen keeps a texture that size for nothing.
+            sheet.style.willChange = 'transform';
           }
           draggedPx = Math.max(0, at.y - from.y);
           sheet.style.transform = `translateY(${draggedPx}px)`;
