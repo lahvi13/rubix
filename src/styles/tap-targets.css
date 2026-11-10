@@ -75,3 +75,50 @@ input[type='radio'] {
 .session__name {
   min-height: 2.75rem;
 }
+
+/*
+ * Small on purpose, and still hit with a thumb.
+ *
+ * Each of these is drawn smaller than a button standing alone, for a reason
+ * said where it is drawn: three share a row with a time, five share a line
+ * of chips, one sits in the header and sets its height. Drawn bigger, the
+ * row would not fit or the screen would grow a line. So the look stays and
+ * what can be hit grows: an unseen ::after carries the target out to 2.75rem
+ * each way, into the gap around the control. Where two of them reach into the
+ * same gap, the later one has it; nothing reaches over a neighbour itself,
+ * which is drawn after the reach of the one before.
+ *
+ * `min(0px, …)` because the percentage is the control's own size: on one
+ * already big enough the sum is positive, and would shrink the target.
+ *
+ * Left alone, knowingly: the history's rows and the numbers in the averages
+ * table. Both are stacked with nothing between them to reach into, and the
+ * row next door does the same thing.
+ */
+.puzzle-switch,
+.solves-panel__more,
+.solves-panel__session,
+.session-switch,
+.solves__open,
+.solves__actions button,
+.stats-nav button,
+.chart-modes button,
+.app__header .drill__tabs button {
+  position: relative;
+}
+
+.puzzle-switch::after,
+.solves-panel__more::after,
+.solves-panel__session::after,
+.session-switch::after,
+.solves__open::after,
+.solves__actions button::after,
+.stats-nav button::after,
+.chart-modes button::after,
+.app__header .drill__tabs button::after,
+.playback--corners button::after {
+  content: '';
+  position: absolute;
+  inset-block: min(0px, calc((100% - 2.75rem) / 2));
+  inset-inline: min(0px, calc((100% - 2.75rem) / 2));
+}

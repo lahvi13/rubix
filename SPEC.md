@@ -1924,7 +1924,14 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
    PLL, SB, CMLL, EO, EOLR) se s další metodou přestane dát číst. *Hotovo,
    když* je v drilu vidět, ke které metodě sada patří, výběr je pořád jedním
    ťuknutím a na 412 px s velkým textem nezabere víc řad než dnes.
-10. **Cíle pro palec.** Pod ~44 px, které slibuje `tap-targets.css`, jsou čipy
+10. ✅ *(hotovo 10. 11. 2026. Vzhled se nezměnil — obrazovka statistik je
+    před a po shodná na pixel a žádná obrazovka se neprodloužila; plochu na
+    ťuknutí nese neviditelný `::after`. Změřeno sondou `elementFromPoint` na
+    412 px: čipy 32 → 44 px na výšku, přepínač kostky a šipka seznamu → 44×44,
+    `DNF` a `Smazat` → 44, řádek solvu na timeru 20 → 44. Kam nedosáhne: `+2`
+    je 38 px široké a „Zpět nahoru“ 32, víc soused nepustí; přehrávání
+    scramblu má 40. Mimo zůstalo, že obyčejné tlačítko má při střední
+    velikosti textu 40 px — 44 až při velké)* **Cíle pro palec.** Pod ~44 px, které slibuje `tap-targets.css`, jsou čipy
     ve statistikách (32 px), „Zpět nahoru“ (28×32), přepínač kostky (36×36)
     a `+2 / DNF / Smazat` na timeru (36 px). Smazat je proti sousedům už
     chráněné dvojím ťuknutím a lištou Zpět, tam jde jen o výšku. Řádky
