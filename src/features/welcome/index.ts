@@ -1,1 +1,2 @@
-export { Welcome } from './components/Welcome';
+export { WelcomeCard } from './components/WelcomeCard';
+export { useWelcome } from './hooks/use-welcome';

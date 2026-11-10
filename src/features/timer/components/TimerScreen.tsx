@@ -11,6 +11,7 @@ import { SolveDetailSheet } from '../../history';
 import { SessionPicker, useActiveSession, useMethodLabel } from '../../sessions';
 import { PhaseBar, PhaseRun, usePhases, useVoiceShadow, VoiceShadowNote } from '../../splits';
 import { MiniStats } from '../../stats';
+import { useWelcome, WelcomeCard } from '../../welcome';
 import { useRecentSolves } from '../hooks/use-recent-solves';
 import { useSaveSolve } from '../hooks/use-save-solve';
 import { useSheetMotion } from '../hooks/use-sheet-motion';
@@ -228,6 +229,7 @@ export function TimerScreen() {
   // Which solve is open in the detail sheet, if any.
   const [openSolveId, setOpenSolveId] = useState<string | null>(null);
   const [isPickerOpen, setPickerOpen] = useState(false);
+  const welcome = useWelcome(puzzle);
   const openableSolves = useMemo(() => solves.map((solve) => solve.id), [solves]);
   // From the method's phases, not the timer's: `phaseKeys` above is empty
   // unless phase timing is switched on, while the list below draws the bars
@@ -498,6 +500,11 @@ export function TimerScreen() {
           </h2>
           <InstallNudge />
           <MiniStats solves={sessionSolves} methodName={methodLabel} />
+          {/* With the list down only: pulled up, this is a screen for reading
+              what has been timed, and the question is about what comes next. */}
+          {welcome.isShown && !showBrowsing ? (
+            <WelcomeCard onLearn={welcome.learn} onSolve={welcome.solve} />
+          ) : null}
           <SolveList
             solves={solves}
             total={total}
@@ -508,6 +515,7 @@ export function TimerScreen() {
             onOpen={setOpenSolveId}
             onChangePenalty={handleChangePenalty}
             onDelete={handleDelete}
+            isEmptyNoteHidden={welcome.isShown}
           />
         </section>
       </div>

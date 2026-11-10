@@ -1,56 +1,49 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { navigate } from '../../../app/router';
-import { getOrCreateActiveSession, setMethodWhileEmpty } from '../../../db/repositories/session-repository';
 import { countAllSolves } from '../../../db/repositories/solve-repository';
-import { useLastGuide, useShowLearn } from '../../../hooks/use-guide-settings';
+import type { SupportedPuzzle } from '../../../domain/puzzle/puzzles';
+import { useShowLearn } from '../../../hooks/use-guide-settings';
 import { useSetting, useSettingsLoaded } from '../../../hooks/use-setting';
-import { welcomePlan, type WelcomeAnswer } from '../../../domain/welcome/plan';
 
 export interface WelcomeView {
   isShown: boolean;
-  /** Set the app up as the answer says, and go where it leads. */
-  answer: (answer: WelcomeAnswer) => Promise<void>;
-  /** Not now, and not again: Settings can start it over. */
-  skip: () => void;
+  /** Not yet: the guide stays on the bar, and opens. */
+  learn: () => void;
+  /** Already solving: the guide leaves the bar, and the timer stays up. */
+  solve: () => void;
 }
 
 /**
- * The two questions a new install asks: shown once there is not a solve on
- * the device, or whenever Settings asks for them again. Not before both the
- * settings and the count have answered — a sheet that came up and went again
+ * The one question a new install asks: shown while there is not a solve on
+ * the device, or whenever Settings asks for it again. Not before both the
+ * settings and the count have answered — a card that came up and went again
  * a frame later would be the first thing an old hand ever saw of an update.
+ *
+ * Nobody has to answer it. The first solve is an answer of its own, and the
+ * question goes with it.
+ *
+ * It asks about the cube the timer is switched to: knowing the 3×3 says
+ * nothing of the 2×2, and each has a guide of its own to keep or put away.
  */
-export function useWelcome(): WelcomeView {
+export function useWelcome(puzzle: SupportedPuzzle): WelcomeView {
   const [state, setState] = useSetting('ui.welcome');
   const isLoaded = useSettingsLoaded();
   const solves = useLiveQuery(countAllSolves, []);
-  // The questions are about the 3×3, the cube the app starts on.
-  const [, setShowLearn] = useShowLearn('333');
-  const [, setGuide] = useLastGuide('333');
-  const [, setPuzzle] = useSetting('ui.puzzle');
-  const [, setTrainerSet] = useSetting('trainer.setId');
-  const [, setTwoLook] = useSetting('trainer.twoLookDefault');
+  const [, setShowLearn] = useShowLearn(puzzle);
 
-  // A value from a newer build reads as a fresh install's.
   const isShown =
     isLoaded && (state === 'again' || (state !== 'asked' && solves !== undefined && solves === 0));
 
   return {
     isShown,
-    answer: async (answer) => {
-      const plan = welcomePlan(answer);
-      setPuzzle('333');
-      setShowLearn(plan.showLearn);
-      setGuide(plan.guide);
-      if (plan.trainerSetId !== null) {
-        setTrainerSet(plan.trainerSetId);
-        setTwoLook(true);
-      }
-      const session = await getOrCreateActiveSession('333', 'freestyle');
-      await setMethodWhileEmpty(session.id, plan.sessionMethod);
+    learn: () => {
+      setShowLearn(true);
       setState('asked');
-      navigate(plan.screen);
+      navigate('learn');
     },
-    skip: () => setState('asked'),
+    solve: () => {
+      setShowLearn(false);
+      setState('asked');
+    },
   };
 }

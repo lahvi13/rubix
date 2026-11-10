@@ -28,7 +28,6 @@ import { useSharedScrambleLink } from './use-shared-scramble-link';
 import { ErrorBanner } from './ErrorBanner';
 import { UndoBar } from './UndoBar';
 import { UpdatePrompt } from './UpdatePrompt';
-import { Welcome } from '../features/welcome';
 
 /** Where the menu's groups begin, after the first. */
 const RULE_BEFORE: ReadonlySet<Route> = new Set<Route>(['history', 'settings', 'about']);
@@ -189,7 +188,6 @@ export function App() {
       <ErrorBanner />
       <UndoBar />
       <UpdatePrompt />
-      <Welcome />
     </div>
   );
 }

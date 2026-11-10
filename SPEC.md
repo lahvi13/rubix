@@ -1810,6 +1810,18 @@ Každý bod má větu „hotovo, když…“ — podle ní se odškrtává.
    v trenažéru. *Hotovo, když* nová instalace vede začátečníka do průvodce
    a pokročilého do trenažéru jeho metody, otázky jdou přeskočit a vrátit
    z Nastavení.
+   **Změněno 10. 11. 2026 — jedna otázka, a ne přes timer.** Arch se dvěma
+   otázkami byl první věc, kterou viděl každý, a zakryl víc než půl timeru;
+   většina lidí z odkazu přitom skládat umí a přišla kvůli timeru. Odpověď
+   „Ano“ je navíc poslala do trenažéru. Teď je to karta na timeru, na místě
+   věty o prázdném seznamu: „Umíš složit kostku?“ — „Ještě ne, nauč mě“
+   (průvodce zůstane v liště a otevře se) / „Ano, chci měřit“ (průvodce z lišty
+   zmizí, timer zůstane). Třetí odpověď není: kartu jde nechat být a první
+   složení ji odklidí samo, bez jakéhokoli nastavení. Ptá se na kostku, na
+   kterou je timer přepnutý. Na metodu se neptá — průvodce má metody
+   v záložkách, trenažér v řadách a kdo skládá jinak než CFOP, založí si
+   session ve své metodě; sadu v trenažéru ani metodu session už odpověď
+   nenastavuje. „Zeptat se znovu“ v Nastavení vede na timer, kde otázka je.
 
 **Blok B — data a procvičování**
 

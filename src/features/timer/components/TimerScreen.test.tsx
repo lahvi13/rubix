@@ -86,7 +86,44 @@ describe('TimerScreen', () => {
 
     expect(await findScramble()).toBeInTheDocument();
     expect(screen.getByRole('timer')).toHaveTextContent('0.00');
-    expect(screen.getByText(/no solves yet/i)).toBeInTheDocument();
+    // A new install: the question stands where the list would say it is
+    // empty, and does not say it twice.
+    expect(
+      await screen.findByRole('group', { name: 'Can you solve the cube?' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/no solves yet/i)).not.toBeInTheDocument();
+  });
+
+  it('says the session is empty once the question has been answered', async () => {
+    const user = userEvent.setup();
+    render(<TimerScreen />);
+    await findScramble();
+
+    await user.click(await screen.findByRole('button', { name: 'Yes, time my solves' }));
+
+    expect(await screen.findByText(/no solves yet/i)).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Can you solve the cube?' })).not.toBeInTheDocument();
+    // Answered, the timer is where they stay.
+    expect(screen.getByRole('timer')).toHaveTextContent('0.00');
+  });
+
+  it('drops the question with the first solve, unanswered', async () => {
+    const user = userEvent.setup();
+    let clock = 0;
+    const tick = (ms: number) => (clock += ms);
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(<TimerScreen />);
+    await findScramble();
+    expect(
+      await screen.findByRole('group', { name: 'Can you solve the cube?' }),
+    ).toBeInTheDocument();
+
+    await keyboardSolve(user, tick, 5000);
+
+    await waitFor(() =>
+      expect(screen.queryByRole('group', { name: 'Can you solve the cube?' })).not.toBeInTheDocument(),
+    );
   });
 
   /**

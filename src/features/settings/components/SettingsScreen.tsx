@@ -17,6 +17,7 @@ import { canVibrate } from '../../../lib/haptics';
 import { CUBE_SKINS, skinById } from '../../../lib/cube-skins';
 import { LANGUAGES, currentLanguage, storeLanguage, type Language } from '../../../lib/language';
 import { RUNNING_DISPLAYS, type RunningDisplay } from '../../../lib/format';
+import { navigate } from '../../../app/router';
 import { strings } from '../../../lib/strings';
 import { useShowLearn } from '../../../hooks/use-guide-settings';
 import { usePuzzle } from '../../../hooks/use-puzzle';
@@ -235,9 +236,15 @@ export function SettingsScreen() {
         </label>
         <p className="data-section__hint">{strings.settings.showLearnHint}</p>
 
-        {/* Beside the guide's switch, which is one of the things the answers
-            set; the sheet comes up over this screen at once. */}
-        <button type="button" onClick={() => setWelcome('again')}>
+        {/* Beside the guide's switch, which is what the answer sets. The
+            question is asked on the timer, so that is where this goes. */}
+        <button
+          type="button"
+          onClick={() => {
+            setWelcome('again');
+            navigate('timer');
+          }}
+        >
           {strings.settings.welcomeAgain}
         </button>
         <p className="data-section__hint">{strings.settings.welcomeAgainHint}</p>

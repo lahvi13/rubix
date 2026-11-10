@@ -109,9 +109,9 @@ export interface SettingValues {
    */
   'ui.installNudgeDismissed': boolean;
   /**
-   * The two questions a new install asks. 'new' asks them once there is not
-   * a solve on the device yet; 'asked' never again; 'again' asks them next
-   * time whatever is on the device — Settings starts them over.
+   * The question a new install asks on the timer. 'new' asks it while there
+   * is not a solve on the device; 'asked' never again; 'again' asks it
+   * whatever is on the device — Settings starts it over.
    */
   'ui.welcome': WelcomeState;
   /**

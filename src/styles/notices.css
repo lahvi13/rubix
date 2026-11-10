@@ -37,7 +37,8 @@
  */
 
 .backup-reminder,
-.install-nudge {
+.install-nudge,
+.welcome-card {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -60,6 +61,31 @@
 .install-nudge__actions {
   display: flex;
   gap: var(--space-3);
+}
+
+/*
+ * The question a new install asks, where the timer's empty list would say it
+ * is empty. The question on a line of its own and the two answers sharing the
+ * next, each half the card: neither is the one the card is for.
+ */
+.welcome-card {
+  margin-top: var(--space-4);
+}
+
+.welcome-card__question {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+.welcome-card__answers {
+  display: flex;
+  flex: 1 1 100%;
+  gap: var(--space-3);
+}
+
+.welcome-card__answers button {
+  flex: 1 1 0;
 }
 
 /* Above the timer's mini stats, where it takes a line from the list, not the clock. */

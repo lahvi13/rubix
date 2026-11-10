@@ -38,6 +38,11 @@ interface SolveListProps {
   globalPbMs: number | null;
   onChangePenalty: (id: string, penalty: Penalty) => void;
   onDelete: (id: string) => void;
+  /**
+   * Something else stands where the empty list would say it is empty — the
+   * question a new install asks — and two notes in a row are one too many.
+   */
+  isEmptyNoteHidden?: boolean;
 }
 
 /**
@@ -63,6 +68,7 @@ export const SolveList = memo(function SolveList({
   onOpen,
   onChangePenalty,
   onDelete,
+  isEmptyNoteHidden = false,
 }: SolveListProps) {
   /*
    * Which solve's delete button is armed, by id rather than by a flag: these
@@ -101,6 +107,7 @@ export const SolveList = memo(function SolveList({
   const phaseKeys = phases.map((phase) => phase.key);
 
   if (solves.length === 0) {
+    if (isEmptyNoteHidden) return null;
     return (
       <p className="solves__empty">{hasKeyboard ? strings.solve.emptyKeys : strings.solve.empty}</p>
     );
