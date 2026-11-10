@@ -1873,7 +1873,7 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
 
 **Blok E — odolnost a pořádek v kódu**
 
-4. **Nastavení se validuje podle klíče, ne podle `typeof`.** Hodnota výčtu
+4. ✅ *(hotovo 10. 11. 2026)* **Nastavení se validuje podle klíče, ne podle `typeof`.** Hodnota výčtu
    z novější verze nebo z upravené zálohy dnes projde (`isValueFor`
    v `settings-repository.ts`). *Hotovo, když* každý klíč má validátor
    v tabulce `Record<SettingKey, …>` (nový klíč bez něj shodí build), neznámá
@@ -1884,7 +1884,10 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
    testy včetně hraničních případů, obrazovka dává stejná čísla jako předtím
    (ověřeno i nad skutečnou zálohou) a „dnešek“ se po půlnoci přepočítá bez
    znovunačtení.
-6. **Drobnosti z hodnocení.** Doslovný bajt NUL v `domain/transfer/merge.ts`
+6. ✅ *(hotovo 10. 11. 2026; s typy se přestěhovaly i `SolvePatch`
+   a `CaseWithAlg`. `npm audit` dál hlásí `deepmerge`, `glob` a `minimatch`
+   pod workbox-build — vývojové závislosti, oprava jen zlomovou změnou
+   vite-plugin-pwa)* **Drobnosti z hodnocení.** Doslovný bajt NUL v `domain/transfer/merge.ts`
    zapsat jako `\0`; typy `DrillMode`, `PhaseTrendMode`, `StatsScope`
    a `WelcomeState` přestěhovat ze settings-repository tam, odkud je komponenty
    smí importovat; `updateSolve` číst i zapisovat v jedné transakci;
