@@ -1850,7 +1850,9 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
    když* červený test nebo lint zastaví nasazení dřív, než se dostane na
    produkci — build příkazem ve Workers Builds, nebo workflow v `.github/`,
    který je vidět u commitu — a je to zapsané v CLAUDE.md.
-2. **CSP a bezpečnostní hlavičky.** `public/_headers` řeší jen cache; „nic
+2. ✅ *(hotovo 10. 11. 2026; headless Chrome nad `wrangler dev` a ručně
+   Firefox na preview URL — hlasová zkouška přes UI, skutečný tisk, update
+   service workeru a iOS Safari zůstaly neověřené)* **CSP a bezpečnostní hlavičky.** `public/_headers` řešil jen cache; „nic
    neopouští zařízení“ má vynutit prohlížeč, ne jen kód. `connect-src` jen
    vlastní origin a cloudflareinsights, k tomu `nosniff`, `Referrer-Policy`,
    `frame-ancestors`, `Permissions-Policy` s mikrofonem jen pro vlastní origin.
