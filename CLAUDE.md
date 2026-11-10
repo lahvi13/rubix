@@ -183,9 +183,14 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
 ## Poznámky k vývoji
 
 - `npm run dev` běží bez service workeru; PWA chování se testuje přes `npm run build && npm run preview`
-- Cloudflare Worker se statickými assety (`wrangler.jsonc`): build `npm run build`,
-  output `dist`, žádný SPA fallback (routuje se hashem, neznámá cesta je 404),
-  žádný server kód. Push do `main` se sám zbuilduje a nasadí (Workers Builds), `npm run deploy` se ručně nespouští — ale deploy
+- Cloudflare Worker se statickými assety (`wrangler.jsonc`): build `npm run verify`
+  (lint → testy → `npm run build`; nastavené v dashboardu Workers Builds, v repu
+  to vidět není), output `dist`, žádný SPA fallback (routuje se hashem, neznámá
+  cesta je 404), žádný server kód. **Červený test nebo lint nasazení zastaví** —
+  build spadne a produkce zůstane na předchozím sestavení; před pushem tedy
+  pustit `npm run verify` lokálně. Stejný příkaz běží v GitHub Actions
+  (`.github/workflows/verify.yml`) u každého commitu a pull requestu: je to
+  zrcadlo, ne brána — nasazení na něj nečeká. Push do `main` se sám zbuilduje a nasadí (Workers Builds), `npm run deploy` se ručně nespouští — ale deploy
   krok umí spadnout (viděno: 503 z CF API po úspěšném buildu), takže po pushi ověřit,
   co produkce doopravdy servíruje. Jakou verzi zařízení běží, je vidět na obrazovce
   About (`__APP_VERSION__` = verze z `package.json` · commit) — service worker jinak

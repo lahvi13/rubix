@@ -1,0 +1,30 @@
+name: Verify
+
+# The same gate the deploy runs (`npm run verify` is the Workers Builds build
+# command), shown where a commit or a pull request is read. A pull request from
+# a fork never reaches the deploy's build, so this is the only place its tests
+# run before it is merged.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify

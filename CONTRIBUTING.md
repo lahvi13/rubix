@@ -41,10 +41,11 @@ The conventions are in [CLAUDE.md](CLAUDE.md) and the specification in
 Before you open the pull request:
 
 ```sh
-npm run lint
-npm test
-npm run build
+npm run verify
 ```
+
+That is the linter, the tests and the build, in that order — the same command
+the pull request's check runs, and the one a deploy has to pass.
 
 By contributing you agree that your work is released under the project's
 [GPL-3.0-or-later](LICENSE) license.
