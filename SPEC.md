@@ -1905,11 +1905,11 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
    ťuknutím a na 412 px s velkým textem nezabere víc řad než dnes.
 10. **Cíle pro palec.** Pod ~44 px, které slibuje `tap-targets.css`, jsou čipy
     ve statistikách (32 px), „Zpět nahoru“ (28×32), přepínač kostky (36×36)
-    a `+2 / DNF / Smazat` na timeru (36 px, Smazat hned vedle DNF). Řádky
+    a `+2 / DNF / Smazat` na timeru (36 px). Smazat je proti sousedům už
+    chráněné dvojím ťuknutím a lištou Zpět, tam jde jen o výšku. Řádky
     historie jsou nízké schválně a zůstávají. *Hotovo, když* jmenované prvky
-    mají plochu na ťuknutí aspoň 44 px (klidně větší než to, co je vidět), mezi
-    DNF a Smazat je mezera, kterou palec netrefí omylem, a obrazovky se tím
-    neprodlouží o řadu.
+    mají plochu na ťuknutí aspoň 44 px (klidně větší než to, co je vidět)
+    a obrazovky se tím neprodlouží o řadu.
 11. **Statistiky napříč session říkají, čí jsou.** V rozsahu „Všechny session“
     stojí pod volbou „Session Výchozí“, což se čte jako rozpor. *Hotovo, když*
     řádek v rozsazích napříč session jmenuje to, co čísla opravdu spojuje
