@@ -146,7 +146,12 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
    je to samostatný `<script type="module">`, který na ničem nezávisí a nikdo na něj
    nečeká. Parametr `"spa": true` v `data-cf-beacon` je oproti originálnímu snippetu
    navíc a je povinný — bez něj se měří jen první načtení a přechody mezi obrazovkami
-   se nezapočítají.
+   se nezapočítají. **Pravidlo vynucuje i prohlížeč:** `public/_headers` nese
+   Content-Security-Policy, která požadavek na jiný origin odmítne (beacon je
+   v ní vyjmenovaný). Cokoli nového, co potřebuje jiný origin, inline skript
+   nebo `eval`, tedy bez úpravy hlaviček tiše nepojede — a `vite preview`
+   hlavičky neposílá, takže se to ověřuje přes `npx wrangler dev` (bere `dist`
+   i `_headers`) nebo na preview URL větve.
 2. **Nic neopouští zařízení** — obzvlášť ne audio z mikrofonu. Mikrofonní stream se
    zpracovává výhradně v `AudioWorklet` a nikdy se neukládá ani neposílá.
 3. **Neukládat odvozené hodnoty.** Finální čas, průměry, PB, statistiky případu se

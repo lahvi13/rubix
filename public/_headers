@@ -4,3 +4,20 @@
 # update would never reach anyone.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# "Nothing leaves the device" as a rule the browser enforces, not only one the
+# code keeps: a request to any origin but this one is refused, the analytics
+# beacon excepted (script from static.cloudflareinsights.com, its report to
+# cloudflareinsights.com). What each of the looser entries is for:
+#   'wasm-unsafe-eval'       cubing.js compiles its scramble solver from WASM
+#   worker-src blob:         cubing.js starts its workers through a blob
+#   style-src 'unsafe-inline'  React's style attributes, and the stylesheets
+#                              the cube player builds inside its shadow root
+#   img-src data: blob:      cube diagrams are data: SVGs, a shared card is a blob
+# Anything added to the app that needs another origin has to be added here,
+# and belongs in CLAUDE.md's "Co se nikdy nedělá" first.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: microphone=(self), camera=(), geolocation=(), payment=(), usb=(), interest-cohort=()
