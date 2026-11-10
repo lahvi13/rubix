@@ -362,7 +362,7 @@ const NO_GRAVES: Graves = new Map();
  * (pack ids are hand-written, not UUIDs).
  */
 function graveKey(table: string, key: string): string {
-  return `${table} ${key}`;
+  return `${table}\0${key}`;
 }
 
 function indexGraves(tombstones: readonly Tombstone[]): Graves {
