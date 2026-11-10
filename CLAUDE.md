@@ -184,8 +184,10 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
 
 - `npm run dev` běží bez service workeru; PWA chování se testuje přes `npm run build && npm run preview`
 - Cloudflare Worker se statickými assety (`wrangler.jsonc`): build `npm run verify`
-  (lint → testy → `npm run build`; nastavené v dashboardu Workers Builds, v repu
-  to vidět není), output `dist`, žádný SPA fallback (routuje se hashem, neznámá
+  (lint → testy → `npm run build`; nastavené v dashboardu Workers Builds na
+  **obou** záložkách, Production i Previews Base — v repu to vidět není; větev
+  mimo `main` se nasazuje přes `wrangler preview`, proto prázdný blok `previews`
+  ve `wrangler.jsonc`), output `dist`, žádný SPA fallback (routuje se hashem, neznámá
   cesta je 404), žádný server kód. **Červený test nebo lint nasazení zastaví** —
   build spadne a produkce zůstane na předchozím sestavení; před pushem tedy
   pustit `npm run verify` lokálně. Stejný příkaz běží v GitHub Actions

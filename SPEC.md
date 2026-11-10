@@ -1844,8 +1844,9 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
 
 **Blok D — provoz (nic z toho uživatel neuvidí)**
 
-1. **Testy hlídají nasazení.** Dnes push do `main` nasazuje po `npm run build`
-   (tsc + vite); lint a testy běží, jen když je někdo pustí ručně. *Hotovo,
+1. ✅ *(hotovo 10. 11. 2026; ověřeno větví s rozbitým testem — build spadl,
+   kontrola bez něj prošla)* **Testy hlídají nasazení.** Push do `main` nasazoval po `npm run build`
+   (tsc + vite); lint a testy běžely, jen když je někdo pustil ručně. *Hotovo,
    když* červený test nebo lint zastaví nasazení dřív, než se dostane na
    produkci — build příkazem ve Workers Builds, nebo workflow v `.github/`,
    který je vidět u commitu — a je to zapsané v CLAUDE.md.
