@@ -11,8 +11,7 @@ import { applyAlg, solvedState } from '../../../domain/cube/state';
 import type { CubeSkin } from '../../../lib/cube-skins';
 import { caseTitle } from '../../../domain/alg/case-name';
 import type { CaseStats } from '../../../domain/drill/case-stats';
-import type { AlgCase, Penalty } from '../../../db/types';
-import type { DrillMode } from '../../../db/repositories/settings-repository';
+import type { AlgCase, DrillMode, Penalty } from '../../../db/types';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { usePlayWhenDrawn } from '../../../hooks/use-play-when-drawn';
 import {

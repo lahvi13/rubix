@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { Puzzle, Solve } from '../../../db/types';
+import type { Puzzle, Solve, SolvePatch } from '../../../db/types';
 import {
   countSolves,
   listMatchingSolves,
   updateSolve,
   type SolveFilters,
-  type SolvePatch,
 } from '../../../db/repositories/solve-repository';
 import { finalMs } from '../../../domain/solve/final-time';
 import { dayKey } from '../../../lib/format';

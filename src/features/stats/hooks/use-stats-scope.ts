@@ -1,10 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import {
-  getSetting,
-  setSetting,
-  STATS_SCOPES,
-  type StatsScope,
-} from '../../../db/repositories/settings-repository';
+import { getSetting, setSetting } from '../../../db/repositories/settings-repository';
+import { STATS_SCOPES, type StatsScope } from '../../../db/types';
 import { watchWrite } from '../../../lib/errors';
 
 const KEY = 'stats.scope';

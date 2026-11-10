@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Sheet, type SheetPaging } from '../../../components/Sheet';
-import type { MethodPhase, Solve, Tag } from '../../../db/types';
-import type { SolvePatch } from '../../../db/repositories/solve-repository';
+import type { MethodPhase, Solve, SolvePatch, Tag } from '../../../db/types';
 import { finalMs } from '../../../domain/solve/final-time';
 import { bestPhasesIn, type Bests } from '../../../domain/stats/phases';
 import { parseTimeInput } from '../../../domain/solve/parse-time';

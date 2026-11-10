@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Area, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import type { PhaseTrendMode } from '../../../db/repositories/settings-repository';
-import type { MethodPhase } from '../../../db/types';
+import type { MethodPhase, PhaseTrendMode } from '../../../db/types';
 import { timeAxis } from '../../../domain/stats/axis';
 import type { PhaseTrendPoint } from '../../../domain/stats/phases';
 import { now } from '../../../lib/clock';

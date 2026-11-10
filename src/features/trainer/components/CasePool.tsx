@@ -1,4 +1,4 @@
-import type { CaseWithAlg } from '../../../db/repositories/alg-repository';
+import type { CaseWithAlg } from '../../../db/types';
 import { slowestCases, type CaseStats } from '../../../domain/drill/case-stats';
 import { caseTitle } from '../../../domain/alg/case-name';
 import { packLabel, strings } from '../../../lib/strings';

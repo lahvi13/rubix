@@ -1,10 +1,31 @@
 import { liveQuery } from 'dexie';
 import { db } from '../schema';
-import type { Flag } from '../types';
+import {
+  DRILL_MODES,
+  PHASE_TREND_MODES,
+  STATS_SCOPES,
+  WELCOME_STATES,
+  type DrillMode,
+  type Flag,
+  type PhaseTrendMode,
+  type StatsScope,
+  type WelcomeState,
+} from '../types';
 import type { SupportedPuzzle } from '../../domain/puzzle/puzzles';
 import { now } from '../../lib/clock';
-import type { CaseLayout, ClockFace, Font, Size, Theme } from '../../lib/appearance';
-import type { RunningDisplay } from '../../lib/format';
+import {
+  CASE_LAYOUTS,
+  CLOCK_FACES,
+  FONTS,
+  SIZES,
+  THEMES,
+  type CaseLayout,
+  type ClockFace,
+  type Font,
+  type Size,
+  type Theme,
+} from '../../lib/appearance';
+import { RUNNING_DISPLAYS, type RunningDisplay } from '../../lib/format';
 
 /**
  * Key-value settings. Device-local entries (mic calibration, chosen audio
@@ -226,18 +247,6 @@ export interface SettingValues {
   'data.backupReminderSnoozedAt': number;
 }
 
-export const WELCOME_STATES = ['new', 'asked', 'again'] as const;
-export type WelcomeState = (typeof WELCOME_STATES)[number];
-
-export const DRILL_MODES = ['solve', 'recognise'] as const;
-export type DrillMode = (typeof DRILL_MODES)[number];
-
-export const STATS_SCOPES = ['all', 'recent', 'session'] as const;
-export type StatsScope = (typeof STATS_SCOPES)[number];
-
-export const PHASE_TREND_MODES = ['stacked', 'separate', 'share'] as const;
-export type PhaseTrendMode = (typeof PHASE_TREND_MODES)[number];
-
 export const SETTING_DEFAULTS: SettingValues = {
   'timer.holdThresholdMs': 300,
   'timer.inspectionEnabled': false,
@@ -329,6 +338,89 @@ function isDeviceLocal(key: string): Flag {
   return DEVICE_LOCAL_PREFIXES.some((prefix) => key.startsWith(prefix)) ? 1 : 0;
 }
 
+type Guard<T> = (value: unknown) => value is T;
+
+const isSwitch: Guard<boolean> = (value): value is boolean => typeof value === 'boolean';
+const isText: Guard<string> = (value): value is string => typeof value === 'string';
+const isNumber: Guard<number> = (value): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+/** A length of time, a moment or a size: never below nothing. */
+const isCount: Guard<number> = (value): value is number => isNumber(value) && value >= 0;
+
+function oneOf<T extends string>(members: readonly T[]): Guard<T> {
+  return (value): value is T => members.some((member) => member === value);
+}
+
+function listOf<T>(guard: Guard<T>): Guard<readonly T[]> {
+  return (value): value is readonly T[] => Array.isArray(value) && value.every(guard);
+}
+
+/**
+ * What each setting may hold. Checked on every read, because what is stored
+ * is not only what this version wrote: a backup from a newer one, or an
+ * installed copy the service worker has kept a version behind, brings values
+ * this code has never heard of. The type of a value is not enough to tell —
+ * a clock asked to run as 'thousandths' is a string like any other.
+ *
+ * Keyed by the whole of SettingValues, so a setting added without saying what
+ * it may hold does not build.
+ */
+const SETTING_GUARDS: { [K in SettingKey]: Guard<SettingValues[K]> } = {
+  'timer.holdThresholdMs': isCount,
+  'timer.inspectionEnabled': isSwitch,
+  'timer.inspectionCues': listOf(isCount),
+  'timer.showScramblePreview': isSwitch,
+  'timer.splitMode': oneOf(['total', 'phases']),
+  'timer.runningDisplay': oneOf(RUNNING_DISPLAYS),
+  'timer.showNextRecord': isSwitch,
+  'timer.haptics': isSwitch,
+  'ui.theme': oneOf(THEMES),
+  'ui.font': oneOf(FONTS),
+  'ui.textSize': oneOf(SIZES),
+  'ui.clockSize': oneOf(SIZES),
+  'ui.clockFace': oneOf(CLOCK_FACES),
+  'ui.twistyMode': oneOf(['2D', '3D']),
+  // Any name: a skin this version does not have is drawn as the default one.
+  'ui.cubeSkin': isText,
+  'ui.caseLayout': oneOf(CASE_LAYOUTS),
+  'ui.showLearn': isSwitch,
+  'ui.showLearn.222': isSwitch,
+  'ui.learnExplanations': isSwitch,
+  // Ids and names from here on are read by something that knows what to do
+  // with one it cannot find — see each key above.
+  'ui.learnMethod': isText,
+  'ui.learnMethod.222': isText,
+  'ui.puzzle': isText,
+  'ui.installNudgeDismissed': isSwitch,
+  'ui.welcome': oneOf(WELCOME_STATES),
+  'trainer.twoLookDefault': isSwitch,
+  'trainer.showAlgs': isSwitch,
+  'trainer.showRotationAlgs': isSwitch,
+  'trainer.setId': isText,
+  'trainer.lastLevels': listOf(isText),
+  'trainer.drillSetId': isText,
+  'trainer.drillMode': oneOf(DRILL_MODES),
+  'trainer.drillCaseIds': listOf(isText),
+  'trainer.crossFront': isText,
+  'trainer.sheetInColour': isSwitch,
+  // A window of no solves is a chart of nothing.
+  'stats.chartWindow': (value): value is number => isCount(value) && value >= 1,
+  'stats.phaseTrendMode': oneOf(PHASE_TREND_MODES),
+  'stats.phaseTrendSmoothed': isSwitch,
+  'stats.scope': oneOf(STATS_SCOPES),
+  'stats.goalMs': isCount,
+  'stats.goalMs.222': isCount,
+  'stats.trendByDay': isSwitch,
+  'stats.tagId': isText,
+  'data.lastExportAt': isCount,
+  'data.lastExportBytes': isCount,
+  'audio.voiceShadow': isSwitch,
+  // Each record is checked where it is read (`readShadowRecords`).
+  'audio.voiceShadowLog': (value): value is readonly unknown[] => Array.isArray(value),
+  'audio.voiceLoudnessDb': isNumber,
+  'data.backupReminderSnoozedAt': isCount,
+};
+
 export async function getSetting<K extends SettingKey>(key: K): Promise<SettingValues[K]> {
   const row = await db.settings.get(key);
   // A value written by a newer version can be anything; the default is the
@@ -337,9 +429,8 @@ export async function getSetting<K extends SettingKey>(key: K): Promise<SettingV
 }
 
 function isValueFor<K extends SettingKey>(key: K, value: unknown): value is SettingValues[K] {
-  const fallback = SETTING_DEFAULTS[key];
-  if (Array.isArray(fallback)) return Array.isArray(value);
-  return typeof value === typeof fallback;
+  const guard: Guard<SettingValues[K]> = SETTING_GUARDS[key];
+  return guard(value);
 }
 
 /** What is stored, key by key, before any of it is checked against a type. */

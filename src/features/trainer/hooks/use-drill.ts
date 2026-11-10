@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { AlgCase, Algorithm, Penalty } from '../../../db/types';
-import { listCasesWithAlgs, type CaseWithAlg } from '../../../db/repositories/alg-repository';
+import type { AlgCase, Algorithm, CaseWithAlg, Penalty } from '../../../db/types';
+import { listCasesWithAlgs } from '../../../db/repositories/alg-repository';
 import { addDrillSolve, loadDrillPool } from '../../../db/repositories/drill-repository';
 import { deleteSolve, setPenalty } from '../../../db/repositories/solve-repository';
 import { togglePenalty } from '../../../domain/solve/penalty';

@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { MethodPhase, Session, Solve } from '../../../db/types';
+import type { MethodPhase, Session, Solve, SolvePatch } from '../../../db/types';
 import { getMethodPhases } from '../../../db/repositories/method-repository';
 import { getSession } from '../../../db/repositories/session-repository';
-import { getSolve, updateSolve, type SolvePatch } from '../../../db/repositories/solve-repository';
+import { getSolve, updateSolve } from '../../../db/repositories/solve-repository';
 import { watchWrite } from '../../../lib/errors';
 import { strings } from '../../../lib/strings';
 

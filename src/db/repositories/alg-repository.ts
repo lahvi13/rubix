@@ -1,5 +1,5 @@
 import { db } from '../schema';
-import type { AlgCase, AlgSet, Algorithm } from '../types';
+import type { AlgCase, AlgSet, Algorithm, CaseWithAlg } from '../types';
 import { formatAlg, parseAlg } from '../../domain/cube/notation';
 import { SET_ORDER, withTwin } from '../../domain/alg/sets';
 import { now } from '../../lib/clock';
@@ -15,12 +15,6 @@ function normaliseMoves(moves: string): string {
   // Brackets travel with it: where somebody put them is how they remember the
   // algorithm, and it is not the app's to tidy away.
   return parsed.ok ? formatAlg(parsed.moves, parsed.groups) : moves.trim();
-}
-
-export interface CaseWithAlg {
-  algCase: AlgCase;
-  /** The variant the user drills; the pack one unless they picked another. */
-  active: Algorithm | null;
 }
 
 /** In solving order (SET_ORDER); anything the packs do not name goes last. */

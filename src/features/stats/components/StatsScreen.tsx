@@ -4,7 +4,7 @@ import {
   STATS_SCOPES,
   type PhaseTrendMode,
   type StatsScope,
-} from '../../../db/repositories/settings-repository';
+} from '../../../db/types';
 import { useGoalMs } from '../../../hooks/use-goal';
 import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useSetting } from '../../../hooks/use-setting';

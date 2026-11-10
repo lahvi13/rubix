@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { AlgCase, Algorithm } from '../../../db/types';
-import { listCasesWithAlgs, type CaseWithAlg } from '../../../db/repositories/alg-repository';
+import type { AlgCase, Algorithm, CaseWithAlg } from '../../../db/types';
+import { listCasesWithAlgs } from '../../../db/repositories/alg-repository';
 import { loadDrillPool } from '../../../db/repositories/drill-repository';
 import { addRecognitionAttempt } from '../../../db/repositories/recognition-repository';
 import { parseAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';

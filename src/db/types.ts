@@ -185,3 +185,42 @@ export interface Tombstone {
   table: string;
   deletedAt: number;
 }
+
+/*
+ * What follows is not stored as a row of its own. It is here because the
+ * screens name it too, and a component takes its types from this file, never
+ * from a repository.
+ */
+
+/** A case with the algorithm it is drilled with. */
+export interface CaseWithAlg {
+  algCase: AlgCase;
+  /** The variant the user drills; the pack one unless they picked another. */
+  active: Algorithm | null;
+}
+
+/** Fields the user is allowed to change after the fact. */
+export interface SolvePatch {
+  penalty?: Penalty;
+  rawMs?: number;
+  note?: string | null;
+  starred?: 0 | 1;
+  tagIds?: string[];
+  splits?: Split[];
+  /** Required alongside splits, so splits outside the method can be dropped. */
+  phaseKeys?: readonly string[];
+}
+
+/* The settings that are one of a list. The list is what a stored value is checked against. */
+
+export const WELCOME_STATES = ['new', 'asked', 'again'] as const;
+export type WelcomeState = (typeof WELCOME_STATES)[number];
+
+export const DRILL_MODES = ['solve', 'recognise'] as const;
+export type DrillMode = (typeof DRILL_MODES)[number];
+
+export const STATS_SCOPES = ['all', 'recent', 'session'] as const;
+export type StatsScope = (typeof STATS_SCOPES)[number];
+
+export const PHASE_TREND_MODES = ['stacked', 'separate', 'share'] as const;
+export type PhaseTrendMode = (typeof PHASE_TREND_MODES)[number];

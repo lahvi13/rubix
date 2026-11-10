@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CubeDiagram } from '../../../components/CubeDiagram';
-import type { DrillMode } from '../../../db/repositories/settings-repository';
+import type { DrillMode } from '../../../db/types';
 import { caseTitle } from '../../../domain/alg/case-name';
 import { formatAlg, type Move, type MoveGroup } from '../../../domain/cube/notation';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';

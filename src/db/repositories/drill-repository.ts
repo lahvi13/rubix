@@ -4,7 +4,8 @@ import type { Penalty, Puzzle, Solve } from '../types';
 import { drillPool } from '../../domain/drill/selection';
 import { now } from '../../lib/clock';
 import { listAttempts, listAttemptsGrouped } from './case-attempts';
-import { listCasesWithAlgs, markCaseLearning, type CaseWithAlg } from './alg-repository';
+import { listCasesWithAlgs, markCaseLearning } from './alg-repository';
+import type { CaseWithAlg } from '../types';
 import { getOrCreateActiveSession } from './session-repository';
 import { addSolve, deleteSolves } from './solve-repository';
 
