@@ -23,6 +23,12 @@ const commit = ((): string => {
   }
 })();
 
+// The tests run in one timezone wherever they run. A csTimer CSV carries the
+// wall clock of the device that wrote it and no zone, so reading the fixture
+// gives the instants its JSON twin holds only where the two were exported —
+// and a build machine is on UTC. Set before the workers start, which inherit it.
+if (process.env.VITEST) process.env.TZ = 'Europe/Prague';
+
 export default defineConfig({
   // Shown in the header so anyone can tell at a glance which build they run —
   // service worker updates are otherwise invisible.
