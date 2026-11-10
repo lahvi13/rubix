@@ -6,6 +6,15 @@ import '@testing-library/jest-dom/vitest';
 // rendered trees would pile up across tests.
 afterEach(cleanup);
 
+// A touch lifted off the timer leaves a listener on the window that eats the
+// one click the tap would bring with it, for 300 ms (`swallowTapClick`). The
+// window outlives the test, so that listener ate the first click of whichever
+// test came next inside those 300 ms — on a machine quick enough to get there.
+// One click nobody is listening for uses them all up.
+afterEach(() => {
+  window.dispatchEvent(new MouseEvent('click', { cancelable: true }));
+});
+
 // A screen answering a live query under fake-indexeddb redraws in well under
 // a second alone, and in a full run — a hundred files at once — in more than
 // the default second some of the time: the drill and the trainer each failed
