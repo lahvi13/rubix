@@ -1831,3 +1831,86 @@ Každý bod má větu „hotovo, když…“ — podle ní se odškrtává.
    a nalezené chyby jsou opravené.
 8. **Screenshoty do README skriptem v repu** (`scripts/`), s vymyšlenými daty.
    *Hotovo, když* `npm run screenshots` vyrobí všechny obrázky v `docs/`.
+
+### Fáze 10 — Po druhém hodnocení (10. 11. 2026)
+
+Druhé hodnocení šlo po kódu a po provozu, ne po funkcích: kontroly (tsc, lint,
+5 747 testů, build), pravidla z CLAUDE.md, devět obrazovek v prohlížeči na
+412 px a 1366 px, co doopravdy odchází v beaconu. Chybu, která by rozbíjela
+funkci, nenašlo; našlo místa, kde appku drží jen disciplína. Pravidla jsou
+stejná jako ve fázi 9: body jeden po druhém, každý má „hotovo, když…“, co mění
+vzhled, začíná náhledem „teď vs. návrh“. Bloky D a E jdou **před** bodem 5
+fáze 9 — jsou krátké a chrání veřejnou produkci.
+
+**Blok D — provoz (nic z toho uživatel neuvidí)**
+
+1. **Testy hlídají nasazení.** Dnes push do `main` nasazuje po `npm run build`
+   (tsc + vite); lint a testy běží, jen když je někdo pustí ručně. *Hotovo,
+   když* červený test nebo lint zastaví nasazení dřív, než se dostane na
+   produkci — build příkazem ve Workers Builds, nebo workflow v `.github/`,
+   který je vidět u commitu — a je to zapsané v CLAUDE.md.
+2. **CSP a bezpečnostní hlavičky.** `public/_headers` řeší jen cache; „nic
+   neopouští zařízení“ má vynutit prohlížeč, ne jen kód. `connect-src` jen
+   vlastní origin a cloudflareinsights, k tomu `nosniff`, `Referrer-Policy`,
+   `frame-ancestors`, `Permissions-Policy` s mikrofonem jen pro vlastní origin.
+   *Hotovo, když* na preview URL s hlavičkami projde v prohlížeči scramble
+   (worker + WASM cubing.js), přehrání algoritmu ve 3D, hlasová zkouška, tisk
+   taháku, sdílení obrázku a update service workeru bez jediného hlášení CSP
+   v konzoli, a pokus o `fetch` jinam skončí chybou.
+3. **Analytika: rozhodnout, co se měří.** Změřeno: beacon hlásí vždy cestu `/`
+   (část za `#` neposílá — sdílený scramble tedy neodchází) a `"spa": true`
+   k tomu přidává zobrazení `/` při každém volání history API. Obrazovky se
+   tím nerozliší. *Hotovo, když* je rozhodnuto mezi „jen návštěvy“ (`spa`
+   pryč) a dnešním stavem, je ověřeno, jestli zobrazení přidává i otevření
+   sheetu, a věta v CLAUDE.md („Co se nikdy nedělá“, bod 1) říká, co se
+   doopravdy měří.
+
+**Blok E — odolnost a pořádek v kódu**
+
+4. **Nastavení se validuje podle klíče, ne podle `typeof`.** Hodnota výčtu
+   z novější verze nebo z upravené zálohy dnes projde (`isValueFor`
+   v `settings-repository.ts`). *Hotovo, když* každý klíč má validátor
+   v tabulce `Record<SettingKey, …>` (nový klíč bez něj shodí build), neznámá
+   hodnota se čte jako výchozí a test to dokládá pro každý výčtový klíč.
+5. **Výpočet statistik je čistá funkce.** `useMemo` v `use-session-stats.ts`
+   (okno trendu, kalendář tréninku, rekordy) se přestěhuje do `domain/stats/`
+   s časem v parametru; hook jen čte a volá. *Hotovo, když* má funkce tabulkové
+   testy včetně hraničních případů, obrazovka dává stejná čísla jako předtím
+   (ověřeno i nad skutečnou zálohou) a „dnešek“ se po půlnoci přepočítá bez
+   znovunačtení.
+6. **Drobnosti z hodnocení.** Doslovný bajt NUL v `domain/transfer/merge.ts`
+   zapsat jako `\0`; typy `DrillMode`, `PhaseTrendMode`, `StatsScope`
+   a `WelcomeState` přestěhovat ze settings-repository tam, odkud je komponenty
+   smí importovat; `updateSolve` číst i zapisovat v jedné transakci;
+   `npm audit fix` pro vývojové závislosti. *Hotovo, když* grep nečte žádný
+   zdroják jako binární, žádná komponenta neimportuje z `db/repositories/`
+   a `npm audit` nehlásí nic, co jde opravit bez zlomové změny.
+7. **`TimerScreen` drží míň stavu.** „Výsledek posledního solvu“ (co se pod
+   časem ukazuje, čí je to scramble, jaký rekord to byl) jde do vlastního
+   hooku. Jen když se do timeru bude sahat kvůli něčemu dalšímu — samo o sobě
+   to nic neopravuje. *Hotovo, když* komponenta nemá přes ~350 řádků, testy
+   timeru projdou beze změny a měření z PERFORMANCE.md se nezhorší.
+
+**Blok F — UI (každý bod začíná náhledem)**
+
+8. **Zvolená volba vypadá všude stejně.** Dnes zelený obrys (sady, nastavení,
+   navigace sekcí), šedě vyplněná pilulka (rozsah statistik, druh rekordu),
+   podtržená záložka (Složit / Poznat) a segment (úrovně, stav případu); ve
+   statistikách dvě z nich pod sebou. *Hotovo, když* z náhledu vyjde, které
+   podoby zůstanou a co která znamená, je to zapsané v CLAUDE.md u pravidla
+   o tlačítkách a obrazovky podle toho vypadají v obou motivech.
+9. **Dril dělí sady po metodách jako trenažér.** Plochá řada (Cross, F2L, OLL,
+   PLL, SB, CMLL, EO, EOLR) se s další metodou přestane dát číst. *Hotovo,
+   když* je v drilu vidět, ke které metodě sada patří, výběr je pořád jedním
+   ťuknutím a na 412 px s velkým textem nezabere víc řad než dnes.
+10. **Cíle pro palec.** Pod ~44 px, které slibuje `tap-targets.css`, jsou čipy
+    ve statistikách (32 px), „Zpět nahoru“ (28×32), přepínač kostky (36×36)
+    a `+2 / DNF / Smazat` na timeru (36 px, Smazat hned vedle DNF). Řádky
+    historie jsou nízké schválně a zůstávají. *Hotovo, když* jmenované prvky
+    mají plochu na ťuknutí aspoň 44 px (klidně větší než to, co je vidět), mezi
+    DNF a Smazat je mezera, kterou palec netrefí omylem, a obrazovky se tím
+    neprodlouží o řadu.
+11. **Statistiky napříč session říkají, čí jsou.** V rozsahu „Všechny session“
+    stojí pod volbou „Session Výchozí“, což se čte jako rozpor. *Hotovo, když*
+    řádek v rozsazích napříč session jmenuje to, co čísla opravdu spojuje
+    (metodu), a přepnutí na druhou metodu z něj jde pořád jedním ťuknutím.
