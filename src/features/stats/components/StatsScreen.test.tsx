@@ -460,7 +460,9 @@ describe('StatsScreen', () => {
       // and that button must not pass for the line naming the method.
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
       expect(await screen.findByText('2 solves')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'CFOP' })).toBeInTheDocument();
+      // Waited for as well: the method's name is a query of its own, and
+      // comes a tick after the count.
+      expect(await screen.findByRole('button', { name: 'CFOP' })).toBeInTheDocument();
       expect((await getActiveSession('333', 'freestyle'))?.id).toBe(sessionId);
     });
 
