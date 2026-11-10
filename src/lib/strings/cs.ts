@@ -217,7 +217,6 @@ export const cs: Strings = {
     tagFilter: 'Jen složení s tímto tagem',
     tagLabel: 'Tag',
     withTag: (name: string) => `s tagem ${name}`,
-    methodOnly: (method: string) => `jen ${method}`,
     emptyTag: 'S tímto tagem zatím žádná složení.',
     solveCount: (count: number) => `${count} složení`,
     averages: 'Průměry',

@@ -240,7 +240,6 @@ export const en = {
     tagLabel: 'Tag',
     withTag: (name: string) => `tagged ${name}`,
     /** After the count, where sessions timed in another method were left out. */
-    methodOnly: (method: string) => `${method} only`,
     emptyTag: 'No solves with this tag yet.',
     solveCount: (count: number) => `${count} ${count === 1 ? 'solve' : 'solves'}`,
     averages: 'Averages',

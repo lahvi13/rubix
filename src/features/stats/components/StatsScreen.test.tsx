@@ -389,7 +389,8 @@ describe('StatsScreen', () => {
       render(<StatsScreen />);
 
       // One Roux solve — not three solves with a mean of thirty-four seconds.
-      expect(await screen.findByText(/^1 solve · Roux only$/)).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Roux' })).toBeInTheDocument();
+      expect(await screen.findByText('1 solve')).toBeInTheDocument();
       expect(screen.getByText('Mean').closest('.stat-card')?.textContent).toContain('1:00.00');
     });
 
@@ -402,7 +403,8 @@ describe('StatsScreen', () => {
 
       render(<StatsScreen />);
 
-      expect(await screen.findByText(/^2 solves · CFOP only$/)).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'CFOP' })).toBeInTheDocument();
+      expect(await screen.findByText('2 solves')).toBeInTheDocument();
       expect(screen.getByText('Mean').closest('.stat-card')?.textContent).toContain('21.00');
     });
 
@@ -414,7 +416,24 @@ describe('StatsScreen', () => {
       render(<StatsScreen />);
 
       expect(await screen.findByText('2 solves')).toBeInTheDocument();
-      expect(screen.queryByText(/only$/)).not.toBeInTheDocument();
+      // Nor a session: across sessions of one method there is nothing to tell
+      // apart, and one session's name under "All sessions" read as a contradiction.
+      expect(screen.queryByText('Method')).not.toBeInTheDocument();
+      expect(screen.queryByText('Session')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Evening' })).not.toBeInTheDocument();
+    });
+
+    it('names the session once the numbers are those of one session', async () => {
+      await seedSolve(sessionId, 20_000);
+      const blocks = await createSession('Blocks', '333', 'freestyle', 'roux');
+      await seedSolve(blocks.id, 60_000);
+      const user = userEvent.setup();
+
+      render(<StatsScreen />);
+      await user.click(await screen.findByRole('button', { name: 'This session' }));
+
+      expect(await screen.findByRole('button', { name: 'Blocks' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Roux' })).not.toBeInTheDocument();
     });
 
     it('switches session from any scope, which is how the other method is reached', async () => {
@@ -425,18 +444,20 @@ describe('StatsScreen', () => {
       const user = userEvent.setup();
 
       render(<StatsScreen />);
-      await screen.findByText(/^1 solve · Roux only$/);
+      // Across sessions the method is what is named, and pressing it is how
+      // the session — and with it the method — is changed.
+      const method = await screen.findByRole('button', { name: 'Roux' });
 
-      // Across sessions, and the session in use is named and can be changed.
       expect(screen.getByRole('button', { name: 'All sessions' })).toHaveAttribute(
         'aria-pressed',
         'true',
       );
-      await user.click(screen.getByRole('button', { name: 'Blocks' }));
+      await user.click(method);
       const picker = await screen.findByRole('dialog');
       await user.click(await within(picker).findByRole('button', { name: /^Default/ }));
 
-      expect(await screen.findByText(/^2 solves · CFOP only$/)).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'CFOP' })).toBeInTheDocument();
+      expect(await screen.findByText('2 solves')).toBeInTheDocument();
       expect((await getActiveSession('333', 'freestyle'))?.id).toBe(sessionId);
     });
 
@@ -447,7 +468,7 @@ describe('StatsScreen', () => {
       await seedSolve(blocks.id, 64_000);
 
       render(<StatsScreen />);
-      await screen.findByText(/^2 solves · Roux only$/);
+      await screen.findByRole('button', { name: 'Roux' });
 
       // Four times slower than the CFOP best, and the best Roux there is.
       expect(await card(/PB single/i)).toContain('58.00');
@@ -480,7 +501,7 @@ describe('StatsScreen', () => {
 
       render(<StatsScreen />);
 
-      await screen.findByText(/^1 solve · ZZ only$/);
+      await screen.findByRole('button', { name: 'ZZ' });
       expect(screen.queryByText(/^Phase averages/)).not.toBeInTheDocument();
     });
   });

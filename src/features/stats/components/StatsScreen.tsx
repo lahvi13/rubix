@@ -13,7 +13,7 @@ import { strings } from '../../../lib/strings';
 import { BackupReminder } from '../../data-transfer';
 import { SolveDetailSheet, useTags } from '../../history';
 import { SessionPicker, useActiveSession, useMethodLabel } from '../../sessions';
-import { PhaseAverages, useMethodName, usePhases } from '../../splits';
+import { PhaseAverages, usePhases } from '../../splits';
 import { useStatsScope } from '../hooks/use-stats-scope';
 import type { Average, AverageWindow } from '../../../domain/stats/averages';
 import {
@@ -153,7 +153,6 @@ export function StatsScreen() {
   // also whose solves are read — see useSessionStats.
   const methodId = session?.methodId ?? null;
   const phases = usePhases(methodId);
-  const methodName = useMethodName(methodId);
   const phaseKeys = useMemo(() => phases.map((phase) => phase.key), [phases]);
   const [scope, setScope] = useStatsScope();
   const tags = useTags();
@@ -246,34 +245,34 @@ export function StatsScreen() {
             </div>
           ) : null}
           <p className="history__summary">
-            {/* In every scope, as on the timer and in the history. Across
-                sessions the name used to be left out, because switching
-                changed nothing there; now those scopes read the method of the
-                session in use, and switching it is how the other method's
-                numbers are reached. */}
-            <span className="summary__session">
-              {strings.sessions.label}
-              <button
-                type="button"
-                className="session-switch"
-                title={strings.sessions.switchSession}
-                onClick={() => setPickerOpen(true)}
-              >
-                {session?.name}
-              </button>
-            </span>
+            {/* Whose numbers these are, and the way to somebody else's. One
+                session's are that session's. Across sessions they are a
+                method's — the one being timed in — so that is what is named,
+                and the same press, which switches session, is how the other
+                method's numbers are reached. While every session is timed in
+                one method there is nothing across them to tell apart or to
+                switch to, and "Session Evening" under "All sessions" read as
+                the screen contradicting itself: the line is the count alone. */}
+            {isAllSessions && methodLabel === null ? null : (
+              <span className="summary__session">
+                {isAllSessions ? strings.sessions.method : strings.sessions.label}
+                <button
+                  type="button"
+                  className="session-switch"
+                  title={strings.sessions.switchSession}
+                  onClick={() => setPickerOpen(true)}
+                >
+                  {isAllSessions ? methodLabel : session?.name}
+                </button>
+              </span>
+            )}
             <span>
-              <span aria-hidden="true">· </span>
+              {isAllSessions && methodLabel === null ? null : <span aria-hidden="true">· </span>}
               <span>
                 {stats.availableCount > stats.solveCount
                   ? strings.stats.solvesOf(stats.solveCount, stats.availableCount)
                   : strings.stats.solveCount(stats.solveCount)}
                 {tag === null ? null : ` · ${strings.stats.withTag(tag.name)}`}
-                {/* Only where it changes the answer: with every session in one
-                    method there is nobody to tell the numbers apart from. */}
-                {stats.otherMethodsLeftOut && methodName !== null
-                  ? ` · ${strings.stats.methodOnly(methodName)}`
-                  : null}
               </span>
             </span>
           </p>

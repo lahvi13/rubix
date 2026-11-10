@@ -211,11 +211,6 @@ export interface SessionStats {
   phaseRows: PhaseAverageRow[];
   /** How many of the solves were timed by phase — the sample behind phaseRows. */
   measuredCount: number;
-  /**
-   * Whether sessions timed in another method were left out of a reading
-   * across sessions — so the screen can say whose numbers these are.
-   */
-  otherMethodsLeftOut: boolean;
   /** One point per phase-timed solve — raw lengths plus the rolling mean. */
   phaseTrend: PhaseTrendPoint[];
   /** null while no goal is set. */
@@ -399,7 +394,6 @@ export function useSessionStats(
       bestAo12Ms: typeof bestAo12 === 'number' ? bestAo12 : null,
       phaseRows: phaseKeys.length === 0 ? [] : phaseAverageTable(solves, phaseKeys),
       measuredCount: measuredSolves(solves).length,
-      otherMethodsLeftOut: ofMethod.length < loaded.length,
       phaseTrend: phaseTrend(solves, phaseKeys, window),
       goal:
         goalMs === undefined || goalMs <= 0

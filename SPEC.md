@@ -161,15 +161,20 @@ session; kdo si chce jednou složit jinak, má na to druhou session. Z toho:
 
 - **rozsahy „Všechny session“ a „Posledních 100“ čtou jen session metody, ve
   které se právě měří** — průměry, rekordy, grafy, cíl, praxi i fáze. Průměr
-  dvacetivteřinového CFOP a minutového Rouxu je číslo o ničem. Když se tím
-  něco vynechá, říká to řádek s počtem („2 složení · jen Roux“); dokud jsou
-  všechny session jedné metody, obrazovka je stejná jako dřív
+  dvacetivteřinového CFOP a minutového Rouxu je číslo o ničem. Čí čísla to
+  jsou, říká řádek pod volbou rozsahu („Metoda Roux · 2 složení“, viz níž);
+  dokud jsou všechny session jedné metody, metodu nikdo nejmenuje
 - **PB single se vede pro každou metodu zvlášť**, napříč všemi jejími session
   včetně archivovaných. První Roux pod minutu je rekord, ať CFOP dělá cokoli —
   na timeru, v historii, v detailu i ve statistikách (`getMethodPbSolve`)
-- **jméno session s přepínačem je ve statistikách ve všech rozsazích.** Dřív
-  jen u „Tato session“ — napříč session přepnutí nic neměnilo. Teď se jím
-  dojde k číslům druhé metody, a bez něj by se k nim ze statistik nedalo dostat
+- **řádek pod volbou rozsahu říká, čí čísla to jsou, a je cestou k cizím**
+  (změněno 2026-11-10). U „Tato session“ jmenuje session. Napříč session
+  jmenuje **metodu** („Metoda Roux“), protože ta čísla spojuje — a stejné
+  ťuknutí, výběr session, je cesta k číslům druhé metody. Dokud jsou všechny
+  session jedné metody, není napříč nimi co rozlišovat ani kam přepnout,
+  a řádek je jen počet složení: „Session Výchozí“ pod zvolenými „Všechny
+  session“ se četlo jako rozpor. Metoda se jmenuje stejným pravidlem jako
+  na timeru (`useMethodLabel`)
 - **timer metodu jmenuje**, jakmile jsou session v užívání ve víc metodách
   (`useMethodLabel`, stejné pravidlo jako u řádků ve výběru session): session
   se nemusí jmenovat po metodě, a ta rozhoduje, co je rekord. Stojí na konci
@@ -1938,7 +1943,7 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
     historie jsou nízké schválně a zůstávají. *Hotovo, když* jmenované prvky
     mají plochu na ťuknutí aspoň 44 px (klidně větší než to, co je vidět)
     a obrazovky se tím neprodlouží o řadu.
-11. **Statistiky napříč session říkají, čí jsou.** V rozsahu „Všechny session“
+11. ✅ *(hotovo 10. 11. 2026; jak přesně, je v 3.4)* **Statistiky napříč session říkají, čí jsou.** V rozsahu „Všechny session“
     stojí pod volbou „Session Výchozí“, což se čte jako rozpor. *Hotovo, když*
     řádek v rozsazích napříč session jmenuje to, co čísla opravdu spojuje
     (metodu), a přepnutí na druhou metodu z něj jde pořád jedním ťuknutím.
