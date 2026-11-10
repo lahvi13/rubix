@@ -456,8 +456,11 @@ describe('StatsScreen', () => {
       const picker = await screen.findByRole('dialog');
       await user.click(await within(picker).findByRole('button', { name: /^Default/ }));
 
-      expect(await screen.findByRole('button', { name: 'CFOP' })).toBeInTheDocument();
+      // Once the picker is gone: it offers CFOP as a method for a new session,
+      // and that button must not pass for the line naming the method.
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
       expect(await screen.findByText('2 solves')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'CFOP' })).toBeInTheDocument();
       expect((await getActiveSession('333', 'freestyle'))?.id).toBe(sessionId);
     });
 
