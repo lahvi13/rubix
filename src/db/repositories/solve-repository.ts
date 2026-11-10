@@ -1,6 +1,13 @@
 import Dexie, { type Collection } from 'dexie';
 import { db } from '../schema';
-import { SPLITS_SCHEMA_VERSION, type Penalty, type Puzzle, type Solve, type Split } from '../types';
+import {
+  SPLITS_SCHEMA_VERSION,
+  type Penalty,
+  type Puzzle,
+  type Solve,
+  type SolvePatch,
+  type Split,
+} from '../types';
 import { finalMs } from '../../domain/solve/final-time';
 import { clampSplitsToRaw, normaliseSplits } from '../../domain/solve/splits';
 import type { RecordCounts } from '../../domain/transfer/backup-reminder';
@@ -24,18 +31,6 @@ export interface NewSolve {
   /** Phase boundaries, cumulative from the start. Omitted for a solve timed as a whole. */
   splits?: Split[];
   /** Method phase keys, in order — splits outside them cannot be read back and are dropped. */
-  phaseKeys?: readonly string[];
-}
-
-/** Fields the user is allowed to change after the fact. */
-export interface SolvePatch {
-  penalty?: Penalty;
-  rawMs?: number;
-  note?: string | null;
-  starred?: 0 | 1;
-  tagIds?: string[];
-  splits?: Split[];
-  /** Required alongside splits, for the same reason as in NewSolve. */
   phaseKeys?: readonly string[];
 }
 
@@ -279,21 +274,28 @@ export async function updateSolve(id: string, patch: SolvePatch): Promise<void> 
   }
   if (patch.rawMs !== undefined) changes.rawMs = Math.round(patch.rawMs);
 
+  if (patch.note !== undefined) changes.note = patch.note;
+  if (patch.starred !== undefined) changes.starred = patch.starred;
+  if (patch.tagIds !== undefined) changes.tagIds = patch.tagIds;
+
+  if (patch.splits === undefined && patch.rawMs === undefined) {
+    await db.solves.update(id, changes);
+    return;
+  }
+
   // Splits are bounded by the raw time, so anything touching either of them
-  // has to be checked against the raw time this patch leaves behind.
-  if (patch.splits !== undefined || patch.rawMs !== undefined) {
+  // has to be checked against the raw time this patch leaves behind. Read and
+  // written as one: a second edit landing between the two would have its raw
+  // time or its splits measured against a row that is no longer there.
+  await db.transaction('rw', db.solves, async () => {
     const existing = await db.solves.get(id);
     const rawMs = changes.rawMs ?? existing?.rawMs ?? 0;
     changes.splits =
       patch.splits === undefined
         ? clampSplitsToRaw(existing?.splits ?? [], rawMs)
         : normaliseSplits(patch.splits, patch.phaseKeys ?? [], rawMs);
-  }
-  if (patch.note !== undefined) changes.note = patch.note;
-  if (patch.starred !== undefined) changes.starred = patch.starred;
-  if (patch.tagIds !== undefined) changes.tagIds = patch.tagIds;
-
-  await db.solves.update(id, changes);
+    await db.solves.update(id, changes);
+  });
 }
 
 /** Deleting always leaves a tombstone, otherwise a later import resurrects the row. */
