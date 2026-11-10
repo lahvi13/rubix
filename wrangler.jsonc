@@ -9,6 +9,11 @@
   // Must stay explicit: preview URLs default to whatever workers_dev is, so
   // dropping this line would disable them. Verified working with workers_dev off.
   "preview_urls": true,
+  // Empty on purpose, and required: a branch other than main is built with
+  // `wrangler preview`, which refuses to run without this block — every branch
+  // build failed at the deploy step until it was here. Assets and the rest are
+  // read from the top level.
+  "previews": {},
   // Assets-only Worker: no server code, just the built PWA.
   "assets": {
     "directory": "./dist",
