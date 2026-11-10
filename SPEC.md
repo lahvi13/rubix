@@ -1860,7 +1860,10 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
    (worker + WASM cubing.js), přehrání algoritmu ve 3D, hlasová zkouška, tisk
    taháku, sdílení obrázku a update service workeru bez jediného hlášení CSP
    v konzoli, a pokus o `fetch` jinam skončí chybou.
-3. **Analytika: rozhodnout, co se měří.** Změřeno: beacon hlásí vždy cestu `/`
+3. ✅ *(hotovo 10. 11. 2026: rozhodnuto „jen návštěvy“, `"spa": false`. Se
+   zapnutým `spa` se otevření sheetu neměřilo — po vypnutí je to bezpředmětné;
+   s vypnutým změřeno jedno hlášení při načtení a žádné při přechodech ani při
+   otevření sheetu)* **Analytika: rozhodnout, co se měří.** Změřeno: beacon hlásí vždy cestu `/`
    (část za `#` neposílá — sdílený scramble tedy neodchází) a `"spa": true`
    k tomu přidává zobrazení `/` při každém volání history API. Obrazovky se
    tím nerozliší. *Hotovo, když* je rozhodnuto mezi „jen návštěvy“ (`spa`

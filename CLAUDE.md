@@ -144,9 +144,12 @@ Vitest + `@testing-library/react` + `fake-indexeddb`.
    `static.cloudflareinsights.com`, snippet v `index.html`). Beacon nesmí do precache
    ani do runtime cachingu — jde vždy na síť — a jeho výpadek nesmí nic rozbít:
    je to samostatný `<script type="module">`, který na ničem nezávisí a nikdo na něj
-   nečeká. Parametr `"spa": true` v `data-cf-beacon` je oproti originálnímu snippetu
-   navíc a je povinný — bez něj se měří jen první načtení a přechody mezi obrazovkami
-   se nezapočítají. **Pravidlo vynucuje i prohlížeč:** `public/_headers` nese
+   nečeká. **Měří se, kolikrát někdo appku otevřel, a nic víc:** `"spa": false`
+   v `data-cf-beacon` je tam schválně. Beacon hlásí vždy cestu `/` — část za `#`
+   neposílá, takže sdílený scramble neodchází a obrazovky se rozlišit nedají —
+   a se zapnutým `spa` k tomu jen přidával další zobrazení `/` při každém přechodu
+   (změřeno 2026-11-10: s `false` jedno hlášení při načtení, žádné při přechodech
+   ani při otevření sheetu). **Pravidlo vynucuje i prohlížeč:** `public/_headers` nese
    Content-Security-Policy, která požadavek na jiný origin odmítne (beacon je
    v ní vyjmenovaný). Cokoli nového, co potřebuje jiný origin, inline skript
    nebo `eval`, tedy bez úpravy hlaviček tiše nepojede — a `vite preview`
