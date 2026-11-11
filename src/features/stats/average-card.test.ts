@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { averageCard } from './average-card';
-import type { AverageWindowView, WindowSolve } from './hooks/use-session-stats';
+import type { AverageWindowView, WindowSolve } from '../../domain/stats/session-stats';
 
 const DAY = 86_400_000;
 const START = Date.UTC(2026, 8, 20, 12);

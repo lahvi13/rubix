@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AVERAGE_WINDOWS, type AverageWindow } from '../../../domain/stats/averages';
 import { formatDate, formatMs } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import type { RecordEntry, RecordKind } from '../hooks/use-session-stats';
+import type { RecordEntry, RecordKind } from '../../../domain/stats/session-stats';
 
 const KINDS: readonly RecordKind[] = ['single', ...AVERAGE_WINDOWS];
 /** A first session sets a record nearly every solve; the recent ones are the story. */

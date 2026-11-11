@@ -1895,7 +1895,13 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
    v `settings-repository.ts`). *Hotovo, když* každý klíč má validátor
    v tabulce `Record<SettingKey, …>` (nový klíč bez něj shodí build), neznámá
    hodnota se čte jako výchozí a test to dokládá pro každý výčtový klíč.
-5. **Výpočet statistik je čistá funkce.** `useMemo` v `use-session-stats.ts`
+5. *(postaveno 11. 11. 2026, zbývá jediné: porovnání nad skutečnou zálohou.
+   Výpočet je `sessionStats()` v `domain/stats/session-stats.ts` s tabulkovými
+   testy; hook čte a volá. Nad vymyšlenými solvy — čtyři session, dvě metody,
+   archiv, tag, penalizace, fáze — říká obrazovka před a po totéž do znaku:
+   16 pohledů, 36 tisíc znaků. Dnešek hlídá `useToday()`, o půlnoci a při
+   návratu do popředí. 5 000 solvů spočítá za ~21 ms, 10 000 za ~34 ms)*
+   **Výpočet statistik je čistá funkce.** `useMemo` v `use-session-stats.ts`
    (okno trendu, kalendář tréninku, rekordy) se přestěhuje do `domain/stats/`
    s časem v parametru; hook jen čte a volá. *Hotovo, když* má funkce tabulkové
    testy včetně hraničních případů, obrazovka dává stejná čísla jako předtím

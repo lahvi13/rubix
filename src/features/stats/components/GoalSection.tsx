@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { parseTimeInput } from '../../../domain/solve/parse-time';
 import { formatGoal, formatRate } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import type { GoalStats } from '../hooks/use-session-stats';
+import type { GoalStats } from '../../../domain/stats/session-stats';
 
 interface GoalSectionProps {
   /** null while no goal is set. */

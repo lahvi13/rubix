@@ -20,9 +20,9 @@ import {
   PRACTICE_DAYS,
   RECENT_SOLVES,
   TREND_WINDOW,
-  useSessionStats,
   type WindowAt,
-} from '../hooks/use-session-stats';
+} from '../../../domain/stats/session-stats';
+import { useSessionStats } from '../hooks/use-session-stats';
 import { AverageSheet } from './AverageSheet';
 import { GoalSection } from './GoalSection';
 import { RecordsSection } from './RecordsSection';

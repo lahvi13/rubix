@@ -5,7 +5,7 @@ import { shareLinkFor } from '../../../domain/scramble/share-link';
 import { averageCard, averageCardFilename } from '../average-card';
 import { formatAverage, formatDate, formatMs, formatResult } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
-import type { AverageWindowView } from '../hooks/use-session-stats';
+import type { AverageWindowView } from '../../../domain/stats/session-stats';
 
 interface AverageSheetProps {
   view: AverageWindowView;

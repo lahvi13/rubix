@@ -330,3 +330,14 @@ export function startOfDay(ms: number): number {
   at.setHours(0, 0, 0, 0);
   return at.getTime();
 }
+
+/**
+ * The midnight after `ms` on the reader's clock: when their day key changes.
+ * Through the calendar rather than by adding a day's worth of milliseconds —
+ * twice a year a day is an hour short or an hour long.
+ */
+export function startOfNextDay(ms: number): number {
+  const at = new Date(ms);
+  at.setHours(24, 0, 0, 0);
+  return at.getTime();
+}

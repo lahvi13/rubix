@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { TrendPoint } from '../hooks/use-session-stats';
+import type { TrendPoint } from '../../../domain/stats/session-stats';
 import { timeAxis } from '../../../domain/stats/axis';
 import { now } from '../../../lib/clock';
 import { formatAxisMs, formatMs, formatShortDate, formatTime } from '../../../lib/format';

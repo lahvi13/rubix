@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { DayPoint } from '../hooks/use-session-stats';
+import type { DayPoint } from '../../../domain/stats/session-stats';
 import { timeAxis } from '../../../domain/stats/axis';
 import { dayKeyOf } from '../../../domain/stats/daily';
 import { formatAxisMs, formatDayKey, formatMs } from '../../../lib/format';

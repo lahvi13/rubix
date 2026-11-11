@@ -1,7 +1,7 @@
 import { formatAverage, formatDate, formatIsoDate, formatResult } from '../../lib/format';
 import type { ShareCard } from '../../lib/share-card';
 import { strings } from '../../lib/strings';
-import type { AverageWindowView } from './hooks/use-session-stats';
+import type { AverageWindowView } from '../../domain/stats/session-stats';
 
 /**
  * An average as a picture, written the way cubers post one: the number, then

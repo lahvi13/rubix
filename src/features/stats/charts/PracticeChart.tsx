@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import type { PracticeStats } from '../hooks/use-session-stats';
+import type { PracticeStats } from '../../../domain/stats/session-stats';
 import { formatDayKey } from '../../../lib/format';
 import { strings } from '../../../lib/strings';
 import { AXIS_PROPS, BAR_TOOLTIP_PROPS } from './chart-theme';

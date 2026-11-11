@@ -16,6 +16,9 @@ import {
   formatRunningParts,
   formatTime,
   formatWhen,
+  dayKey,
+  startOfDay,
+  startOfNextDay,
 } from './format';
 import { penaltyLabel } from '../domain/solve/final-time';
 import {
@@ -233,5 +236,35 @@ describe('formatDelta', () => {
     [0, '±0.00'],
   ])('%i ms is %s', (ms, expected) => {
     expect(formatDelta(ms)).toBe(expected);
+  });
+});
+
+describe('startOfNextDay', () => {
+  const HOUR_MS = 60 * 60 * 1000;
+
+  it.each([
+    ['just after midnight', new Date(2031, 2, 14, 0, 0, 1), new Date(2031, 2, 15)],
+    ['at noon', new Date(2031, 2, 14, 12), new Date(2031, 2, 15)],
+    ['a second before midnight', new Date(2031, 2, 14, 23, 59, 59), new Date(2031, 2, 15)],
+    ['on the last day of a month', new Date(2031, 0, 31, 9), new Date(2031, 1, 1)],
+    ['on the last day of a year', new Date(2031, 11, 31, 22), new Date(2032, 0, 1)],
+  ])('is the coming midnight %s', (_, at, midnight) => {
+    expect(startOfNextDay(at.getTime())).toBe(midnight.getTime());
+  });
+
+  it('is where the day key changes', () => {
+    const next = startOfNextDay(new Date(2031, 2, 14, 12).getTime());
+    expect(dayKey(next - 1)).toBe('2031-03-14');
+    expect(dayKey(next)).toBe('2031-03-15');
+  });
+
+  // The tests run in Europe/Prague (vite.config.ts), where the clocks go
+  // forward on 30 March 2031 and back on 26 October.
+  it.each([
+    ['an hour short in spring', new Date(2031, 2, 30, 0, 30), 23],
+    ['an hour long in autumn', new Date(2031, 9, 26, 0, 30), 25],
+    ['its usual length otherwise', new Date(2031, 5, 10, 0, 30), 24],
+  ])('finds midnight on a day that is %s', (_, at, hours) => {
+    expect(startOfNextDay(at.getTime()) - startOfDay(at.getTime())).toBe(hours * HOUR_MS);
   });
 });
