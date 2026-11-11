@@ -434,6 +434,34 @@ describe('DrillScreen', () => {
     expect(screen.getAllByText('3.21')).toEqual([within(recent).getByText('3.21')]);
   });
 
+  it('stands the sets in a row per method, as the trainer does', async () => {
+    render(<DrillScreen />);
+    await screen.findByText(CASE_SCRAMBLE);
+
+    const names = (method: string) =>
+      within(screen.getByRole('group', { name: method }))
+        .getAllByRole('button')
+        .map((button) => button.textContent);
+
+    expect(names('CFOP')).toEqual(['Cross', 'F2L', 'OLL', 'PLL']);
+    expect(names('Roux')).toEqual(['SB', 'CMLL', 'EO', 'EOLR']);
+  });
+
+  it('still picks a set of the other method in one tap', async () => {
+    const user = userEvent.setup();
+    render(<DrillScreen />);
+    await screen.findByText(CASE_SCRAMBLE);
+
+    await user.click(within(screen.getByRole('group', { name: 'Roux' })).getByRole('button', { name: 'CMLL' }));
+
+    await waitFor(async () => {
+      expect(await getSetting('trainer.drillSetId')).toMatch(/cmll$/);
+    });
+    expect(
+      within(screen.getByRole('group', { name: 'Roux' })).getByRole('button', { name: 'CMLL' }),
+    ).toHaveClass('is-active');
+  });
+
   it('does not carry the answer over to another set', async () => {
     const user = userEvent.setup();
     render(<DrillScreen />);

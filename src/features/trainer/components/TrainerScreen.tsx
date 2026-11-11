@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useId, useMemo, useState } from 'react';
 import { packLabel, strings } from '../../../lib/strings';
 import {
   BEGINNER_SET_ID,
@@ -6,13 +6,13 @@ import {
   FULL_SETS,
   LEVEL_BASE_SETS,
   TWO_LOOK_SETS,
+  setsByMethod,
 } from '../../../domain/alg/sets';
 import { navigate } from '../../../app/router';
 import { diagramFor } from '../case-view';
 import { sheetKindOf } from '../cheat-sheet';
 import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../levels';
 import { useAlgSets, useMethods, useSetCases, type CaseGroup } from '../hooks/use-alg-cases';
-import type { AlgSet } from '../../../db/types';
 import { useCubeSkin } from '../../../hooks/use-cube-skin';
 import { usePuzzle } from '../../../hooks/use-puzzle';
 import { useSetting } from '../../../hooks/use-setting';
@@ -67,12 +67,8 @@ export function TrainerScreen() {
   );
   // In solving order within a method, the methods in the order their first
   // set comes — CFOP's sets lead the list.
-  const setsByMethod = fullSets.reduce<{ methodId: string; sets: AlgSet[] }[]>((rows, set) => {
-    const row = rows.find((candidate) => candidate.methodId === set.methodId);
-    if (row) row.sets.push(set);
-    else rows.push({ methodId: set.methodId, sets: [set] });
-    return rows;
-  }, []);
+  const methodRows = setsByMethod(fullSets);
+  const methodLabelId = useId();
   const methods = useMethods();
   const methodNames = new Map((methods ?? []).map((method) => [method.id, method.name]));
   // Remembered rather than held for the visit: coming back from the timer to
@@ -130,10 +126,17 @@ export function TrainerScreen() {
     <main className="screen screen--scroll">
       {/* One row of sets per method once there is more than one, named, so
           2-Look CMLL is not read as the step after PLL. */}
-      {setsByMethod.map(({ methodId, sets: methodSets }) => (
-        <div key={methodId} className="trainer__sets">
-          {setsByMethod.length > 1 ? (
-            <span className="trainer__method">{methodNames.get(methodId) ?? methodId}</span>
+      {methodRows.map(({ methodId, sets: methodSets }) => (
+        <div
+          key={methodId}
+          className="trainer__sets"
+          role={methodRows.length > 1 ? 'group' : undefined}
+          aria-labelledby={methodRows.length > 1 ? `${methodLabelId}-${methodId}` : undefined}
+        >
+          {methodRows.length > 1 ? (
+            <span className="trainer__method" id={`${methodLabelId}-${methodId}`}>
+              {methodNames.get(methodId) ?? methodId}
+            </span>
           ) : null}
           {methodSets.map((set) => (
             <button

@@ -109,6 +109,28 @@ export function withTwin(caseId: string): string[] {
   return pair === undefined ? [caseId] : [...pair];
 }
 
+/** The sets of one method, as one row of them. */
+export interface MethodSets<T> {
+  methodId: string;
+  sets: T[];
+}
+
+/**
+ * Sets in a row per method: the sets keep the order they came in, and the
+ * methods stand in the order their first set comes. Both the trainer and the
+ * drill lay their sets out this way, so that CMLL is not read as the step
+ * after PLL.
+ */
+export function setsByMethod<T extends { methodId: string }>(sets: readonly T[]): MethodSets<T>[] {
+  const rows: MethodSets<T>[] = [];
+  for (const set of sets) {
+    const row = rows.find((candidate) => candidate.methodId === set.methodId);
+    if (row) row.sets.push(set);
+    else rows.push({ methodId: set.methodId, sets: [set] });
+  }
+  return rows;
+}
+
 /**
  * The order the sets are offered in: the order they come up in a solve, not
  * the alphabet. A trainer sorted A to Z puts the last layer before the cross,

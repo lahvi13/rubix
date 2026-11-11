@@ -1,15 +1,17 @@
 import { InHeader } from '../../../components/HeaderSlot';
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import type { AlgSet, DrillMode } from '../../../db/types';
 import {
   BEGINNER_SET_ID,
   FULL_SETS,
   LEVEL_BASE_SETS,
   TWO_LOOK_SETS,
+  setsByMethod,
 } from '../../../domain/alg/sets';
 import { ChevronIcon } from '../../../components/Icons';
 import { useSetting } from '../../../hooks/use-setting';
 import { packLabel, strings } from '../../../lib/strings';
+import { useMethods } from '../hooks/use-alg-cases';
 import { baseSetOf, entryOf, levelName, levelsOf, withLastLevel } from '../levels';
 
 interface DrillSetsProps {
@@ -31,34 +33,59 @@ function drillableSets(sets: readonly AlgSet[]): readonly AlgSet[] {
   );
 }
 
-/** Which set the drill draws from. The one row that is never folded away. */
+/**
+ * Which set the drill draws from. The rows that are never folded away: one
+ * per method, named once there is more than one, the way the trainer lays the
+ * same sets out. In a single row Roux began wherever CFOP's sets happened to
+ * end, and nothing said where.
+ */
 export function DrillSets({ sets, setId, onSet }: DrillSetsProps) {
   const [twoLookDefault] = useSetting('trainer.twoLookDefault');
   const [lastLevels] = useSetting('trainer.lastLevels');
+  const methods = useMethods();
+  const methodNames = new Map((methods ?? []).map((method) => [method.id, method.name]));
   const baseId = baseSetOf(FULL_SETS[setId] ?? setId);
+  const rows = setsByMethod(drillableSets(sets));
+  const labelId = useId();
 
   return (
-    <div className="trainer__sets">
-      {drillableSets(sets).map((set) => (
-        <button
-          key={set.id}
-          type="button"
-          className={set.id === baseId ? 'is-active' : ''}
-          onClick={() => {
-            // Same rule as the trainer: choosing a set is not a vote on how to
-            // solve the last layer, so it opens on the look last chosen.
-            // A set with levels goes back to the one last looked at, in the
-            // trainer or here — the same row, the same person.
-            const twoLook = TWO_LOOK_SETS[set.id];
-            onSet(
-              twoLookDefault && twoLook !== undefined ? twoLook : entryOf(set.id, lastLevels),
-            );
-          }}
+    <>
+      {rows.map(({ methodId, sets: methodSets }) => (
+        <div
+          key={methodId}
+          className="trainer__sets"
+          // Named, a row is a group of its own: "Roux" is what the four sets
+          // after it are, not a fifth thing in the row.
+          role={rows.length > 1 ? 'group' : undefined}
+          aria-labelledby={rows.length > 1 ? `${labelId}-${methodId}` : undefined}
         >
-          {packLabel(set.name)}
-        </button>
+          {rows.length > 1 ? (
+            <span className="trainer__method" id={`${labelId}-${methodId}`}>
+              {methodNames.get(methodId) ?? methodId}
+            </span>
+          ) : null}
+          {methodSets.map((set) => (
+            <button
+              key={set.id}
+              type="button"
+              className={set.id === baseId ? 'is-active' : ''}
+              onClick={() => {
+                // Same rule as the trainer: choosing a set is not a vote on how to
+                // solve the last layer, so it opens on the look last chosen.
+                // A set with levels goes back to the one last looked at, in the
+                // trainer or here — the same row, the same person.
+                const twoLook = TWO_LOOK_SETS[set.id];
+                onSet(
+                  twoLookDefault && twoLook !== undefined ? twoLook : entryOf(set.id, lastLevels),
+                );
+              }}
+            >
+              {packLabel(set.name)}
+            </button>
+          ))}
+        </div>
       ))}
-    </div>
+    </>
   );
 }
 

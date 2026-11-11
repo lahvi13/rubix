@@ -1934,7 +1934,12 @@ fáze 9 — jsou krátké a chrání veřejnou produkci.
    statistikách dvě z nich pod sebou. *Hotovo, když* z náhledu vyjde, které
    podoby zůstanou a co která znamená, je to zapsané v CLAUDE.md u pravidla
    o tlačítkách a obrazovky podle toho vypadají v obou motivech.
-9. **Dril dělí sady po metodách jako trenažér.** Plochá řada (Cross, F2L, OLL,
+9. ✅ *(hotovo 11. 11. 2026, z náhledu „teď vs. návrh“. Řada na metodu se
+   jménem vpředu, v obou polovinách drilu; jméno jen při víc metodách, takže
+   2×2 je bez popisku. Seskupení je jedna funkce pro dril i trenažér
+   (`setsByMethod` v `domain/alg/sets.ts`) a řada je pojmenovaná skupina i pro
+   čtečku. Na 412 px dvě řady jako dřív, při střední i velké velikosti textu;
+   konec sad se posunul o 2 px)* **Dril dělí sady po metodách jako trenažér.** Plochá řada (Cross, F2L, OLL,
    PLL, SB, CMLL, EO, EOLR) se s další metodou přestane dát číst. *Hotovo,
    když* je v drilu vidět, ke které metodě sada patří, výběr je pořád jedním
    ťuknutím a na 412 px s velkým textem nezabere víc řad než dnes.
